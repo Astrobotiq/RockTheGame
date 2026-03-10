@@ -12,8 +12,8 @@ public class whale : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            Debug.Log("Karakter hasar aldý");
-            var opposite =collision.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
+            Debug.Log("Karakter hasar aldÄ±");
+            var opposite =collision.gameObject.GetComponent<Rigidbody2D>().linearVelocity.normalized;
             collision.gameObject.GetComponent<Rigidbody2D>().AddForce(opposite*100*Time.deltaTime,ForceMode2D.Impulse);
         }
     }

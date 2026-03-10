@@ -74,14 +74,14 @@ public class SpeedControl : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (rb.velocity.y > 20)
+        if (rb.linearVelocity.y > 20)
         {
-            rb.AddForce(Vector2.down*forceAmountY*Time.fixedDeltaTime, ForceMode2D.Force);
+            rb.AddForce(Vector2.down * (forceAmountY * Time.fixedDeltaTime), ForceMode2D.Force);
             forceAmountY += 0.1f;
         }
-        else if (rb.velocity.y < -20)
+        else if (rb.linearVelocity.y < -20)
         {
-            rb.AddForce(Vector2.up*forceAmountY*Time.fixedDeltaTime,ForceMode2D.Force);
+            rb.AddForce(Vector2.up * (forceAmountY * Time.fixedDeltaTime),ForceMode2D.Force);
             forceAmountY += 0.1f;
         }
         else

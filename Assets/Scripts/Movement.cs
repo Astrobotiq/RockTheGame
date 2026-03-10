@@ -71,7 +71,7 @@ public class Movement : MonoBehaviour
     {
         if (context.performed)
         {
-            rb.velocity = Vector2.up * force;
+            rb.linearVelocity = Vector2.up * force;
         }
     }
 

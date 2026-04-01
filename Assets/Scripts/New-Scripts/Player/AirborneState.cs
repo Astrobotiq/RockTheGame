@@ -95,7 +95,7 @@ namespace New_Scripts.Player
                 }
                 else
                 {
-                    context.LeftAnchor = null;
+                    context.TransitionToState(new DualSwingingState(context, gravity, moveSpeed));
                 }
             }
             else if (context.LeftAnchor.HasValue)

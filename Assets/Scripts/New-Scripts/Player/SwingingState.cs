@@ -109,11 +109,7 @@ namespace New_Scripts.Player
                     }
                     else
                     {
-                        if (swingingArm == ActiveArm.Left) context.LeftAnchor = null;
-                        else context.RightAnchor = null;
-                        
-                        ActiveArm newArm = swingingArm == ActiveArm.Left ? ActiveArm.Right : ActiveArm.Left;
-                        context.TransitionToState(new SwingingState(context, newArm, gravity, 0f, moveSpeedCache));
+                        context.TransitionToState(new DualSwingingState(context, gravity, moveSpeedCache));
                     }
                 }
             }

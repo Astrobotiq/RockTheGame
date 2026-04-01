@@ -1,12 +1,19 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
+﻿/// <summary>
+/// Karakterin temel fizik bileşenlerini barındıran, girdi okuyan ve FSM geçişlerini koordine eden ana bağlam sınıfı.
+/// </summary>
+
+using UnityEngine;
 
 namespace New_Scripts.Player
 {
-    public enum ActiveArm { None, Left, Right, Both }
-    /// <summary>
-    /// Karakterin temel fizik bileşenlerini barındıran, girdi okuyan ve FSM geçişlerini koordine eden ana bağlam sınıfı.
-    /// </summary>
+    public enum ActiveArm
+    {
+        None,
+        Left,
+        Right,
+        Both
+    }
+
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public class PlayerController : MonoBehaviour
     {
@@ -21,15 +28,20 @@ namespace New_Scripts.Player
 
         [Header("Visuals")] [SerializeField] private ArmController leftArm;
         [SerializeField] private ArmController rightArm;
+        
+        [SerializeField] private NodeDetector nodeDetector;
 
         public Rigidbody2D PlayerRigidbody { get; private set; }
         public IInputReader Input { get; private set; }
         public ArmController LeftArm => leftArm;
         public ArmController RightArm => rightArm;
+        public LayerMask GroundLayerMask => groundLayerMask;
         public bool IsGrounded { get; private set; }
 
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
+        
+        public static event System.Action<Vector3> OnHighImpact;
 
         private BoxCollider2D playerCollider;
         private IPlayerState currentState;
@@ -41,17 +53,17 @@ namespace New_Scripts.Player
             Input = GetComponent<IInputReader>();
             PlayerRigidbody.bodyType = RigidbodyType2D.Kinematic;
 
-            TransitionToState(new AirborneState(this, 10f, 0.5f, 25f, -30f, 0f));
+            TransitionToState(new AirborneState(this, 10f, 0.5f, 25f, -30f, Vector2.zero));
         }
 
         private void Update()
         {
-            CheckGrounded();
             currentState?.UpdateState();
         }
 
         private void FixedUpdate()
         {
+            CheckGrounded();
             currentState?.FixedUpdateState();
         }
 
@@ -64,22 +76,39 @@ namespace New_Scripts.Player
 
         private void CheckGrounded()
         {
-            RaycastHit2D hit = Physics2D.BoxCast(playerCollider.bounds.center, boxCastSize, 0f, Vector2.down,
-                boxCastDistance, groundLayerMask);
-            IsGrounded = hit.collider != null;
-        }
+            float dynamicDistance = boxCastDistance;
+            Vector2 currentVelocity = PlayerRigidbody.linearVelocity;
 
-        public bool TryCastGrapple(Vector2 direction, out RaycastHit2D hit)
-        {
-            if (direction.sqrMagnitude < 0.1f)
+            if (currentVelocity.y < 0f)
             {
-                hit = new RaycastHit2D();
-                return false;
+                dynamicDistance += Mathf.Abs(currentVelocity.y * Time.fixedDeltaTime);
             }
 
-            hit = Physics2D.Raycast(PlayerRigidbody.position, direction.normalized, maxGrappleDistance,
-                grappleLayerMask);
-            return hit.collider != null;
+            RaycastHit2D hit = Physics2D.BoxCast(playerCollider.bounds.center, boxCastSize, 0f, Vector2.down,
+                dynamicDistance, groundLayerMask);
+
+            if (hit.collider != null && currentVelocity.y <= 0f)
+            {
+                if (!IsGrounded)
+                {
+                    float travelDistance = hit.distance - 0.02f;
+                    if (travelDistance > 0f)
+                    {
+                        PlayerRigidbody.position += Vector2.down * travelDistance;
+                    }
+                }
+
+                IsGrounded = true;
+            }
+            else
+            {
+                IsGrounded = false;
+            }
+        }
+
+        public bool TryCastGrapple(Vector2 direction, out Vector2 hitPoint)
+        {
+            return nodeDetector.TryFindBestNode(direction, PlayerRigidbody.position, out hitPoint);
         }
 
         public bool CheckNodeCoincidence()
@@ -88,6 +117,11 @@ namespace New_Scripts.Player
 
             float nodeCoincidenceThreshold = 0.5f;
             return Vector2.Distance(LeftAnchor.Value, RightAnchor.Value) < nodeCoincidenceThreshold;
+        }
+        
+        public void NotifyImpact(Vector3 velocity)
+        {
+            OnHighImpact?.Invoke(velocity);
         }
     }
 }

@@ -10,12 +10,13 @@ namespace New_Scripts.Player
         private readonly PlayerController context;
         private readonly float gravity;
         private readonly float moveSpeedCache;
-        
+
         private Vector2 midpoint;
         private Vector2 initialLaunchVelocity;
-        
+        private Vector2 cachedLaunchDirection;
+
         private float launchTimer;
-        private readonly float launchDuration = 0.5f; 
+        private readonly float launchDuration = 0.2f;
         private readonly float maxSlingshotSpeed = 40f;
 
         public SlingshotState(PlayerController context, float gravity, float moveSpeedCache)
@@ -29,13 +30,16 @@ namespace New_Scripts.Player
         {
             if (!context.LeftAnchor.HasValue || !context.RightAnchor.HasValue)
             {
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, 0f));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f,
+                    context.PlayerRigidbody.linearVelocity));
                 return;
             }
 
             midpoint = (context.LeftAnchor.Value + context.RightAnchor.Value) / 2f;
             launchTimer = 0f;
             initialLaunchVelocity = context.PlayerRigidbody.linearVelocity;
+            cachedLaunchDirection = (midpoint - context.PlayerRigidbody.position).normalized;
+            context.NotifyImpact(cachedLaunchDirection);
         }
 
         public void UpdateState()
@@ -66,7 +70,8 @@ namespace New_Scripts.Player
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, context.PlayerRigidbody.linearVelocity.y));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f,
+                    context.PlayerRigidbody.linearVelocity));
             }
         }
 
@@ -74,17 +79,19 @@ namespace New_Scripts.Player
         {
             launchTimer += Time.fixedDeltaTime;
             float t = Mathf.Clamp01(launchTimer / launchDuration);
-            
-            Vector2 launchDirection = (midpoint - context.PlayerRigidbody.position).normalized;
-            Vector2 targetVelocity = launchDirection * maxSlingshotSpeed;
-            
-            context.PlayerRigidbody.linearVelocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, t * t); 
-            
-            if (t >= 1f || Vector2.Distance(context.PlayerRigidbody.position, midpoint) < 0.5f)
+
+            Vector2 targetVelocity = cachedLaunchDirection * maxSlingshotSpeed;
+            context.PlayerRigidbody.linearVelocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, t * t);
+
+            Vector2 currentDirectionToMidpoint = midpoint - context.PlayerRigidbody.position;
+            bool hasPassedMidpoint = Vector2.Dot(cachedLaunchDirection, currentDirectionToMidpoint) < 0f;
+
+            if (t >= 1f || hasPassedMidpoint)
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, context.PlayerRigidbody.linearVelocity.y));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f,
+                    context.PlayerRigidbody.linearVelocity));
             }
         }
     }

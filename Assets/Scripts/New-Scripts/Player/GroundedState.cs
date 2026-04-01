@@ -56,9 +56,9 @@ namespace New_Scripts.Player
         {
             if (context.Input.IsRightTriggerHeld && !context.RightAnchor.HasValue)
             {
-                if (context.TryCastGrapple(context.Input.RightStick, out RaycastHit2D hit))
+                if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint))
                 {
-                    context.RightAnchor = hit.point;
+                    context.RightAnchor = hitPoint;
                     context.TransitionToState(new SwingingState(context, ActiveArm.Right, 25f, 5f, moveSpeed));
                 }
             }
@@ -68,12 +68,12 @@ namespace New_Scripts.Player
         {
             if (context.Input.IsJumpPressed)
             {
-                Debug.Log("Jump pressed, transitioning to AirborneState with jump velocity.");
-                context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, jumpVelocity));
+                Vector2 jumpVelocityVector = new Vector2(context.PlayerRigidbody.linearVelocity.x, jumpVelocity);
+                context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, jumpVelocityVector));
             }
             else if (!context.IsGrounded)
             {
-                context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, 0f));
+                context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, context.PlayerRigidbody.linearVelocity));
             }
         }
     }

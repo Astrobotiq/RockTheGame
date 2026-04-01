@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿/// <summary>
+/// Karakterin tek bir kanca ile salındığı durumu yönetir. Teğetsel kuvvet ile sarkaç fiziğini uygular.
+/// Fiziksel süpürme (Sweep Test) ile yerin içine girme (Clipping) hatalarını engeller.
+/// </summary>
+using UnityEngine;
 
 namespace New_Scripts.Player
 {
-    /// <summary>
-    /// Karakterin tek bir kanca ile salındığı arcade durumunu yönetir. Hızı teğete izdüşürür ve yayın üzerinde tutar. Duvar çarpışmalarını denetler.
-    /// </summary>
     public class SwingingState : IPlayerState
     {
         private readonly PlayerController context;
@@ -18,7 +19,9 @@ namespace New_Scripts.Player
         private Vector2 currentVelocity;
 
         private readonly float maxWallAngle = 45f;
-        private readonly float wallCheckRayDistance = 1f;
+        private readonly float swingForceMultiplier = 10f; 
+        private readonly float maxSwingSpeed = 17f;
+        private readonly float collisionRadius = 0.5f; 
 
         public SwingingState(PlayerController context, ActiveArm swingingArm, float gravity, float initialBoost, float moveSpeedCache)
         {
@@ -41,20 +44,23 @@ namespace New_Scripts.Player
             }
             else
             {
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, 0f));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, context.PlayerRigidbody.linearVelocity));
                 return;
             }
 
             ropeLength = Vector2.Distance(context.PlayerRigidbody.position, anchorPoint);
             currentVelocity = context.PlayerRigidbody.linearVelocity;
-            currentVelocity.y += initialBoost;
+            
+            if (currentVelocity.y <= 0f && initialBoost > 0f)
+            {
+                currentVelocity.y += initialBoost;
+            }
         }
 
         public void UpdateState()
         {
             HandleArmRouting();
             CheckInputTransitions();
-            CheckWallCollisions();
         }
 
         public void FixedUpdateState()
@@ -77,32 +83,38 @@ namespace New_Scripts.Player
 
         private void CheckInputTransitions()
         {
-            bool triggerHeld = swingingArm == ActiveArm.Left ? context.Input.IsLeftTriggerHeld : context.Input.IsRightTriggerHeld;
+            bool activeTriggerHeld = swingingArm == ActiveArm.Left ? context.Input.IsLeftTriggerHeld : context.Input.IsRightTriggerHeld;
             
-            if (!triggerHeld)
+            if (!activeTriggerHeld)
             {
                 if (swingingArm == ActiveArm.Left) context.LeftAnchor = null;
                 if (swingingArm == ActiveArm.Right) context.RightAnchor = null;
                 
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, currentVelocity.y));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, currentVelocity));
                 return;
             }
             
-            if (swingingArm == ActiveArm.Left) context.RightAnchor = null;
-            if (swingingArm == ActiveArm.Right) context.LeftAnchor = null;
-        }
-
-        private void CheckWallCollisions()
-        {
-            if (currentVelocity.sqrMagnitude < 0.1f) return;
-            
-            RaycastHit2D hit = Physics2D.Raycast(context.PlayerRigidbody.position, currentVelocity.normalized, wallCheckRayDistance);
-            if (hit.collider != null)
+            bool oppositeTriggerHeld = swingingArm == ActiveArm.Left ? context.Input.IsRightTriggerHeld : context.Input.IsLeftTriggerHeld;
+            if (oppositeTriggerHeld)
             {
-                float angle = Vector2.Angle(hit.normal, Vector2.up);
-                if (angle > maxWallAngle)
+                Vector2 aimStick = swingingArm == ActiveArm.Left ? context.Input.RightStick : context.Input.LeftStick;
+                if (context.TryCastGrapple(aimStick, out Vector2 hitPoint))
                 {
-                    BreakGrapple();
+                    if (swingingArm == ActiveArm.Left) context.RightAnchor = hitPoint;
+                    else context.LeftAnchor = hitPoint;
+
+                    if (context.CheckNodeCoincidence())
+                    {
+                        context.TransitionToState(new SlingshotState(context, gravity, moveSpeedCache));
+                    }
+                    else
+                    {
+                        if (swingingArm == ActiveArm.Left) context.LeftAnchor = null;
+                        else context.RightAnchor = null;
+                        
+                        ActiveArm newArm = swingingArm == ActiveArm.Left ? ActiveArm.Right : ActiveArm.Left;
+                        context.TransitionToState(new SwingingState(context, newArm, gravity, 0f, moveSpeedCache));
+                    }
                 }
             }
         }
@@ -111,21 +123,51 @@ namespace New_Scripts.Player
         {
             context.LeftAnchor = null;
             context.RightAnchor = null;
-            context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, 0f));
+            context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f, currentVelocity));
         }
 
         private void ApplyArcadePendulum()
         {
+            float playerInputX = swingingArm == ActiveArm.Left ? context.Input.LeftStick.x : context.Input.RightStick.x;
+            
             currentVelocity.y -= gravity * Time.fixedDeltaTime;
             
             Vector2 playerPos = context.PlayerRigidbody.position;
             Vector2 directionToAnchor = (anchorPoint - playerPos).normalized;
+            
             Vector2 tangent = new Vector2(directionToAnchor.y, -directionToAnchor.x);
             
             float speedAlongTangent = Vector2.Dot(currentVelocity, tangent);
+            float inputForce = playerInputX * swingForceMultiplier * Time.fixedDeltaTime;
+            
+            if (Mathf.Abs(speedAlongTangent + inputForce) < maxSwingSpeed)
+            {
+                speedAlongTangent += inputForce;
+            }
+            
             currentVelocity = tangent * speedAlongTangent;
             
-            context.PlayerRigidbody.position = anchorPoint - directionToAnchor * ropeLength;
+            Vector2 nextPosition = anchorPoint - directionToAnchor * ropeLength;
+            Vector2 movementDelta = nextPosition - playerPos;
+
+            RaycastHit2D hit = Physics2D.CircleCast(playerPos, collisionRadius, movementDelta.normalized, movementDelta.magnitude, context.GroundLayerMask);
+            
+            if (hit.collider != null)
+            {
+                float angle = Vector2.Angle(hit.normal, Vector2.up);
+                if (angle > maxWallAngle)
+                {
+                    BreakGrapple();
+                    return;
+                }
+                
+                context.LeftAnchor = null;
+                context.RightAnchor = null;
+                context.TransitionToState(new GroundedState(context, moveSpeedCache, 15f));
+                return;
+            }
+
+            context.PlayerRigidbody.position = nextPosition;
             context.PlayerRigidbody.linearVelocity = currentVelocity;
         }
     }

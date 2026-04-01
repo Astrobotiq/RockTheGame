@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿/// <summary>
+/// Karakterin havada olduğu durumu yönetir. Momentum korunumunu işletir, kanca ve kusursuz zemin geçişlerini yönetir.
+/// </summary>
+
+using UnityEngine;
 
 namespace New_Scripts.Player
 {
-    /// <summary>
-    /// Karakterin havada olduğu durumu yönetir. Özel yerçekimi, terminal hız ve havada kontrol mantığını işletir.
-    /// </summary>
     public class AirborneState : IPlayerState
     {
         private readonly PlayerController context;
@@ -12,19 +13,19 @@ namespace New_Scripts.Player
         private readonly float airControlMultiplier;
         private readonly float gravity;
         private readonly float terminalVelocity;
-    
+
         private Vector2 currentVelocity;
 
-        public AirborneState(PlayerController context, float moveSpeed, float airControlMultiplier, float gravity, float terminalVelocity, float initialVelocityY)
+        public AirborneState(PlayerController context, float moveSpeed, float airControlMultiplier, float gravity,
+            float terminalVelocity, Vector2 inheritedVelocity)
         {
             this.context = context;
             this.moveSpeed = moveSpeed;
             this.airControlMultiplier = airControlMultiplier;
             this.gravity = gravity;
             this.terminalVelocity = terminalVelocity;
-        
-            currentVelocity = context.PlayerRigidbody.linearVelocity;
-            currentVelocity.y = initialVelocityY != 0f ? initialVelocityY : currentVelocity.y;
+
+            currentVelocity = inheritedVelocity;
         }
 
         public void EnterState()
@@ -36,11 +37,16 @@ namespace New_Scripts.Player
         {
             HandleArmRouting();
             CheckGrappleInputs();
-            CheckGroundedTransition();
         }
 
         public void FixedUpdateState()
         {
+            if (context.IsGrounded && currentVelocity.y <= 0f)
+            {
+                context.TransitionToState(new GroundedState(context, moveSpeed, 15f));
+                return;
+            }
+
             ApplyGravity();
             ApplyAirControl();
             context.PlayerRigidbody.linearVelocity = currentVelocity;
@@ -60,19 +66,19 @@ namespace New_Scripts.Player
         {
             if (context.Input.IsLeftTriggerHeld && !context.LeftAnchor.HasValue)
             {
-                if (context.TryCastGrapple(context.Input.LeftStick, out RaycastHit2D hit))
+                if (context.TryCastGrapple(context.Input.LeftStick, out Vector2 hitPoint))
                 {
-                    context.LeftAnchor = hit.point;
+                    context.LeftAnchor = hitPoint;
                     EvaluateTransition();
                     return;
                 }
             }
-            
+
             if (context.Input.IsRightTriggerHeld && !context.RightAnchor.HasValue)
             {
-                if (context.TryCastGrapple(context.Input.RightStick, out RaycastHit2D hit))
+                if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint))
                 {
-                    context.RightAnchor = hit.point;
+                    context.RightAnchor = hitPoint;
                     EvaluateTransition();
                     return;
                 }
@@ -102,15 +108,6 @@ namespace New_Scripts.Player
             }
         }
 
-        private void CheckGroundedTransition()
-        {
-            if (context.IsGrounded && currentVelocity.y <= 0f)
-            {
-                Debug.Log("Transitioning to GroundedState from AirborneState");
-                context.TransitionToState(new GroundedState(context, moveSpeed, 15f));
-            }
-        }
-
         private void ApplyGravity()
         {
             currentVelocity.y -= gravity * Time.fixedDeltaTime;
@@ -121,7 +118,28 @@ namespace New_Scripts.Player
         {
             Vector2 averageInput = (context.Input.LeftStick + context.Input.RightStick) / 2f;
             float targetVelocityX = averageInput.x * moveSpeed * airControlMultiplier;
-            currentVelocity.x = Mathf.Lerp(currentVelocity.x, targetVelocityX, Time.fixedDeltaTime * 10f);
+
+            float airAcceleration = 20f;
+            float airDrag = 5f;
+
+            if (Mathf.Abs(averageInput.x) < 0.05f)
+            {
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0f, airDrag * Time.fixedDeltaTime);
+            }
+            else
+            {
+                if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) &&
+                    Mathf.Approximately(Mathf.Sign(currentVelocity.x), Mathf.Sign(targetVelocityX)))
+                {
+                    currentVelocity.x =
+                        Mathf.MoveTowards(currentVelocity.x, targetVelocityX, airDrag * Time.fixedDeltaTime);
+                }
+                else
+                {
+                    currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
+                        airAcceleration * Time.fixedDeltaTime);
+                }
+            }
         }
     }
 }

@@ -26,6 +26,7 @@ namespace New_Scripts.Player
             
             context.LeftAnchor = null;
             context.RightAnchor = null;
+            context.ResetDash();
         }
 
         public void UpdateState()
@@ -33,7 +34,9 @@ namespace New_Scripts.Player
             HandleArmRouting();
             CheckGrappleInput();
             CheckAirborneTransitions();
+            CheckDashTransition();
         }
+
 
         public void FixedUpdateState()
         {
@@ -75,6 +78,11 @@ namespace New_Scripts.Player
             {
                 context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, context.PlayerRigidbody.linearVelocity));
             }
+        }
+        void CheckDashTransition()
+        {
+            if (context.Input.IsDashPressed && context.HasDashCharge)
+                context.TransitionToState(new DashState(context, context.Input.LeftStick, moveSpeed));
         }
     }
 }

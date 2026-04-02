@@ -41,7 +41,11 @@ namespace New_Scripts.Player
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
         
+        public bool HasDashCharge { get; private set; }
+        
         public static event System.Action<Vector3> OnHighImpact;
+        
+        public IPlayerState CurrentState => currentState;
 
         private BoxCollider2D playerCollider;
         private IPlayerState currentState;
@@ -122,6 +126,16 @@ namespace New_Scripts.Player
         public void NotifyImpact(Vector3 velocity)
         {
             OnHighImpact?.Invoke(velocity);
+        }
+        
+        public void ResetDash()
+        {
+            HasDashCharge = true;
+        }
+
+        public void UseDash()
+        {
+            HasDashCharge = false;
         }
     }
 }

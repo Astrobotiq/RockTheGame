@@ -37,6 +37,7 @@ namespace New_Scripts.Player
         {
             HandleArmRouting();
             CheckGrappleInputs();
+            CheckDashTransition();
         }
 
         public void FixedUpdateState()
@@ -106,6 +107,12 @@ namespace New_Scripts.Player
             {
                 context.TransitionToState(new SwingingState(context, ActiveArm.Right, gravity, 5f, moveSpeed));
             }
+        }
+        
+        void CheckDashTransition()
+        {
+            if (context.Input.IsDashPressed && context.HasDashCharge)
+                context.TransitionToState(new DashState(context, context.Input.LeftStick, moveSpeed));
         }
 
         private void ApplyGravity()

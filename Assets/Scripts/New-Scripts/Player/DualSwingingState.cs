@@ -39,6 +39,7 @@ namespace New_Scripts.Player
             leftRopeLength = Vector2.Distance(context.PlayerRigidbody.position, context.LeftAnchor.Value);
             rightRopeLength = Vector2.Distance(context.PlayerRigidbody.position, context.RightAnchor.Value);
             currentVelocity = context.PlayerRigidbody.linearVelocity;
+            context.ResetDash();
         }
 
         public void UpdateState()

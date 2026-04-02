@@ -55,6 +55,8 @@ namespace New_Scripts.Player
             {
                 currentVelocity.y += initialBoost;
             }
+            
+            context.ResetDash();
         }
 
         public void UpdateState()

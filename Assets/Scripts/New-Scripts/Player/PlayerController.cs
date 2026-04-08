@@ -28,23 +28,25 @@ namespace New_Scripts.Player
 
         [Header("Visuals")] [SerializeField] private ArmController leftArm;
         [SerializeField] private ArmController rightArm;
-        
+
         [SerializeField] private NodeDetector nodeDetector;
+        [SerializeField] private KinematicPhysicsHandler physicsHandler;
 
         public Rigidbody2D PlayerRigidbody { get; private set; }
         public IInputReader Input { get; private set; }
         public ArmController LeftArm => leftArm;
         public ArmController RightArm => rightArm;
         public LayerMask GroundLayerMask => groundLayerMask;
-        public bool IsGrounded { get; private set; }
+        public bool IsGrounded => physicsHandler.IsGrounded;
+        public BoxCollider2D PlayerCollider => playerCollider;
 
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
-        
+
         public bool HasDashCharge { get; private set; }
-        
+
         public static event System.Action<Vector3> OnHighImpact;
-        
+
         public IPlayerState CurrentState => currentState;
 
         private BoxCollider2D playerCollider;
@@ -67,47 +69,17 @@ namespace New_Scripts.Player
 
         private void FixedUpdate()
         {
-            CheckGrounded();
             currentState?.FixedUpdateState();
+            Vector2 desiredVelocity = PlayerRigidbody.linearVelocity;
+            PlayerRigidbody.linearVelocity = physicsHandler.FilterVelocity(desiredVelocity);
         }
 
         public void TransitionToState(IPlayerState newState)
         {
+            Debug.Log("Transitioning to state: " + newState.GetType().Name);
             currentState?.ExitState();
             currentState = newState;
             currentState?.EnterState();
-        }
-
-        private void CheckGrounded()
-        {
-            float dynamicDistance = boxCastDistance;
-            Vector2 currentVelocity = PlayerRigidbody.linearVelocity;
-
-            if (currentVelocity.y < 0f)
-            {
-                dynamicDistance += Mathf.Abs(currentVelocity.y * Time.fixedDeltaTime);
-            }
-
-            RaycastHit2D hit = Physics2D.BoxCast(playerCollider.bounds.center, boxCastSize, 0f, Vector2.down,
-                dynamicDistance, groundLayerMask);
-
-            if (hit.collider != null && currentVelocity.y <= 0f)
-            {
-                if (!IsGrounded)
-                {
-                    float travelDistance = hit.distance - 0.02f;
-                    if (travelDistance > 0f)
-                    {
-                        PlayerRigidbody.position += Vector2.down * travelDistance;
-                    }
-                }
-
-                IsGrounded = true;
-            }
-            else
-            {
-                IsGrounded = false;
-            }
         }
 
         public bool TryCastGrapple(Vector2 direction, out Vector2 hitPoint)
@@ -122,12 +94,12 @@ namespace New_Scripts.Player
             float nodeCoincidenceThreshold = 0.5f;
             return Vector2.Distance(LeftAnchor.Value, RightAnchor.Value) < nodeCoincidenceThreshold;
         }
-        
+
         public void NotifyImpact(Vector3 velocity)
         {
             OnHighImpact?.Invoke(velocity);
         }
-        
+
         public void ResetDash()
         {
             HasDashCharge = true;
@@ -136,6 +108,26 @@ namespace New_Scripts.Player
         public void UseDash()
         {
             HasDashCharge = false;
+        }
+
+        [Header("Wall Sensors")] [SerializeField]
+        private float wallCheckDistance = 0.6f;
+
+        [Header("Physics Config")] [SerializeField]
+        private float gravity = 25f;
+
+        public float Gravity => gravity;
+
+        public static event System.Action OnStaminaWarning;
+
+        public bool IsTouchingLeftWall() => physicsHandler.IsTouchingLeftWall;
+
+        public bool IsTouchingRightWall() => physicsHandler.IsTouchingRightWall;
+        public bool IsTouchingCeiling() => physicsHandler.IsTouchingCeiling;
+
+        public void TriggerStaminaWarning()
+        {
+            OnStaminaWarning?.Invoke();
         }
     }
 }

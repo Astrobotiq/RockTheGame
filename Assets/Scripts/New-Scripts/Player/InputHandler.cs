@@ -14,6 +14,8 @@ namespace New_Scripts.Player
         [SerializeField] private InputActionReference rightTriggerAction;
         [SerializeField] private InputActionReference jumpAction;
         [SerializeField] private InputActionReference dashAction;
+        [SerializeField] private InputActionReference leftBumperAction;
+        [SerializeField] private InputActionReference rightBumperAction;
         [SerializeField] private float triggerThreshold = 0.1f;
 
         public Vector2 LeftStick => leftStickAction.action.ReadValue<Vector2>();
@@ -22,6 +24,8 @@ namespace New_Scripts.Player
         public bool IsRightTriggerHeld => rightTriggerAction.action.ReadValue<float>() >= triggerThreshold;
         public bool IsJumpPressed => jumpAction.action.WasPressedThisFrame();
         public bool IsDashPressed => dashAction.action.WasPressedThisFrame();
+        public bool IsLeftBumperHeld => leftBumperAction.action.IsPressed();
+        public bool IsRightBumperHeld => rightBumperAction.action.IsPressed();
 
         private void OnEnable()
         {
@@ -31,6 +35,8 @@ namespace New_Scripts.Player
             rightTriggerAction.action.Enable();
             jumpAction.action.Enable();
             dashAction.action.Enable();
+            leftBumperAction.action.Enable();
+            rightBumperAction.action.Enable();
         }
 
         private void OnDisable()
@@ -41,6 +47,8 @@ namespace New_Scripts.Player
             rightTriggerAction.action.Disable();
             jumpAction.action.Disable();
             dashAction.action.Disable();
+            leftBumperAction.action.Disable();
+            rightBumperAction.action.Disable();
         }
     }
 }

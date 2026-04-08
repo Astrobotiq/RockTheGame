@@ -1,5 +1,5 @@
 ﻿/// <summary>
-/// Karakterin havada olduğu durumu yönetir. Momentum korunumunu işletir, kanca ve kusursuz zemin geçişlerini yönetir.
+/// Karakterin havadaki durumunu, momentumunu, kanca ve duvar geçişlerini ile tavan çarpışmalarını yöneten durum sınıfı.
 /// </summary>
 
 using UnityEngine;
@@ -38,6 +38,7 @@ namespace New_Scripts.Player
             HandleArmRouting();
             CheckGrappleInputs();
             CheckDashTransition();
+            CheckWallClimb();
         }
 
         public void FixedUpdateState()
@@ -50,6 +51,8 @@ namespace New_Scripts.Player
 
             ApplyGravity();
             ApplyAirControl();
+            HandleCeilingCollision();
+
             context.PlayerRigidbody.linearVelocity = currentVelocity;
         }
 
@@ -108,8 +111,8 @@ namespace New_Scripts.Player
                 context.TransitionToState(new SwingingState(context, ActiveArm.Right, gravity, 5f, moveSpeed));
             }
         }
-        
-        void CheckDashTransition()
+
+        private void CheckDashTransition()
         {
             if (context.Input.IsDashPressed && context.HasDashCharge)
                 context.TransitionToState(new DashState(context, context.Input.LeftStick, moveSpeed));
@@ -146,6 +149,29 @@ namespace New_Scripts.Player
                     currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
                         airAcceleration * Time.fixedDeltaTime);
                 }
+            }
+        }
+
+        private void HandleCeilingCollision()
+        {
+            if (currentVelocity.y > 0f && context.IsTouchingCeiling())
+            {
+                currentVelocity.y = 0f;
+            }
+        }
+
+        private void CheckWallClimb()
+        {
+            if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
+            {
+                context.TransitionToState(new WallClimbingState(context, -1, moveSpeed, gravity));
+                return;
+            }
+
+            if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
+            {
+                context.TransitionToState(new WallClimbingState(context, 1, moveSpeed, gravity));
+                return;
             }
         }
     }

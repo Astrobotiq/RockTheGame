@@ -35,6 +35,28 @@ namespace New_Scripts.Player
             CheckGrappleInput();
             CheckAirborneTransitions();
             CheckDashTransition();
+            CheckWallClimb();
+        }
+
+        void CheckWallClimb()
+        {
+            if(context.Input.IsLeftBumperHeld || context.Input.IsRightBumperHeld)
+                Debug.Log("Duvar tırmanma girişimi algılandı. LB: " + context.Input.IsLeftBumperHeld + ", RB: " + context.Input.IsRightBumperHeld);
+            // Sol Bumper (LB) ve Sol Duvar
+            if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
+            {
+                Debug.Log("Sol duvara tırmanma durumuna geçiliyor.");
+                context.TransitionToState(new WallClimbingState(context, -1, moveSpeed, context.Gravity));
+                return;
+            }
+
+            // Sağ Bumper (RB) ve Sağ Duvar
+            if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
+            {
+                Debug.Log("Sağ duvara tırmanma durumuna geçiliyor.");
+                context.TransitionToState(new WallClimbingState(context, 1, moveSpeed, context.Gravity));
+                return;
+            }
         }
 
 

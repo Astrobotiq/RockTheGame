@@ -14,5 +14,7 @@ namespace New_Scripts.Player
         bool IsRightTriggerHeld { get; }
         bool IsJumpPressed { get; }
         bool IsDashPressed { get; }
+        bool IsLeftBumperHeld { get; }
+        bool IsRightBumperHeld { get; }
     }
 }

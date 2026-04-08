@@ -1,6 +1,8 @@
 ﻿/// <summary>
 /// Karakterin zemine temas ettiği durumu yönetir. Sol kolu yatay harekete kilitler ve sadece sağ kol ile kanca geçişine izin verir.
 /// </summary>
+
+using New_Scripts.Player.States;
 using UnityEngine;
 
 namespace New_Scripts.Player
@@ -28,6 +30,7 @@ namespace New_Scripts.Player
             context.RightAnchor = null;
             context.ResetDash();
             context.ResetSlingshot();
+            context.RefillWallStamina();
         }
 
         public void UpdateState()
@@ -41,13 +44,13 @@ namespace New_Scripts.Player
 
         void CheckWallClimb()
         {
-            if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
+            if (context.CanWallClimb && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
             {
                 context.TransitionToState(new WallClimbingState(context, -1, moveSpeed, context.Gravity));
                 return;
             }
 
-            if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
+            if (context.CanWallClimb && context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
             {
                 context.TransitionToState(new WallClimbingState(context, 1, moveSpeed, context.Gravity));
                 return;
@@ -57,7 +60,6 @@ namespace New_Scripts.Player
 
         public void FixedUpdateState()
         {
-            Debug.Log($"GroundedState FixedUpdate: Applying horizontal movement {context.Input.LeftStick.x}");
             float targetVelocityX = context.Input.LeftStick.x * moveSpeed;
             context.PlayerRigidbody.linearVelocity = new Vector2(targetVelocityX, context.PlayerRigidbody.linearVelocity.y);
         }

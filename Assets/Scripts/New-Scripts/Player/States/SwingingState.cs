@@ -2,6 +2,8 @@
 /// Karakterin tek bir kanca ile salındığı durumu yönetir. Teğetsel kuvvet ile sarkaç fiziğini uygular.
 /// Fiziksel süpürme (Sweep Test) ile yerin içine girme (Clipping) hatalarını engeller.
 /// </summary>
+
+using New_Scripts.Player.States;
 using UnityEngine;
 
 namespace New_Scripts.Player

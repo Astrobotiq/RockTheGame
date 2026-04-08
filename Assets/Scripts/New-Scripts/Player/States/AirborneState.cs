@@ -4,7 +4,7 @@
 
 using UnityEngine;
 
-namespace New_Scripts.Player
+namespace New_Scripts.Player.States
 {
     public class AirborneState : IPlayerState
     {
@@ -16,9 +16,10 @@ namespace New_Scripts.Player
 
         private Vector2 currentVelocity;
         private float grappleLockoutTimer;
+        private float wallClimbLockoutTimer;
 
         public AirborneState(PlayerController context, float moveSpeed, float airControlMultiplier, float gravity,
-            float terminalVelocity, Vector2 inheritedVelocity, float grappleLockoutDuration = 0f)
+            float terminalVelocity, Vector2 inheritedVelocity, float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f)
         {
             this.context = context;
             this.moveSpeed = moveSpeed;
@@ -28,6 +29,7 @@ namespace New_Scripts.Player
             
             currentVelocity = inheritedVelocity;
             grappleLockoutTimer = grappleLockoutDuration;
+            wallClimbLockoutTimer = wallClimbLockoutDuration;
         }
 
         public void EnterState()
@@ -48,8 +50,16 @@ namespace New_Scripts.Player
                 CheckGrappleInputs();
             }
 
+            if (wallClimbLockoutTimer > 0f)
+            {
+                wallClimbLockoutTimer -= Time.deltaTime;
+            }
+            else
+            {
+                CheckWallClimb();
+            }
+
             CheckDashTransition();
-            CheckWallClimb();
         }
 
         public void FixedUpdateState()
@@ -179,13 +189,13 @@ namespace New_Scripts.Player
 
         private void CheckWallClimb()
         {
-            if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
+            if (context.CanWallClimb && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
             {
                 context.TransitionToState(new WallClimbingState(context, -1, moveSpeed, gravity));
                 return;
             }
 
-            if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
+            if (context.CanWallClimb && context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
             {
                 context.TransitionToState(new WallClimbingState(context, 1, moveSpeed, gravity));
                 return;

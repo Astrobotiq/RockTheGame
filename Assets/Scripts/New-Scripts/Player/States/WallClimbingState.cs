@@ -1,24 +1,20 @@
 ﻿using UnityEngine;
 
-namespace New_Scripts.Player
+namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Karakterin duvara tutunma, tırmanma, duvardan zıplama ve stamina limitlerini yöneten durum sınıfı.
-    /// Kanca atılmasına izin vermez, ancak Dash atılabilir.
+    /// Karakterin duvara tutunma, tirmanma, duvardan ziplama limitlerini ve merkezilestirilmis stamina tuketimini yoneten durum sinifi.
     /// </summary>
     public class WallClimbingState : IPlayerState
     {
         private readonly PlayerController context;
         private readonly float moveSpeedCache;
         private readonly float gravityCache;
-        
-        // 1 = Sağ Duvar, -1 = Sol Duvar
         private readonly int wallDirection; 
         
         private readonly float climbSpeed = 8f;
-        private readonly Vector2 wallJumpForce = new Vector2(15f, 20f); // Sabit dışarı ve yukarı fırlatma
+        private readonly Vector2 wallJumpForce = new Vector2(15f, 20f);
         
-        private float staminaTimer;
         private bool warningTriggered;
 
         public WallClimbingState(PlayerController context, int wallDirection, float moveSpeedCache, float gravityCache)
@@ -31,13 +27,9 @@ namespace New_Scripts.Player
 
         public void EnterState()
         {
-            staminaTimer = 0f;
-            warningTriggered = false;
-            
-            // 1. Hızı Sıfırla
+            warningTriggered = context.CurrentWallStamina <= 1.5f;
             context.PlayerRigidbody.linearVelocity = Vector2.zero; 
-
-            // 2. Duvara Yapışma (Snapping)
+            
             Vector2 direction = wallDirection == -1 ? Vector2.left : Vector2.right;
             RaycastHit2D hit = Physics2D.Raycast(context.PlayerCollider.bounds.center, direction, 2f, context.GroundLayerMask);
             
@@ -57,63 +49,54 @@ namespace New_Scripts.Player
 
         public void UpdateState()
         {
-            HandleStamina();
+            context.ConsumeWallStamina(Time.deltaTime);
+
+            if (!warningTriggered && context.CurrentWallStamina <= 1.5f)
+            {
+                warningTriggered = true;
+            }
+
+            if (context.CurrentWallStamina <= 0f)
+            {
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, Vector2.zero, 0f, 0.5f));
+            }
+
             CheckInputTransitions();
         }
 
         public void FixedUpdateState()
         {
-            // Yukarı/Aşağı tırmanma (Analog çubuğun Y ekseni okunur)
             float inputY = context.Input.LeftStick.y;
             context.PlayerRigidbody.linearVelocity = new Vector2(0f, inputY * climbSpeed);
         }
 
-        public void ExitState()
-        {
-        }
-
-        private void HandleStamina()
-        {
-            staminaTimer += Time.deltaTime;
-
-            if (staminaTimer >= 3f && !warningTriggered)
-            {
-                warningTriggered = true;
-                context.TriggerStaminaWarning(); // Görsel UI veya Efekt dinleyicilerine haber ver
-            }
-
-            if (staminaTimer >= 6f)
-            {
-                // Stamina bitti, tutunmayı bırak ve düş.
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, Vector2.zero));
-            }
-        }
-
         private void CheckInputTransitions()
         {
-            // Dash atma
             if (context.Input.IsDashPressed && context.HasDashCharge)
             {
                 context.TransitionToState(new DashState(context, context.Input.LeftStick, moveSpeedCache));
                 return;
             }
 
-            // Duvardan Zıplama (Sabit fırlatma)
             if (context.Input.IsJumpPressed)
             {
                 Vector2 jumpVelocity = new Vector2(-wallDirection * wallJumpForce.x, wallJumpForce.y);
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, jumpVelocity));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, jumpVelocity, 0f, 0.2f));
                 return;
             }
 
-            // İlgili tuşu (Bumper) bırakırsa veya duvar biterse düş
             bool isHoldingCurrentWall = (wallDirection == -1 && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall()) ||
                                         (wallDirection == 1 && context.Input.IsRightBumperHeld && context.IsTouchingRightWall());
 
             if (!isHoldingCurrentWall)
             {
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, Vector2.zero));
+                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, Vector2.zero, 0f, 0.2f));
             }
+        }
+
+        public void ExitState()
+        {
+            Debug.Log($"Exiting WallClimbingState {context.CurrentWallStamina}");
         }
     }
 }

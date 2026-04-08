@@ -3,6 +3,7 @@
 /// </summary>
 
 using New_Scripts.Player.IFramePauseable;
+using New_Scripts.Player.States;
 using UnityEngine;
 
 namespace New_Scripts.Player
@@ -170,6 +171,27 @@ namespace New_Scripts.Player
         public void ResetSlingshot()
         {
             CanSlingshot = true;
+        }
+        
+        public bool CanWallClimb { get; private set; } = true;
+        public float CurrentWallStamina { get; private set; }
+        public float MaxWallStamina { get; private set; } = 6f;
+        
+        public void ConsumeWallStamina(float amount)
+        {
+            CurrentWallStamina -= amount;
+        
+            if (CurrentWallStamina <= 0f)
+            {
+                CurrentWallStamina = 0f;
+                CanWallClimb = false;
+            }
+        }
+
+        public void RefillWallStamina()
+        {
+            CurrentWallStamina = MaxWallStamina;
+            CanWallClimb = true;
         }
     }
 }

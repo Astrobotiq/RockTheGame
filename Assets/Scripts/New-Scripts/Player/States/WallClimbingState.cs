@@ -57,7 +57,6 @@ namespace New_Scripts.Player
 
         public void UpdateState()
         {
-            Debug.Log("WallClimbingState: UpdateState called. Stamina Timer: " + staminaTimer);
             HandleStamina();
             CheckInputTransitions();
         }
@@ -92,7 +91,6 @@ namespace New_Scripts.Player
 
         private void CheckInputTransitions()
         {
-            Debug.Log("WallClimbingState: Checking input transitions. Dash: " + context.Input.IsDashPressed + ", Jump: " + context.Input.IsJumpPressed);
             // Dash atma
             if (context.Input.IsDashPressed && context.HasDashCharge)
             {
@@ -103,7 +101,6 @@ namespace New_Scripts.Player
             // Duvardan Zıplama (Sabit fırlatma)
             if (context.Input.IsJumpPressed)
             {
-                Debug.Log("WallClimbingState: Jump pressed. Transitioning to AirborneState with wall jump velocity.");
                 Vector2 jumpVelocity = new Vector2(-wallDirection * wallJumpForce.x, wallJumpForce.y);
                 context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, jumpVelocity));
                 return;
@@ -115,7 +112,6 @@ namespace New_Scripts.Player
 
             if (!isHoldingCurrentWall)
             {
-                Debug.Log("WallClimbingState: Wall lost or bumper released. Transitioning to AirborneState.");
                 context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravityCache, -30f, Vector2.zero));
             }
         }

@@ -107,7 +107,8 @@ namespace New_Scripts.Player
 
                     if (context.CheckNodeCoincidence())
                     {
-                        context.TransitionToState(new SlingshotState(context, gravity, moveSpeedCache));
+                        if (context.CanSlingshot)
+                            context.TransitionToState(new SlingshotState(context, gravity, moveSpeedCache));
                     }
                     else
                     {

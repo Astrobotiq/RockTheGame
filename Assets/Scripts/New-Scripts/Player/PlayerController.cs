@@ -2,6 +2,7 @@
 /// Karakterin temel fizik bileşenlerini barındıran, girdi okuyan ve FSM geçişlerini koordine eden ana bağlam sınıfı.
 /// </summary>
 
+using New_Scripts.Player.IFramePauseable;
 using UnityEngine;
 
 namespace New_Scripts.Player
@@ -15,7 +16,7 @@ namespace New_Scripts.Player
     }
 
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, IFramePausable
     {
         [Header("Physics Config")] [SerializeField]
         private LayerMask groundLayerMask;
@@ -64,11 +65,13 @@ namespace New_Scripts.Player
 
         private void Update()
         {
+            if (_isPaused) return;
             currentState?.UpdateState();
         }
 
         private void FixedUpdate()
         {
+            if (_isPaused) return;
             currentState?.FixedUpdateState();
             Vector2 desiredVelocity = PlayerRigidbody.linearVelocity;
             PlayerRigidbody.linearVelocity = physicsHandler.FilterVelocity(desiredVelocity);
@@ -98,6 +101,7 @@ namespace New_Scripts.Player
         public void NotifyImpact(Vector3 velocity)
         {
             OnHighImpact?.Invoke(velocity);
+            //HitStopEvents.RequestHitStop?.Invoke(0.15f);
         }
 
         public void ResetDash()
@@ -128,6 +132,44 @@ namespace New_Scripts.Player
         public void TriggerStaminaWarning()
         {
             OnStaminaWarning?.Invoke();
+        }
+        
+        private bool _isPaused;
+        private Vector2 _velocityCache;
+        private void OnEnable()
+        {
+            HitStopEvents.HitStopStarted += OnPauseStarted;
+            HitStopEvents.HitStopEnded += OnPauseEnded;
+        }
+
+        private void OnDisable()
+        {
+            HitStopEvents.HitStopStarted -= OnPauseStarted;
+            HitStopEvents.HitStopEnded -= OnPauseEnded;
+        }
+        public void OnPauseStarted()
+        {
+            _isPaused = true;
+            _velocityCache = PlayerRigidbody.linearVelocity;
+            PlayerRigidbody.linearVelocity = Vector2.zero;
+        }
+
+        public void OnPauseEnded()
+        {
+            _isPaused = false;
+            PlayerRigidbody.linearVelocity = _velocityCache;
+        }
+        
+        public bool CanSlingshot { get; private set; } = true;
+
+        public void UseSlingshot()
+        {
+            CanSlingshot = false;
+        }
+
+        public void ResetSlingshot()
+        {
+            CanSlingshot = true;
         }
     }
 }

@@ -15,17 +15,19 @@ namespace New_Scripts.Player
         private readonly float terminalVelocity;
 
         private Vector2 currentVelocity;
+        private float grappleLockoutTimer;
 
         public AirborneState(PlayerController context, float moveSpeed, float airControlMultiplier, float gravity,
-            float terminalVelocity, Vector2 inheritedVelocity)
+            float terminalVelocity, Vector2 inheritedVelocity, float grappleLockoutDuration = 0f)
         {
             this.context = context;
             this.moveSpeed = moveSpeed;
             this.airControlMultiplier = airControlMultiplier;
             this.gravity = gravity;
             this.terminalVelocity = terminalVelocity;
-
+            
             currentVelocity = inheritedVelocity;
+            grappleLockoutTimer = grappleLockoutDuration;
         }
 
         public void EnterState()
@@ -36,7 +38,16 @@ namespace New_Scripts.Player
         public void UpdateState()
         {
             HandleArmRouting();
-            CheckGrappleInputs();
+            
+            if (grappleLockoutTimer > 0f)
+            {
+                grappleLockoutTimer -= Time.deltaTime;
+            }
+            else
+            {
+                CheckGrappleInputs();
+            }
+
             CheckDashTransition();
             CheckWallClimb();
         }
@@ -95,10 +106,16 @@ namespace New_Scripts.Player
             {
                 if (context.CheckNodeCoincidence())
                 {
-                    context.TransitionToState(new SlingshotState(context, gravity, moveSpeed));
+                    Debug.Log("Çift kanca durumu algılandı, ancak düğüm çakışması var. Slingshot durumuna geçiş kontrol ediliyor.");
+                    if (context.CanSlingshot)
+                    {
+                        Debug.Log("Slingshot durumuna geçiliyor.");
+                        context.TransitionToState(new SlingshotState(context, gravity, moveSpeed));
+                    }
                 }
                 else
                 {
+                    Debug.Log("Çift kanca durumu algılandı, düğüm çakışması yok. DualSwinging durumuna geçiliyor.");
                     context.TransitionToState(new DualSwingingState(context, gravity, moveSpeed));
                 }
             }

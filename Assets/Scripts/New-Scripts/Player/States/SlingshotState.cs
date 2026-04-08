@@ -28,6 +28,8 @@ namespace New_Scripts.Player
 
         public void EnterState()
         {
+            context.UseSlingshot();
+            
             if (!context.LeftAnchor.HasValue || !context.RightAnchor.HasValue)
             {
                 context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f,
@@ -70,8 +72,15 @@ namespace New_Scripts.Player
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f,
-                    context.PlayerRigidbody.linearVelocity));
+                context.TransitionToState(new AirborneState(
+                    context, 
+                    moveSpeedCache, 
+                    0.5f, 
+                    gravity, 
+                    -30f, 
+                    context.PlayerRigidbody.linearVelocity, 
+                    0.25f
+                ));
             }
         }
 
@@ -90,8 +99,15 @@ namespace New_Scripts.Player
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, gravity, -30f,
-                    context.PlayerRigidbody.linearVelocity));
+                context.TransitionToState(new AirborneState(
+                    context, 
+                    moveSpeedCache, 
+                    0.5f, 
+                    gravity, 
+                    -30f, 
+                    context.PlayerRigidbody.linearVelocity, 
+                    0.25f
+                ));
             }
         }
     }

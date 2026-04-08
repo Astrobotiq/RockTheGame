@@ -1,35 +1,32 @@
-﻿/// <summary>
-/// Karakterin havadaki durumunu, momentumunu, kanca ve duvar geçişlerini ile tavan çarpışmalarını yöneten durum sınıfı.
-/// </summary>
-
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
+    /// <summary>
+    /// Karakterin havadaki durumunu, momentumunu, yercekimi limitlerini ve yetenek gecislerini ScriptableObject verileriyle yoneten durum sinifi.
+    /// </summary>
     public class AirborneState : IPlayerState
     {
         private readonly PlayerController context;
-        private readonly float moveSpeed;
-        private readonly float airControlMultiplier;
-        private readonly float gravity;
-        private readonly float terminalVelocity;
+        private readonly PlayerStatsSO stats;
 
         private Vector2 currentVelocity;
         private float grappleLockoutTimer;
         private float wallClimbLockoutTimer;
+        private float coyoteTimer;
+        private bool isJumping;
 
-        public AirborneState(PlayerController context, float moveSpeed, float airControlMultiplier, float gravity,
-            float terminalVelocity, Vector2 inheritedVelocity, float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f)
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f, float coyoteDuration = 0f)
         {
             this.context = context;
-            this.moveSpeed = moveSpeed;
-            this.airControlMultiplier = airControlMultiplier;
-            this.gravity = gravity;
-            this.terminalVelocity = terminalVelocity;
+            this.stats = context.Stats;
             
             currentVelocity = inheritedVelocity;
+            this.isJumping = isJumping;
+            
             grappleLockoutTimer = grappleLockoutDuration;
             wallClimbLockoutTimer = wallClimbLockoutDuration;
+            coyoteTimer = coyoteDuration;
         }
 
         public void EnterState()
@@ -40,24 +37,30 @@ namespace New_Scripts.Player.States
         public void UpdateState()
         {
             HandleArmRouting();
-            
-            if (grappleLockoutTimer > 0f)
+
+            if (coyoteTimer > 0f)
             {
-                grappleLockoutTimer -= Time.deltaTime;
-            }
-            else
-            {
-                CheckGrappleInputs();
+                coyoteTimer -= Time.deltaTime;
+
+                if (context.JumpBufferTimer > 0f)
+                {
+                    context.ConsumeJumpBuffer();
+                    coyoteTimer = 0f;
+
+                    currentVelocity.y = stats.JumpVelocity;
+                    context.PlayerRigidbody.linearVelocity = currentVelocity;
+                }
             }
 
-            if (wallClimbLockoutTimer > 0f)
-            {
-                wallClimbLockoutTimer -= Time.deltaTime;
-            }
+            if (grappleLockoutTimer > 0f)
+                grappleLockoutTimer -= Time.deltaTime;
             else
-            {
+                CheckGrappleInputs();
+
+            if (wallClimbLockoutTimer > 0f)
+                wallClimbLockoutTimer -= Time.deltaTime;
+            else
                 CheckWallClimb();
-            }
 
             CheckDashTransition();
         }
@@ -66,7 +69,7 @@ namespace New_Scripts.Player.States
         {
             if (context.IsGrounded && currentVelocity.y <= 0f)
             {
-                context.TransitionToState(new GroundedState(context, moveSpeed, 15f));
+                context.TransitionToState(new GroundedState(context));
                 return;
             }
 
@@ -116,72 +119,77 @@ namespace New_Scripts.Player.States
             {
                 if (context.CheckNodeCoincidence())
                 {
-                    Debug.Log("Çift kanca durumu algılandı, ancak düğüm çakışması var. Slingshot durumuna geçiş kontrol ediliyor.");
                     if (context.CanSlingshot)
                     {
-                        Debug.Log("Slingshot durumuna geçiliyor.");
-                        context.TransitionToState(new SlingshotState(context, gravity, moveSpeed));
+                        context.TransitionToState(new SlingshotState(context));
                     }
                 }
                 else
                 {
-                    Debug.Log("Çift kanca durumu algılandı, düğüm çakışması yok. DualSwinging durumuna geçiliyor.");
-                    context.TransitionToState(new DualSwingingState(context, gravity, moveSpeed));
+                    context.TransitionToState(new DualSwingingState(context));
                 }
             }
             else if (context.LeftAnchor.HasValue)
             {
-                context.TransitionToState(new SwingingState(context, ActiveArm.Left, gravity, 5f, moveSpeed));
+                context.TransitionToState(new SwingingState(context, ActiveArm.Left));
             }
             else if (context.RightAnchor.HasValue)
             {
-                context.TransitionToState(new SwingingState(context, ActiveArm.Right, gravity, 5f, moveSpeed));
+                context.TransitionToState(new SwingingState(context, ActiveArm.Right));
             }
         }
 
         private void CheckDashTransition()
         {
             if (context.Input.IsDashPressed && context.HasDashCharge)
-                context.TransitionToState(new DashState(context, context.Input.LeftStick, moveSpeed));
+            {
+                context.TransitionToState(new DashState(context, context.Input.LeftStick));
+            }
         }
 
         private void ApplyGravity()
         {
-            currentVelocity.y -= gravity * Time.fixedDeltaTime;
-            currentVelocity.y = Mathf.Max(currentVelocity.y, terminalVelocity);
+            float currentGravity = stats.Gravity;
+
+            if (currentVelocity.y < 0f)
+            {
+                currentGravity *= stats.FallGravityMultiplier;
+            }
+            else if (isJumping && currentVelocity.y > 0f && !context.Input.IsJumpHeld)
+            {
+                currentGravity *= stats.JumpEndEarlyGravityMultiplier;
+            }
+            else if (Mathf.Abs(currentVelocity.y) < stats.ApexThreshold)
+            {
+                currentGravity *= stats.ApexHangGravityMultiplier;
+            }
+
+            currentVelocity.y -= currentGravity * Time.fixedDeltaTime;
+            currentVelocity.y = Mathf.Max(currentVelocity.y, stats.TerminalVelocity);
         }
 
         private void ApplyAirControl()
         {
             Vector2 averageInput = (context.Input.LeftStick + context.Input.RightStick) / 2f;
-            float targetVelocityX = averageInput.x * moveSpeed * airControlMultiplier;
+            float targetVelocityX = averageInput.x * stats.MoveSpeed * stats.AirControlMultiplier;
 
-            float airAcceleration = 20f;
-            float airDrag = 5f;
-
-            if (Mathf.Abs(averageInput.x) < 0.05f)
+            if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) && Mathf.Approximately(Mathf.Sign(currentVelocity.x), Mathf.Sign(targetVelocityX)))
             {
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0f, airDrag * Time.fixedDeltaTime);
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.MomentumDecay * Time.fixedDeltaTime);
+            }
+            else if (Mathf.Abs(averageInput.x) < 0.05f)
+            {
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0f, stats.AirDrag * Time.fixedDeltaTime);
             }
             else
             {
-                if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) &&
-                    Mathf.Approximately(Mathf.Sign(currentVelocity.x), Mathf.Sign(targetVelocityX)))
-                {
-                    currentVelocity.x =
-                        Mathf.MoveTowards(currentVelocity.x, targetVelocityX, airDrag * Time.fixedDeltaTime);
-                }
-                else
-                {
-                    currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
-                        airAcceleration * Time.fixedDeltaTime);
-                }
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.AirAcceleration * Time.fixedDeltaTime);
             }
         }
 
         private void HandleCeilingCollision()
         {
-            if (currentVelocity.y > 0f && context.IsTouchingCeiling())
+            if (currentVelocity.y > 0f && context.IsTouchingCeiling)
             {
                 currentVelocity.y = 0f;
             }
@@ -189,16 +197,15 @@ namespace New_Scripts.Player.States
 
         private void CheckWallClimb()
         {
-            if (context.CanWallClimb && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
+            if (context.CanWallClimb && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall)
             {
-                context.TransitionToState(new WallClimbingState(context, -1, moveSpeed, gravity));
+                context.TransitionToState(new WallClimbingState(context, -1));
                 return;
             }
 
-            if (context.CanWallClimb && context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
+            if (context.CanWallClimb && context.Input.IsRightBumperHeld && context.IsTouchingRightWall)
             {
-                context.TransitionToState(new WallClimbingState(context, 1, moveSpeed, gravity));
-                return;
+                context.TransitionToState(new WallClimbingState(context, 1));
             }
         }
     }

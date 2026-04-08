@@ -1,25 +1,22 @@
-﻿using New_Scripts.Player.States;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace New_Scripts.Player
+namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Karakterin belirli bir yöne doğru yüksek hızla fırlatıldığı, yerçekimsiz kısa süreli durum.
+    /// Karakterin belirli bir yöne doğru yüksek hızla fırlatıldığı, yerçekimsiz kısa süreli durum. Verilerini ScriptableObject üzerinden okur.
     /// </summary>
     public class DashState : IPlayerState
     {
         private readonly PlayerController context;
+        private readonly PlayerStatsSO stats;
         private readonly Vector2 dashDirection;
-        private readonly float dashSpeed = 35f;
-        private readonly float dashDuration = 0.15f;
-        private readonly float moveSpeedCache;
         
         private float dashTimer;
 
-        public DashState(PlayerController context, Vector2 direction, float moveSpeedCache)
+        public DashState(PlayerController context, Vector2 direction)
         {
             this.context = context;
-            this.moveSpeedCache = moveSpeedCache;
+            this.stats = context.Stats;
             
             this.dashDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : Vector2.right;
         }
@@ -28,22 +25,23 @@ namespace New_Scripts.Player
         {
             context.UseDash();
             dashTimer = 0f;
-            context.PlayerRigidbody.linearVelocity = dashDirection * dashSpeed;
-            context.NotifyImpact(dashDirection * 2f);
+            context.PlayerRigidbody.linearVelocity = dashDirection * stats.DashSpeed;
+            context.NotifyImpact(dashDirection * stats.DashImpactMultiplier);
         }
 
         public void UpdateState()
         {
             dashTimer += Time.deltaTime;
-            if (dashTimer >= dashDuration)
+            
+            if (dashTimer >= stats.DashDuration)
             {
-                context.TransitionToState(new AirborneState(context, moveSpeedCache, 0.5f, 25f, -30f, context.PlayerRigidbody.linearVelocity));
+                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity));
             }
         }
 
         public void FixedUpdateState()
         {
-            context.PlayerRigidbody.linearVelocity = dashDirection * dashSpeed;
+            context.PlayerRigidbody.linearVelocity = dashDirection * stats.DashSpeed;
         }
 
         public void ExitState()

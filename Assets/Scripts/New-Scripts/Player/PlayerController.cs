@@ -1,10 +1,8 @@
-﻿/// <summary>
-/// Karakterin temel fizik bileşenlerini barındıran, girdi okuyan ve FSM geçişlerini koordine eden ana bağlam sınıfı.
-/// </summary>
-
+﻿using UnityEngine;
 using New_Scripts.Player.IFramePauseable;
 using New_Scripts.Player.States;
-using UnityEngine;
+using New_Scripts.Player.UI;
+using New_Scripts.Player.Visual;
 
 namespace New_Scripts.Player
 {
@@ -16,127 +14,81 @@ namespace New_Scripts.Player
         Both
     }
 
+    /// <summary>
+    /// Karakterin temel fizik bilesenlerini barindiran, girdi okuyan ve FSM gecislerini koordine eden ana baglam sinifi.
+    /// Tum bagimli degerleri merkezi ScriptableObject (PlayerStatsSO) uzerinden okur.
+    /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public class PlayerController : MonoBehaviour, IFramePausable
     {
-        [Header("Physics Config")] [SerializeField]
+        [Header("Data")] public PlayerStatsSO Stats;
+
+        [Header("System References")] [SerializeField]
+        private NodeDetector nodeDetector;
+
+        [SerializeField] private KinematicPhysicsHandler physicsHandler;
+        [SerializeField] private PlayerUIController uiController;
+        [SerializeField] private PlayerColorController colorController;
+
+        [Header("Visual References")] [SerializeField]
+        private ArmController leftArm;
+
+        [SerializeField] private ArmController rightArm;
+
+        [Header("Environment Settings")] [SerializeField]
         private LayerMask groundLayerMask;
 
         [SerializeField] private LayerMask grappleLayerMask;
 
-        [Header("Sensors")] [SerializeField] private Vector2 boxCastSize;
-        [SerializeField] private float boxCastDistance;
-        [SerializeField] private float maxGrappleDistance = 15f;
-
-        [Header("Visuals")] [SerializeField] private ArmController leftArm;
-        [SerializeField] private ArmController rightArm;
-
-        [SerializeField] private NodeDetector nodeDetector;
-        [SerializeField] private KinematicPhysicsHandler physicsHandler;
-
+        // --- Core Components ---
         public Rigidbody2D PlayerRigidbody { get; private set; }
+        public BoxCollider2D PlayerCollider { get; private set; }
         public IInputReader Input { get; private set; }
+        public float JumpBufferTimer { get; private set; }
+
+        // --- Accessors ---
         public ArmController LeftArm => leftArm;
         public ArmController RightArm => rightArm;
+        public PlayerColorController ColorController => colorController;
+        public PlayerUIController UIController => uiController;
         public LayerMask GroundLayerMask => groundLayerMask;
-        public bool IsGrounded => physicsHandler.IsGrounded;
-        public BoxCollider2D PlayerCollider => playerCollider;
 
+        // --- Sensor Data ---
+        public bool IsGrounded => physicsHandler.IsGrounded;
+        public bool IsTouchingLeftWall => physicsHandler.IsTouchingLeftWall;
+        public bool IsTouchingRightWall => physicsHandler.IsTouchingRightWall;
+        public bool IsTouchingCeiling => physicsHandler.IsTouchingCeiling;
+
+        // --- State Management ---
+        public IPlayerState CurrentState { get; private set; }
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
 
         public bool HasDashCharge { get; private set; }
+        public bool CanSlingshot { get; private set; } = true;
+        public bool CanWallClimb { get; private set; } = true;
+        public float CurrentWallStamina { get; private set; }
 
+        // --- Hit Stop & Frame Pause ---
+        private bool _isPaused;
+        private Vector2 _velocityCache;
+
+        // --- Events ---
         public static event System.Action<Vector3> OnHighImpact;
-
-        public IPlayerState CurrentState => currentState;
-
-        private BoxCollider2D playerCollider;
-        private IPlayerState currentState;
+        public static event System.Action OnStaminaWarning;
 
         private void Awake()
         {
             PlayerRigidbody = GetComponent<Rigidbody2D>();
-            playerCollider = GetComponent<BoxCollider2D>();
+            PlayerCollider = GetComponent<BoxCollider2D>();
             Input = GetComponent<IInputReader>();
+
             PlayerRigidbody.bodyType = RigidbodyType2D.Kinematic;
+            CurrentWallStamina = Stats.MaxWallStamina;
 
-            TransitionToState(new AirborneState(this, 10f, 0.5f, 25f, -30f, Vector2.zero));
+            TransitionToState(new AirborneState(this, Vector2.zero));
         }
 
-        private void Update()
-        {
-            if (_isPaused) return;
-            currentState?.UpdateState();
-        }
-
-        private void FixedUpdate()
-        {
-            if (_isPaused) return;
-            currentState?.FixedUpdateState();
-            Vector2 desiredVelocity = PlayerRigidbody.linearVelocity;
-            PlayerRigidbody.linearVelocity = physicsHandler.FilterVelocity(desiredVelocity);
-        }
-
-        public void TransitionToState(IPlayerState newState)
-        {
-            Debug.Log("Transitioning to state: " + newState.GetType().Name);
-            currentState?.ExitState();
-            currentState = newState;
-            currentState?.EnterState();
-        }
-
-        public bool TryCastGrapple(Vector2 direction, out Vector2 hitPoint)
-        {
-            return nodeDetector.TryFindBestNode(direction, PlayerRigidbody.position, out hitPoint);
-        }
-
-        public bool CheckNodeCoincidence()
-        {
-            if (!LeftAnchor.HasValue || !RightAnchor.HasValue) return false;
-
-            float nodeCoincidenceThreshold = 0.5f;
-            return Vector2.Distance(LeftAnchor.Value, RightAnchor.Value) < nodeCoincidenceThreshold;
-        }
-
-        public void NotifyImpact(Vector3 velocity)
-        {
-            OnHighImpact?.Invoke(velocity);
-            //HitStopEvents.RequestHitStop?.Invoke(0.15f);
-        }
-
-        public void ResetDash()
-        {
-            HasDashCharge = true;
-        }
-
-        public void UseDash()
-        {
-            HasDashCharge = false;
-        }
-
-        [Header("Wall Sensors")] [SerializeField]
-        private float wallCheckDistance = 0.6f;
-
-        [Header("Physics Config")] [SerializeField]
-        private float gravity = 25f;
-
-        public float Gravity => gravity;
-
-        public static event System.Action OnStaminaWarning;
-
-        public bool IsTouchingLeftWall() => physicsHandler.IsTouchingLeftWall;
-
-        public bool IsTouchingRightWall() => physicsHandler.IsTouchingRightWall;
-        public bool IsTouchingCeiling() => physicsHandler.IsTouchingCeiling;
-
-        public void TriggerStaminaWarning()
-        {
-            OnStaminaWarning?.Invoke();
-        }
-        
-        private bool _isPaused;
-        private Vector2 _velocityCache;
         private void OnEnable()
         {
             HitStopEvents.HitStopStarted += OnPauseStarted;
@@ -148,6 +100,99 @@ namespace New_Scripts.Player
             HitStopEvents.HitStopStarted -= OnPauseStarted;
             HitStopEvents.HitStopEnded -= OnPauseEnded;
         }
+
+        private void Update()
+        {
+            if (_isPaused) return;
+
+            if (Input.IsJumpPressed)
+                JumpBufferTimer = Stats.JumpBufferDuration;
+            else if (JumpBufferTimer > 0f)
+                JumpBufferTimer -= Time.deltaTime;
+
+            CurrentState?.UpdateState();
+        }
+
+        private void FixedUpdate()
+        {
+            if (_isPaused) return;
+            CurrentState?.FixedUpdateState();
+
+            Vector2 desiredVelocity = PlayerRigidbody.linearVelocity;
+            PlayerRigidbody.linearVelocity = physicsHandler.FilterVelocity(desiredVelocity);
+        }
+
+        public void TransitionToState(IPlayerState newState)
+        {
+            CurrentState?.ExitState();
+            CurrentState = newState;
+            CurrentState?.EnterState();
+        }
+
+        // --- Grapple & Core Actions ---
+
+        public bool TryCastGrapple(Vector2 direction, out Vector2 hitPoint)
+        {
+            return nodeDetector.TryFindBestNode(direction, PlayerRigidbody.position, out hitPoint);
+        }
+
+        public bool CheckNodeCoincidence()
+        {
+            if (!LeftAnchor.HasValue || !RightAnchor.HasValue) return false;
+            return Vector2.Distance(LeftAnchor.Value, RightAnchor.Value) < Stats.NodeCoincidenceThreshold;
+        }
+
+        public void NotifyImpact(Vector3 velocity)
+        {
+            OnHighImpact?.Invoke(velocity);
+            HitStopEvents.RequestHitStop?.Invoke(Stats.HitStopDuration);
+        }
+
+        // --- Ability & Resource Management ---
+
+        public void ResetDash() => HasDashCharge = true;
+
+        public void UseDash()
+        {
+            ColorController.SetDashExhausted();
+            HasDashCharge = false;
+        }
+
+        public void ResetSlingshot() => CanSlingshot = true;
+
+        public void UseSlingshot()
+        {
+            ColorController.SetSlingshotExhausted();
+            CanSlingshot = false;
+        }
+
+        public void ConsumeWallStamina(float amount)
+        {
+            CurrentWallStamina -= amount;
+
+            if (CurrentWallStamina <= 0f)
+            {
+                CurrentWallStamina = 0f;
+                CanWallClimb = false;
+            }
+
+            UIController.UpdateStamina(CurrentWallStamina, Stats.MaxWallStamina);
+        }
+
+        public void RefillWallStamina()
+        {
+            CurrentWallStamina = Stats.MaxWallStamina;
+            CanWallClimb = true;
+            UIController.RefillAndHideStaminaBar();
+        }
+
+        public void TriggerStaminaWarning()
+        {
+            OnStaminaWarning?.Invoke();
+        }
+
+        // --- IFramePausable Implementation ---
+
         public void OnPauseStarted()
         {
             _isPaused = true;
@@ -160,38 +205,10 @@ namespace New_Scripts.Player
             _isPaused = false;
             PlayerRigidbody.linearVelocity = _velocityCache;
         }
-        
-        public bool CanSlingshot { get; private set; } = true;
 
-        public void UseSlingshot()
+        public void ConsumeJumpBuffer()
         {
-            CanSlingshot = false;
-        }
-
-        public void ResetSlingshot()
-        {
-            CanSlingshot = true;
-        }
-        
-        public bool CanWallClimb { get; private set; } = true;
-        public float CurrentWallStamina { get; private set; }
-        public float MaxWallStamina { get; private set; } = 6f;
-        
-        public void ConsumeWallStamina(float amount)
-        {
-            CurrentWallStamina -= amount;
-        
-            if (CurrentWallStamina <= 0f)
-            {
-                CurrentWallStamina = 0f;
-                CanWallClimb = false;
-            }
-        }
-
-        public void RefillWallStamina()
-        {
-            CurrentWallStamina = MaxWallStamina;
-            CanWallClimb = true;
+            JumpBufferTimer = 0f;
         }
     }
 }

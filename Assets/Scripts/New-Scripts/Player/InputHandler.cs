@@ -23,6 +23,7 @@ namespace New_Scripts.Player
         public bool IsLeftTriggerHeld => leftTriggerAction.action.ReadValue<float>() >= triggerThreshold;
         public bool IsRightTriggerHeld => rightTriggerAction.action.ReadValue<float>() >= triggerThreshold;
         public bool IsJumpPressed => jumpAction.action.WasPressedThisFrame();
+        public bool IsJumpHeld => jumpAction.action.IsPressed();
         public bool IsDashPressed => dashAction.action.WasPressedThisFrame();
         public bool IsLeftBumperHeld => leftBumperAction.action.IsPressed();
         public bool IsRightBumperHeld => rightBumperAction.action.IsPressed();

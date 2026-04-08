@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de61224961244f29b83b181de1b81f08, type: 3}
+  m_Name: PlayerStats
+  m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Player.PlayerStatsSO
+  MoveSpeed: 10
+  JumpVelocity: 15
+  SwingGravity: 25
+  SwingInitialBoost: 5
+  SwingForceMultiplier: 10
+  MaxSwingSpeed: 17
+  SwingCollisionRadius: 0.5
+  MaxWallAngle: 45
+  Gravity: 25
+  TerminalVelocity: -30
+  AirControlMultiplier: 0.5
+  AirAcceleration: 20
+  AirDrag: 5
+  MomentumDecay: 2
+  DashSpeed: 35
+  DashDuration: 0.15
+  DashImpactMultiplier: 2
+  MaxSlingshotSpeed: 40
+  SlingshotLaunchDuration: 0.2
+  SlingshotGrappleLockout: 0.25
+  SlingshotAnticipationDuration: 0.15
+  SlingshotAnticipationSpeed: 15
+  ClimbSpeed: 8
+  WallJumpForce: {x: 15, y: 20}
+  MaxWallStamina: 6
+  StaminaWarningThreshold: 1.5
+  WallSnapRaycastDistance: 2
+  WallSnapSafetyOffset: 0.02
+  DualSpringStiffness: 25
+  DualSpringDamping: 5
+  DualSwingForceMultiplier: 15
+  DualSwingCollisionRadius: 0.4
+  HitStopDuration: 0.15
+  NodeCoincidenceThreshold: 0.5
+  FallGravityMultiplier: 1.5
+  JumpEndEarlyGravityMultiplier: 3
+  ApexThreshold: 3.5
+  ApexHangGravityMultiplier: 0.5
+  CoyoteTimeDuration: 0.1
+  JumpBufferDuration: 0.1

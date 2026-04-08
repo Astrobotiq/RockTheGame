@@ -1,23 +1,19 @@
-﻿/// <summary>
-/// Karakterin zemine temas ettiği durumu yönetir. Sol kolu yatay harekete kilitler ve sadece sağ kol ile kanca geçişine izin verir.
-/// </summary>
+﻿using UnityEngine;
 
-using New_Scripts.Player.States;
-using UnityEngine;
-
-namespace New_Scripts.Player
+namespace New_Scripts.Player.States
 {
+    /// <summary>
+    /// Karakterin zemine temas ettigi durumu yonetir. Yatay hareketleri, ziplamayi ve yetenek yenilenmelerini ScriptableObject verileriyle isler.
+    /// </summary>
     public class GroundedState : IPlayerState
     {
         private readonly PlayerController context;
-        private readonly float moveSpeed;
-        private readonly float jumpVelocity;
+        private readonly PlayerStatsSO stats;
 
-        public GroundedState(PlayerController context, float moveSpeed, float jumpVelocity)
+        public GroundedState(PlayerController context)
         {
             this.context = context;
-            this.moveSpeed = moveSpeed;
-            this.jumpVelocity = jumpVelocity;
+            this.stats = context.Stats;
         }
 
         public void EnterState()
@@ -31,6 +27,7 @@ namespace New_Scripts.Player
             context.ResetDash();
             context.ResetSlingshot();
             context.RefillWallStamina();
+            context.ColorController.ResetAllColors();
         }
 
         public void UpdateState()
@@ -42,25 +39,9 @@ namespace New_Scripts.Player
             CheckWallClimb();
         }
 
-        void CheckWallClimb()
-        {
-            if (context.CanWallClimb && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall())
-            {
-                context.TransitionToState(new WallClimbingState(context, -1, moveSpeed, context.Gravity));
-                return;
-            }
-
-            if (context.CanWallClimb && context.Input.IsRightBumperHeld && context.IsTouchingRightWall())
-            {
-                context.TransitionToState(new WallClimbingState(context, 1, moveSpeed, context.Gravity));
-                return;
-            }
-        }
-
-
         public void FixedUpdateState()
         {
-            float targetVelocityX = context.Input.LeftStick.x * moveSpeed;
+            float targetVelocityX = context.Input.LeftStick.x * stats.MoveSpeed;
             context.PlayerRigidbody.linearVelocity = new Vector2(targetVelocityX, context.PlayerRigidbody.linearVelocity.y);
         }
 
@@ -82,27 +63,49 @@ namespace New_Scripts.Player
                 if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint))
                 {
                     context.RightAnchor = hitPoint;
-                    context.TransitionToState(new SwingingState(context, ActiveArm.Right, 25f, 5f, moveSpeed));
+                    context.TransitionToState(new SwingingState(context, ActiveArm.Right));
                 }
             }
         }
 
         private void CheckAirborneTransitions()
         {
-            if (context.Input.IsJumpPressed)
+            // Sadece o an basildiysa degil, hafizada (buffer) ziplama istegi varsa da zipla
+            if (context.JumpBufferTimer > 0f)
             {
-                Vector2 jumpVelocityVector = new Vector2(context.PlayerRigidbody.linearVelocity.x, jumpVelocity);
-                context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, jumpVelocityVector));
+                context.ConsumeJumpBuffer(); // Hakki tuket
+                Vector2 jumpVelocityVector = new Vector2(context.PlayerRigidbody.linearVelocity.x, stats.JumpVelocity);
+                context.TransitionToState(new AirborneState(context, jumpVelocityVector,true));
             }
             else if (!context.IsGrounded)
             {
-                context.TransitionToState(new AirborneState(context, moveSpeed, 0.5f, 25f, -30f, context.PlayerRigidbody.linearVelocity));
+                // Ucurumdan dustu! Airborne durumuna Coyote Time gondererek gecis yap
+                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity,true, 0f, 0f, stats.CoyoteTimeDuration));
             }
         }
-        void CheckDashTransition()
+
+        private void CheckDashTransition()
         {
             if (context.Input.IsDashPressed && context.HasDashCharge)
-                context.TransitionToState(new DashState(context, context.Input.LeftStick, moveSpeed));
+            {
+                context.TransitionToState(new DashState(context, context.Input.LeftStick));
+            }
+        }
+
+        private void CheckWallClimb()
+        {
+            if (!context.CanWallClimb) return;
+
+            if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall)
+            {
+                context.TransitionToState(new WallClimbingState(context, -1));
+                return;
+            }
+
+            if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall)
+            {
+                context.TransitionToState(new WallClimbingState(context, 1));
+            }
         }
     }
 }

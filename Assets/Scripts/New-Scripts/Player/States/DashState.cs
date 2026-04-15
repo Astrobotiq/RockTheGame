@@ -35,7 +35,8 @@ namespace New_Scripts.Player.States
             
             if (dashTimer >= stats.DashDuration)
             {
-                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity));
+                Vector2 exitVelocity = context.PlayerRigidbody.linearVelocity * stats.DashEndMomentumMultiplier;
+                context.TransitionToState(new AirborneState(context, exitVelocity));
             }
         }
 

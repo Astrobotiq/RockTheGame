@@ -28,6 +28,7 @@ namespace New_Scripts.Player.States
             context.ResetSlingshot();
             context.RefillWallStamina();
             context.ColorController.ResetAllColors();
+            context.ResetWallSlideTime();
         }
 
         public void UpdateState()

@@ -42,12 +42,13 @@ namespace New_Scripts.Player.States
             ropeLength = Vector2.Distance(context.PlayerRigidbody.position, anchorPoint);
             currentVelocity = context.PlayerRigidbody.linearVelocity;
             
-            if (currentVelocity.y <= 0f && stats.SwingInitialBoost > 0f)
-            {
-                currentVelocity.y += stats.SwingInitialBoost;
-            }
+            // if (currentVelocity.y <= 0f && stats.SwingInitialBoost > 0f)
+            // {
+            //     currentVelocity.y += stats.SwingInitialBoost;
+            // }
             
             context.ResetDash();
+            context.ColorController.ResetBodyColor();
         }
 
         public void UpdateState()
@@ -96,7 +97,7 @@ namespace New_Scripts.Player.States
                     if (swingingArm == ActiveArm.Left) context.RightAnchor = hitPoint;
                     else context.LeftAnchor = hitPoint;
 
-                    if (context.CheckNodeCoincidence())
+                    if (context.CanSlingshot && context.CheckNodeCoincidence())
                     {
                         if (context.CanSlingshot)
                         {

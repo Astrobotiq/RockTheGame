@@ -15,8 +15,9 @@ namespace New_Scripts.Player.States
         private float wallClimbLockoutTimer;
         private float coyoteTimer;
         private bool isJumping;
+        private float horizontalInputLockoutTimer;
 
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f, float coyoteDuration = 0f)
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f, float coyoteDuration = 0f, float horizontalInputLockout = 0f)
         {
             this.context = context;
             this.stats = context.Stats;
@@ -27,6 +28,7 @@ namespace New_Scripts.Player.States
             grappleLockoutTimer = grappleLockoutDuration;
             wallClimbLockoutTimer = wallClimbLockoutDuration;
             coyoteTimer = coyoteDuration;
+            this.horizontalInputLockoutTimer = horizontalInputLockout;
         }
 
         public void EnterState()
@@ -51,6 +53,9 @@ namespace New_Scripts.Player.States
                     context.PlayerRigidbody.linearVelocity = currentVelocity;
                 }
             }
+            
+            if (horizontalInputLockoutTimer > 0f)
+                horizontalInputLockoutTimer -= Time.deltaTime;
 
             if (grappleLockoutTimer > 0f)
                 grappleLockoutTimer -= Time.deltaTime;
@@ -60,7 +65,7 @@ namespace New_Scripts.Player.States
             if (wallClimbLockoutTimer > 0f)
                 wallClimbLockoutTimer -= Time.deltaTime;
             else
-                CheckWallClimb();
+                CheckWallInteractions();
 
             CheckDashTransition();
         }
@@ -151,7 +156,7 @@ namespace New_Scripts.Player.States
         {
             float currentGravity = stats.Gravity;
 
-            if (currentVelocity.y < 0f)
+            if (isJumping && currentVelocity.y < 0f)
             {
                 currentGravity *= stats.FallGravityMultiplier;
             }
@@ -159,7 +164,7 @@ namespace New_Scripts.Player.States
             {
                 currentGravity *= stats.JumpEndEarlyGravityMultiplier;
             }
-            else if (Mathf.Abs(currentVelocity.y) < stats.ApexThreshold)
+            else if (isJumping && Mathf.Abs(currentVelocity.y) < stats.ApexThreshold)
             {
                 currentGravity *= stats.ApexHangGravityMultiplier;
             }
@@ -170,19 +175,25 @@ namespace New_Scripts.Player.States
 
         private void ApplyAirControl()
         {
-            Vector2 averageInput = (context.Input.LeftStick + context.Input.RightStick) / 2f;
+            if (horizontalInputLockoutTimer > 0f) return;
+            //Vector2 averageInput = (context.Input.LeftStick + context.Input.RightStick) / 2f;
+            Vector2 averageInput = (context.Input.LeftStick) / 2f;
             float targetVelocityX = averageInput.x * stats.MoveSpeed * stats.AirControlMultiplier;
 
-            if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) && Mathf.Approximately(Mathf.Sign(currentVelocity.x), Mathf.Sign(targetVelocityX)))
+            if (Mathf.Abs(averageInput.x) < 0.05f)
             {
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.MomentumDecay * Time.fixedDeltaTime);
-            }
-            else if (Mathf.Abs(averageInput.x) < 0.05f)
-            {
+                Debug.Log("Applying air drag");
                 currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0f, stats.AirDrag * Time.fixedDeltaTime);
+            }
+            else if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) && 
+                     Mathf.Sign(currentVelocity.x) == Mathf.Sign(targetVelocityX))
+            {
+                Debug.Log("Applying momentum decay");
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.MomentumDecay * Time.fixedDeltaTime);
             }
             else
             {
+                Debug.Log("Applying air acceleration");
                 currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.AirAcceleration * Time.fixedDeltaTime);
             }
         }
@@ -195,17 +206,35 @@ namespace New_Scripts.Player.States
             }
         }
 
-        private void CheckWallClimb()
+        private void CheckWallInteractions()
         {
-            if (context.CanWallClimb && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall)
+            if (context.CanWallClimb)
             {
-                context.TransitionToState(new WallClimbingState(context, -1));
-                return;
-            }
+                if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall)
+                {
+                    context.TransitionToState(new WallClimbingState(context, -1));
+                    return;
+                }
 
-            if (context.CanWallClimb && context.Input.IsRightBumperHeld && context.IsTouchingRightWall)
+                if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall)
+                {
+                    context.TransitionToState(new WallClimbingState(context, 1));
+                    return;
+                }
+            }
+            
+            if (currentVelocity.y < 0f && context.CurrentWallSlideTime > 0f)
             {
-                context.TransitionToState(new WallClimbingState(context, 1));
+                if (context.IsTouchingLeftWall && context.Input.LeftStick.x < -0.1f)
+                {
+                    context.TransitionToState(new WallSlidingState(context, -1));
+                    return;
+                }
+                else if (context.IsTouchingRightWall && context.Input.LeftStick.x > 0.1f)
+                {
+                    context.TransitionToState(new WallSlidingState(context, 1));
+                    return;
+                }
             }
         }
     }

@@ -150,7 +150,10 @@ namespace New_Scripts.Player
 
         // --- Ability & Resource Management ---
 
-        public void ResetDash() => HasDashCharge = true;
+        public void ResetDash()
+        {
+            HasDashCharge = true;
+        }
 
         public void UseDash()
         {
@@ -210,5 +213,44 @@ namespace New_Scripts.Player
         {
             JumpBufferTimer = 0f;
         }
+
+        public float CurrentWallSlideTime { get; private set; } = 2f;
+
+        public void ResetWallSlideTime()
+        {
+            CurrentWallSlideTime = Stats.MaxWallSlideTime;
+        }
+
+        public void ConsumeWallSlideTime(float amount)
+        {
+            CurrentWallSlideTime -= amount;
+        }
+        
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (!Application.isPlaying || PlayerRigidbody == null) return;
+
+            Vector2 position = transform.position;
+            Vector2 velocity = PlayerRigidbody.linearVelocity;
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(position, position + (velocity * 0.1f));
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(position + (velocity * 0.1f), 0.05f);
+        
+            string stateName = CurrentState != null ? CurrentState.GetType().Name : "No State";
+            string debugText = $"State: {stateName}\nVel: {velocity.x:F1}, {velocity.y:F1}";
+
+            GUIStyle style = new GUIStyle();
+            style.normal.textColor = Color.white;
+            style.alignment = TextAnchor.LowerCenter;
+            style.fontSize = 12;
+            style.fontStyle = FontStyle.Bold;
+
+            UnityEditor.Handles.Label(position + Vector2.up * 1.5f, debugText, style);
+        }
+#endif
     }
 }

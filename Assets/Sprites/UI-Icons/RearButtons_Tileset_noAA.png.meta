@@ -1,0 +1,1469 @@
+fileFormatVersion: 2
+guid: 45ad79f1ed71ffc49b679a3169db0559
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1462192122856254986
+    second: RearButtons_Tileset_noAA_0
+  - first:
+      213: -4664762685118384910
+    second: RearButtons_Tileset_noAA_1
+  - first:
+      213: -4592696544341619701
+    second: RearButtons_Tileset_noAA_2
+  - first:
+      213: 5847387162139740519
+    second: RearButtons_Tileset_noAA_3
+  - first:
+      213: -5853615017177960538
+    second: RearButtons_Tileset_noAA_4
+  - first:
+      213: 7628417772691777435
+    second: RearButtons_Tileset_noAA_5
+  - first:
+      213: 7111595397084792413
+    second: RearButtons_Tileset_noAA_6
+  - first:
+      213: 2537698571462838720
+    second: RearButtons_Tileset_noAA_7
+  - first:
+      213: -5524792224897522066
+    second: RearButtons_Tileset_noAA_8
+  - first:
+      213: 5203362666343695403
+    second: RearButtons_Tileset_noAA_9
+  - first:
+      213: 3600392006195244171
+    second: RearButtons_Tileset_noAA_10
+  - first:
+      213: -4413933870514303858
+    second: RearButtons_Tileset_noAA_11
+  - first:
+      213: 60859977698704206
+    second: RearButtons_Tileset_noAA_12
+  - first:
+      213: -3517730051702905240
+    second: RearButtons_Tileset_noAA_13
+  - first:
+      213: -1822418910014619109
+    second: RearButtons_Tileset_noAA_14
+  - first:
+      213: -5011619049367053417
+    second: RearButtons_Tileset_noAA_15
+  - first:
+      213: 6781746422373741781
+    second: RearButtons_Tileset_noAA_16
+  - first:
+      213: 4641288753575342952
+    second: RearButtons_Tileset_noAA_17
+  - first:
+      213: 2393022745596684173
+    second: RearButtons_Tileset_noAA_18
+  - first:
+      213: -5658587198208751134
+    second: RearButtons_Tileset_noAA_19
+  - first:
+      213: 8741711316880388247
+    second: RearButtons_Tileset_noAA_20
+  - first:
+      213: -3206135934015447295
+    second: RearButtons_Tileset_noAA_21
+  - first:
+      213: -1441472202958308697
+    second: RearButtons_Tileset_noAA_22
+  - first:
+      213: 8437731570223830408
+    second: RearButtons_Tileset_noAA_23
+  - first:
+      213: 2473195907614231252
+    second: RearButtons_Tileset_noAA_24
+  - first:
+      213: -1976034433142530183
+    second: RearButtons_Tileset_noAA_25
+  - first:
+      213: -4370638922187125739
+    second: RearButtons_Tileset_noAA_26
+  - first:
+      213: 7396889813841384310
+    second: RearButtons_Tileset_noAA_27
+  - first:
+      213: 1817017672487356866
+    second: RearButtons_Tileset_noAA_28
+  - first:
+      213: -8670106025233941565
+    second: RearButtons_Tileset_noAA_29
+  - first:
+      213: 6457211111575892003
+    second: RearButtons_Tileset_noAA_30
+  - first:
+      213: -7571510480842746556
+    second: RearButtons_Tileset_noAA_31
+  - first:
+      213: -2153049301339890934
+    second: RearButtons_Tileset_noAA_32
+  - first:
+      213: 5029024453190771751
+    second: RearButtons_Tileset_noAA_33
+  - first:
+      213: -697612184639418739
+    second: RearButtons_Tileset_noAA_34
+  - first:
+      213: 8702352689368919248
+    second: RearButtons_Tileset_noAA_35
+  - first:
+      213: -6285039108802035290
+    second: RearButtons_Tileset_noAA_36
+  - first:
+      213: -7359618492673049244
+    second: RearButtons_Tileset_noAA_37
+  - first:
+      213: 6164590109519743327
+    second: RearButtons_Tileset_noAA_38
+  - first:
+      213: 4834967992542261110
+    second: RearButtons_Tileset_noAA_39
+  - first:
+      213: 1269298231748803887
+    second: RearButtons_Tileset_noAA_40
+  - first:
+      213: 6126412787114650090
+    second: RearButtons_Tileset_noAA_41
+  - first:
+      213: -8815811355150260763
+    second: RearButtons_Tileset_noAA_42
+  - first:
+      213: 7831137493451328319
+    second: RearButtons_Tileset_noAA_43
+  - first:
+      213: -2848780493346651691
+    second: RearButtons_Tileset_noAA_44
+  - first:
+      213: -5302944835666975068
+    second: RearButtons_Tileset_noAA_45
+  - first:
+      213: 7650869273685565580
+    second: RearButtons_Tileset_noAA_46
+  - first:
+      213: -4900634564112314990
+    second: RearButtons_Tileset_noAA_47
+  - first:
+      213: 6543189247011003070
+    second: RearButtons_Tileset_noAA_48
+  - first:
+      213: -4088093680794172299
+    second: RearButtons_Tileset_noAA_49
+  - first:
+      213: -8435273426755348085
+    second: RearButtons_Tileset_noAA_50
+  - first:
+      213: 3630056033493692759
+    second: RearButtons_Tileset_noAA_51
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 16
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 79
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f157c3e20045bbe0800000000000000
+      internalID: -1462192122856254986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_1
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 79
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f475088d0f634fb0800000000000000
+      internalID: -4664762685118384910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_2
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 79
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0c8a5973d67340c0800000000000000
+      internalID: -4592696544341619701
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_3
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 79
+        width: 32
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 769c487a4a7162150800000000000000
+      internalID: 5847387162139740519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_4
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 79
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6af2739d728c3cea0800000000000000
+      internalID: -5853615017177960538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_5
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 79
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b97e1931c859dd960800000000000000
+      internalID: 7628417772691777435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_6
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 79
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d56ca85b55671b260800000000000000
+      internalID: 7111595397084792413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_7
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 79
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c90f0bc767b73320800000000000000
+      internalID: 2537698571462838720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_8
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 79
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e66a4293ebef353b0800000000000000
+      internalID: -5524792224897522066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_9
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 79
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2402f4c6ce063840800000000000000
+      internalID: 5203362666343695403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_10
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 63
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8c6c65347927f130800000000000000
+      internalID: 3600392006195244171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_11
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 47
+        width: 33
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8c0ee1e78e8eb2c0800000000000000
+      internalID: -4413933870514303858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_12
+      rect:
+        serializedVersion: 2
+        x: 223
+        y: 63
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4bf4c7c3d738d000800000000000000
+      internalID: 60859977698704206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_13
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 81
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 866288cd7238e2fc0800000000000000
+      internalID: -3517730051702905240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 65
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b12cf9c28a775b6e0800000000000000
+      internalID: -1822418910014619109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_15
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 15
+        width: 17
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79b55ecf607237ab0800000000000000
+      internalID: -5011619049367053417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_16
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 15
+        width: 34
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d4fc5e907a9d1e50800000000000000
+      internalID: 6781746422373741781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_17
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 65
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 863bfd0e78b296040800000000000000
+      internalID: 4641288753575342952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_18
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 65
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8768b22289b53120800000000000000
+      internalID: 2393022745596684173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_19
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 15
+        width: 34
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e9c1387ce8a871b0800000000000000
+      internalID: -5658587198208751134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_20
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 65
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 790faab802cc05970800000000000000
+      internalID: 8741711316880388247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_21
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 65
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10fd467da548183d0800000000000000
+      internalID: -3206135934015447295
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_22
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 64
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7aaf11d2bacdefbe0800000000000000
+      internalID: -1441472202958308697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_23
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 64
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8855a497828d81570800000000000000
+      internalID: 8437731570223830408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_24
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 64
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4dacb4d039e825220800000000000000
+      internalID: 2473195907614231252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_25
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 64
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97f599c0727b394e0800000000000000
+      internalID: -1976034433142530183
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_26
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 64
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51c4a819e0f5853c0800000000000000
+      internalID: -4370638922187125739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_27
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 64
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67398b4681807a660800000000000000
+      internalID: 7396889813841384310
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_28
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 50
+        width: 130
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c9473732f7573910800000000000000
+      internalID: 1817017672487356866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_29
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 15
+        width: 33
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cbf4f891889da780800000000000000
+      internalID: -8670106025233941565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_30
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 34
+        width: 130
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 320bf215b4f9c9950800000000000000
+      internalID: 6457211111575892003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_31
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 445983055579ce690800000000000000
+      internalID: -7571510480842746556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_32
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0b9bb95115de12e0800000000000000
+      internalID: -2153049301339890934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_33
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7246033681faac540800000000000000
+      internalID: 5029024453190771751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_34
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8e45970a659156f0800000000000000
+      internalID: -697612184639418739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_35
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 15
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dceff7f9a7f4c870800000000000000
+      internalID: 8702352689368919248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_36
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a1ca68ea3e07c8a0800000000000000
+      internalID: -6285039108802035290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_37
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46db3dd49f16dd990800000000000000
+      internalID: -7359618492673049244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_38
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f598fcf0b060d8550800000000000000
+      internalID: 6164590109519743327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_39
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67f6ddfb5c1491340800000000000000
+      internalID: 4834967992542261110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_40
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2d3b6944047d9110800000000000000
+      internalID: 1269298231748803887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_41
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae9216388f3650550800000000000000
+      internalID: 6126412787114650090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_42
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 2
+        width: 16
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e5e969d742f7a580800000000000000
+      internalID: -8815811355150260763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_43
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3bc8642f0acdac60800000000000000
+      internalID: 7831137493451328319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_44
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d1c20b1c391778d0800000000000000
+      internalID: -2848780493346651691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_45
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a6e396a4c72866b0800000000000000
+      internalID: -5302944835666975068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_46
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c80aaf081195d2a60800000000000000
+      internalID: 7650869273685565580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_47
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29d851024d27dfbb0800000000000000
+      internalID: -4900634564112314990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_48
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eba1f3ee3f31eca50800000000000000
+      internalID: 6543189247011003070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_49
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5748ebbf47c2447c0800000000000000
+      internalID: -4088093680794172299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_50
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8994f6a283efea80800000000000000
+      internalID: -8435273426755348085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RearButtons_Tileset_noAA_51
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 2
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 751b727cabc806230800000000000000
+      internalID: 3630056033493692759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      RearButtons_Tileset_noAA_0: -1462192122856254986
+      RearButtons_Tileset_noAA_1: -4664762685118384910
+      RearButtons_Tileset_noAA_10: 3600392006195244171
+      RearButtons_Tileset_noAA_11: -4413933870514303858
+      RearButtons_Tileset_noAA_12: 60859977698704206
+      RearButtons_Tileset_noAA_13: -3517730051702905240
+      RearButtons_Tileset_noAA_14: -1822418910014619109
+      RearButtons_Tileset_noAA_15: -5011619049367053417
+      RearButtons_Tileset_noAA_16: 6781746422373741781
+      RearButtons_Tileset_noAA_17: 4641288753575342952
+      RearButtons_Tileset_noAA_18: 2393022745596684173
+      RearButtons_Tileset_noAA_19: -5658587198208751134
+      RearButtons_Tileset_noAA_2: -4592696544341619701
+      RearButtons_Tileset_noAA_20: 8741711316880388247
+      RearButtons_Tileset_noAA_21: -3206135934015447295
+      RearButtons_Tileset_noAA_22: -1441472202958308697
+      RearButtons_Tileset_noAA_23: 8437731570223830408
+      RearButtons_Tileset_noAA_24: 2473195907614231252
+      RearButtons_Tileset_noAA_25: -1976034433142530183
+      RearButtons_Tileset_noAA_26: -4370638922187125739
+      RearButtons_Tileset_noAA_27: 7396889813841384310
+      RearButtons_Tileset_noAA_28: 1817017672487356866
+      RearButtons_Tileset_noAA_29: -8670106025233941565
+      RearButtons_Tileset_noAA_3: 5847387162139740519
+      RearButtons_Tileset_noAA_30: 6457211111575892003
+      RearButtons_Tileset_noAA_31: -7571510480842746556
+      RearButtons_Tileset_noAA_32: -2153049301339890934
+      RearButtons_Tileset_noAA_33: 5029024453190771751
+      RearButtons_Tileset_noAA_34: -697612184639418739
+      RearButtons_Tileset_noAA_35: 8702352689368919248
+      RearButtons_Tileset_noAA_36: -6285039108802035290
+      RearButtons_Tileset_noAA_37: -7359618492673049244
+      RearButtons_Tileset_noAA_38: 6164590109519743327
+      RearButtons_Tileset_noAA_39: 4834967992542261110
+      RearButtons_Tileset_noAA_4: -5853615017177960538
+      RearButtons_Tileset_noAA_40: 1269298231748803887
+      RearButtons_Tileset_noAA_41: 6126412787114650090
+      RearButtons_Tileset_noAA_42: -8815811355150260763
+      RearButtons_Tileset_noAA_43: 7831137493451328319
+      RearButtons_Tileset_noAA_44: -2848780493346651691
+      RearButtons_Tileset_noAA_45: -5302944835666975068
+      RearButtons_Tileset_noAA_46: 7650869273685565580
+      RearButtons_Tileset_noAA_47: -4900634564112314990
+      RearButtons_Tileset_noAA_48: 6543189247011003070
+      RearButtons_Tileset_noAA_49: -4088093680794172299
+      RearButtons_Tileset_noAA_5: 7628417772691777435
+      RearButtons_Tileset_noAA_50: -8435273426755348085
+      RearButtons_Tileset_noAA_51: 3630056033493692759
+      RearButtons_Tileset_noAA_6: 7111595397084792413
+      RearButtons_Tileset_noAA_7: 2537698571462838720
+      RearButtons_Tileset_noAA_8: -5524792224897522066
+      RearButtons_Tileset_noAA_9: 5203362666343695403
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

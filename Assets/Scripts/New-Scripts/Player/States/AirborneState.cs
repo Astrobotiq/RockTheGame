@@ -17,14 +17,16 @@ namespace New_Scripts.Player.States
         private bool isJumping;
         private float horizontalInputLockoutTimer;
 
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f, float coyoteDuration = 0f, float horizontalInputLockout = 0f)
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
+            float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f, float coyoteDuration = 0f,
+            float horizontalInputLockout = 0f)
         {
             this.context = context;
             this.stats = context.Stats;
-            
+
             currentVelocity = inheritedVelocity;
             this.isJumping = isJumping;
-            
+
             grappleLockoutTimer = grappleLockoutDuration;
             wallClimbLockoutTimer = wallClimbLockoutDuration;
             coyoteTimer = coyoteDuration;
@@ -53,7 +55,7 @@ namespace New_Scripts.Player.States
                     context.PlayerRigidbody.linearVelocity = currentVelocity;
                 }
             }
-            
+
             if (horizontalInputLockoutTimer > 0f)
                 horizontalInputLockoutTimer -= Time.deltaTime;
 
@@ -185,16 +187,18 @@ namespace New_Scripts.Player.States
                 Debug.Log("Applying air drag");
                 currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0f, stats.AirDrag * Time.fixedDeltaTime);
             }
-            else if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) && 
+            else if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) &&
                      Mathf.Sign(currentVelocity.x) == Mathf.Sign(targetVelocityX))
             {
                 Debug.Log("Applying momentum decay");
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.MomentumDecay * Time.fixedDeltaTime);
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
+                    stats.MomentumDecay * Time.fixedDeltaTime);
             }
             else
             {
                 Debug.Log("Applying air acceleration");
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX, stats.AirAcceleration * Time.fixedDeltaTime);
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
+                    stats.AirAcceleration * Time.fixedDeltaTime);
             }
         }
 
@@ -222,7 +226,7 @@ namespace New_Scripts.Player.States
                     return;
                 }
             }
-            
+
             if (currentVelocity.y < 0f && context.CurrentWallSlideTime > 0f)
             {
                 if (context.IsTouchingLeftWall && context.Input.LeftStick.x < -0.1f)

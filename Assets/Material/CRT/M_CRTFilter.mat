@@ -25,10 +25,36 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _ApertureStrength: 0
+    - _Bleed: 0
+    - _Blue: 1.136
+    - _BlueOffset: 0.05
+    - _Blur: 0
+    - _Brightness: 1
+    - _Contrast: 1.1
+    - _CrtTime: 24.006302
     - _Curvature: 0.11
+    - _Gamma: 0.9
+    - _Green: 0.992
+    - _GreenOffset: 0.05
     - _Intensity: 1
+    - _NoiseAlpha: 0
+    - _NoiseSize: 2
+    - _NoiseSpeed: 10
+    - _Red: 1.053
+    - _RedOffset: 0.05
     - _RgbSplit: 0.0016
+    - _ScanlinesStrength: 0.1
+    - _ScreenBend: 10
+    - _ScreenOverscan: 0
+    - _Shadowlines: 0
+    - _ShadowlinesAlpha: 0.3
+    - _ShadowlinesSpeed: 1
+    - _Smidge: 0
     - _Vignette: 0.23
+    - _VignetteRound: 1
+    - _VignetteSize: 1.585
+    - _VignetteSmooth: 0.4
     m_Colors:
     - _PixelResolution: {r: 480, g: 360, b: 0, a: 0}
   m_BuildTextureStacks: []

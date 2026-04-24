@@ -13,21 +13,87 @@ MonoBehaviour:
   m_Name: CrtFilterVolume
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.SRT.CrtFilterVolume
   active: 1
-  intensity:
+  screenBend:
     m_OverrideState: 1
-    m_Value: 1
-  curvature:
+    m_Value: 10
+  screenOverscan:
     m_OverrideState: 1
-    m_Value: 0.11
-  vignette:
-    m_OverrideState: 1
-    m_Value: 0.23
-  rgbSplit:
-    m_OverrideState: 1
-    m_Value: 0.0016
+    m_Value: 0
   pixelResolution:
     m_OverrideState: 1
     m_Value: {x: 480, y: 360}
+  vignetteSize:
+    m_OverrideState: 1
+    m_Value: 1.585
+  vignetteSmooth:
+    m_OverrideState: 0
+    m_Value: 0.4
+  vignetteRound:
+    m_OverrideState: 0
+    m_Value: 1
+  blur:
+    m_OverrideState: 0
+    m_Value: 0
+  bleed:
+    m_OverrideState: 0
+    m_Value: 0
+  smidge:
+    m_OverrideState: 0
+    m_Value: 0
+  scanlinesStrength:
+    m_OverrideState: 1
+    m_Value: 0.1
+  apertureStrength:
+    m_OverrideState: 0
+    m_Value: 0
+  shadowlines:
+    m_OverrideState: 0
+    m_Value: 0.341
+  shadowlinesSpeed:
+    m_OverrideState: 0
+    m_Value: 1.64
+  shadowlinesAlpha:
+    m_OverrideState: 0
+    m_Value: 0.3
+  noiseSize:
+    m_OverrideState: 0
+    m_Value: 2.58
+  noiseSpeed:
+    m_OverrideState: 0
+    m_Value: 0.9
+  noiseAlpha:
+    m_OverrideState: 0
+    m_Value: 0.004
+  brightness:
+    m_OverrideState: 1
+    m_Value: 1
+  contrast:
+    m_OverrideState: 1
+    m_Value: 1.1
+  gamma:
+    m_OverrideState: 1
+    m_Value: 0.9
+  red:
+    m_OverrideState: 1
+    m_Value: 1.053
+  green:
+    m_OverrideState: 1
+    m_Value: 0.992
+  blue:
+    m_OverrideState: 1
+    m_Value: 1.136
+  redOffset:
+    m_OverrideState: 1
+    m_Value: 0.05
+  greenOffset:
+    m_OverrideState: 1
+    m_Value: 0.05
+  blueOffset:
+    m_OverrideState: 1
+    m_Value: 0.05
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

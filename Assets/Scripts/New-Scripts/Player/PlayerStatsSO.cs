@@ -10,7 +10,10 @@ namespace New_Scripts.Player
     {
         [Header("Grounded Movement")]
         public float MoveSpeed = 10f; 
-        public float JumpVelocity = 15f;
+        
+        [Header("Jump Design Parameters")]
+        public float JumpHeight = 4f;
+        public float TimeToApex = 0.4f;
 
         [Header("Swinging")]
         public float SwingGravity = 25f;
@@ -21,7 +24,6 @@ namespace New_Scripts.Player
         public float MaxWallAngle = 45f;
         
         [Header("Airborne & Gravity")]
-        public float Gravity = 25f;
         public float TerminalVelocity = -30f;
         public float AirControlMultiplier = 0.5f;
         public float AirAcceleration = 20f;
@@ -29,10 +31,13 @@ namespace New_Scripts.Player
         public float MomentumDecay = 2f;
 
         [Header("Dash")]
-        public float DashSpeed = 35f;
+        [Tooltip("Dash yeteneğinin kat edeceği toplam yatay/dikey mesafe (Birim).")]
+        public float DashDistance = 5f;
+        [Tooltip("Dash eyleminin başlangıcından bitişine kadar geçen süre (Saniye).")]
         public float DashDuration = 0.15f;
         public float DashImpactMultiplier = 2f;
         public float DashEndMomentumMultiplier = 0.15f;
+        public float DashSpeed => DashDistance / DashDuration;
 
         [Header("Slingshot")]
         public float MaxSlingshotSpeed = 40f;
@@ -77,5 +82,8 @@ namespace New_Scripts.Player
         [Header("Input Tolerances (Game Feel)")]
         public float CoyoteTimeDuration = 0.1f;
         public float JumpBufferDuration = 0.1f;
+        
+        public float Gravity => -(2f * JumpHeight) / (TimeToApex * TimeToApex);
+        public float JumpVelocity => Mathf.Abs(Gravity) * TimeToApex;
     }
 }

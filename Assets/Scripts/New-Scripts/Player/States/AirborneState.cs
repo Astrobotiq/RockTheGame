@@ -3,243 +3,191 @@
 namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Karakterin havadaki durumunu, momentumunu, yercekimi limitlerini ve yetenek gecislerini ScriptableObject verileriyle yoneten durum sinifi.
+    /// Tasarimci dostu metriklerle (Yukseklik ve Sure) hesaplanan dikey fiziksel devinimi ve 
+    /// Kyle Pittman usulu parcali parabol yercekimi mantigini yoneten durum sinifi.
     /// </summary>
     public class AirborneState : IPlayerState
     {
-        private readonly PlayerController context;
-        private readonly PlayerStatsSO stats;
+        private readonly PlayerController _context;
+        private readonly PlayerStatsSO _stats;
 
-        private Vector2 currentVelocity;
-        private float grappleLockoutTimer;
-        private float wallClimbLockoutTimer;
-        private float coyoteTimer;
-        private bool isJumping;
-        private float horizontalInputLockoutTimer;
+        private Vector2 _currentVelocity;
+        private float _grappleLockoutTimer;
+        private float _wallClimbLockoutTimer;
+        private float _coyoteTimer;
+        private float _horizontalInputLockoutTimer;
+        private bool _isJumping;
 
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
-            float grappleLockoutDuration = 0f, float wallClimbLockoutDuration = 0f, float coyoteDuration = 0f,
-            float horizontalInputLockout = 0f)
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f)
         {
-            this.context = context;
-            this.stats = context.Stats;
-
-            currentVelocity = inheritedVelocity;
-            this.isJumping = isJumping;
-
-            grappleLockoutTimer = grappleLockoutDuration;
-            wallClimbLockoutTimer = wallClimbLockoutDuration;
-            coyoteTimer = coyoteDuration;
-            this.horizontalInputLockoutTimer = horizontalInputLockout;
+            _context = context;
+            _stats = context.Stats;
+            _currentVelocity = inheritedVelocity;
+            _isJumping = isJumping;
+            _grappleLockoutTimer = grappleLockout;
+            _wallClimbLockoutTimer = wallClimbLockout;
+            _coyoteTimer = coyote;
+            _horizontalInputLockoutTimer = horizontalLockout;
         }
 
         public void EnterState()
         {
-            context.PlayerRigidbody.linearVelocity = currentVelocity;
+            _context.PlayerRigidbody.linearVelocity = _currentVelocity;
         }
 
         public void UpdateState()
         {
+            DecrementTimers();
             HandleArmRouting();
-
-            if (coyoteTimer > 0f)
-            {
-                coyoteTimer -= Time.deltaTime;
-
-                if (context.JumpBufferTimer > 0f)
-                {
-                    context.ConsumeJumpBuffer();
-                    coyoteTimer = 0f;
-
-                    currentVelocity.y = stats.JumpVelocity;
-                    context.PlayerRigidbody.linearVelocity = currentVelocity;
-                }
-            }
-
-            if (horizontalInputLockoutTimer > 0f)
-                horizontalInputLockoutTimer -= Time.deltaTime;
-
-            if (grappleLockoutTimer > 0f)
-                grappleLockoutTimer -= Time.deltaTime;
-            else
-                CheckGrappleInputs();
-
-            if (wallClimbLockoutTimer > 0f)
-                wallClimbLockoutTimer -= Time.deltaTime;
-            else
-                CheckWallInteractions();
-
-            CheckDashTransition();
+            HandleCoyoteJump();
+            HandleTransitions();
         }
 
         public void FixedUpdateState()
         {
-            if (context.IsGrounded && currentVelocity.y <= 0f)
+            if (_context.IsGrounded && _currentVelocity.y <= 0.01f)
             {
-                context.TransitionToState(new GroundedState(context));
+                _context.TransitionToState(new GroundedState(_context));
                 return;
             }
 
-            ApplyGravity();
-            ApplyAirControl();
-            HandleCeilingCollision();
+            ApplyCustomGravity();
+            ApplyAirMovement();
+            HandleVerticalObstructions();
 
-            context.PlayerRigidbody.linearVelocity = currentVelocity;
+            _context.PlayerRigidbody.linearVelocity = _currentVelocity;
         }
 
-        public void ExitState()
+        public void ExitState() { }
+
+        private void DecrementTimers()
         {
+            float dt = Time.deltaTime;
+            if (_coyoteTimer > 0f) _coyoteTimer -= dt;
+            if (_horizontalInputLockoutTimer > 0f) _horizontalInputLockoutTimer -= dt;
+            if (_grappleLockoutTimer > 0f) _grappleLockoutTimer -= dt;
+            if (_wallClimbLockoutTimer > 0f) _wallClimbLockoutTimer -= dt;
         }
 
         private void HandleArmRouting()
         {
-            context.LeftArm.UpdateArmRotation(context.Input.LeftStick);
-            context.RightArm.UpdateArmRotation(context.Input.RightStick);
+            _context.LeftArm.UpdateArmRotation(_context.Input.LeftStick);
+            _context.RightArm.UpdateArmRotation(_context.Input.RightStick);
         }
 
-        private void CheckGrappleInputs()
+        private void HandleCoyoteJump()
         {
-            if (context.Input.IsLeftTriggerHeld && !context.LeftAnchor.HasValue)
+            if (_coyoteTimer > 0f && _context.JumpBufferTimer > 0f)
             {
-                if (context.TryCastGrapple(context.Input.LeftStick, out Vector2 hitPoint))
-                {
-                    context.LeftAnchor = hitPoint;
-                    EvaluateTransition();
-                    return;
-                }
-            }
-
-            if (context.Input.IsRightTriggerHeld && !context.RightAnchor.HasValue)
-            {
-                if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint))
-                {
-                    context.RightAnchor = hitPoint;
-                    EvaluateTransition();
-                    return;
-                }
+                _context.ConsumeJumpBuffer();
+                _coyoteTimer = 0f;
+                _isJumping = true;
+                _currentVelocity.y = _stats.JumpVelocity;
             }
         }
 
-        private void EvaluateTransition()
+        private void HandleTransitions()
         {
-            if (context.LeftAnchor.HasValue && context.RightAnchor.HasValue)
+            if (_context.Input.IsDashPressed && _context.HasDashCharge)
             {
-                if (context.CheckNodeCoincidence())
+                _context.TransitionToState(new DashState(_context, _context.Input.LeftStick));
+                return;
+            }
+
+            if (_grappleLockoutTimer <= 0f) ProcessGrappleInput();
+            if (_wallClimbLockoutTimer <= 0f) ProcessWallInteraction();
+        }
+
+        private void ApplyCustomGravity()
+        {
+            float gravityMultiplier = 1f;
+
+            if (_isJumping)
+            {
+                if (_currentVelocity.y < 0f)
                 {
-                    if (context.CanSlingshot)
-                    {
-                        context.TransitionToState(new SlingshotState(context));
-                    }
+                    gravityMultiplier = _stats.FallGravityMultiplier;
                 }
+                else if (_currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
+                {
+                    gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier;
+                }
+                else if (Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
+                {
+                    gravityMultiplier = _stats.ApexHangGravityMultiplier;
+                }
+            }
+
+            float gravityStep = _stats.Gravity * gravityMultiplier * Time.fixedDeltaTime;
+            _currentVelocity.y += gravityStep;
+            _currentVelocity.y = Mathf.Max(_currentVelocity.y, _stats.TerminalVelocity);
+        }
+
+        private void ApplyAirMovement()
+        {
+            if (_horizontalInputLockoutTimer > 0f) return;
+
+            float moveInput = _context.Input.LeftStick.x;
+            float targetX = moveInput * _stats.MoveSpeed * _stats.AirControlMultiplier;
+            float accel = Mathf.Abs(moveInput) < 0.05f ? _stats.AirDrag : _stats.AirAcceleration;
+
+            _currentVelocity.x = Mathf.MoveTowards(_currentVelocity.x, targetX, accel * Time.fixedDeltaTime);
+        }
+
+        private void HandleVerticalObstructions()
+        {
+            if (_currentVelocity.y > 0f && _context.IsTouchingCeiling)
+            {
+                _currentVelocity.y = 0f;
+            }
+        }
+
+        private void ProcessGrappleInput()
+        {
+            if (_context.Input.IsLeftTriggerHeld && !_context.LeftAnchor.HasValue)
+            {
+                AttemptGrappleTransition(_context.Input.LeftStick, ActiveArm.Left);
+            }
+            else if (_context.Input.IsRightTriggerHeld && !_context.RightAnchor.HasValue)
+            {
+                AttemptGrappleTransition(_context.Input.RightStick, ActiveArm.Right);
+            }
+        }
+
+        private void AttemptGrappleTransition(Vector2 direction, ActiveArm arm)
+        {
+            if (_context.TryCastGrapple(direction, out Vector2 hitPoint))
+            {
+                if (arm == ActiveArm.Left) _context.LeftAnchor = hitPoint;
+                else _context.RightAnchor = hitPoint;
+
+                EvaluateFinalGrappleState();
+            }
+        }
+
+        private void EvaluateFinalGrappleState()
+        {
+            if (_context.LeftAnchor.HasValue && _context.RightAnchor.HasValue)
+            {
+                if (_context.CheckNodeCoincidence() && _context.CanSlingshot)
+                    _context.TransitionToState(new SlingshotState(_context));
                 else
-                {
-                    context.TransitionToState(new DualSwingingState(context));
-                }
+                    _context.TransitionToState(new DualSwingingState(_context));
             }
-            else if (context.LeftAnchor.HasValue)
-            {
-                context.TransitionToState(new SwingingState(context, ActiveArm.Left));
-            }
-            else if (context.RightAnchor.HasValue)
-            {
-                context.TransitionToState(new SwingingState(context, ActiveArm.Right));
-            }
+            else if (_context.LeftAnchor.HasValue)
+                _context.TransitionToState(new SwingingState(_context, ActiveArm.Left));
+            else if (_context.RightAnchor.HasValue)
+                _context.TransitionToState(new SwingingState(_context, ActiveArm.Right));
         }
 
-        private void CheckDashTransition()
+        private void ProcessWallInteraction()
         {
-            if (context.Input.IsDashPressed && context.HasDashCharge)
-            {
-                context.TransitionToState(new DashState(context, context.Input.LeftStick));
-            }
-        }
+            if (!_context.CanWallClimb) return;
 
-        private void ApplyGravity()
-        {
-            float currentGravity = stats.Gravity;
-
-            if (isJumping && currentVelocity.y < 0f)
-            {
-                currentGravity *= stats.FallGravityMultiplier;
-            }
-            else if (isJumping && currentVelocity.y > 0f && !context.Input.IsJumpHeld)
-            {
-                currentGravity *= stats.JumpEndEarlyGravityMultiplier;
-            }
-            else if (isJumping && Mathf.Abs(currentVelocity.y) < stats.ApexThreshold)
-            {
-                currentGravity *= stats.ApexHangGravityMultiplier;
-            }
-
-            currentVelocity.y -= currentGravity * Time.fixedDeltaTime;
-            currentVelocity.y = Mathf.Max(currentVelocity.y, stats.TerminalVelocity);
-        }
-
-        private void ApplyAirControl()
-        {
-            if (horizontalInputLockoutTimer > 0f) return;
-            //Vector2 averageInput = (context.Input.LeftStick + context.Input.RightStick) / 2f;
-            Vector2 averageInput = (context.Input.LeftStick) / 2f;
-            float targetVelocityX = averageInput.x * stats.MoveSpeed * stats.AirControlMultiplier;
-
-            if (Mathf.Abs(averageInput.x) < 0.05f)
-            {
-                Debug.Log("Applying air drag");
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0f, stats.AirDrag * Time.fixedDeltaTime);
-            }
-            else if (Mathf.Abs(currentVelocity.x) > Mathf.Abs(targetVelocityX) &&
-                     Mathf.Sign(currentVelocity.x) == Mathf.Sign(targetVelocityX))
-            {
-                Debug.Log("Applying momentum decay");
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
-                    stats.MomentumDecay * Time.fixedDeltaTime);
-            }
-            else
-            {
-                Debug.Log("Applying air acceleration");
-                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, targetVelocityX,
-                    stats.AirAcceleration * Time.fixedDeltaTime);
-            }
-        }
-
-        private void HandleCeilingCollision()
-        {
-            if (currentVelocity.y > 0f && context.IsTouchingCeiling)
-            {
-                currentVelocity.y = 0f;
-            }
-        }
-
-        private void CheckWallInteractions()
-        {
-            if (context.CanWallClimb)
-            {
-                if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall)
-                {
-                    context.TransitionToState(new WallClimbingState(context, -1));
-                    return;
-                }
-
-                if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall)
-                {
-                    context.TransitionToState(new WallClimbingState(context, 1));
-                    return;
-                }
-            }
-
-            if (currentVelocity.y < 0f && context.CurrentWallSlideTime > 0f)
-            {
-                if (context.IsTouchingLeftWall && context.Input.LeftStick.x < -0.1f)
-                {
-                    context.TransitionToState(new WallSlidingState(context, -1));
-                    return;
-                }
-                else if (context.IsTouchingRightWall && context.Input.LeftStick.x > 0.1f)
-                {
-                    context.TransitionToState(new WallSlidingState(context, 1));
-                    return;
-                }
-            }
+            if (_context.Input.IsLeftBumperHeld && _context.IsTouchingLeftWall)
+                _context.TransitionToState(new WallClimbingState(_context, -1));
+            else if (_context.Input.IsRightBumperHeld && _context.IsTouchingRightWall)
+                _context.TransitionToState(new WallClimbingState(_context, 1));
         }
     }
 }

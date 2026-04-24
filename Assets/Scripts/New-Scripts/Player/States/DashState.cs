@@ -3,50 +3,55 @@
 namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Karakterin belirli bir yöne doğru yüksek hızla fırlatıldığı, yerçekimsiz kısa süreli durum. Verilerini ScriptableObject üzerinden okur.
+    /// Karakterin belirli bir mesafeyi, hedeflenen sürede kat etmesini sağlayan, yerçekimsiz ve kinematik atılma durumu.
+    /// Hız hesaplaması tasarımcının belirlediği mesafe ve süre üzerinden dinamik olarak okur.
     /// </summary>
     public class DashState : IPlayerState
     {
-        private readonly PlayerController context;
-        private readonly PlayerStatsSO stats;
-        private readonly Vector2 dashDirection;
+        private readonly PlayerController _context;
+        private readonly PlayerStatsSO _stats;
+        private readonly Vector2 _dashDirection;
         
-        private float dashTimer;
+        private float _dashTimer;
 
         public DashState(PlayerController context, Vector2 direction)
         {
-            this.context = context;
-            this.stats = context.Stats;
+            _context = context;
+            _stats = context.Stats;
             
-            this.dashDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : Vector2.right;
+            _dashDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : Vector2.right;
         }
 
         public void EnterState()
         {
-            context.UseDash();
-            dashTimer = 0f;
-            context.PlayerRigidbody.linearVelocity = dashDirection * stats.DashSpeed;
-            context.NotifyImpact(dashDirection * stats.DashImpactMultiplier);
+            _context.UseDash();
+            _dashTimer = 0f;
+            
+            _context.PlayerRigidbody.linearVelocity = _dashDirection * _stats.DashSpeed;
+            _context.NotifyImpact(_dashDirection * _stats.DashImpactMultiplier);
         }
 
         public void UpdateState()
         {
-            dashTimer += Time.deltaTime;
+            _dashTimer += Time.deltaTime;
             
-            if (dashTimer >= stats.DashDuration)
+            if (_dashTimer >= _stats.DashDuration)
             {
-                Vector2 exitVelocity = context.PlayerRigidbody.linearVelocity * stats.DashEndMomentumMultiplier;
-                context.TransitionToState(new AirborneState(context, exitVelocity));
+                ExitDashSequence();
             }
         }
 
         public void FixedUpdateState()
         {
-            context.PlayerRigidbody.linearVelocity = dashDirection * stats.DashSpeed;
+            _context.PlayerRigidbody.linearVelocity = _dashDirection * _stats.DashSpeed;
         }
 
-        public void ExitState()
+        public void ExitState() { }
+
+        private void ExitDashSequence()
         {
+            Vector2 exitVelocity = _context.PlayerRigidbody.linearVelocity * _stats.DashEndMomentumMultiplier;
+            _context.TransitionToState(new AirborneState(_context, exitVelocity));
         }
     }
 }

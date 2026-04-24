@@ -25,11 +25,11 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Curvature: 9.96
+    - _Curvature: 0.11
     - _Intensity: 1
     - _RgbSplit: 0.0016
-    - _Vignette: 0.129
+    - _Vignette: 0.23
     m_Colors:
-    - _PixelResolution: {r: 0, g: 0, b: 0, a: 0}
+    - _PixelResolution: {r: 480, g: 360, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

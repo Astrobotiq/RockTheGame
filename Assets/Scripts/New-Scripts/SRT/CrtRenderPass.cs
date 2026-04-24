@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
 
 /// <summary>
-/// Unity 6 Render Graph API kullanarak gelişmiş CRT filtresini güvenli bir şekilde (2-Pass) işleyen sınıftır.
+/// Unity 6 Render Graph API kullanarak gelişmiş CRT filtresini güvenli bir şekilde işleyen sınıftır.
 /// </summary>
 public class CrtRenderPass : ScriptableRenderPass
 {
@@ -13,7 +13,7 @@ public class CrtRenderPass : ScriptableRenderPass
     private static readonly int CurvatureId = Shader.PropertyToID("_Curvature");
     private static readonly int VignetteId = Shader.PropertyToID("_Vignette");
     private static readonly int RgbSplitId = Shader.PropertyToID("_RgbSplit");
-    private static readonly int PixelResolutionId = Shader.PropertyToID("_PixelResolution");
+    private static readonly int PixelResolutionId = Shader.PropertyToID("_PixelResolution"); // EKLENDİ
 
     private Material filterMaterial;
 
@@ -29,7 +29,7 @@ public class CrtRenderPass : ScriptableRenderPass
         public float curvature;
         public float vignette;
         public float rgbSplit;
-        public Vector2 pixelResolution;
+        public Vector2 pixelResolution; // EKLENDİ
         public TextureHandle source;
     }
 
@@ -61,6 +61,7 @@ public class CrtRenderPass : ScriptableRenderPass
             passData.curvature = filterVolume.curvature.value;
             passData.vignette = filterVolume.vignette.value;
             passData.rgbSplit = filterVolume.rgbSplit.value;
+            passData.pixelResolution = filterVolume.pixelResolution.value; // EKLENDİ
             passData.source = activeColor;
 
             builder.UseTexture(passData.source, AccessFlags.Read);
@@ -72,7 +73,7 @@ public class CrtRenderPass : ScriptableRenderPass
                 data.material.SetFloat(CurvatureId, data.curvature);
                 data.material.SetFloat(VignetteId, data.vignette);
                 data.material.SetFloat(RgbSplitId, data.rgbSplit);
-                data.material.SetVector(PixelResolutionId, data.pixelResolution);
+                data.material.SetVector(PixelResolutionId, data.pixelResolution); // GPU'YA GÖNDERİLDİ
                 
                 Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), data.material, 0);
             });

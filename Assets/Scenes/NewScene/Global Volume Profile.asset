@@ -18,16 +18,16 @@ MonoBehaviour:
     m_Value: 1
   curvature:
     m_OverrideState: 1
-    m_Value: 9.96
+    m_Value: 0.11
   vignette:
     m_OverrideState: 1
-    m_Value: 0.129
+    m_Value: 0.23
   rgbSplit:
     m_OverrideState: 1
     m_Value: 0.0016
   pixelResolution:
-    m_OverrideState: 0
-    m_Value: {x: 1, y: 1}
+    m_OverrideState: 1
+    m_Value: {x: 480, y: 360}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

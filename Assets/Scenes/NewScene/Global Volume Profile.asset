@@ -24,7 +24,7 @@ MonoBehaviour:
     m_Value: {x: 480, y: 360}
   vignetteSize:
     m_OverrideState: 1
-    m_Value: 1.585
+    m_Value: 1.676
   vignetteSmooth:
     m_OverrideState: 0
     m_Value: 0.4
@@ -32,8 +32,8 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 1
   blur:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.5
   bleed:
     m_OverrideState: 0
     m_Value: 0
@@ -83,14 +83,14 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 1.136
   redOffset:
-    m_OverrideState: 1
-    m_Value: 0.05
+    m_OverrideState: 0
+    m_Value: -0.05
   greenOffset:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.05
   blueOffset:
-    m_OverrideState: 1
-    m_Value: 0.05
+    m_OverrideState: 0
+    m_Value: -0.0236
   intensity:
     m_OverrideState: 1
     m_Value: 1

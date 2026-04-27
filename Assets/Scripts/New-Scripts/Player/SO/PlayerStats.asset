@@ -16,30 +16,36 @@ MonoBehaviour:
   JumpVelocity: 15
   SwingGravity: 25
   SwingInitialBoost: 5
-  SwingForceMultiplier: 10
-  MaxSwingSpeed: 17
+  SwingForceMultiplier: 20
+  MaxSwingSpeed: 25
   SwingCollisionRadius: 0.5
   MaxWallAngle: 45
   Gravity: 25
-  TerminalVelocity: -30
-  AirControlMultiplier: 0.5
-  AirAcceleration: 20
-  AirDrag: 5
-  MomentumDecay: 2
-  DashSpeed: 35
-  DashDuration: 0.15
-  DashImpactMultiplier: 2
-  MaxSlingshotSpeed: 40
-  SlingshotLaunchDuration: 0.2
+  TerminalVelocity: -40
+  AirControlMultiplier: 1
+  AirAcceleration: 40
+  AirDrag: 20
+  MomentumDecay: 5
+  DashSpeed: 30
+  DashDuration: 0.2
+  DashImpactMultiplier: 1
+  DashEndMomentumMultiplier: 0.3
+  MaxSlingshotSpeed: 35
+  SlingshotLaunchDuration: 0.1
   SlingshotGrappleLockout: 0.25
   SlingshotAnticipationDuration: 0.15
   SlingshotAnticipationSpeed: 15
   ClimbSpeed: 8
-  WallJumpForce: {x: 15, y: 20}
+  WallJumpForce: {x: 11, y: 14}
   MaxWallStamina: 6
   StaminaWarningThreshold: 1.5
   WallSnapRaycastDistance: 2
   WallSnapSafetyOffset: 0.02
+  WallSlideMaxSpeed: 3
+  WallSlideFriction: 10
+  WallSlideJumpForce: {x: 11, y: 14}
+  MaxWallSlideTime: 2
+  WallJumpInputLockoutTime: 0.2
   DualSpringStiffness: 25
   DualSpringDamping: 5
   DualSwingForceMultiplier: 15

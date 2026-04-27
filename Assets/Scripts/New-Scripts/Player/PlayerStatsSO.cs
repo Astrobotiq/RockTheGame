@@ -32,6 +32,7 @@ namespace New_Scripts.Player
         public float DashSpeed = 35f;
         public float DashDuration = 0.15f;
         public float DashImpactMultiplier = 2f;
+        public float DashEndMomentumMultiplier = 0.15f;
 
         [Header("Slingshot")]
         public float MaxSlingshotSpeed = 40f;
@@ -49,6 +50,13 @@ namespace New_Scripts.Player
         public float StaminaWarningThreshold = 1.5f;
         public float WallSnapRaycastDistance = 2f;
         public float WallSnapSafetyOffset = 0.02f;
+        
+        [Header("Wall Sliding")]
+        public float WallSlideMaxSpeed = 3f;
+        public float WallSlideFriction = 10f;
+        public Vector2 WallSlideJumpForce = new Vector2(15f, 18f);
+        public float MaxWallSlideTime = 2f;
+        public float WallJumpInputLockoutTime = 0.15f;
         
         [Header("Dual Swinging")]
         public float DualSpringStiffness = 25f;

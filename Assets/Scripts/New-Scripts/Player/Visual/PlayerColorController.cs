@@ -45,14 +45,19 @@ namespace New_Scripts.Player.Visual
 
         public void ResetAllColors()
         {
-            bodyTween?.Kill();
-            bodyTween = bodyRenderer.DOColor(defaultBodyColor, transitionDuration).SetUpdate(true);
+            ResetBodyColor();
 
             for (int i = 0; i < armRenderers.Length; i++)
             {
                 armTweens[i]?.Kill();
                 armTweens[i] = armRenderers[i].DOColor(defaultArmColor[i], transitionDuration).SetUpdate(true);
             }
+        }
+        
+        public void ResetBodyColor()
+        {
+            bodyTween?.Kill();
+            bodyTween = bodyRenderer.DOColor(defaultBodyColor, transitionDuration).SetUpdate(true);
         }
     }
 }

@@ -1,0 +1,481 @@
+fileFormatVersion: 2
+guid: 857e13250b850f144971aa5120cfc988
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -139694674010051716
+    second: SpecialButtons_Tileset_noAA_0
+  - first:
+      213: -362228629609104790
+    second: SpecialButtons_Tileset_noAA_1
+  - first:
+      213: -1606477257128009987
+    second: SpecialButtons_Tileset_noAA_2
+  - first:
+      213: -4640101072595730396
+    second: SpecialButtons_Tileset_noAA_3
+  - first:
+      213: -368013529323844954
+    second: SpecialButtons_Tileset_noAA_4
+  - first:
+      213: 7454974037685044700
+    second: SpecialButtons_Tileset_noAA_5
+  - first:
+      213: 5693359830230479233
+    second: SpecialButtons_Tileset_noAA_6
+  - first:
+      213: 3053694304218383896
+    second: SpecialButtons_Tileset_noAA_7
+  - first:
+      213: -5077715509637132130
+    second: SpecialButtons_Tileset_noAA_8
+  - first:
+      213: -4623223992240827665
+    second: SpecialButtons_Tileset_noAA_9
+  - first:
+      213: 1070466060594886082
+    second: SpecialButtons_Tileset_noAA_10
+  - first:
+      213: -3516101627408209603
+    second: SpecialButtons_Tileset_noAA_11
+  - first:
+      213: -2558632857062627135
+    second: SpecialButtons_Tileset_noAA_12
+  - first:
+      213: -3733130983115990636
+    second: SpecialButtons_Tileset_noAA_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 16
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 47
+        width: 167
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7bed922f64bf0ef0800000000000000
+      internalID: -139694674010051716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_1
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 0
+        width: 178
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6a3ca40bfa19faf0800000000000000
+      internalID: -362228629609104790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_2
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 50
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfe14253275a4b9e0800000000000000
+      internalID: -1606477257128009987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_3
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 50
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 420c506a8ac0b9fb0800000000000000
+      internalID: -4640101072595730396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_4
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 58
+        width: 10
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6aa4d1815ad84eaf0800000000000000
+      internalID: -368013529323844954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_5
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 47
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd50afd9363657760800000000000000
+      internalID: 7454974037685044700
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_6
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 42
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 181bd53d990e20f40800000000000000
+      internalID: 5693359830230479233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_7
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 31
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 816029f5ac6e06a20800000000000000
+      internalID: 3053694304218383896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_8
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 31
+        width: 49
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e90569995a45889b0800000000000000
+      internalID: -5077715509637132130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_9
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 19
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe21c61264207dfb0800000000000000
+      internalID: -4623223992240827665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_10
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 20
+        width: 14
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c5bed5e53f0bde00800000000000000
+      internalID: 1070466060594886082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_11
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 17
+        width: 28
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d392920f23c443fc0800000000000000
+      internalID: -3516101627408209603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_12
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 3
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c8a32409f8ed7cd0800000000000000
+      internalID: -2558632857062627135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpecialButtons_Tileset_noAA_13
+      rect:
+        serializedVersion: 2
+        x: 175
+        y: 0
+        width: 65
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 499dd5b5621413cc0800000000000000
+      internalID: -3733130983115990636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SpecialButtons_Tileset_noAA_0: -139694674010051716
+      SpecialButtons_Tileset_noAA_1: -362228629609104790
+      SpecialButtons_Tileset_noAA_10: 1070466060594886082
+      SpecialButtons_Tileset_noAA_11: -3516101627408209603
+      SpecialButtons_Tileset_noAA_12: -2558632857062627135
+      SpecialButtons_Tileset_noAA_13: -3733130983115990636
+      SpecialButtons_Tileset_noAA_2: -1606477257128009987
+      SpecialButtons_Tileset_noAA_3: -4640101072595730396
+      SpecialButtons_Tileset_noAA_4: -368013529323844954
+      SpecialButtons_Tileset_noAA_5: 7454974037685044700
+      SpecialButtons_Tileset_noAA_6: 5693359830230479233
+      SpecialButtons_Tileset_noAA_7: 3053694304218383896
+      SpecialButtons_Tileset_noAA_8: -5077715509637132130
+      SpecialButtons_Tileset_noAA_9: -4623223992240827665
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

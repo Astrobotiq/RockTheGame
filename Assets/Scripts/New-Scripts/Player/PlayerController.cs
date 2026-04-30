@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using New_Scripts.LevelChange;
+using UnityEngine;
 using New_Scripts.Player.IFramePauseable;
 using New_Scripts.Player.States;
 using New_Scripts.Player.UI;
@@ -19,7 +20,7 @@ namespace New_Scripts.Player
     /// Tum bagimli degerleri merkezi ScriptableObject (PlayerStatsSO) uzerinden okur.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
-    public class PlayerController : MonoBehaviour, IFramePausable
+    public class PlayerController : MonoBehaviour, IFramePausable, IPlayerTransitionable
     {
         [Header("Data")] public PlayerStatsSO Stats;
 
@@ -224,6 +225,21 @@ namespace New_Scripts.Player
         public void ConsumeWallSlideTime(float amount)
         {
             CurrentWallSlideTime -= amount;
+        }
+        
+        public void FreezeForTransition()
+        {
+            TransitionToState(new PlayerTransitionState(this));
+        }
+
+        public void UnfreezeFromTransition()
+        {
+            TransitionToState(new AirborneState(this, Vector2.zero));
+        }
+
+        public void TeleportTo(Vector2 position)
+        {
+            PlayerRigidbody.position = position;
         }
         
 #if UNITY_EDITOR

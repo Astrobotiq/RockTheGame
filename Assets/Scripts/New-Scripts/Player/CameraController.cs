@@ -25,6 +25,17 @@ namespace New_Scripts.Player
         private CinemachineImpulseSource impulseSource;
         private float targetOrthoSize;
         private bool isTransitioning;
+        
+        private bool isZoomOverridden;
+        private float currentOverrideSize;
+        
+#if UNITY_EDITOR
+        private Vector2 debugStartPos;
+        private Vector2 debugEndPos;
+        private Bounds debugNewBounds;
+        private float debugTargetSize;
+        private bool isDrawingTransitionGizmos;
+#endif
 
         private void Awake()
         {
@@ -35,6 +46,17 @@ namespace New_Scripts.Player
         {
             targetOrthoSize = minOrthoSize;
             virtualCamera.Lens.OrthographicSize = targetOrthoSize;
+
+            if (targetRigidbody != null)
+            {
+                cameraFollowTarget.position = targetRigidbody.position;
+        
+                if (virtualCamera != null)
+                {
+                    virtualCamera.PreviousStateIsValid = false;
+                    virtualCamera.transform.position = new Vector3(targetRigidbody.position.x, targetRigidbody.position.y, virtualCamera.transform.position.z);
+                }
+            }
         }
 
         private void OnEnable()
@@ -51,8 +73,24 @@ namespace New_Scripts.Player
         {
             if (isTransitioning) return;
 
-            cameraFollowTarget.position = targetRigidbody.position;
-            HandleDynamicZoom();
+            cameraFollowTarget.position = Vector3.Lerp(cameraFollowTarget.position, targetRigidbody.position, Time.deltaTime * zoomLerpSpeed);
+    
+            if (isZoomOverridden)
+            {
+                HandleStaticZoom();
+            }
+            else
+            {
+                //HandleDynamicZoom();
+            }
+        }
+        
+        private void HandleStaticZoom()
+        {
+            virtualCamera.Lens.OrthographicSize = Mathf.Lerp(
+                virtualCamera.Lens.OrthographicSize, 
+                currentOverrideSize, 
+                Time.deltaTime * zoomLerpSpeed);
         }
 
         private void HandleDynamicZoom()
@@ -69,19 +107,70 @@ namespace New_Scripts.Player
             impulseSource.GenerateImpulseWithVelocity(velocity);
         }
         
+        private Vector2 transitionStartCameraPosition;
         public void PrepareForTransition()
         {
             isTransitioning = true;
+    
+            if (Camera.main != null)
+            {
+                transitionStartCameraPosition = (Vector2)Camera.main.transform.position;
+            }
+            else
+            {
+                transitionStartCameraPosition = (Vector2)virtualCamera.transform.position;
+            }
+    
+            if (confiner != null) confiner.enabled = false; 
         }
         
-        private Vector2 CalculateConfinedPosition(Vector2 rawPosition, Collider2D bounds)
+        [Header("Transition Settings")]
+        [SerializeField] private AnimationCurve transitionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        public async UniTask PanAndZoomCameraAsync(Vector2 targetPosition, float targetSize, bool isOverridden, Collider2D newBounds, float duration, CancellationToken token)
+        {
+            Vector2 startPosition = transitionStartCameraPosition; 
+            cameraFollowTarget.position = startPosition;
+            virtualCamera.PreviousStateIsValid = false;
+            float startSize = virtualCamera.Lens.OrthographicSize;
+
+            float actualTargetSize = isOverridden ? targetSize : minOrthoSize;
+            Vector2 clampedTargetPosition = CalculateConfinedPosition(targetPosition, newBounds, actualTargetSize);
+    
+#if UNITY_EDITOR
+            // Gizmo verilerini kaydet
+            debugStartPos = startPosition;
+            debugEndPos = clampedTargetPosition;
+            debugNewBounds = newBounds.bounds;
+            debugTargetSize = actualTargetSize;
+            isDrawingTransitionGizmos = true;
+#endif
+
+            float elapsedTime = 0f;
+            while (elapsedTime < duration)
+            {
+                elapsedTime += Time.deltaTime;
+                float linearT = elapsedTime / duration;
+                float t = transitionCurve.Evaluate(linearT);
+
+                cameraFollowTarget.position = Vector2.Lerp(startPosition, clampedTargetPosition, t);
+                virtualCamera.Lens.OrthographicSize = Mathf.Lerp(startSize, actualTargetSize, t);
+
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+
+            cameraFollowTarget.position = clampedTargetPosition;
+            virtualCamera.Lens.OrthographicSize = actualTargetSize;
+
+            await UniTask.WaitForEndOfFrame(this, token);
+        }
+
+        private Vector2 CalculateConfinedPosition(Vector2 rawPosition, Collider2D bounds, float targetSize)
         {
             Bounds b = bounds.bounds;
-            float orthoSize = virtualCamera.Lens.OrthographicSize;
             float aspect = Camera.main != null ? Camera.main.aspect : 16f / 9f;
         
-            float halfHeight = orthoSize;
-            float halfWidth = orthoSize * aspect;
+            float halfHeight = targetSize;
+            float halfWidth = targetSize * aspect;
 
             float minX = b.min.x + halfWidth;
             float maxX = b.max.x - halfWidth;
@@ -91,38 +180,76 @@ namespace New_Scripts.Player
             if (maxX < minX) minX = maxX = b.center.x;
             if (maxY < minY) minY = maxY = b.center.y;
 
-            float clampedX = Mathf.Clamp(rawPosition.x, minX, maxX);
-            float clampedY = Mathf.Clamp(rawPosition.y, minY, maxY);
-
-            return new Vector2(clampedX, clampedY);
+            return new Vector2(Mathf.Clamp(rawPosition.x, minX, maxX), Mathf.Clamp(rawPosition.y, minY, maxY));
         }
 
-        public async UniTask PanCameraToAsync(Vector2 targetPosition, Collider2D newBounds, float duration, CancellationToken token)
-        {
-            Vector2 startPosition = cameraFollowTarget.position;
-            Vector2 clampedTargetPosition = CalculateConfinedPosition(targetPosition, newBounds);
-        
-            float elapsedTime = 0f;
-
-            while (elapsedTime < duration)
-            {
-                elapsedTime += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, elapsedTime / duration);
-                cameraFollowTarget.position = Vector2.Lerp(startPosition, clampedTargetPosition, t);
-            
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
-            }
-
-            cameraFollowTarget.position = clampedTargetPosition;
-        
-            await UniTask.WaitForEndOfFrame(this, token);
-        }
-
-        public void FinalizeTransition(Collider2D newBounds)
+        public void FinalizeTransition(Collider2D newBounds, float targetSize, bool isOverridden)
         {
             confiner.BoundingShape2D = newBounds;
             confiner.InvalidateBoundingShapeCache();
+    
+            if (confiner != null)
+                confiner.enabled = true;
+    
+            isZoomOverridden = isOverridden;
+            currentOverrideSize = targetSize;
+    
+            cameraFollowTarget.position = targetRigidbody.position;
+            virtualCamera.PreviousStateIsValid = false; 
+    
             isTransitioning = false;
+    
+#if UNITY_EDITOR
+            isDrawingTransitionGizmos = false;
+#endif
         }
+        
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (virtualCamera != null)
+            {
+                // Rengi ayarlıyoruz (Sahnede net görünmesi için parlak bir renk)
+                Gizmos.color = Color.magenta;
+
+                // Kameranın merkezine içi boş bir çember (WireSphere) çiziyoruz.
+                // Yarıçapı (0.3f) kendi oyununun ölçeğine göre büyütebilir veya küçültebilirsin.
+                Gizmos.DrawWireSphere((Vector2)Camera.main.transform.position, 1f);
+
+                // Eğer tam merkezde küçük, içi dolu bir nokta da görmek istersen:
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere((Vector2)Camera.main.transform.position, 1f);
+            }
+            else
+            {
+                // Eğer virtualCamera referansı atanmamışsa, sahnede uyarı vermek için kırmızı bir küre çizelim
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(transform.position, 0.5f);
+            }
+            
+            if (!isDrawingTransitionGizmos) return;
+
+            // 1. Yeni odanın sınırlarını Sarı çiz
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(debugNewBounds.center, debugNewBounds.size);
+
+            // 2. Başlangıç (Yeşil) ve Bitiş (Kırmızı) noktalarını çiz ve aralarını birleştir
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(debugStartPos, 0.5f);
+    
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(debugEndPos, 0.5f);
+    
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(debugStartPos, debugEndPos);
+
+            // 3. Kameranın varacağı noktadaki (ClampedTargetPosition) tahmini kamera görüş alanını (Cyan) çiz
+            float aspect = Camera.main != null ? Camera.main.aspect : 16f / 9f;
+            Vector2 cameraViewSize = new Vector2(debugTargetSize * aspect * 2, debugTargetSize * 2);
+    
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireCube(debugEndPos, cameraViewSize);
+        }
+#endif
     }
 }

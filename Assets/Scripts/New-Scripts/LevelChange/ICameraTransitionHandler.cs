@@ -1,13 +1,18 @@
-﻿using UnityEngine;
+﻿using System.Threading;
 using Cysharp.Threading.Tasks;
-using System.Threading;
+using UnityEngine;
 
-/// <summary>
-/// Kamera bileseninin gecis durumlarini ve sinirlarini dinamik olarak guncelleyen sozlesmeyi tanimlar.
-/// </summary>
-public interface ICameraTransitionHandler
+namespace New_Scripts.LevelChange
 {
-    void PrepareForTransition();
-    UniTask PanCameraToAsync(Vector2 targetPosition, Collider2D newBounds, float duration, CancellationToken token);
-    void FinalizeTransition(Collider2D newBounds);
+    /// <summary>
+    /// Kamera gecislerini, boyutlandirmayi ve sinirlandirmayi asenkron olarak yoneten genisletilmis sozlesme.
+    /// </summary>
+    public interface ICameraTransitionHandler
+    {
+        void PrepareForTransition();
+
+        UniTask PanAndZoomCameraAsync(Vector2 targetPosition, float targetSize, bool isOverridden, Collider2D newBounds,
+            float duration, CancellationToken token);
+        void FinalizeTransition(Collider2D newBounds, float targetSize, bool isOverridden);
+    }
 }

@@ -1,21 +1,29 @@
-﻿using New_Scripts.LevelChange;
-using UnityEngine;
+﻿using UnityEngine;
 
-/// <summary>
-/// Odalar arası geçişi algılayan ve koordinatöre geçiş verilerini ileten tetikleyici sınıftır.
-/// </summary>
-[RequireComponent(typeof(BoxCollider2D))]
-public class RoomTransitionTrigger : MonoBehaviour
+namespace New_Scripts.LevelChange
 {
-    [SerializeField] private Collider2D targetRoomBounds;
-    [SerializeField] private Transform targetSpawnPoint;
-    [SerializeField] private RoomTransitionCoordinator coordinator;
-
-    private void OnTriggerEnter2D(Collider2D other)
+    /// <summary>
+    /// Odalar arası geçişi algılayan ve koordinatöre geçiş verilerini ileten tetikleyici sınıftır.
+    /// </summary>
+    [RequireComponent(typeof(BoxCollider2D))]
+    public class RoomTransitionTrigger : MonoBehaviour
     {
-        if (other.TryGetComponent(out IPlayerTransitionable player))
+        [SerializeField] private Collider2D targetRoomBounds;
+        [SerializeField] private Transform targetSpawnPoint;
+        
+        [Header("Camera Settings")]
+        [SerializeField] private bool overrideDynamicZoom = false; // True ise dinamik zoom kapanır
+        [SerializeField] private float overrideCameraSize = 8f; // Sadece override true ise kullanılır
+
+        [SerializeField] private RoomTransitionCoordinator coordinator;
+
+        private void OnTriggerEnter2D(Collider2D other)
         {
-            coordinator.ExecuteTransition(player, targetRoomBounds, targetSpawnPoint.position);
+            if (other.TryGetComponent(out IPlayerTransitionable player))
+            {
+                // Artık geçişe override bilgisini de yolluyoruz
+                coordinator.ExecuteTransition(player, targetRoomBounds, targetSpawnPoint.position, overrideCameraSize, overrideDynamicZoom);
+            }
         }
     }
 }

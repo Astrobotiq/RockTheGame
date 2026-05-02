@@ -1770,7 +1770,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &748954817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2019,7 +2019,7 @@ MonoBehaviour:
     DefaultMode: 2
   DefaultBlend:
     Style: 1
-    Time: 2
+    Time: 1
     CustomCurve:
       serializedVersion: 2
       m_Curve: []
@@ -5289,6 +5289,30 @@ MonoBehaviour:
   minVelocity: 5
   maxVelocity: 40
   zoomLerpSpeed: 3
+  transitionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &1933918998
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5369,7 +5393,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b1d088f8234697b95bfa8791cac9ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomTransitionCoordinator
-  transitionDelay: 0
+  transitionDuration: 0.5
+  physicsCooldownDelay: 0.3
 --- !u!1 &2017119597
 GameObject:
   m_ObjectHideFlags: 0
@@ -36696,6 +36721,14 @@ PrefabInstance:
       propertyPath: targetSpawnPoint
       value: 
       objectReference: {fileID: 651457015}
+    - target: {fileID: 6038450317638985937, guid: ac2005653f6a34e4db1d9d67d8062fc4, type: 3}
+      propertyPath: overrideCameraSize
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 6038450317638985937, guid: ac2005653f6a34e4db1d9d67d8062fc4, type: 3}
+      propertyPath: overrideDynamicZoom
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7624471393376384926, guid: ac2005653f6a34e4db1d9d67d8062fc4, type: 3}
       propertyPath: m_Size.x
       value: 2

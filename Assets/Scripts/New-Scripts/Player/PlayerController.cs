@@ -1,4 +1,6 @@
-﻿using New_Scripts.LevelChange;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
+using New_Scripts.LevelChange;
 using UnityEngine;
 using New_Scripts.Player.IFramePauseable;
 using New_Scripts.Player.States;
@@ -240,6 +242,22 @@ namespace New_Scripts.Player
         public void TeleportTo(Vector2 position)
         {
             PlayerRigidbody.position = position;
+        }
+        
+        public async UniTask MoveToAsync(Vector2 targetPosition, float duration, CancellationToken token)
+        {
+            Vector2 startPosition = PlayerRigidbody.position;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+                PlayerRigidbody.MovePosition(Vector2.Lerp(startPosition, targetPosition, t));
+                await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
+            }
+
+            PlayerRigidbody.MovePosition(targetPosition);
         }
         
 #if UNITY_EDITOR

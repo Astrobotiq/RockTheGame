@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace New_Scripts.LevelChange
 {
@@ -10,5 +12,6 @@ namespace New_Scripts.LevelChange
         void FreezeForTransition();
         void UnfreezeFromTransition();
         void TeleportTo(Vector2 position);
+        UniTask MoveToAsync(Vector2 targetPosition, float duration, CancellationToken token);
     }
 }

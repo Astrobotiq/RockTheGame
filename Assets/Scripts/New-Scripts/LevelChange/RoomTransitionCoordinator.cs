@@ -10,11 +10,12 @@ namespace New_Scripts.LevelChange
     /// </summary>
     public class RoomTransitionCoordinator : MonoBehaviour
     {
-        [SerializeField] private float transitionDelay = 0.5f;
+        [SerializeField] private float transitionDuration = 0.5f;
+        [SerializeField] float physicsCooldownDelay = 0.5f;
 
         private ICameraTransitionHandler cameraHandler;
         private CancellationTokenSource transitionCts;
-    
+
         // SISTEMI KORUYAN KILIT (STATE LOCK)
         private bool isTransitioning = false;
 
@@ -23,34 +24,48 @@ namespace New_Scripts.LevelChange
             cameraHandler = GetComponent<ICameraTransitionHandler>();
         }
 
-        public void ExecuteTransition(IPlayerTransitionable player, Collider2D newBounds, Vector2 spawnPosition)
-        {
-            // Eger halihazirda bir gecis yapiyorsak, fizik motorundan gelen tum ekstra carpismalari YOK SAY.
-            if (isTransitioning) return;
+        // Coordinator icindeki TransitionRoutineAsync imzasi ve cagrisi:
 
+        public void ExecuteTransition(IPlayerTransitionable player, Collider2D newBounds, Vector2 spawnPosition,
+            float targetSize, bool overrideZoom)
+        {
+            if (isTransitioning)
+                return;
+            transitionCts?.Cancel();
+            transitionCts?.Dispose();
             transitionCts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
-            TransitionRoutineAsync(player, newBounds, spawnPosition, transitionCts.Token).Forget();
+
+            TransitionRoutineAsync(player, newBounds, spawnPosition, targetSize, overrideZoom, transitionCts.Token)
+                .Forget();
         }
 
-        private async UniTask TransitionRoutineAsync(IPlayerTransitionable player, Collider2D newBounds, Vector2 spawnPosition, CancellationToken token)
+        private async UniTask TransitionRoutineAsync(
+            IPlayerTransitionable player,
+            Collider2D newBounds,
+            Vector2 spawnPosition,
+            float targetSize,
+            bool overrideZoom,
+            CancellationToken token)
         {
-            // Kilidi kapat
             isTransitioning = true;
-
             player.FreezeForTransition();
             cameraHandler.PrepareForTransition();
 
-            player.TeleportTo(spawnPosition);
+            // Kamera ve oyuncu aynı anda aynı hedefe doğru hareket eder
+            await UniTask.WhenAll(
+                cameraHandler.PanAndZoomCameraAsync(
+                    spawnPosition, targetSize, overrideZoom, newBounds, transitionDuration, token),
+                player.MoveToAsync(
+                    spawnPosition, transitionDuration, token)
+            );
 
-            await UniTask.Delay(TimeSpan.FromSeconds(transitionDelay), cancellationToken: token);
-
-            
-            cameraHandler.FinalizeTransition(newBounds);
+            cameraHandler.FinalizeTransition(newBounds, targetSize, overrideZoom);
             player.UnfreezeFromTransition();
-            
-
-            // Kilidi geri ac
             isTransitioning = false;
+
+            await UniTask.Delay(
+                TimeSpan.FromSeconds(physicsCooldownDelay),
+                cancellationToken: token);
         }
 
         private void OnDestroy()

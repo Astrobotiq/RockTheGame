@@ -29,13 +29,13 @@ namespace New_Scripts.Death
         public async UniTask PlayCloseTransitionAsync(Vector3 worldPosition, CancellationToken token)
         {
             SetCenter(worldPosition);
-            await AnimateRadiusAsync(_maxRadius, 0f, token);
+            await AnimateRadiusAsync(_maxRadius, -1f, token);
         }
 
         public async UniTask PlayOpenTransitionAsync(Vector3 worldPosition, CancellationToken token)
         {
             SetCenter(worldPosition);
-            await AnimateRadiusAsync(0f, _maxRadius, token);
+            await AnimateRadiusAsync(-1f, _maxRadius, token);
         }
 
         private void SetCenter(Vector3 worldPosition)

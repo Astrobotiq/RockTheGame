@@ -55,6 +55,7 @@ namespace New_Scripts.Player
                 {
                     virtualCamera.PreviousStateIsValid = false;
                     virtualCamera.transform.position = new Vector3(targetRigidbody.position.x, targetRigidbody.position.y, virtualCamera.transform.position.z);
+                    confiner.InvalidateBoundingShapeCache();
                 }
             }
         }

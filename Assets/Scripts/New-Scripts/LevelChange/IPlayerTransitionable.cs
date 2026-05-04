@@ -10,8 +10,7 @@ namespace New_Scripts.LevelChange
     public interface IPlayerTransitionable
     {
         void FreezeForTransition();
-        void UnfreezeFromTransition();
-        void TeleportTo(Vector2 position);
-        UniTask MoveToAsync(Vector2 targetPosition, float duration, CancellationToken token);
+        
+        void UnfreezeFromTransition(TransitionDirection direction);
     }
 }

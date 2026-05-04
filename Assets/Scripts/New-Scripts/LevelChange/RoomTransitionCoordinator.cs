@@ -12,55 +12,65 @@ namespace New_Scripts.LevelChange
     {
         [SerializeField] private float transitionDuration = 0.5f;
         [SerializeField] float physicsCooldownDelay = 0.5f;
+        [SerializeField] private RoomManager roomManager;
 
         private ICameraTransitionHandler cameraHandler;
         private CancellationTokenSource transitionCts;
 
-        // SISTEMI KORUYAN KILIT (STATE LOCK)
         private bool isTransitioning = false;
 
         private void Awake()
         {
             cameraHandler = GetComponent<ICameraTransitionHandler>();
         }
-
-        // Coordinator icindeki TransitionRoutineAsync imzasi ve cagrisi:
-
-        public void ExecuteTransition(IPlayerTransitionable player, Collider2D newBounds, Vector2 spawnPosition,
-            float targetSize, bool overrideZoom)
+        
+        public void ExecuteTransition(
+            IPlayerTransitionable player,
+            Room targetRoom,
+            Collider2D newBounds,
+            Vector2 spawnPosition,
+            TransitionDirection direction,
+            float targetSize,
+            bool overrideZoom)
         {
-            if (isTransitioning)
-                return;
+            if (isTransitioning) return;
             transitionCts?.Cancel();
             transitionCts?.Dispose();
-            transitionCts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+            transitionCts = CancellationTokenSource.CreateLinkedTokenSource(
+                this.GetCancellationTokenOnDestroy());
 
-            TransitionRoutineAsync(player, newBounds, spawnPosition, targetSize, overrideZoom, transitionCts.Token)
-                .Forget();
+            TransitionRoutineAsync(
+                player, targetRoom, newBounds, spawnPosition,
+                direction, targetSize, overrideZoom,
+                transitionCts.Token
+            ).Forget();
         }
 
         private async UniTask TransitionRoutineAsync(
             IPlayerTransitionable player,
+            Room targetRoom,
             Collider2D newBounds,
             Vector2 spawnPosition,
+            TransitionDirection direction,
             float targetSize,
             bool overrideZoom,
             CancellationToken token)
         {
             isTransitioning = true;
+
             player.FreezeForTransition();
             cameraHandler.PrepareForTransition();
 
-            // Kamera ve oyuncu aynı anda aynı hedefe doğru hareket eder
-            await UniTask.WhenAll(
-                cameraHandler.PanAndZoomCameraAsync(
-                    spawnPosition, targetSize, overrideZoom, newBounds, transitionDuration, token),
-                player.MoveToAsync(
-                    spawnPosition, transitionDuration, token)
-            );
+            await cameraHandler.PanAndZoomCameraAsync(
+                spawnPosition, targetSize, overrideZoom,
+                newBounds, transitionDuration, token);
 
             cameraHandler.FinalizeTransition(newBounds, targetSize, overrideZoom);
-            player.UnfreezeFromTransition();
+
+            roomManager.TransitionToRoom(targetRoom);
+
+            player.UnfreezeFromTransition(direction);
+
             isTransitioning = false;
 
             await UniTask.Delay(

@@ -207,26 +207,6 @@ namespace New_Scripts.Player
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if (virtualCamera != null)
-            {
-                // Rengi ayarlıyoruz (Sahnede net görünmesi için parlak bir renk)
-                Gizmos.color = Color.magenta;
-
-                // Kameranın merkezine içi boş bir çember (WireSphere) çiziyoruz.
-                // Yarıçapı (0.3f) kendi oyununun ölçeğine göre büyütebilir veya küçültebilirsin.
-                Gizmos.DrawWireSphere((Vector2)Camera.main.transform.position, 1f);
-
-                // Eğer tam merkezde küçük, içi dolu bir nokta da görmek istersen:
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere((Vector2)Camera.main.transform.position, 1f);
-            }
-            else
-            {
-                // Eğer virtualCamera referansı atanmamışsa, sahnede uyarı vermek için kırmızı bir küre çizelim
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(transform.position, 0.5f);
-            }
-            
             if (!isDrawingTransitionGizmos) return;
 
             // 1. Yeni odanın sınırlarını Sarı çiz

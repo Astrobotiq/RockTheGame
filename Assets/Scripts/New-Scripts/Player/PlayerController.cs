@@ -229,37 +229,38 @@ namespace New_Scripts.Player
             CurrentWallSlideTime -= amount;
         }
         
+        private Vector2 _preTransitionVelocity;
+
         public void FreezeForTransition()
         {
+            _preTransitionVelocity = PlayerRigidbody.linearVelocity;
             TransitionToState(new PlayerTransitionState(this));
         }
 
-        public void UnfreezeFromTransition()
+        public void UnfreezeFromTransition(TransitionDirection direction)
         {
-            TransitionToState(new AirborneState(this, Vector2.zero));
-        }
-
-        public void TeleportTo(Vector2 position)
-        {
-            PlayerRigidbody.position = position;
-        }
-        
-        public async UniTask MoveToAsync(Vector2 targetPosition, float duration, CancellationToken token)
-        {
-            Vector2 startPosition = PlayerRigidbody.position;
-            float elapsed = 0f;
-
-            while (elapsed < duration)
+            switch (direction)
             {
-                elapsed += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-                PlayerRigidbody.MovePosition(Vector2.Lerp(startPosition, targetPosition, t));
-                await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
-            }
+                case TransitionDirection.Up:
+                    TransitionToState(new AirborneState(
+                        this,
+                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity),
+                        isJumping: true
+                    ));
+                    break;
 
-            PlayerRigidbody.MovePosition(targetPosition);
+                case TransitionDirection.Right:
+                case TransitionDirection.Left:
+                case TransitionDirection.Down:
+                    TransitionToState(new AirborneState(
+                        this,
+                        inheritedVelocity: _preTransitionVelocity,
+                        isJumping: false
+                    ));
+                    break;
+            }
         }
-        
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {

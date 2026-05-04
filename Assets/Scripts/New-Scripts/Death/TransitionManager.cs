@@ -12,6 +12,7 @@ namespace New_Scripts.Death
     {
         [SerializeField] private Image _transitionImage;
         [SerializeField] private float _transitionDuration = 0.5f;
+        [SerializeField] private float _maxRadius = 1.5f;
 
         private Material _transitionMaterial;
         private Camera _mainCamera;
@@ -28,13 +29,13 @@ namespace New_Scripts.Death
         public async UniTask PlayCloseTransitionAsync(Vector3 worldPosition, CancellationToken token)
         {
             SetCenter(worldPosition);
-            await AnimateRadiusAsync(1.5f, 0f, token);
+            await AnimateRadiusAsync(_maxRadius, 0f, token);
         }
 
         public async UniTask PlayOpenTransitionAsync(Vector3 worldPosition, CancellationToken token)
         {
             SetCenter(worldPosition);
-            await AnimateRadiusAsync(0f, 1.5f, token);
+            await AnimateRadiusAsync(0f, _maxRadius, token);
         }
 
         private void SetCenter(Vector3 worldPosition)

@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
+using New_Scripts.LevelChange;
+using UnityEngine;
 using New_Scripts.Player.IFramePauseable;
 using New_Scripts.Player.States;
 using New_Scripts.Player.UI;
@@ -19,7 +22,7 @@ namespace New_Scripts.Player
     /// Tum bagimli degerleri merkezi ScriptableObject (PlayerStatsSO) uzerinden okur.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
-    public class PlayerController : MonoBehaviour, IFramePausable
+    public class PlayerController : MonoBehaviour, IFramePausable, IPlayerTransitionable
     {
         [Header("Data")] public PlayerStatsSO Stats;
 
@@ -226,6 +229,38 @@ namespace New_Scripts.Player
             CurrentWallSlideTime -= amount;
         }
         
+        private Vector2 _preTransitionVelocity;
+
+        public void FreezeForTransition()
+        {
+            _preTransitionVelocity = PlayerRigidbody.linearVelocity;
+            TransitionToState(new PlayerTransitionState(this));
+        }
+
+        public void UnfreezeFromTransition(TransitionDirection direction)
+        {
+            switch (direction)
+            {
+                case TransitionDirection.Up:
+                    TransitionToState(new AirborneState(
+                        this,
+                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity),
+                        isJumping: true
+                    ));
+                    break;
+
+                case TransitionDirection.Right:
+                case TransitionDirection.Left:
+                case TransitionDirection.Down:
+                    TransitionToState(new AirborneState(
+                        this,
+                        inheritedVelocity: _preTransitionVelocity,
+                        isJumping: false
+                    ));
+                    break;
+            }
+        }
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {

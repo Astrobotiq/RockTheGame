@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Player.PlayerStatsSO
   MoveSpeed: 10
   JumpHeight: 4
-  TimeToApex: 0.4
+  TimeToApex: 0.5
   SwingGravity: 25
   SwingInitialBoost: 5
   SwingForceMultiplier: 20
@@ -33,8 +33,8 @@ MonoBehaviour:
   MaxSlingshotSpeed: 45
   SlingshotLaunchDuration: 0.01
   SlingshotGrappleLockout: 0.25
-  SlingshotPullbackDistance: 1.5
-  SlingshotPullbackDuration: 0.15
+  SlingshotAnticipationDuration: 0.1
+  SlingshotAnticipationSpeed: 10
   ClimbSpeed: 8
   WallJumpForce: {x: 11, y: 14}
   MaxWallStamina: 6

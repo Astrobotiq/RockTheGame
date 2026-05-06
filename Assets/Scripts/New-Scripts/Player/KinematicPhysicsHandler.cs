@@ -4,7 +4,7 @@ using UnityEngine;
 namespace New_Scripts.Player
 {
     /// <summary>
-    /// Karakterin kinematik çarpışma testlerini, hız filtrelemesini ve sensör durumlarını yönetir.
+    /// Karakterin kinematik çarpışma testlerini, hız filtrelemesini ve sensör durumlarını yöneten sınıf.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public class KinematicPhysicsHandler : MonoBehaviour
@@ -50,7 +50,7 @@ namespace New_Scripts.Player
             totalMovement = ResolveVerticalCollisions(position, totalMovement);
             position.y += totalMovement.y;
 
-            UpdateSensors(position);
+            UpdateSensors(position, extrinsicMovement);
 
             _body.MovePosition(position);
 
@@ -160,7 +160,7 @@ namespace New_Scripts.Player
             return movement;
         }
 
-        private void UpdateSensors(Vector2 position)
+        private void UpdateSensors(Vector2 position, Vector2 extrinsicMovement)
         {
             Vector2 horizontalBoxSize = _boxCollider.bounds.size;
             horizontalBoxSize.y -= boxShrinkOffset;
@@ -174,7 +174,14 @@ namespace New_Scripts.Player
             Vector2 verticalBoxSize = _boxCollider.bounds.size;
             verticalBoxSize.x -= boxShrinkOffset;
 
-            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, groundedDistance, groundLayerMask);
+            float dynamicGroundedDistance = groundedDistance;
+            
+            if (extrinsicMovement.y > 0f)
+            {
+                dynamicGroundedDistance += extrinsicMovement.y;
+            }
+
+            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, dynamicGroundedDistance, groundLayerMask);
             IsGrounded = CheckGroundedValidHit(groundHitCount);
 
             int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.up, _hitBuffer, groundedDistance, groundLayerMask);

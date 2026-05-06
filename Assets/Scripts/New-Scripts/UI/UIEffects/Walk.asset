@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f8a5a04a3b145299afb77db9d03c233, type: 3}
-  m_Name: Jump
+  m_Name: Walk
   m_EditorClassIdentifier: EasyTextEffects::EasyTextEffects.Effects.Effect_Move
-  effectTag: Jump
+  effectTag: Walk
   startCharIndex: 0
   charLength: 0
   animationType: 2
   fixedDuration: 0
-  durationPerChar: 0.3
-  timeBetweenChars: 0.05
+  durationPerChar: 0.8
+  timeBetweenChars: 0
   noDelayForChars: 0
   reverseCharOrder: 0
   easingCurve:
@@ -27,8 +27,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -45,7 +45,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  clampBetween0And1: 1
+  clampBetween0And1: 0
   timeType: 0
-  startOffset: {x: -0, y: 0}
-  endOffset: {x: 0, y: 3}
+  startOffset: {x: -3, y: 0}
+  endOffset: {x: 3, y: 0}

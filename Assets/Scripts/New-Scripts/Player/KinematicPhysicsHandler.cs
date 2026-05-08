@@ -12,6 +12,7 @@ namespace New_Scripts.Player
         [SerializeField] private LayerMask groundLayerMask;
         [SerializeField] private float skinWidth = 0.02f;
         [SerializeField] private float groundedDistance = 0.05f;
+        [SerializeField] private float groundSnapDistance = 0.2f;
         [SerializeField] private float boxShrinkOffset = 0.1f;
         [SerializeField] private float movementThreshold = 0.001f;
         [SerializeField] private float groundNormalYThreshold = 0.5f;
@@ -39,6 +40,7 @@ namespace New_Scripts.Player
             Vector2 position = _body.position;
 
             ResolvePenetrations(ref position);
+            UpdateSurfaceVelocity(position);
 
             Vector2 intrinsicMovement = desiredVelocity * Time.fixedDeltaTime;
             Vector2 extrinsicMovement = SurfaceVelocity * Time.fixedDeltaTime;
@@ -56,6 +58,30 @@ namespace New_Scripts.Player
 
             Vector2 resolvedIntrinsicMovement = totalMovement - extrinsicMovement;
             return resolvedIntrinsicMovement / Time.fixedDeltaTime;
+        }
+
+        private void UpdateSurfaceVelocity(Vector2 position)
+        {
+            Vector2 verticalBoxSize = _boxCollider.bounds.size;
+            verticalBoxSize.x -= boxShrinkOffset;
+
+            float checkDistance = IsGrounded ? groundSnapDistance : groundedDistance;
+            
+            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, checkDistance, groundLayerMask);
+            
+            SurfaceVelocity = Vector2.zero;
+
+            for (int i = 0; i < groundHitCount; i++)
+            {
+                if (!_hitBuffer[i].collider.isTrigger && _hitBuffer[i].normal.y > groundNormalYThreshold)
+                {
+                    if (_hitBuffer[i].collider.TryGetComponent(out IMovingSurface platform))
+                    {
+                        SurfaceVelocity = platform.SurfaceVelocity;
+                    }
+                    break;
+                }
+            }
         }
 
         private void ResolvePenetrations(ref Vector2 position)
@@ -174,15 +200,15 @@ namespace New_Scripts.Player
             Vector2 verticalBoxSize = _boxCollider.bounds.size;
             verticalBoxSize.x -= boxShrinkOffset;
 
-            float dynamicGroundedDistance = groundedDistance;
+            float checkDistance = IsGrounded ? groundSnapDistance : groundedDistance;
             
             if (extrinsicMovement.y > 0f)
             {
-                dynamicGroundedDistance += extrinsicMovement.y;
+                checkDistance += extrinsicMovement.y;
             }
 
-            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, dynamicGroundedDistance, groundLayerMask);
-            IsGrounded = CheckGroundedValidHit(groundHitCount);
+            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, checkDistance, groundLayerMask);
+            IsGrounded = HasValidSensorHit(groundHitCount);
 
             int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.up, _hitBuffer, groundedDistance, groundLayerMask);
             IsTouchingCeiling = HasValidSensorHit(ceilingHitCount);
@@ -194,25 +220,6 @@ namespace New_Scripts.Player
             {
                 if (!_hitBuffer[i].collider.isTrigger)
                 {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool CheckGroundedValidHit(int hitCount)
-        {
-            SurfaceVelocity = Vector2.zero;
-
-            for (int i = 0; i < hitCount; i++)
-            {
-                if (!_hitBuffer[i].collider.isTrigger && _hitBuffer[i].normal.y > groundNormalYThreshold)
-                {
-                    if (_hitBuffer[i].collider.TryGetComponent(out IMovingSurface platform))
-                    {
-                        SurfaceVelocity = platform.SurfaceVelocity;
-                    }
-
                     return true;
                 }
             }

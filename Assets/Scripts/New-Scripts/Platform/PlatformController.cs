@@ -2,9 +2,6 @@
 
 namespace New_Scripts.Platform
 {
-    /// <summary>
-    /// Fiziksel platform hareketini ve IMovingSurface hız aktarımını yöneten ana kontrolcü sınıf.
-    /// </summary>
     [RequireComponent(typeof(Rigidbody2D)), DefaultExecutionOrder(-100)]
     public class PlatformController : MonoBehaviour, IMovingSurface
     {
@@ -13,6 +10,7 @@ namespace New_Scripts.Platform
         private Rigidbody2D _rigidbody2D;
         private Vector2 _previousPosition;
 
+        public Vector2 DeltaPosition { get; private set; }
         public Vector2 SurfaceVelocity { get; private set; }
 
         private void Awake()
@@ -25,7 +23,10 @@ namespace New_Scripts.Platform
         private void FixedUpdate()
         {
             Vector2 newPosition = movementStrategy.GetPositionAtTime(Time.time);
-            SurfaceVelocity = (newPosition - _previousPosition) / Time.fixedDeltaTime;
+            
+            DeltaPosition = newPosition - _previousPosition;
+            SurfaceVelocity = DeltaPosition / Time.fixedDeltaTime;
+            
             _rigidbody2D.MovePosition(newPosition);
             _previousPosition = newPosition;
         }

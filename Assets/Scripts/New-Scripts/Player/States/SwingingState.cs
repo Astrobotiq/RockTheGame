@@ -27,12 +27,12 @@ namespace New_Scripts.Player.States
         {
             if (!TrySetAnchorPoint())
             {
-                _context.TransitionToState(new AirborneState(_context, _context.PlayerRigidbody.linearVelocity));
+                _context.TransitionToState(new AirborneState(_context, _context.Velocity));
                 return;
             }
 
             _ropeLength = Vector2.Distance(_context.PlayerRigidbody.position, _anchorPoint);
-            _currentVelocity = _context.PlayerRigidbody.linearVelocity;
+            _currentVelocity = _context.Velocity;
             
             _context.ResetDash();
             _context.ColorController.ResetBodyColor();
@@ -165,7 +165,7 @@ namespace New_Scripts.Player.States
             if (CheckSweepCollision(playerPos, movementDelta)) return;
 
             _context.PlayerRigidbody.position = nextPosition;
-            _context.PlayerRigidbody.linearVelocity = _currentVelocity;
+            _context.Velocity = _currentVelocity;
         }
 
         private bool CheckSweepCollision(Vector2 playerPos, Vector2 movementDelta)

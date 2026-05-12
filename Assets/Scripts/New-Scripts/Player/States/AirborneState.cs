@@ -32,7 +32,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            _context.PlayerRigidbody.linearVelocity = _currentVelocity;
+            _context.Velocity = _currentVelocity;
         }
 
         public void UpdateState()
@@ -55,7 +55,7 @@ namespace New_Scripts.Player.States
             ApplyAirMovement();
             HandleVerticalObstructions();
 
-            _context.PlayerRigidbody.linearVelocity = _currentVelocity;
+            _context.Velocity = _currentVelocity;
         }
 
         public void ExitState() { }

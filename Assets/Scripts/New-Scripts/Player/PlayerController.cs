@@ -48,6 +48,8 @@ namespace New_Scripts.Player
         public BoxCollider2D PlayerCollider { get; private set; }
         public IInputReader Input { get; private set; }
         public float JumpBufferTimer { get; private set; }
+        
+        public Vector2 Velocity { get; set; }
 
         // --- Accessors ---
         public ArmController LeftArm => leftArm;
@@ -119,10 +121,12 @@ namespace New_Scripts.Player
         private void FixedUpdate()
         {
             if (_isPaused) return;
+    
             CurrentState?.FixedUpdateState();
 
-            Vector2 desiredVelocity = PlayerRigidbody.linearVelocity;
-            PlayerRigidbody.linearVelocity = physicsHandler.FilterVelocity(desiredVelocity);
+            // 2. FSM'in hesapladığı teorik hızı bir delta mesafeye çevirip handler'a veriyoruz.
+            // Handler, çarpışmaları çözüp objeyi hareket ettirdikten sonra "Gerçekten ulaştığım hız bu" diyerek gerçeği FSM'e geri döndürür.
+            Velocity = physicsHandler.Move(Velocity * Time.fixedDeltaTime);
         }
 
         public void TransitionToState(IPlayerState newState)
@@ -202,14 +206,14 @@ namespace New_Scripts.Player
         public void OnPauseStarted()
         {
             _isPaused = true;
-            _velocityCache = PlayerRigidbody.linearVelocity;
-            PlayerRigidbody.linearVelocity = Vector2.zero;
+            _velocityCache = Velocity; // Artık kendi hızımızı saklıyoruz
+            Velocity = Vector2.zero;
         }
 
         public void OnPauseEnded()
         {
             _isPaused = false;
-            PlayerRigidbody.linearVelocity = _velocityCache;
+            Velocity = _velocityCache; // Kendi hızımızı geri yüklüyoruz
         }
 
         public void ConsumeJumpBuffer()
@@ -233,7 +237,7 @@ namespace New_Scripts.Player
 
         public void FreezeForTransition()
         {
-            _preTransitionVelocity = PlayerRigidbody.linearVelocity;
+            _preTransitionVelocity = Velocity; // linearVelocity yerine Velocity
             TransitionToState(new PlayerTransitionState(this));
         }
 
@@ -267,7 +271,7 @@ namespace New_Scripts.Player
             if (!Application.isPlaying || PlayerRigidbody == null) return;
 
             Vector2 position = transform.position;
-            Vector2 velocity = PlayerRigidbody.linearVelocity;
+            Vector2 velocity = Velocity;
 
             Gizmos.color = Color.green;
             Gizmos.DrawLine(position, position + (velocity * 0.1f));

@@ -7,6 +7,7 @@ namespace New_Scripts.Platform
     /// </summary>
     public interface IMovingSurface
     {
+        Vector2 DeltaPosition { get; }
         Vector2 SurfaceVelocity { get; }
     }
 }

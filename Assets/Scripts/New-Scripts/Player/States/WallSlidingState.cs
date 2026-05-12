@@ -35,7 +35,7 @@ namespace New_Scripts.Player.States
 
         public void FixedUpdateState()
         {
-            Vector2 velocity = context.PlayerRigidbody.linearVelocity;
+            Vector2 velocity = context.Velocity;
 
             if (context.CurrentWallSlideTime <= 0f)
             {
@@ -53,7 +53,7 @@ namespace New_Scripts.Player.States
             }
 
             velocity.y = Mathf.MoveTowards(velocity.y, -stats.WallSlideMaxSpeed, stats.WallSlideFriction * Time.fixedDeltaTime);
-            context.PlayerRigidbody.linearVelocity = velocity;
+            context.Velocity = velocity;
 
             if (context.IsGrounded)
             {

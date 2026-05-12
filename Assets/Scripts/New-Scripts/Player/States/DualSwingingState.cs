@@ -25,13 +25,13 @@ namespace New_Scripts.Player.States
         {
             if (!context.LeftAnchor.HasValue || !context.RightAnchor.HasValue)
             {
-                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity));
+                context.TransitionToState(new AirborneState(context, context.Velocity));
                 return;
             }
 
             leftRopeLength = Vector2.Distance(context.PlayerRigidbody.position, context.LeftAnchor.Value);
             rightRopeLength = Vector2.Distance(context.PlayerRigidbody.position, context.RightAnchor.Value);
-            currentVelocity = context.PlayerRigidbody.linearVelocity;
+            currentVelocity = context.Velocity;
             
             context.ResetDash();
         }
@@ -121,7 +121,7 @@ namespace New_Scripts.Player.States
             }
 
             context.PlayerRigidbody.position = nextPosition;
-            context.PlayerRigidbody.linearVelocity = currentVelocity;
+            context.Velocity = currentVelocity;
         }
 
         private Vector2 CalculateSpringForce(Vector2 anchor, float ropeLength)

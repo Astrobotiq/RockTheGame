@@ -18,9 +18,9 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            Vector2 currentVelocity = this.context.PlayerRigidbody.linearVelocity;
+            Vector2 currentVelocity = this.context.Velocity;
             currentVelocity.y = 0f;
-            this.context.PlayerRigidbody.linearVelocity = currentVelocity;
+            this.context.Velocity = currentVelocity;
             
             this.context.LeftAnchor = null;
             this.context.RightAnchor = null;
@@ -43,7 +43,7 @@ namespace New_Scripts.Player.States
         public void FixedUpdateState()
         {
             float targetVelocityX = this.context.Input.LeftStick.x * this.stats.MoveSpeed;
-            this.context.PlayerRigidbody.linearVelocity = new Vector2(targetVelocityX, this.context.PlayerRigidbody.linearVelocity.y);
+            this.context.Velocity = new Vector2(targetVelocityX, this.context.Velocity.y);
         }
 
         public void ExitState()
@@ -74,12 +74,12 @@ namespace New_Scripts.Player.States
             if (this.context.JumpBufferTimer > 0f)
             {
                 this.context.ConsumeJumpBuffer();
-                Vector2 jumpVelocityVector = new Vector2(this.context.PlayerRigidbody.linearVelocity.x, this.stats.JumpVelocity);
+                Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
                 this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, true));
             }
             else if (!this.context.IsGrounded)
             {
-                this.context.TransitionToState(new AirborneState(this.context, this.context.PlayerRigidbody.linearVelocity, true, 0f, 0f, this.stats.CoyoteTimeDuration));
+                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, true, 0f, 0f, this.stats.CoyoteTimeDuration));
             }
         }
 

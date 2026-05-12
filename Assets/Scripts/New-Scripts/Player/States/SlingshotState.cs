@@ -31,7 +31,7 @@ namespace New_Scripts.Player.States
             
             if (!context.LeftAnchor.HasValue || !context.RightAnchor.HasValue)
             {
-                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity));
+                context.TransitionToState(new AirborneState(context, context.Velocity));
                 return;
             }
 
@@ -79,13 +79,13 @@ namespace New_Scripts.Player.States
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity, false ,stats.SlingshotGrappleLockout));
+                context.TransitionToState(new AirborneState(context, context.Velocity, false ,stats.SlingshotGrappleLockout));
             }
         }
 
         private void ApplyAnticipationPhysics()
         {
-            context.PlayerRigidbody.linearVelocity = -cachedLaunchDirection * stats.SlingshotAnticipationSpeed;
+            context.Velocity = -cachedLaunchDirection * stats.SlingshotAnticipationSpeed;
 
             if (stateTimer >= stats.SlingshotAnticipationDuration)
             {
@@ -93,7 +93,7 @@ namespace New_Scripts.Player.States
                 stateTimer = 0f;
                 
                 initialLaunchVelocity = Vector2.zero;
-                context.PlayerRigidbody.linearVelocity = initialLaunchVelocity;
+                context.Velocity = initialLaunchVelocity;
 
                 context.NotifyImpact(cachedLaunchDirection);
             }
@@ -106,7 +106,7 @@ namespace New_Scripts.Player.States
             float easeOutT = 1f - ((1f - t) * (1f - t));
 
             Vector2 targetVelocity = cachedLaunchDirection * stats.MaxSlingshotSpeed;
-            context.PlayerRigidbody.linearVelocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, easeOutT);
+            context.Velocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, easeOutT);
 
             Vector2 currentDirectionToMidpoint = midpoint - context.PlayerRigidbody.position;
             bool hasPassedMidpoint = Vector2.Dot(cachedLaunchDirection, currentDirectionToMidpoint) < 0f;
@@ -115,7 +115,7 @@ namespace New_Scripts.Player.States
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity, false ,stats.SlingshotGrappleLockout));
+                context.TransitionToState(new AirborneState(context, context.Velocity, false ,stats.SlingshotGrappleLockout));
             }
         }
     }

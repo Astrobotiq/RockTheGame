@@ -16,7 +16,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            controller.PlayerRigidbody.linearVelocity = Vector2.zero;
+            controller.Velocity = Vector2.zero;
         }
 
         public void UpdateState()

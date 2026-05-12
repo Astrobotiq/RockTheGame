@@ -27,7 +27,7 @@ namespace New_Scripts.Player.States
             _context.UseDash();
             _dashTimer = 0f;
             
-            _context.PlayerRigidbody.linearVelocity = _dashDirection * _stats.DashSpeed;
+            _context.Velocity = _dashDirection * _stats.DashSpeed;
             _context.NotifyImpact(_dashDirection * _stats.DashImpactMultiplier);
         }
 
@@ -43,14 +43,14 @@ namespace New_Scripts.Player.States
 
         public void FixedUpdateState()
         {
-            _context.PlayerRigidbody.linearVelocity = _dashDirection * _stats.DashSpeed;
+            _context.Velocity = _dashDirection * _stats.DashSpeed;
         }
 
         public void ExitState() { }
 
         private void ExitDashSequence()
         {
-            Vector2 exitVelocity = _context.PlayerRigidbody.linearVelocity * _stats.DashEndMomentumMultiplier;
+            Vector2 exitVelocity = _context.Velocity * _stats.DashEndMomentumMultiplier;
             _context.TransitionToState(new AirborneState(_context, exitVelocity));
         }
     }

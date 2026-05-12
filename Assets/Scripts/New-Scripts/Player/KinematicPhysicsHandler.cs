@@ -35,29 +35,52 @@ namespace New_Scripts.Player
             _body.bodyType = RigidbodyType2D.Kinematic;
         }
 
+        // FilterVelocity — orijinale geri dön, bu metodu değiştirme
+
         public Vector2 FilterVelocity(Vector2 desiredVelocity)
+
         {
             Vector2 position = _body.position;
 
             ResolvePenetrations(ref position);
+
             UpdateSurfaceVelocity(position);
 
+
             Vector2 intrinsicMovement = desiredVelocity * Time.fixedDeltaTime;
+
             Vector2 extrinsicMovement = SurfaceVelocity * Time.fixedDeltaTime;
+
             Vector2 totalMovement = intrinsicMovement + extrinsicMovement;
 
+
             totalMovement = ResolveHorizontalCollisions(position, totalMovement);
+
             position.x += totalMovement.x;
 
             totalMovement = ResolveVerticalCollisions(position, totalMovement);
+
             position.y += totalMovement.y;
+
 
             UpdateSensors(position, extrinsicMovement);
 
             _body.MovePosition(position);
 
+
             Vector2 resolvedIntrinsicMovement = totalMovement - extrinsicMovement;
-            return resolvedIntrinsicMovement / Time.fixedDeltaTime;
+
+            Vector2 returnVelocity = resolvedIntrinsicMovement / Time.fixedDeltaTime;
+
+
+// Grounded iken platform Y velocity'e karışmasın
+
+            if (IsGrounded)
+
+                returnVelocity.y = desiredVelocity.y;
+
+
+            return returnVelocity;
         }
 
         private void UpdateSurfaceVelocity(Vector2 position)
@@ -65,10 +88,15 @@ namespace New_Scripts.Player
             Vector2 verticalBoxSize = _boxCollider.bounds.size;
             verticalBoxSize.x -= boxShrinkOffset;
 
-            float checkDistance = IsGrounded ? groundSnapDistance : groundedDistance;
-            
-            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, checkDistance, groundLayerMask);
-            
+            float platformDownwardMovement = Mathf.Max(0f, -SurfaceVelocity.y * Time.fixedDeltaTime);
+            float checkDistance = (IsGrounded ? groundSnapDistance : groundedDistance)
+                                  + platformDownwardMovement
+                                  + skinWidth;
+
+            int groundHitCount = Physics2D.BoxCastNonAlloc(
+                position + _boxCollider.offset, verticalBoxSize, 0f,
+                Vector2.down, _hitBuffer, checkDistance, groundLayerMask);
+
             SurfaceVelocity = Vector2.zero;
 
             for (int i = 0; i < groundHitCount; i++)
@@ -76,9 +104,7 @@ namespace New_Scripts.Player
                 if (!_hitBuffer[i].collider.isTrigger && _hitBuffer[i].normal.y > groundNormalYThreshold)
                 {
                     if (_hitBuffer[i].collider.TryGetComponent(out IMovingSurface platform))
-                    {
                         SurfaceVelocity = platform.SurfaceVelocity;
-                    }
                     break;
                 }
             }
@@ -86,7 +112,8 @@ namespace New_Scripts.Player
 
         private void ResolvePenetrations(ref Vector2 position)
         {
-            int overlapCount = Physics2D.OverlapBoxNonAlloc(position + _boxCollider.offset, _boxCollider.bounds.size, 0f, _overlapBuffer, groundLayerMask);
+            int overlapCount = Physics2D.OverlapBoxNonAlloc(position + _boxCollider.offset, _boxCollider.bounds.size,
+                0f, _overlapBuffer, groundLayerMask);
 
             for (int i = 0; i < overlapCount; i++)
             {
@@ -119,7 +146,8 @@ namespace New_Scripts.Player
             Vector2 boxSize = _boxCollider.bounds.size;
             boxSize.y -= boxShrinkOffset;
 
-            int hitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, boxSize, 0f, new Vector2(directionX, 0f), _hitBuffer, distance, groundLayerMask);
+            int hitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, boxSize, 0f,
+                new Vector2(directionX, 0f), _hitBuffer, distance, groundLayerMask);
 
             float minDistance = float.MaxValue;
             bool validHit = false;
@@ -191,26 +219,32 @@ namespace New_Scripts.Player
             Vector2 horizontalBoxSize = _boxCollider.bounds.size;
             horizontalBoxSize.y -= boxShrinkOffset;
 
-            int leftHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f, Vector2.left, _hitBuffer, skinWidth * 2f, groundLayerMask);
+            int leftHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f,
+                Vector2.left, _hitBuffer, skinWidth * 2f, groundLayerMask);
             IsTouchingLeftWall = HasValidSensorHit(leftHitCount);
 
-            int rightHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f, Vector2.right, _hitBuffer, skinWidth * 2f, groundLayerMask);
+            int rightHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f,
+                Vector2.right, _hitBuffer, skinWidth * 2f, groundLayerMask);
             IsTouchingRightWall = HasValidSensorHit(rightHitCount);
 
             Vector2 verticalBoxSize = _boxCollider.bounds.size;
             verticalBoxSize.x -= boxShrinkOffset;
 
-            float checkDistance = IsGrounded ? groundSnapDistance : groundedDistance;
-            
-            if (extrinsicMovement.y > 0f)
-            {
-                checkDistance += extrinsicMovement.y;
-            }
+            float platformDownwardMovement = Mathf.Max(0f, -SurfaceVelocity.y * Time.fixedDeltaTime);
+            float checkDistance = (IsGrounded ? groundSnapDistance : groundedDistance)
+                                  + platformDownwardMovement
+                                  + skinWidth;
 
-            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, checkDistance, groundLayerMask);
+            if (extrinsicMovement.y > 0f)
+                checkDistance += extrinsicMovement.y;
+
+            int groundHitCount = Physics2D.BoxCastNonAlloc(
+                position + _boxCollider.offset, verticalBoxSize, 0f,
+                Vector2.down, _hitBuffer, checkDistance, groundLayerMask);
             IsGrounded = HasValidSensorHit(groundHitCount);
 
-            int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.up, _hitBuffer, groundedDistance, groundLayerMask);
+            int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f,
+                Vector2.up, _hitBuffer, groundedDistance, groundLayerMask);
             IsTouchingCeiling = HasValidSensorHit(ceilingHitCount);
         }
 
@@ -223,6 +257,7 @@ namespace New_Scripts.Player
                     return true;
                 }
             }
+
             return false;
         }
     }

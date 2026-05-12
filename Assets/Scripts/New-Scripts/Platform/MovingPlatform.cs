@@ -17,6 +17,7 @@ namespace New_Scripts.Platform
         private int _currentWaypointIndex;
         private bool _isMovingForward = true;
 
+        public Vector2 DeltaPosition { get; }
         public Vector2 SurfaceVelocity { get; private set;}
 
         private void Awake()

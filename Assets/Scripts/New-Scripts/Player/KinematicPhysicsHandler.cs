@@ -3,10 +3,14 @@ using UnityEngine;
 
 namespace New_Scripts.Player
 {
+    /// <summary>
+    /// Karakterin kinematik fizik islemlerini, carpisma cozumlemelerini ve zemin/duvar sensorlerini yonetir.
+    /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public class KinematicPhysicsHandler : MonoBehaviour
     {
         [SerializeField] private LayerMask groundLayerMask;
+        [SerializeField] private LayerMask oneWayPlatformLayerMask;
         [SerializeField] private float skinWidth = 0.02f;
         [SerializeField] private float groundedDistance = 0.05f;
         [SerializeField] private float boxShrinkOffset = 0.1f;
@@ -23,12 +27,14 @@ namespace New_Scripts.Player
         private readonly Collider2D[] _overlapBuffer = new Collider2D[16];
 
         private IMovingSurface _currentMovingSurface;
+        private int _groundAndOneWayMask;
 
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
             _boxCollider = GetComponent<BoxCollider2D>();
             _body.bodyType = RigidbodyType2D.Kinematic;
+            _groundAndOneWayMask = groundLayerMask | oneWayPlatformLayerMask;
         }
 
         public Vector2 Move(Vector2 deltaMovement)
@@ -57,7 +63,9 @@ namespace New_Scripts.Player
 
         private void ResolvePenetrations(ref Vector2 position)
         {
-            int overlapCount = Physics2D.OverlapBoxNonAlloc(position + _boxCollider.offset, _boxCollider.bounds.size, 0f, _overlapBuffer, groundLayerMask);
+            int overlapCount = Physics2D.OverlapBoxNonAlloc(position + _boxCollider.offset, _boxCollider.bounds.size,
+                0f, _overlapBuffer, groundLayerMask);
+
             for (int i = 0; i < overlapCount; i++)
             {
                 Collider2D overlap = _overlapBuffer[i];
@@ -80,14 +88,16 @@ namespace New_Scripts.Player
             Vector2 boxSize = _boxCollider.bounds.size;
             boxSize.y -= boxShrinkOffset;
 
-            int hitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, boxSize, 0f, new Vector2(directionX, 0f), _hitBuffer, distance, groundLayerMask);
-            
+            int hitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, boxSize, 0f,
+                new Vector2(directionX, 0f), _hitBuffer, distance, groundLayerMask);
+
             float minDistance = float.MaxValue;
             bool validHit = false;
 
             for (int i = 0; i < hitCount; i++)
             {
                 if (_hitBuffer[i].collider.isTrigger) continue;
+
                 if (_hitBuffer[i].distance < minDistance)
                 {
                     minDistance = _hitBuffer[i].distance;
@@ -108,14 +118,25 @@ namespace New_Scripts.Player
             Vector2 boxSize = _boxCollider.bounds.size;
             boxSize.x -= boxShrinkOffset;
 
-            int hitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, boxSize, 0f, new Vector2(0f, directionY), _hitBuffer, distance, groundLayerMask);
+            int hitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, boxSize, 0f,
+                new Vector2(0f, directionY), _hitBuffer, distance, _groundAndOneWayMask);
 
             float minDistance = float.MaxValue;
             bool validHit = false;
 
             for (int i = 0; i < hitCount; i++)
             {
-                if (_hitBuffer[i].collider.isTrigger) continue;
+                Collider2D hitCollider = _hitBuffer[i].collider;
+                if (hitCollider.isTrigger) continue;
+
+                bool isOneWay = ((1 << hitCollider.gameObject.layer) & oneWayPlatformLayerMask) != 0;
+
+                if (isOneWay)
+                {
+                    if (directionY > 0) continue;
+                    if (_hitBuffer[i].distance == 0) continue;
+                }
+
                 if (_hitBuffer[i].distance < minDistance)
                 {
                     minDistance = _hitBuffer[i].distance;
@@ -132,40 +153,48 @@ namespace New_Scripts.Player
             Vector2 horizontalBoxSize = _boxCollider.bounds.size;
             horizontalBoxSize.y -= boxShrinkOffset;
 
-            int leftHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f, Vector2.left, _hitBuffer, skinWidth * 2f, groundLayerMask);
-            IsTouchingLeftWall = HasValidSensorHit(leftHitCount);
+            int leftHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f,
+                Vector2.left, _hitBuffer, skinWidth * 2f, groundLayerMask);
+            IsTouchingLeftWall = HasValidSensorHit(leftHitCount, groundLayerMask);
 
-            int rightHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f, Vector2.right, _hitBuffer, skinWidth * 2f, groundLayerMask);
-            IsTouchingRightWall = HasValidSensorHit(rightHitCount);
+            int rightHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f,
+                Vector2.right, _hitBuffer, skinWidth * 2f, groundLayerMask);
+            IsTouchingRightWall = HasValidSensorHit(rightHitCount, groundLayerMask);
 
             Vector2 verticalBoxSize = _boxCollider.bounds.size;
             verticalBoxSize.x -= boxShrinkOffset;
 
-            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.down, _hitBuffer, groundedDistance + skinWidth, groundLayerMask);
-            
+            int groundHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f,
+                Vector2.down, _hitBuffer, groundedDistance + skinWidth, _groundAndOneWayMask);
+
             IsGrounded = false;
             _currentMovingSurface = null;
 
             for (int i = 0; i < groundHitCount; i++)
             {
-                if (!_hitBuffer[i].collider.isTrigger)
-                {
-                    IsGrounded = true;
-                    _hitBuffer[i].collider.TryGetComponent(out _currentMovingSurface);
-                    break; 
-                }
+                Collider2D hitCollider = _hitBuffer[i].collider;
+                if (hitCollider.isTrigger) continue;
+
+                bool isOneWay = ((1 << hitCollider.gameObject.layer) & oneWayPlatformLayerMask) != 0;
+                if (isOneWay && _hitBuffer[i].distance == 0) continue;
+
+                IsGrounded = true;
+                hitCollider.TryGetComponent(out _currentMovingSurface);
+                break;
             }
 
-            int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f, Vector2.up, _hitBuffer, groundedDistance + skinWidth, groundLayerMask);
-            IsTouchingCeiling = HasValidSensorHit(ceilingHitCount);
+            int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f,
+                Vector2.up, _hitBuffer, groundedDistance + skinWidth, groundLayerMask);
+            IsTouchingCeiling = HasValidSensorHit(ceilingHitCount, groundLayerMask);
         }
 
-        private bool HasValidSensorHit(int hitCount)
+        private bool HasValidSensorHit(int hitCount, LayerMask checkMask)
         {
             for (int i = 0; i < hitCount; i++)
             {
                 if (!_hitBuffer[i].collider.isTrigger) return true;
             }
+
             return false;
         }
     }

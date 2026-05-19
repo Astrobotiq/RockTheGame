@@ -3,8 +3,7 @@
 namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Tasarimci dostu metriklerle (Yukseklik ve Sure) hesaplanan dikey fiziksel devinimi ve 
-    /// Kyle Pittman usulu parcali parabol yercekimi mantigini yoneten durum sinifi.
+    /// Karakterin havadaki fiziksel davranislarini, durum gecislerini ve ozel yercekimi hesaplamalarini yoneten durum sinifi.
     /// </summary>
     public class AirborneState : IPlayerState
     {
@@ -18,7 +17,8 @@ namespace New_Scripts.Player.States
         private float _horizontalInputLockoutTimer;
         private bool _isJumping;
 
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f)
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
+            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f)
         {
             _context = context;
             _stats = context.Stats;
@@ -58,7 +58,9 @@ namespace New_Scripts.Player.States
             _context.Velocity = _currentVelocity;
         }
 
-        public void ExitState() { }
+        public void ExitState()
+        {
+        }
 
         private void DecrementTimers()
         {
@@ -94,8 +96,15 @@ namespace New_Scripts.Player.States
                 return;
             }
 
-            if (_grappleLockoutTimer <= 0f) ProcessGrappleInput();
-            if (_wallClimbLockoutTimer <= 0f) ProcessWallInteraction();
+            if (_grappleLockoutTimer <= 0f)
+            {
+                ProcessGrappleInput();
+            }
+
+            if (_wallClimbLockoutTimer <= 0f)
+            {
+                ProcessWallInteraction();
+            }
         }
 
         private void ApplyCustomGravity()
@@ -158,8 +167,14 @@ namespace New_Scripts.Player.States
         {
             if (_context.TryCastGrapple(direction, out Vector2 hitPoint))
             {
-                if (arm == ActiveArm.Left) _context.LeftAnchor = hitPoint;
-                else _context.RightAnchor = hitPoint;
+                if (arm == ActiveArm.Left)
+                {
+                    _context.LeftAnchor = hitPoint;
+                }
+                else
+                {
+                    _context.RightAnchor = hitPoint;
+                }
 
                 EvaluateFinalGrappleState();
             }
@@ -170,24 +185,52 @@ namespace New_Scripts.Player.States
             if (_context.LeftAnchor.HasValue && _context.RightAnchor.HasValue)
             {
                 if (_context.CheckNodeCoincidence() && _context.CanSlingshot)
+                {
                     _context.TransitionToState(new SlingshotState(_context));
+                }
                 else
+                {
                     _context.TransitionToState(new DualSwingingState(_context));
+                }
             }
             else if (_context.LeftAnchor.HasValue)
+            {
                 _context.TransitionToState(new SwingingState(_context, ActiveArm.Left));
+            }
             else if (_context.RightAnchor.HasValue)
+            {
                 _context.TransitionToState(new SwingingState(_context, ActiveArm.Right));
+            }
         }
 
         private void ProcessWallInteraction()
         {
-            if (!_context.CanWallClimb) return;
+            if (_context.CanWallClimb)
+            {
+                if (_context.Input.IsLeftBumperHeld && _context.IsTouchingLeftWall)
+                {
+                    _context.TransitionToState(new WallClimbingState(_context, -1));
+                    return;
+                }
 
-            if (_context.Input.IsLeftBumperHeld && _context.IsTouchingLeftWall)
-                _context.TransitionToState(new WallClimbingState(_context, -1));
-            else if (_context.Input.IsRightBumperHeld && _context.IsTouchingRightWall)
-                _context.TransitionToState(new WallClimbingState(_context, 1));
+                if (_context.Input.IsRightBumperHeld && _context.IsTouchingRightWall)
+                {
+                    _context.TransitionToState(new WallClimbingState(_context, 1));
+                    return;
+                }
+            }
+
+            if (_currentVelocity.y < 0f && _context.CurrentWallSlideTime > 0f)
+            {
+                if (_context.IsTouchingLeftWall && _context.Input.LeftStick.x < -0.1f)
+                {
+                    _context.TransitionToState(new WallSlidingState(_context, -1));
+                }
+                else if (_context.IsTouchingRightWall && _context.Input.LeftStick.x > 0.1f)
+                {
+                    _context.TransitionToState(new WallSlidingState(_context, 1));
+                }
+            }
         }
     }
 }

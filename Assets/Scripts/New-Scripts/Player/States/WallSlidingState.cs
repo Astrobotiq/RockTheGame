@@ -22,7 +22,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            context.ResetDash();
+            
         }
 
         public void UpdateState()
@@ -48,7 +48,7 @@ namespace New_Scripts.Player.States
             
             if (!isPushingTowardsWall)
             {
-                context.TransitionToState(new AirborneState(context, velocity, false, 0f, 0.2f, stats.CoyoteTimeDuration));
+                context.TransitionToState(new AirborneState(context, velocity, false, grappleLockout:0f, wallClimbLockout:0.2f, coyote:stats.CoyoteTimeDuration));
                 return;
             }
 
@@ -91,7 +91,7 @@ namespace New_Scripts.Player.States
                 
                 Vector2 jumpDirection = new Vector2(-wallDirection * stats.WallSlideJumpForce.x, stats.WallSlideJumpForce.y);
                 
-                context.TransitionToState(new AirborneState(context, jumpDirection, true, 0f, 0f, 0f, stats.WallJumpInputLockoutTime));
+                context.TransitionToState(new AirborneState(context, jumpDirection, true, grappleLockout:0f, wallClimbLockout:0f, coyote:0f, horizontalLockout:stats.WallJumpInputLockoutTime));
                 return;
             }
 

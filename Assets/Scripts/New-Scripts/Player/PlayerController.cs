@@ -43,6 +43,10 @@ namespace New_Scripts.Player
 
         [SerializeField] private LayerMask grappleLayerMask;
 
+        [SerializeField] bool useJumpGravity = false;
+        
+        public bool UseJumpGravity => useJumpGravity;
+
         // --- Core Components ---
         public Rigidbody2D PlayerRigidbody { get; private set; }
         public BoxCollider2D PlayerCollider { get; private set; }
@@ -206,7 +210,7 @@ namespace New_Scripts.Player
         public void OnPauseStarted()
         {
             _isPaused = true;
-            _velocityCache = Velocity; // Artık kendi hızımızı saklıyoruz
+            _velocityCache = Velocity;
             Velocity = Vector2.zero;
         }
 
@@ -214,6 +218,16 @@ namespace New_Scripts.Player
         {
             _isPaused = false;
             Velocity = _velocityCache; // Kendi hızımızı geri yüklüyoruz
+        }
+        
+        public void OnStartRespawn(){
+            _isPaused = true;
+            Velocity = Vector2.zero;
+        }
+        
+        public void OnEndRespawn(){
+            TransitionToState(new AirborneState(this, Vector2.zero));
+            _isPaused = false;
         }
 
         public void ConsumeJumpBuffer()
@@ -248,7 +262,7 @@ namespace New_Scripts.Player
                 case TransitionDirection.Up:
                     TransitionToState(new AirborneState(
                         this,
-                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity),
+                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity * 2),
                         isJumping: true
                     ));
                     break;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using New_Scripts.Player;
 using UnityEngine;
 
 namespace New_Scripts.Death
@@ -17,7 +18,7 @@ namespace New_Scripts.Death
         [SerializeField] private float _cameraCatchUpDelay = 1f;
     
         private Transform _currentRespawnPoint;
-        private Rigidbody2D _playerRb;
+        private PlayerController _playerController;
         private CancellationTokenSource _cts;
 
         private void Awake()
@@ -26,7 +27,7 @@ namespace New_Scripts.Death
 
             if (_playerHealth != null)
             {
-                _playerRb = _playerHealth.GetComponent<Rigidbody2D>();
+                _playerController = _playerHealth.GetComponent<PlayerController>();
             }
         }
 
@@ -83,14 +84,18 @@ namespace New_Scripts.Death
 
         private async UniTaskVoid RespawnSequenceAsync(CancellationToken token)
         {
+            if (_playerController != null)
+            {
+                _playerController.OnStartRespawn();
+            }
+            
             await _transitionManager.PlayCloseTransitionAsync(_playerHealth.transform.position, token);
 
             _playerHealth.transform.position = _currentRespawnPoint.position;
         
-            if (_playerRb != null)
+            if (_playerController != null)
             {
-                _playerRb.linearVelocity = Vector2.zero;
-                _playerRb.angularVelocity = 0f;
+                _playerController.Velocity = Vector2.zero;
             }
 
             _playerHealth.gameObject.SetActive(true);
@@ -98,6 +103,11 @@ namespace New_Scripts.Death
             await UniTask.Delay(TimeSpan.FromSeconds(_cameraCatchUpDelay), cancellationToken: token);
 
             await _transitionManager.PlayOpenTransitionAsync(_currentRespawnPoint.position, token);
+            
+            if (_playerController != null)
+            {
+                _playerController.OnEndRespawn();
+            }
         }
     }
 }

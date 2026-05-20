@@ -83,6 +83,14 @@ namespace New_Scripts.Player
         public float CoyoteTimeDuration = 0.1f;
         public float JumpBufferDuration = 0.1f;
         
+        [Header("Swing Hop Settings")]
+        [Tooltip("Yerden swing'e geçerken node'a doğru yatay zıplama hızı")]
+        public float SwingHopForwardSpeed = 8f;
+        [Tooltip("Yerden swing'e geçerken dikey zıplama hızı")]
+        public float SwingHopUpwardSpeed = 12f;
+        [Tooltip("Sıçramanın ne kadar süreceği (Bu süre bitince sarkaç başlar)")]
+        public float SwingHopDuration = 0.15f;
+        
         public float Gravity => -(2f * JumpHeight) / (TimeToApex * TimeToApex);
         public float JumpVelocity => Mathf.Abs(Gravity) * TimeToApex;
     }

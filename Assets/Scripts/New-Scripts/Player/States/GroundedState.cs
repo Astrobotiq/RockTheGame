@@ -64,7 +64,7 @@ namespace New_Scripts.Player.States
                 if (this.context.TryCastGrapple(this.context.Input.RightStick, out Vector2 hitPoint))
                 {
                     this.context.RightAnchor = hitPoint;
-                    this.context.TransitionToState(new SwingingState(this.context, ActiveArm.Right));
+                    this.context.TransitionToState(new SwingingState(this.context, ActiveArm.Right, wasGrounded: true));
                 }
             }
         }
@@ -75,11 +75,11 @@ namespace New_Scripts.Player.States
             {
                 this.context.ConsumeJumpBuffer();
                 Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
-                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, true));
+                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true));
             }
             else if (!this.context.IsGrounded)
             {
-                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, true, 0f, 0f, this.stats.CoyoteTimeDuration));
+                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, isJumping:true, isFromSwing:false,grappleLockout:0f, wallClimbLockout:0f, coyote:this.stats.CoyoteTimeDuration));
             }
         }
 

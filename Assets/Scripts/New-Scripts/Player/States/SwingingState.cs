@@ -4,23 +4,29 @@ namespace New_Scripts.Player.States
 {
     /// <summary>
     /// Karakterin kanca ile sarkaç hareketini (pendulum) yonetir. 
-    /// İvme ve teğetsel hiz hesaplamalarinda, oyunun evrensel dinamik yercekimi referans alinir.
+    /// Yerden geliyorsa once kancaya dogru kucuk bir sicrama (hop) yapar.
     /// </summary>
     public class SwingingState : IPlayerState
     {
         private readonly PlayerController _context;
         private readonly PlayerStatsSO _stats;
         private readonly ActiveArm _swingingArm;
-        
+        private readonly bool _wasGrounded;
+
         private Vector2 _anchorPoint;
         private float _ropeLength;
         private Vector2 _currentVelocity;
 
-        public SwingingState(PlayerController context, ActiveArm swingingArm)
+        // Hop (Sıçrama) aşaması değişkenleri
+        private bool _isHopping;
+        private float _hopTimer;
+
+        public SwingingState(PlayerController context, ActiveArm swingingArm, bool wasGrounded = false)
         {
             _context = context;
             _stats = context.Stats;
             _swingingArm = swingingArm;
+            _wasGrounded = wasGrounded;
         }
 
         public void EnterState()
@@ -31,11 +37,17 @@ namespace New_Scripts.Player.States
                 return;
             }
 
-            _ropeLength = Vector2.Distance(_context.PlayerRigidbody.position, _anchorPoint);
-            _currentVelocity = _context.Velocity;
-            
             _context.ResetDash();
             _context.ColorController.ResetBodyColor();
+
+            if (_wasGrounded)
+            {
+                StartHopPhase();
+            }
+            else
+            {
+                InitializePendulum();
+            }
         }
 
         public void UpdateState()
@@ -46,10 +58,94 @@ namespace New_Scripts.Player.States
 
         public void FixedUpdateState()
         {
-            ApplyArcadePendulum();
+            if (_isHopping)
+            {
+                ApplyHopPhysics();
+            }
+            else
+            {
+                ApplyArcadePendulum();
+            }
         }
 
-        public void ExitState() { }
+        public void ExitState()
+        {
+        }
+
+        // --- HOP (SIÇRAMA) AŞAMASI METOTLARI ---
+
+        private void StartHopPhase()
+        {
+            _isHopping = true;
+            _hopTimer = _stats.SwingHopDuration;
+
+            Vector2 playerPos = _context.PlayerRigidbody.position;
+            Vector2 directionToAnchor = (_anchorPoint - playerPos).normalized;
+
+            // Anchor'ın olduğu yöne (sağ/sol) doğru yatay, ve yukarı doğru dikey bir kuvvet.
+            float dirX = Mathf.Sign(directionToAnchor.x);
+            _currentVelocity = new Vector2(dirX * _stats.SwingHopForwardSpeed, _stats.SwingHopUpwardSpeed);
+
+            _context.Velocity = _currentVelocity;
+        }
+
+        private void ApplyHopPhysics()
+        {
+            _hopTimer -= Time.fixedDeltaTime;
+
+            // Sıçrama sırasında standart yerçekimi uygula (AirborneState'deki gibi)
+            _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
+            _context.Velocity = _currentVelocity;
+
+            // Süre dolduğunda sarkaç aşamasına geç
+            if (_hopTimer <= 0f)
+            {
+                _isHopping = false;
+                InitializePendulum();
+            }
+        }
+
+        // --- PENDULUM (SARKAÇ) AŞAMASI METOTLARI ---
+
+        private void InitializePendulum()
+        {
+            _ropeLength = Vector2.Distance(_context.PlayerRigidbody.position, _anchorPoint);
+            _currentVelocity = _context.Velocity;
+        }
+
+        private void ApplyArcadePendulum()
+        {
+            float playerInputX = _swingingArm == ActiveArm.Left
+                ? _context.Input.LeftStick.x
+                : _context.Input.RightStick.x;
+
+            // _stats.Gravity eksi bir değer olduğu için toplama işlemi yapıyoruz.
+            _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
+
+            Vector2 playerPos = _context.PlayerRigidbody.position;
+            Vector2 directionToAnchor = (_anchorPoint - playerPos).normalized;
+            Vector2 tangent = new Vector2(directionToAnchor.y, -directionToAnchor.x);
+
+            float speedAlongTangent = Vector2.Dot(_currentVelocity, tangent);
+            float inputForce = playerInputX * _stats.SwingForceMultiplier * Time.fixedDeltaTime;
+
+            if (Mathf.Abs(speedAlongTangent + inputForce) < _stats.MaxSwingSpeed)
+            {
+                speedAlongTangent += inputForce;
+            }
+
+            _currentVelocity = tangent * speedAlongTangent;
+
+            Vector2 nextPosition = _anchorPoint - directionToAnchor * _ropeLength;
+            Vector2 movementDelta = nextPosition - playerPos;
+
+            if (CheckSweepCollision(playerPos, movementDelta)) return;
+
+            _context.PlayerRigidbody.position = nextPosition;
+            _context.Velocity = _currentVelocity;
+        }
+
+        // --- YARDIMCI METOTLAR (Değişmedi) ---
 
         private bool TrySetAnchorPoint()
         {
@@ -58,7 +154,7 @@ namespace New_Scripts.Player.States
                 _anchorPoint = _context.LeftAnchor.Value;
                 return true;
             }
-            
+
             if (_swingingArm == ActiveArm.Right && _context.RightAnchor.HasValue)
             {
                 _anchorPoint = _context.RightAnchor.Value;
@@ -72,37 +168,48 @@ namespace New_Scripts.Player.States
         {
             _context.LeftArm.UpdateArmRotation(_context.Input.LeftStick);
             _context.RightArm.UpdateArmRotation(_context.Input.RightStick);
-            
+
             Vector2 directionToAnchor = (_anchorPoint - _context.PlayerRigidbody.position).normalized;
 
-            if (_swingingArm == ActiveArm.Left) 
+            if (_swingingArm == ActiveArm.Left)
                 _context.LeftArm.UpdateArmRotation(directionToAnchor);
-            else 
+            else
                 _context.RightArm.UpdateArmRotation(directionToAnchor);
         }
 
         private void CheckInputTransitions()
         {
-            bool activeTriggerHeld = _swingingArm == ActiveArm.Left ? _context.Input.IsLeftTriggerHeld : _context.Input.IsRightTriggerHeld;
-            
+            bool activeTriggerHeld = _swingingArm == ActiveArm.Left
+                ? _context.Input.IsLeftTriggerHeld
+                : _context.Input.IsRightTriggerHeld;
+
             if (!activeTriggerHeld)
             {
                 ReleaseAnchor();
-                _context.TransitionToState(new AirborneState(_context, _currentVelocity));
+                
+                if (_context.UseJumpGravity)
+                {
+                    _context.TransitionToState(new AirborneState(_context, _currentVelocity, isFromSwing: true));
+                    return;
+                }
+                
+                _context.TransitionToState(new AirborneState(_context, _currentVelocity, isJumping: true));
                 return;
             }
-            
+
             CheckOppositeGrappleCast();
         }
 
         private void CheckOppositeGrappleCast()
         {
-            bool oppositeTriggerHeld = _swingingArm == ActiveArm.Left ? _context.Input.IsRightTriggerHeld : _context.Input.IsLeftTriggerHeld;
-            
+            bool oppositeTriggerHeld = _swingingArm == ActiveArm.Left
+                ? _context.Input.IsRightTriggerHeld
+                : _context.Input.IsLeftTriggerHeld;
+
             if (!oppositeTriggerHeld) return;
 
             Vector2 aimStick = _swingingArm == ActiveArm.Left ? _context.Input.RightStick : _context.Input.LeftStick;
-            
+
             if (_context.TryCastGrapple(aimStick, out Vector2 hitPoint))
             {
                 if (_swingingArm == ActiveArm.Left) _context.RightAnchor = hitPoint;
@@ -137,41 +244,11 @@ namespace New_Scripts.Player.States
             _context.TransitionToState(new AirborneState(_context, _currentVelocity));
         }
 
-        private void ApplyArcadePendulum()
-        {
-            float playerInputX = _swingingArm == ActiveArm.Left ? _context.Input.LeftStick.x : _context.Input.RightStick.x;
-            
-            // DİKKAT: Artık sarkaç yerçekimi evrensel formüle bağlı!
-            // _stats.Gravity eksi bir değer olduğu için toplama işlemi yapıyoruz.
-            _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
-            
-            Vector2 playerPos = _context.PlayerRigidbody.position;
-            Vector2 directionToAnchor = (_anchorPoint - playerPos).normalized;
-            Vector2 tangent = new Vector2(directionToAnchor.y, -directionToAnchor.x);
-            
-            float speedAlongTangent = Vector2.Dot(_currentVelocity, tangent);
-            float inputForce = playerInputX * _stats.SwingForceMultiplier * Time.fixedDeltaTime;
-            
-            if (Mathf.Abs(speedAlongTangent + inputForce) < _stats.MaxSwingSpeed)
-            {
-                speedAlongTangent += inputForce;
-            }
-            
-            _currentVelocity = tangent * speedAlongTangent;
-            
-            Vector2 nextPosition = _anchorPoint - directionToAnchor * _ropeLength;
-            Vector2 movementDelta = nextPosition - playerPos;
-
-            if (CheckSweepCollision(playerPos, movementDelta)) return;
-
-            _context.PlayerRigidbody.position = nextPosition;
-            _context.Velocity = _currentVelocity;
-        }
-
         private bool CheckSweepCollision(Vector2 playerPos, Vector2 movementDelta)
         {
-            RaycastHit2D hit = Physics2D.CircleCast(playerPos, _stats.SwingCollisionRadius, movementDelta.normalized, movementDelta.magnitude, _context.GroundLayerMask);
-            
+            RaycastHit2D hit = Physics2D.CircleCast(playerPos, _stats.SwingCollisionRadius, movementDelta.normalized,
+                movementDelta.magnitude, _context.GroundLayerMask);
+
             if (hit.collider != null)
             {
                 float angle = Vector2.Angle(hit.normal, Vector2.up);
@@ -185,8 +262,10 @@ namespace New_Scripts.Player.States
                     _context.RightAnchor = null;
                     _context.TransitionToState(new GroundedState(_context));
                 }
+
                 return true;
             }
+
             return false;
         }
     }

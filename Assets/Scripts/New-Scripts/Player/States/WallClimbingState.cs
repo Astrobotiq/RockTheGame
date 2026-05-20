@@ -52,7 +52,7 @@ namespace New_Scripts.Player.States
 
             if (context.CurrentWallStamina <= 0f)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, 0f, 0.5f));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f));
             }
 
             CheckInputTransitions();
@@ -75,7 +75,7 @@ namespace New_Scripts.Player.States
             if (context.Input.IsJumpPressed)
             {
                 Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
-                context.TransitionToState(new AirborneState(context, jumpVelocity,false, 0f, 0.2f));
+                context.TransitionToState(new AirborneState(context, jumpVelocity,false, grappleLockout:0f, wallClimbLockout:0.2f));
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace New_Scripts.Player.States
 
             if (!isHoldingCurrentWall)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, 0f, 0.2f));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.2f));
             }
         }
 

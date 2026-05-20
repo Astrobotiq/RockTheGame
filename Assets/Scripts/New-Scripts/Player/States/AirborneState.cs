@@ -16,8 +16,9 @@ namespace New_Scripts.Player.States
         private float _coyoteTimer;
         private float _horizontalInputLockoutTimer;
         private bool _isJumping;
+        private bool _isFromSwing;
 
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, bool isFromSwing = false,
             float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f)
         {
             _context = context;
@@ -125,6 +126,10 @@ namespace New_Scripts.Player.States
                 {
                     gravityMultiplier = _stats.ApexHangGravityMultiplier;
                 }
+            }
+            else if (_isFromSwing)
+            {
+                gravityMultiplier = 2f;
             }
 
             float gravityStep = _stats.Gravity * gravityMultiplier * Time.fixedDeltaTime;

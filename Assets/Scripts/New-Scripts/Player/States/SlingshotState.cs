@@ -79,7 +79,7 @@ namespace New_Scripts.Player.States
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, context.Velocity, false ,grappleLockout: stats.SlingshotGrappleLockout));
+                context.TransitionToState(new AirborneState(context, context.Velocity, isJumping:true ,grappleLockout: stats.SlingshotGrappleLockout));
             }
         }
 
@@ -115,7 +115,7 @@ namespace New_Scripts.Player.States
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, context.Velocity, false ,grappleLockout: stats.SlingshotGrappleLockout));
+                context.TransitionToState(new AirborneState(context, context.Velocity, isJumping:true ,grappleLockout: stats.SlingshotGrappleLockout));
             }
         }
     }

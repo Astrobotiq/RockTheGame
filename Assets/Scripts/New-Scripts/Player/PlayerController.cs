@@ -262,8 +262,8 @@ namespace New_Scripts.Player
                 case TransitionDirection.Up:
                     TransitionToState(new AirborneState(
                         this,
-                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity * 2),
-                        isJumping: true
+                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity),
+                        isJumping: false
                     ));
                     break;
 

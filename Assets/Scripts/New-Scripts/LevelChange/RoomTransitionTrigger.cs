@@ -10,11 +10,6 @@ namespace New_Scripts.LevelChange
         [SerializeField] private RoomTransitionCoordinator coordinator;
         [SerializeField] private Checkpoint associatedCheckpoint;
 
-        [Header("Camera Settings")] [SerializeField]
-        private bool overrideDynamicZoom = false;
-
-        [SerializeField] private float overrideCameraSize = 8f;
-
         [Header("Transition")] [SerializeField]
         private TransitionDirection direction = TransitionDirection.Right;
 
@@ -38,8 +33,8 @@ namespace New_Scripts.LevelChange
                     targetRoom.RoomBounds,
                     transform.position,
                     direction,
-                    overrideCameraSize,
-                    overrideDynamicZoom
+                    targetRoom.OverrideCameraSize,
+                    targetRoom.OverrideDynamicZoom
                 );
 
                 if (associatedCheckpoint != null)

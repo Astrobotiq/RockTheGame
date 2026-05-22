@@ -109,5 +109,12 @@ namespace New_Scripts.Death
                 _playerController.OnEndRespawn();
             }
         }
+        
+        public void OverrideInitialSpawnPoint(Transform newSpawnPoint)
+        {
+            _initialSpawnPoint = newSpawnPoint;
+            _currentRespawnPoint = newSpawnPoint;
+            Debug.Log($"Başlangıç noktası {newSpawnPoint.gameObject.name} olarak güncellendi.");
+        }
     }
 }

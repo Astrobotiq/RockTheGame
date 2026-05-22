@@ -14,5 +14,7 @@ namespace New_Scripts.LevelChange
         UniTask PanAndZoomCameraAsync(Vector2 targetPosition, float targetSize, bool isOverridden, Collider2D newBounds,
             float duration, CancellationToken token);
         void FinalizeTransition(Collider2D newBounds, float targetSize, bool isOverridden);
+        
+        void SnapToRoomBounds(Collider2D newBounds, Vector2 targetPosition, float targetSize, bool isOverridden);
     }
 }

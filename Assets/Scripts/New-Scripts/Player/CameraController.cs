@@ -44,20 +44,21 @@ namespace New_Scripts.Player
 
         private void Start()
         {
-            targetOrthoSize = minOrthoSize;
-            virtualCamera.Lens.OrthographicSize = targetOrthoSize;
-
-            if (targetRigidbody != null)
-            {
-                cameraFollowTarget.position = targetRigidbody.position;
-        
-                if (virtualCamera != null)
-                {
-                    virtualCamera.PreviousStateIsValid = false;
-                    virtualCamera.transform.position = new Vector3(targetRigidbody.position.x, targetRigidbody.position.y, virtualCamera.transform.position.z);
-                    confiner.InvalidateBoundingShapeCache();
-                }
-            }
+            // targetOrthoSize = minOrthoSize;
+            // virtualCamera.Lens.OrthographicSize = targetOrthoSize;
+            //
+            // if (targetRigidbody != null)
+            // {
+            //     cameraFollowTarget.position = targetRigidbody.position;
+            //
+            //     if (virtualCamera != null)
+            //     {
+            //         virtualCamera.PreviousStateIsValid = false;
+            //         virtualCamera.transform.position = new Vector3(targetRigidbody.position.x,
+            //             targetRigidbody.position.y, virtualCamera.transform.position.z);
+            //         confiner.InvalidateBoundingShapeCache();
+            //     }
+            // }
         }
 
         private void OnEnable()
@@ -203,6 +204,33 @@ namespace New_Scripts.Player
 #if UNITY_EDITOR
             isDrawingTransitionGizmos = false;
 #endif
+        }
+        
+        public void SnapToRoomBounds(Collider2D newBounds, Vector2 targetPosition, float targetSize, bool isOverridden)
+        {
+            confiner.BoundingShape2D = newBounds;
+            confiner.InvalidateBoundingShapeCache();
+            confiner.enabled = true;
+
+            isZoomOverridden = isOverridden;
+            currentOverrideSize = isOverridden ? targetSize : minOrthoSize;
+            virtualCamera.Lens.OrthographicSize = currentOverrideSize;
+
+            Vector2 confinedPos = CalculateConfinedPosition(targetPosition, newBounds, currentOverrideSize);
+    
+            cameraFollowTarget.position = confinedPos;
+            virtualCamera.transform.position = new Vector3(confinedPos.x, confinedPos.y, virtualCamera.transform.position.z);
+
+            virtualCamera.PreviousStateIsValid = false;
+            
+            if (virtualCamera != null)
+            {
+                virtualCamera.PreviousStateIsValid = false;
+                virtualCamera.transform.position = new Vector3(targetRigidbody.position.x, targetRigidbody.position.y, virtualCamera.transform.position.z);
+                confiner.InvalidateBoundingShapeCache();
+            }
+    
+            isTransitioning = false;
         }
         
 #if UNITY_EDITOR

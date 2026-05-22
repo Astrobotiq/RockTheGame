@@ -6,31 +6,26 @@ namespace New_Scripts.LevelChange
     public class RoomManager : MonoBehaviour
     {
         [SerializeField] private List<Room> rooms;
-        [SerializeField] private Room startingRoom;
 
-        private Room activeRoom;
-
-        private void Start()
+        public void InitializeRooms()
         {
             foreach (var room in rooms)
-                room.Deactivate();
-
-            ActivateRoom(startingRoom);
+                room.Sleep();
         }
 
         public void TransitionToRoom(Room newRoom)
         {
-            if (activeRoom != null)
-                activeRoom.Deactivate();
+            if (newRoom == null) return;
 
-            ActivateRoom(newRoom);
-        }
-
-        private void ActivateRoom(Room room)
-        {
-            if (room == null) return;
-            activeRoom = room;
-            activeRoom.Activate();
+            foreach (var room in rooms)
+            {
+                if (room == newRoom)
+                    room.SetAsCurrent();
+                else if (newRoom.NeighborRooms != null && newRoom.NeighborRooms.Contains(room))
+                    room.SetAsNeighbor();
+                else
+                    room.Sleep();
+            }
         }
 
         private Room FindRoomById(int id)

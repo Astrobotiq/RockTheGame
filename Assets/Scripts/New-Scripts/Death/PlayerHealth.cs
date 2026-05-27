@@ -1,4 +1,5 @@
 ﻿using System;
+using New_Scripts.Death;
 using UnityEngine;
 
 namespace New_Scripts.Death
@@ -17,3 +18,24 @@ namespace New_Scripts.Death
         }
     }
 }
+
+#if UNITY_EDITOR
+/// <summary>
+/// EntityHealth sınıfı için Inspector arayüzünü özelleştirir ve test butonları sağlar.
+/// </summary>
+[UnityEditor.CustomEditor(typeof(PlayerHealth))]
+public class EntityHealthEditor : UnityEditor.Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+
+        PlayerHealth health = (PlayerHealth)target;
+
+        if (GUILayout.Button("Test: Kill Entity"))
+        {
+            health.Kill();
+        }
+    }
+}
+#endif

@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using New_Scripts.LevelChange;
+using UnityEngine;
 using New_Scripts.Player.IFramePauseable;
 using New_Scripts.Player.States;
 using New_Scripts.Player.UI;
@@ -19,7 +23,7 @@ namespace New_Scripts.Player
     /// Tum bagimli degerleri merkezi ScriptableObject (PlayerStatsSO) uzerinden okur.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
-    public class PlayerController : MonoBehaviour, IFramePausable
+    public class PlayerController : MonoBehaviour, IFramePausable, IPlayerTransitionable
     {
         [Header("Data")] public PlayerStatsSO Stats;
 
@@ -40,11 +44,17 @@ namespace New_Scripts.Player
 
         [SerializeField] private LayerMask grappleLayerMask;
 
+        [SerializeField] bool useJumpGravity = false;
+        
+        public bool UseJumpGravity => useJumpGravity;
+
         // --- Core Components ---
         public Rigidbody2D PlayerRigidbody { get; private set; }
         public BoxCollider2D PlayerCollider { get; private set; }
         public IInputReader Input { get; private set; }
         public float JumpBufferTimer { get; private set; }
+        
+        public Vector2 Velocity { get; set; }
 
         // --- Accessors ---
         public ArmController LeftArm => leftArm;
@@ -68,6 +78,8 @@ namespace New_Scripts.Player
         public bool CanSlingshot { get; private set; } = true;
         public bool CanWallClimb { get; private set; } = true;
         public float CurrentWallStamina { get; private set; }
+        
+        public float ActiveSpeedMultiplier { get; set; } = 1f;
 
         // --- Hit Stop & Frame Pause ---
         private bool _isPaused;
@@ -116,10 +128,12 @@ namespace New_Scripts.Player
         private void FixedUpdate()
         {
             if (_isPaused) return;
+    
             CurrentState?.FixedUpdateState();
 
-            Vector2 desiredVelocity = PlayerRigidbody.linearVelocity;
-            PlayerRigidbody.linearVelocity = physicsHandler.FilterVelocity(desiredVelocity);
+            // 2. FSM'in hesapladığı teorik hızı bir delta mesafeye çevirip handler'a veriyoruz.
+            // Handler, çarpışmaları çözüp objeyi hareket ettirdikten sonra "Gerçekten ulaştığım hız bu" diyerek gerçeği FSM'e geri döndürür.
+            Velocity = physicsHandler.Move(Velocity * Time.fixedDeltaTime);
         }
 
         public void TransitionToState(IPlayerState newState)
@@ -199,14 +213,24 @@ namespace New_Scripts.Player
         public void OnPauseStarted()
         {
             _isPaused = true;
-            _velocityCache = PlayerRigidbody.linearVelocity;
-            PlayerRigidbody.linearVelocity = Vector2.zero;
+            _velocityCache = Velocity;
+            Velocity = Vector2.zero;
         }
 
         public void OnPauseEnded()
         {
             _isPaused = false;
-            PlayerRigidbody.linearVelocity = _velocityCache;
+            Velocity = _velocityCache; // Kendi hızımızı geri yüklüyoruz
+        }
+        
+        public void OnStartRespawn(){
+            _isPaused = true;
+            Velocity = Vector2.zero;
+        }
+        
+        public void OnEndRespawn(){
+            TransitionToState(new AirborneState(this, Vector2.zero));
+            _isPaused = false;
         }
 
         public void ConsumeJumpBuffer()
@@ -226,13 +250,52 @@ namespace New_Scripts.Player
             CurrentWallSlideTime -= amount;
         }
         
+        private Vector2 _preTransitionVelocity;
+
+        public void FreezeForTransition()
+        {
+            _preTransitionVelocity = Velocity; // linearVelocity yerine Velocity
+            TransitionToState(new PlayerTransitionState(this));
+        }
+
+        public void UnfreezeFromTransition(TransitionDirection direction)
+        {
+            switch (direction)
+            {
+                case TransitionDirection.Up:
+                    TransitionToState(new AirborneState(
+                        this,
+                        inheritedVelocity: new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity),
+                        isJumping: false
+                    ));
+                    break;
+
+                case TransitionDirection.Right:
+                case TransitionDirection.Left:
+                case TransitionDirection.Down:
+                    TransitionToState(new AirborneState(
+                        this,
+                        inheritedVelocity: _preTransitionVelocity,
+                        isJumping: false
+                    ));
+                    break;
+            }
+        }
+        
+        public static event Action OnSlingshotLaunch;
+
+        public void NotifySlingshotLaunch()
+        {
+            OnSlingshotLaunch?.Invoke();
+        }
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (!Application.isPlaying || PlayerRigidbody == null) return;
 
             Vector2 position = transform.position;
-            Vector2 velocity = PlayerRigidbody.linearVelocity;
+            Vector2 velocity = Velocity;
 
             Gizmos.color = Color.green;
             Gizmos.DrawLine(position, position + (velocity * 0.1f));

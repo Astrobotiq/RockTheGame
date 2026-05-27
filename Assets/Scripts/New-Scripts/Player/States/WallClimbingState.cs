@@ -23,7 +23,7 @@ namespace New_Scripts.Player.States
         public void EnterState()
         {
             warningTriggered = context.CurrentWallStamina <= stats.StaminaWarningThreshold;
-            context.PlayerRigidbody.linearVelocity = Vector2.zero; 
+            context.Velocity = Vector2.zero; 
             
             Vector2 direction = wallDirection == -1 ? Vector2.left : Vector2.right;
             RaycastHit2D hit = Physics2D.Raycast(context.PlayerCollider.bounds.center, direction, stats.WallSnapRaycastDistance, context.GroundLayerMask);
@@ -52,7 +52,7 @@ namespace New_Scripts.Player.States
 
             if (context.CurrentWallStamina <= 0f)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, 0f, 0.5f));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f));
             }
 
             CheckInputTransitions();
@@ -61,7 +61,7 @@ namespace New_Scripts.Player.States
         public void FixedUpdateState()
         {
             float inputY = context.Input.LeftStick.y;
-            context.PlayerRigidbody.linearVelocity = new Vector2(0f, inputY * stats.ClimbSpeed);
+            context.Velocity = new Vector2(0f, inputY * stats.ClimbSpeed);
         }
 
         private void CheckInputTransitions()
@@ -75,7 +75,7 @@ namespace New_Scripts.Player.States
             if (context.Input.IsJumpPressed)
             {
                 Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
-                context.TransitionToState(new AirborneState(context, jumpVelocity,false, 0f, 0.2f));
+                context.TransitionToState(new AirborneState(context, jumpVelocity,false, grappleLockout:0f, wallClimbLockout:0.2f));
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace New_Scripts.Player.States
 
             if (!isHoldingCurrentWall)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, 0f, 0.2f));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.2f));
             }
         }
 

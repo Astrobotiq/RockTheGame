@@ -3,7 +3,7 @@
 namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Karakterin zemine temas ettigi durumu yonetir. Yatay hareketleri, ziplamayi ve yetenek yenilenmelerini ScriptableObject verileriyle isler.
+    /// Karakterin zemine temas ettiği durumu yönetir. Yatay hareketleri, zıplamayı ve yetenek yenilenmelerini izler.
     /// </summary>
     public class GroundedState : IPlayerState
     {
@@ -18,17 +18,17 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            Vector2 currentVelocity = context.PlayerRigidbody.linearVelocity;
+            Vector2 currentVelocity = this.context.Velocity;
             currentVelocity.y = 0f;
-            context.PlayerRigidbody.linearVelocity = currentVelocity;
+            this.context.Velocity = currentVelocity;
             
-            context.LeftAnchor = null;
-            context.RightAnchor = null;
-            context.ResetDash();
-            context.ResetSlingshot();
-            context.RefillWallStamina();
-            context.ColorController.ResetAllColors();
-            context.ResetWallSlideTime();
+            this.context.LeftAnchor = null;
+            this.context.RightAnchor = null;
+            this.context.ResetDash();
+            this.context.ResetSlingshot();
+            this.context.RefillWallStamina();
+            this.context.ColorController.ResetAllColors();
+            this.context.ResetWallSlideTime();
         }
 
         public void UpdateState()
@@ -42,8 +42,8 @@ namespace New_Scripts.Player.States
 
         public void FixedUpdateState()
         {
-            float targetVelocityX = context.Input.LeftStick.x * stats.MoveSpeed;
-            context.PlayerRigidbody.linearVelocity = new Vector2(targetVelocityX, context.PlayerRigidbody.linearVelocity.y);
+            float targetVelocityX = this.context.Input.LeftStick.x * this.stats.MoveSpeed;
+            this.context.Velocity = new Vector2(targetVelocityX, this.context.Velocity.y);
         }
 
         public void ExitState()
@@ -52,60 +52,58 @@ namespace New_Scripts.Player.States
 
         private void HandleArmRouting()
         {
-            Vector2 facingDirection = new Vector2(context.Input.LeftStick.x, 0f).normalized;
-            context.LeftArm.UpdateArmRotation(facingDirection);
-            context.RightArm.UpdateArmRotation(context.Input.RightStick);
+            Vector2 facingDirection = new Vector2(this.context.Input.LeftStick.x, 0f).normalized;
+            this.context.LeftArm.UpdateArmRotation(facingDirection);
+            this.context.RightArm.UpdateArmRotation(this.context.Input.RightStick);
         }
 
         private void CheckGrappleInput()
         {
-            if (context.Input.IsRightTriggerHeld && !context.RightAnchor.HasValue)
+            if (this.context.Input.IsRightTriggerHeld && !this.context.RightAnchor.HasValue)
             {
-                if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint))
+                if (this.context.TryCastGrapple(this.context.Input.RightStick, out Vector2 hitPoint))
                 {
-                    context.RightAnchor = hitPoint;
-                    context.TransitionToState(new SwingingState(context, ActiveArm.Right));
+                    this.context.RightAnchor = hitPoint;
+                    this.context.TransitionToState(new SwingingState(this.context, ActiveArm.Right, wasGrounded: true));
                 }
             }
         }
 
         private void CheckAirborneTransitions()
         {
-            // Sadece o an basildiysa degil, hafizada (buffer) ziplama istegi varsa da zipla
-            if (context.JumpBufferTimer > 0f)
+            if (this.context.JumpBufferTimer > 0f)
             {
-                context.ConsumeJumpBuffer(); // Hakki tuket
-                Vector2 jumpVelocityVector = new Vector2(context.PlayerRigidbody.linearVelocity.x, stats.JumpVelocity);
-                context.TransitionToState(new AirborneState(context, jumpVelocityVector,true));
+                this.context.ConsumeJumpBuffer();
+                Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
+                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true));
             }
-            else if (!context.IsGrounded)
+            else if (!this.context.IsGrounded)
             {
-                // Ucurumdan dustu! Airborne durumuna Coyote Time gondererek gecis yap
-                context.TransitionToState(new AirborneState(context, context.PlayerRigidbody.linearVelocity,true, 0f, 0f, stats.CoyoteTimeDuration));
+                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, isJumping:true, isFromSwing:false,grappleLockout:0f, wallClimbLockout:0f, coyote:this.stats.CoyoteTimeDuration));
             }
         }
 
         private void CheckDashTransition()
         {
-            if (context.Input.IsDashPressed && context.HasDashCharge)
+            if (this.context.Input.IsDashPressed && this.context.HasDashCharge)
             {
-                context.TransitionToState(new DashState(context, context.Input.LeftStick));
+                this.context.TransitionToState(new DashState(this.context, this.context.Input.LeftStick));
             }
         }
 
         private void CheckWallClimb()
         {
-            if (!context.CanWallClimb) return;
+            if (!this.context.CanWallClimb) return;
 
-            if (context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall)
+            if (this.context.Input.IsLeftBumperHeld && this.context.IsTouchingLeftWall)
             {
-                context.TransitionToState(new WallClimbingState(context, -1));
+                this.context.TransitionToState(new WallClimbingState(this.context, -1));
                 return;
             }
 
-            if (context.Input.IsRightBumperHeld && context.IsTouchingRightWall)
+            if (this.context.Input.IsRightBumperHeld && this.context.IsTouchingRightWall)
             {
-                context.TransitionToState(new WallClimbingState(context, 1));
+                this.context.TransitionToState(new WallClimbingState(this.context, 1));
             }
         }
     }

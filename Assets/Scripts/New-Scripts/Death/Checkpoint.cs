@@ -26,5 +26,15 @@ namespace New_Scripts.Death
                 }
             }
         }
+        
+        public void ActivateCheckpoint()
+        {
+            _isActivated = true;
+            
+            if (_checkpointActivatedChannel != null)
+            {
+                _checkpointActivatedChannel.RaiseEvent(transform);
+            }
+        }
     }
 }

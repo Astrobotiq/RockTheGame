@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace New_Scripts.UI
@@ -16,7 +17,7 @@ namespace New_Scripts.UI
                 animator = GetComponentInChildren<Animator>();
         }
 
-        void Start()
+        void OnEnable()
         {
             animator.SetInteger(animationIndexHash, (int)UIIndex);
         }

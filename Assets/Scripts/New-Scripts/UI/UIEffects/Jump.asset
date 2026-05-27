@@ -48,4 +48,4 @@ MonoBehaviour:
   clampBetween0And1: 1
   timeType: 0
   startOffset: {x: -0, y: 0}
-  endOffset: {x: 0, y: 1}
+  endOffset: {x: 0, y: 3}

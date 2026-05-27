@@ -29,7 +29,7 @@ namespace New_Scripts.Player
             obstacleContactFilter = new ContactFilter2D();
             obstacleContactFilter.SetLayerMask(obstacleLayerMask);
             obstacleContactFilter.useLayerMask = true;
-            obstacleContactFilter.useTriggers = false;
+            obstacleContactFilter.useTriggers = true;
         }
 
         public bool TryFindBestNode(Vector2 aimDirection, Vector2 origin, out Vector2 bestNodePosition)

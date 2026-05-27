@@ -1,10 +1,15 @@
-﻿using UnityEngine;
+﻿using New_Scripts.Player.Nodes.Rotation;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
     /// <summary>
     /// Karakterin kanca ile sarkaç hareketini (pendulum) yonetir. 
     /// Yerden geliyorsa once kancaya dogru kucuk bir sicrama (hop) yapar.
+    /// 
+    /// DEĞİŞİKLİK (FullRotation): FullRotationTracker inject edildi.
+    /// Anchor, FullRotationNode taşıyorsa; 360 tamamlanınca node'un efekti tetiklenir.
+    /// Mevcut pendulum/hop mantığına dokunulmadı.
     /// </summary>
     public class SwingingState : IPlayerState
     {
@@ -20,6 +25,10 @@ namespace New_Scripts.Player.States
         // Hop (Sıçrama) aşaması değişkenleri
         private bool _isHopping;
         private float _hopTimer;
+
+        // --- 360 Dönüş Takibi ---
+        private FullRotationTracker _rotationTracker;
+        private FullRotationNode _fullRotationNode;
 
         public SwingingState(PlayerController context, ActiveArm swingingArm, bool wasGrounded = false)
         {
@@ -40,14 +49,13 @@ namespace New_Scripts.Player.States
             _context.ResetDash();
             _context.ColorController.ResetBodyColor();
 
+
             if (_wasGrounded)
-            {
                 StartHopPhase();
-            }
             else
-            {
                 InitializePendulum();
-            }
+            
+            TryBindFullRotationNode();
         }
 
         public void UpdateState()
@@ -65,11 +73,61 @@ namespace New_Scripts.Player.States
             else
             {
                 ApplyArcadePendulum();
+                TickRotationTracker(); // Hop bitmeden önce saymaya başlama
             }
         }
 
         public void ExitState()
         {
+        }
+
+        // --- 360 DÖNÜŞ METOTLARI ---
+
+        private void TryBindFullRotationNode()
+        {
+            // Anchor noktasındaki Collider2D üzerinde FullRotationNode arar.
+            // Yoksa tracker hiç oluşturulmaz → sıfır overhead.
+            Collider2D[] hits = Physics2D.OverlapPointAll(_anchorPoint);
+            foreach (var col in hits)
+            {
+                if (col.TryGetComponent(out FullRotationNode node))
+                {
+                    _fullRotationNode = node;
+                    _rotationTracker = new FullRotationTracker(_fullRotationNode.TargetDegrees);
+                    
+                    Vector2 radiusVector = _context.PlayerRigidbody.position - _anchorPoint;
+                    
+                    float crossZ = (radiusVector.x * _currentVelocity.y) - (radiusVector.y * _currentVelocity.x);
+                    
+                    bool isClockwise = crossZ < 0f;
+                    
+                    _fullRotationNode.InitializeNodeConnection(_context.PlayerRigidbody.position, isClockwise);
+                    return;
+                }
+            }
+
+            _fullRotationNode = null;
+            _rotationTracker = null;
+        }
+
+        private void TickRotationTracker()
+        {
+            if (_rotationTracker == null || _fullRotationNode == null) return;
+
+            if (!_fullRotationNode.CanTrigger) return;
+
+            bool completed = _rotationTracker.Tick(
+                _context.PlayerRigidbody.position,
+                _anchorPoint
+            );
+
+            _fullRotationNode.UpdateProgressVisual(_rotationTracker.Progress);
+
+            if (completed)
+            {
+                _fullRotationNode.TriggerRotationEffect();
+                _rotationTracker.Reset();
+            }
         }
 
         // --- HOP (SIÇRAMA) AŞAMASI METOTLARI ---
@@ -82,7 +140,6 @@ namespace New_Scripts.Player.States
             Vector2 playerPos = _context.PlayerRigidbody.position;
             Vector2 directionToAnchor = (_anchorPoint - playerPos).normalized;
 
-            // Anchor'ın olduğu yöne (sağ/sol) doğru yatay, ve yukarı doğru dikey bir kuvvet.
             float dirX = Mathf.Sign(directionToAnchor.x);
             _currentVelocity = new Vector2(dirX * _stats.SwingHopForwardSpeed, _stats.SwingHopUpwardSpeed);
 
@@ -93,11 +150,9 @@ namespace New_Scripts.Player.States
         {
             _hopTimer -= Time.fixedDeltaTime;
 
-            // Sıçrama sırasında standart yerçekimi uygula (AirborneState'deki gibi)
             _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
             _context.Velocity = _currentVelocity;
 
-            // Süre dolduğunda sarkaç aşamasına geç
             if (_hopTimer <= 0f)
             {
                 _isHopping = false;
@@ -119,7 +174,6 @@ namespace New_Scripts.Player.States
                 ? _context.Input.LeftStick.x
                 : _context.Input.RightStick.x;
 
-            // _stats.Gravity eksi bir değer olduğu için toplama işlemi yapıyoruz.
             _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
 
             Vector2 playerPos = _context.PlayerRigidbody.position;
@@ -129,10 +183,10 @@ namespace New_Scripts.Player.States
             float speedAlongTangent = Vector2.Dot(_currentVelocity, tangent);
             float inputForce = playerInputX * _stats.SwingForceMultiplier * Time.fixedDeltaTime;
 
-            if (Mathf.Abs(speedAlongTangent + inputForce) < _stats.MaxSwingSpeed)
-            {
+            float currentMaxSpeed = _stats.MaxSwingSpeed * _context.ActiveSpeedMultiplier;
+
+            if (Mathf.Abs(speedAlongTangent + inputForce) < currentMaxSpeed)
                 speedAlongTangent += inputForce;
-            }
 
             _currentVelocity = tangent * speedAlongTangent;
 
@@ -186,13 +240,13 @@ namespace New_Scripts.Player.States
             if (!activeTriggerHeld)
             {
                 ReleaseAnchor();
-                
+
                 if (_context.UseJumpGravity)
                 {
                     _context.TransitionToState(new AirborneState(_context, _currentVelocity, isFromSwing: true));
                     return;
                 }
-                
+
                 _context.TransitionToState(new AirborneState(_context, _currentVelocity, isJumping: true));
                 return;
             }
@@ -222,13 +276,9 @@ namespace New_Scripts.Player.States
         private void EvaluateDualGrappleTransition()
         {
             if (_context.CanSlingshot && _context.CheckNodeCoincidence())
-            {
                 _context.TransitionToState(new SlingshotState(_context));
-            }
             else
-            {
                 _context.TransitionToState(new DualSwingingState(_context));
-            }
         }
 
         private void ReleaseAnchor()
@@ -253,9 +303,7 @@ namespace New_Scripts.Player.States
             {
                 float angle = Vector2.Angle(hit.normal, Vector2.up);
                 if (angle > _stats.MaxWallAngle)
-                {
                     BreakGrapple();
-                }
                 else
                 {
                     _context.LeftAnchor = null;

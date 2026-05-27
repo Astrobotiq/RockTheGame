@@ -2,6 +2,7 @@
 using EasyTextEffects.Editor.MyBoxCopy.Attributes;
 using New_Scripts.Death;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace New_Scripts.LevelChange
 {
@@ -24,6 +25,13 @@ namespace New_Scripts.LevelChange
 
         [ConditionalField(nameof(overrideDynamicZoom))] 
         [SerializeField] private float overrideCameraSize = 8f;
+        
+        [Header("Room Events")]
+        [Tooltip("Oyuncu bu odaya tam olarak girdiğinde tetiklenir.")]
+        public UnityEvent OnRoomEntered;
+        
+        [Tooltip("Oyuncu bu odadan çıktığında tetiklenir.")]
+        public UnityEvent OnRoomExited;
 
         public int RoomId => roomId;
         public Collider2D RoomBounds => roomBounds;
@@ -43,6 +51,8 @@ namespace New_Scripts.LevelChange
 
             foreach (var trigger in triggers)
                 trigger.Enable();
+            
+            OnRoomEntered?.Invoke();
         }
 
         // 2. Durum: Oyuncu komşu odadayken (Ön yükleme: İçerik aktif, kapılar kapalı)
@@ -64,6 +74,8 @@ namespace New_Scripts.LevelChange
 
             foreach (var trigger in triggers)
                 trigger.Disable();
+            
+            OnRoomExited?.Invoke();
         }
     }
 }

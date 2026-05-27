@@ -92,6 +92,8 @@ namespace New_Scripts.Player.States
                 currentPhase = SlingshotPhase.Launch;
                 stateTimer = 0f;
                 
+                context.NotifySlingshotLaunch();
+                
                 initialLaunchVelocity = Vector2.zero;
                 context.Velocity = initialLaunchVelocity;
 

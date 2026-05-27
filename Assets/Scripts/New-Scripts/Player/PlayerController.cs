@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.LevelChange;
 using UnityEngine;
@@ -77,6 +78,8 @@ namespace New_Scripts.Player
         public bool CanSlingshot { get; private set; } = true;
         public bool CanWallClimb { get; private set; } = true;
         public float CurrentWallStamina { get; private set; }
+        
+        public float ActiveSpeedMultiplier { get; set; } = 1f;
 
         // --- Hit Stop & Frame Pause ---
         private bool _isPaused;
@@ -277,6 +280,13 @@ namespace New_Scripts.Player
                     ));
                     break;
             }
+        }
+        
+        public static event Action OnSlingshotLaunch;
+
+        public void NotifySlingshotLaunch()
+        {
+            OnSlingshotLaunch?.Invoke();
         }
 
 #if UNITY_EDITOR

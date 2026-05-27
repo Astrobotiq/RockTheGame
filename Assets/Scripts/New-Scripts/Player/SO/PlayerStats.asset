@@ -28,9 +28,9 @@ MonoBehaviour:
   MomentumDecay: 5
   DashDistance: 7
   DashDuration: 0.2
-  DashImpactMultiplier: 1
+  DashImpactMultiplier: 10
   DashEndMomentumMultiplier: 0.3
-  MaxSlingshotSpeed: 45
+  MaxSlingshotSpeed: 65
   SlingshotLaunchDuration: 0.01
   SlingshotGrappleLockout: 0.25
   SlingshotAnticipationDuration: 0.1
@@ -50,7 +50,7 @@ MonoBehaviour:
   DualSpringDamping: 5
   DualSwingForceMultiplier: 15
   DualSwingCollisionRadius: 0.4
-  HitStopDuration: 0.15
+  HitStopDuration: 0.2
   NodeCoincidenceThreshold: 0.5
   FallGravityMultiplier: 1.5
   JumpEndEarlyGravityMultiplier: 3
@@ -58,3 +58,6 @@ MonoBehaviour:
   ApexHangGravityMultiplier: 0.5
   CoyoteTimeDuration: 0.1
   JumpBufferDuration: 0.1
+  SwingHopForwardSpeed: 8
+  SwingHopUpwardSpeed: 12
+  SwingHopDuration: 0.15

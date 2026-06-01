@@ -1,0 +1,152 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1639404710352601930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6759354507214402645}
+  - component: {fileID: 975088571562628619}
+  - component: {fileID: 1226046086931715458}
+  - component: {fileID: 6753584654793138180}
+  m_Layer: 0
+  m_Name: CameraManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6759354507214402645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639404710352601930}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14.97189, y: -7.30155, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &975088571562628619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639404710352601930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41136fd0969c40609b65f7e72c4e91d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Camera.CameraController
+  virtualCamera: {fileID: 0}
+  targetRigidbody: {fileID: 0}
+  confiner: {fileID: 0}
+  cameraFollowTarget: {fileID: 0}
+  minOrthoSize: 12
+  maxOrthoSize: 18
+  minVelocity: 5
+  maxVelocity: 40
+  zoomLerpSpeed: 3
+  followLerpSpeed: 5
+  lookAheadMultiplier: 0.15
+  lookAheadLerpSpeed: 5
+  transitionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1226046086931715458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639404710352601930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 1
+    ImpulseShape: 2
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 2
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &6753584654793138180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639404710352601930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b1d088f8234697b95bfa8791cac9ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomTransitionCoordinator
+  transitionDuration: 1
+  physicsCooldownDelay: 0.3
+  roomManager: {fileID: 0}

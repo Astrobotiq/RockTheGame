@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.LevelChange;
@@ -175,7 +175,14 @@ namespace New_Scripts.Player
             HasDashCharge = false;
         }
 
-        public void ResetSlingshot() => CanSlingshot = true;
+        public void ResetSlingshot()
+        {
+            CanSlingshot = true;
+            if (colorController != null)
+            {
+                colorController.ResetArmColors();
+            }
+        }
 
         public void UseSlingshot()
         {

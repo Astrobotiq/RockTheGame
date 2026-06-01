@@ -46,7 +46,11 @@ namespace New_Scripts.Player.Visual
         public void ResetAllColors()
         {
             ResetBodyColor();
-
+            ResetArmColors();
+        }
+        
+        public void ResetArmColors()
+        {
             for (int i = 0; i < armRenderers.Length; i++)
             {
                 armTweens[i]?.Kill();

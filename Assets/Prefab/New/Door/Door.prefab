@@ -232,6 +232,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Door.DoorJuicyVisual
   roomDoorContext: {fileID: 7140666751074885994}
   graphicTarget: {fileID: 1854819021028374915}
-  openTargetY: 2
-  openDuration: 0.4
-  closeDuration: 0.25
+  openTargetY: 1
+  openDuration: 1
+  closeDuration: 0.5

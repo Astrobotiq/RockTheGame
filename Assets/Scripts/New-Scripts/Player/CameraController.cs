@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.LevelChange;
 using Unity.Cinemachine;
@@ -118,11 +118,8 @@ namespace New_Scripts.Player
         {
             if (confiner == null || confiner.BoundingShape2D == null) return;
 
-            float currentSize = virtualCamera.Lens.OrthographicSize;
-            Vector2 clamped = CalculateConfinedPosition(
-                cameraFollowTarget.position,
-                confiner.BoundingShape2D,
-                currentSize);
+            Vector2 currentPos = cameraFollowTarget.position;
+            Vector2 clamped = confiner.BoundingShape2D.ClosestPoint(currentPos);
 
             cameraFollowTarget.position = new Vector3(
                 clamped.x, clamped.y,

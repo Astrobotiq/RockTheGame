@@ -16,9 +16,10 @@ namespace New_Scripts.Platform
         private float _squaredArrivalThreshold;
         private int _currentWaypointIndex;
         private bool _isMovingForward = true;
+        private Vector2 _previousPosition;
 
-        public Vector2 DeltaPosition { get; }
-        public Vector2 SurfaceVelocity { get; private set;}
+        public Vector2 DeltaPosition { get; private set; }
+        public Vector2 SurfaceVelocity { get; private set; }
 
         private void Awake()
         {
@@ -26,12 +27,15 @@ namespace New_Scripts.Platform
             _waypointPath = GetComponent<IWaypointPath>();
             _platformRigidbody.bodyType = RigidbodyType2D.Kinematic;
             _squaredArrivalThreshold = arrivalThreshold * arrivalThreshold;
+            _previousPosition = _platformRigidbody.position;
         }
 
         private void FixedUpdate()
         {
             if (_waypointPath == null || !_waypointPath.IsValid())
             {
+                DeltaPosition = Vector2.zero;
+                SurfaceVelocity = Vector2.zero;
                 return;
             }
 
@@ -46,9 +50,12 @@ namespace New_Scripts.Platform
             }
 
             Vector2 newPosition = Vector2.MoveTowards(currentPosition, targetPosition, speed * Time.fixedDeltaTime);
-            SurfaceVelocity = (newPosition - currentPosition) / Time.fixedDeltaTime;
+            
+            DeltaPosition = newPosition - _previousPosition;
+            SurfaceVelocity = DeltaPosition / Time.fixedDeltaTime;
 
             _platformRigidbody.MovePosition(newPosition);
+            _previousPosition = newPosition;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -17,9 +17,10 @@ namespace New_Scripts.Player.States
         private float _horizontalInputLockoutTimer;
         private bool _isJumping;
         private bool _isFromSwing;
+        private bool _bypassJumpGravity;
 
         public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, bool isFromSwing = false,
-            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f)
+            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f, bool bypassJumpGravity = false)
         {
             _context = context;
             _stats = context.Stats;
@@ -29,6 +30,7 @@ namespace New_Scripts.Player.States
             _wallClimbLockoutTimer = wallClimbLockout;
             _coyoteTimer = coyote;
             _horizontalInputLockoutTimer = horizontalLockout;
+            _bypassJumpGravity = bypassJumpGravity;
         }
 
         public void EnterState()
@@ -114,17 +116,31 @@ namespace New_Scripts.Player.States
 
             if (_isJumping)
             {
-                if (_currentVelocity.y < 0f)
+                if (_bypassJumpGravity)
                 {
-                    gravityMultiplier = _stats.FallGravityMultiplier;
+                    if (_currentVelocity.y < 0f)
+                    {
+                        gravityMultiplier = _stats.FallGravityMultiplier;
+                    }
+                    else if (_currentVelocity.y > 0f)
+                    {
+                        gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier;
+                    }
                 }
-                else if (_currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
+                else
                 {
-                    gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier;
-                }
-                else if (Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
-                {
-                    gravityMultiplier = _stats.ApexHangGravityMultiplier;
+                    if (_currentVelocity.y < 0f)
+                    {
+                        gravityMultiplier = _stats.FallGravityMultiplier;
+                    }
+                    else if (_currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
+                    {
+                        gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier;
+                    }
+                    else if (Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
+                    {
+                        gravityMultiplier = _stats.ApexHangGravityMultiplier;
+                    }
                 }
             }
             else if (_isFromSwing)

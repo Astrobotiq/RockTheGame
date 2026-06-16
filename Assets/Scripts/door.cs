@@ -20,7 +20,11 @@ public class door : MonoBehaviour
     {
         if (collision.gameObject.tag == "player" && condition.canFinish)
         {
+#if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
     }
 

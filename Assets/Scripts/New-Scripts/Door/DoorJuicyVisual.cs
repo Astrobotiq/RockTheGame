@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -23,12 +23,14 @@ namespace New_Scripts.Door
         private float closeDuration = 0.25f;
 
         private Vector3 _initialLocalPosition;
+        private Vector3 _initialLocalScale;
         private Sequence _activeSequence;
 
         private void Awake()
         {
             if (graphicTarget == null) graphicTarget = transform;
             _initialLocalPosition = graphicTarget.localPosition;
+            _initialLocalScale = graphicTarget.localScale;
         }
 
         private void OnEnable()
@@ -54,16 +56,19 @@ namespace New_Scripts.Door
             _activeSequence?.Kill();
             _activeSequence = DOTween.Sequence();
 
-            _activeSequence.Append(graphicTarget.DOScale(new Vector3(1.15f, 0.8f, 1f), openDuration * 0.2f)
+            Vector3 squashedScale = new Vector3(_initialLocalScale.x * 1.15f, _initialLocalScale.y * 0.8f, _initialLocalScale.z);
+            Vector3 stretchedScale = new Vector3(_initialLocalScale.x * 0.85f, _initialLocalScale.y * 1.2f, _initialLocalScale.z);
+
+            _activeSequence.Append(graphicTarget.DOScale(squashedScale, openDuration * 0.2f)
                 .SetEase(Ease.OutQuad));
 
             _activeSequence.Append(graphicTarget
                 .DOLocalMoveY(_initialLocalPosition.y + openTargetY, openDuration * 0.8f).SetEase(Ease.OutBack));
 
-            _activeSequence.Join(graphicTarget.DOScale(new Vector3(0.85f, 1.2f, 1f), openDuration * 0.4f)
+            _activeSequence.Join(graphicTarget.DOScale(stretchedScale, openDuration * 0.4f)
                 .SetEase(Ease.OutQuad));
 
-            _activeSequence.Append(graphicTarget.DOScale(Vector3.one, openDuration * 0.2f));
+            _activeSequence.Append(graphicTarget.DOScale(_initialLocalScale, openDuration * 0.2f));
         }
 
         private void PlayCloseAnimation()
@@ -71,20 +76,24 @@ namespace New_Scripts.Door
             _activeSequence?.Kill();
             _activeSequence = DOTween.Sequence();
 
+            Vector3 prepScale = new Vector3(_initialLocalScale.x * 0.9f, _initialLocalScale.y * 1.1f, _initialLocalScale.z);
+            Vector3 impactScale = new Vector3(_initialLocalScale.x * 1.3f, _initialLocalScale.y * 0.6f, _initialLocalScale.z);
+            Vector3 bounceScale = new Vector3(_initialLocalScale.x * 0.95f, _initialLocalScale.y * 1.05f, _initialLocalScale.z);
+
             _activeSequence.Append(graphicTarget.DOLocalMoveY(_initialLocalPosition.y, closeDuration)
                 .SetEase(Ease.InCubic));
 
-            _activeSequence.Join(graphicTarget.DOScale(new Vector3(0.9f, 1.1f, 1f), closeDuration * 0.5f));
+            _activeSequence.Join(graphicTarget.DOScale(prepScale, closeDuration * 0.5f));
 
             _activeSequence.AppendCallback(() =>
             {
                 TriggerImpactVFX();
             });
 
-            _activeSequence.Append(graphicTarget.DOScale(new Vector3(1.3f, 0.6f, 1f), 0.08f).SetEase(Ease.OutQuad));
+            _activeSequence.Append(graphicTarget.DOScale(impactScale, 0.08f).SetEase(Ease.OutQuad));
 
-            _activeSequence.Append(graphicTarget.DOScale(new Vector3(0.95f, 1.05f, 1f), 0.08f).SetEase(Ease.InOutQuad));
-            _activeSequence.Append(graphicTarget.DOScale(Vector3.one, 0.05f));
+            _activeSequence.Append(graphicTarget.DOScale(bounceScale, 0.08f).SetEase(Ease.InOutQuad));
+            _activeSequence.Append(graphicTarget.DOScale(_initialLocalScale, 0.05f));
         }
 
         private void TriggerImpactVFX()

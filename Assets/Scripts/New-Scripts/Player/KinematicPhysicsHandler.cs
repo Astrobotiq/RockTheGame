@@ -1,4 +1,4 @@
-﻿using New_Scripts.Platform;
+using New_Scripts.Platform;
 using UnityEngine;
 
 namespace New_Scripts.Player
@@ -20,6 +20,7 @@ namespace New_Scripts.Player
         public bool IsTouchingLeftWall { get; private set; }
         public bool IsTouchingRightWall { get; private set; }
         public bool IsTouchingCeiling { get; private set; }
+        public int ClingingWallDirection { get; set; }
 
         private Rigidbody2D _body;
         private BoxCollider2D _boxCollider;
@@ -27,6 +28,8 @@ namespace New_Scripts.Player
         private readonly Collider2D[] _overlapBuffer = new Collider2D[16];
 
         private IMovingSurface _currentMovingSurface;
+        private IMovingSurface _currentLeftMovingSurface;
+        private IMovingSurface _currentRightMovingSurface;
         private int _groundAndOneWayMask;
 
         private void Awake()
@@ -54,6 +57,14 @@ namespace New_Scripts.Player
             if (IsGrounded && _currentMovingSurface != null)
             {
                 position += _currentMovingSurface.DeltaPosition;
+            }
+            else if (ClingingWallDirection == -1 && _currentLeftMovingSurface != null)
+            {
+                position += _currentLeftMovingSurface.DeltaPosition;
+            }
+            else if (ClingingWallDirection == 1 && _currentRightMovingSurface != null)
+            {
+                position += _currentRightMovingSurface.DeltaPosition;
             }
 
             _body.MovePosition(position);
@@ -156,10 +167,12 @@ namespace New_Scripts.Player
             int leftHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f,
                 Vector2.left, _hitBuffer, skinWidth * 2f, groundLayerMask);
             IsTouchingLeftWall = HasValidSensorHit(leftHitCount, groundLayerMask);
+            TryGetMovingSurface(leftHitCount, out _currentLeftMovingSurface);
 
             int rightHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, horizontalBoxSize, 0f,
                 Vector2.right, _hitBuffer, skinWidth * 2f, groundLayerMask);
             IsTouchingRightWall = HasValidSensorHit(rightHitCount, groundLayerMask);
+            TryGetMovingSurface(rightHitCount, out _currentRightMovingSurface);
 
             Vector2 verticalBoxSize = _boxCollider.bounds.size;
             verticalBoxSize.x -= boxShrinkOffset;
@@ -195,6 +208,21 @@ namespace New_Scripts.Player
                 if (!_hitBuffer[i].collider.isTrigger) return true;
             }
 
+            return false;
+        }
+
+        private bool TryGetMovingSurface(int hitCount, out IMovingSurface movingSurface)
+        {
+            movingSurface = null;
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider2D hitCollider = _hitBuffer[i].collider;
+                if (hitCollider.isTrigger) continue;
+                if (hitCollider.TryGetComponent(out movingSurface))
+                {
+                    return true;
+                }
+            }
             return false;
         }
     }

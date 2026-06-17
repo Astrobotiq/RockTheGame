@@ -808,7 +808,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8e280ef80034dac8709f282ed9863b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.LevelChange.LevelBootstrapper
-  startingRoom: {fileID: 2011290558}
+  startingRoom: {fileID: 3201454815377950815}
   roomManager: {fileID: 450134856}
   respawnManager: {fileID: 892672284}
   playerTransform: {fileID: 5018044740481452007}

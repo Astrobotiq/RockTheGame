@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -22,7 +22,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            
+            context.PhysicsHandler.ClingingWallDirection = wallDirection;
         }
 
         public void UpdateState()
@@ -67,6 +67,7 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            context.PhysicsHandler.ClingingWallDirection = 0;
         }
 
         private void HandleArmRouting()

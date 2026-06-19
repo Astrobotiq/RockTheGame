@@ -47,6 +47,13 @@ namespace New_Scripts.Platform
             SurfaceVelocity = DeltaPosition / Time.fixedDeltaTime;
             
             _rigidbody2D.MovePosition(newPosition);
+
+            float? newRotation = movementStrategy.GetRotationAtTime(Time.time);
+            if (newRotation.HasValue)
+            {
+                _rigidbody2D.MoveRotation(newRotation.Value);
+            }
+
             _previousPosition = newPosition;
         }
 

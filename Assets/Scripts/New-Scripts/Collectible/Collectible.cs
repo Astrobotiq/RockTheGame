@@ -24,6 +24,9 @@ namespace New_Scripts.Collectible
         [Tooltip("Yeniden doğma gecikmesi süresi (saniye).")]
         [SerializeField] private float respawnDelay = 3f;
 
+        [Tooltip("Toplandığında görsel nesne otomatik gizlensin mi?")]
+        [SerializeField] private bool hideVisualOnCollect = true;
+
         [Header("References")]
         [Tooltip("Checkpoint tetiklenmelerini dinleyen kanal.")]
         [SerializeField] private TransformEventChannelSO checkpointActivatedChannel;
@@ -45,6 +48,8 @@ namespace New_Scripts.Collectible
 
         public bool IsCollected => isCollected;
         public bool IsCommitted => isCommitted;
+        public bool HideVisualOnCollect { get => hideVisualOnCollect; set => hideVisualOnCollect = value; }
+        public GameObject VisualObject => visualObject;
 
         private void Awake()
         {
@@ -104,7 +109,7 @@ namespace New_Scripts.Collectible
             isCollected = true;
             
             // Görselleri ve fizik algılamayı kapat
-            if (visualObject != null) visualObject.SetActive(false);
+            if (hideVisualOnCollect && visualObject != null) visualObject.SetActive(false);
             if (collectibleCollider != null) collectibleCollider.enabled = false;
 
             // Tüm bağlı efektleri tetikle (composition)
@@ -154,6 +159,13 @@ namespace New_Scripts.Collectible
             isCollected = false;
             if (visualObject != null) visualObject.SetActive(true);
             if (collectibleCollider != null) collectibleCollider.enabled = true;
+        }
+
+        public void ForceReset()
+        {
+            CancelRespawnTask();
+            isCommitted = false;
+            ResetCollectible();
         }
 
         private void HandleCheckpointActivated(Transform checkpoint)

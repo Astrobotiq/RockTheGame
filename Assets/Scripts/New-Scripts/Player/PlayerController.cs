@@ -57,6 +57,7 @@ namespace New_Scripts.Player
         public Vector2 Velocity { get; set; }
 
         // --- Accessors ---
+        public KinematicPhysicsHandler PhysicsHandler => physicsHandler;
         public ArmController LeftArm => leftArm;
         public ArmController RightArm => rightArm;
         public PlayerColorController ColorController => colorController;

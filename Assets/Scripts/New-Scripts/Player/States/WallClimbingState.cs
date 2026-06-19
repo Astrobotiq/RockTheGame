@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -22,6 +22,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
+            context.PhysicsHandler.ClingingWallDirection = wallDirection;
             warningTriggered = context.CurrentWallStamina <= stats.StaminaWarningThreshold;
             context.Velocity = Vector2.zero; 
             
@@ -90,6 +91,7 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            context.PhysicsHandler.ClingingWallDirection = 0;
         }
     }
 }

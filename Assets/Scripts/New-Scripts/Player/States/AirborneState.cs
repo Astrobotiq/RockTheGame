@@ -87,6 +87,7 @@ namespace New_Scripts.Player.States
                 _context.ConsumeJumpBuffer();
                 _coyoteTimer = 0f;
                 _isJumping = true;
+                if (_context.Audio != null) _context.Audio.PlayJump();
                 _currentVelocity.y = _stats.JumpVelocity;
             }
         }

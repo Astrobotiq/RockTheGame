@@ -35,8 +35,8 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _InnerRadius: 0
-    - _OuterFadePower: 1.39
-    - _OuterFadeStart: 0.453
+    - _OuterFadePower: 0.96
+    - _OuterFadeStart: 0.4
     - _OuterRadius: 0.5
     - _RingCount: 10
     - _Stencil: 0

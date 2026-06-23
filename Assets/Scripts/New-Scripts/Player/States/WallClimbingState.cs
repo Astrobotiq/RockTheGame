@@ -75,6 +75,7 @@ namespace New_Scripts.Player.States
 
             if (context.Input.IsJumpPressed)
             {
+                if (context.Audio != null) context.Audio.PlayJump();
                 Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
                 context.TransitionToState(new AirborneState(context, jumpVelocity,false, grappleLockout:0f, wallClimbLockout:0.2f));
                 return;

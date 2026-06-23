@@ -1,4 +1,4 @@
-﻿using New_Scripts.Player.Nodes.Rotation;
+using New_Scripts.Player.Nodes.Rotation;
 using UnityEngine;
 
 namespace New_Scripts.Player.States
@@ -79,6 +79,10 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            if (_fullRotationNode != null)
+            {
+                _fullRotationNode.OnConnectionLost();
+            }
         }
 
         // --- 360 DÖNÜŞ METOTLARI ---

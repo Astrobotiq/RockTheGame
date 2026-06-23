@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -29,6 +29,11 @@ namespace New_Scripts.Player.States
             this.context.RefillWallStamina();
             this.context.ColorController.ResetAllColors();
             this.context.ResetWallSlideTime();
+
+            if (Time.timeSinceLevelLoad > 0.1f && this.context.Audio != null)
+            {
+                this.context.Audio.PlayLand();
+            }
         }
 
         public void UpdateState()
@@ -74,6 +79,7 @@ namespace New_Scripts.Player.States
             if (this.context.JumpBufferTimer > 0f)
             {
                 this.context.ConsumeJumpBuffer();
+                if (this.context.Audio != null) this.context.Audio.PlayJump();
                 Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
                 this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true));
             }

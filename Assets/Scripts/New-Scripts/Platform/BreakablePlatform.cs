@@ -1,6 +1,10 @@
-﻿using System.Threading;
+using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
+using New_Scripts.Death;
 using UnityEngine;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace New_Scripts.Platform
 {
@@ -9,7 +13,7 @@ namespace New_Scripts.Platform
     /// Kendi üzerinde Player olup olmadığını kendi kontrol eder.
     /// </summary>
     [RequireComponent(typeof(BoxCollider2D))]
-    public class BreakablePlatform : MonoBehaviour
+    public class BreakablePlatform : MonoBehaviour, IResettable
     {
         [Header("Settings")]
         [Tooltip("Sadece Player'ın bulunduğu Layer'ı seçin.")]
@@ -27,6 +31,7 @@ namespace New_Scripts.Platform
         private BoxCollider2D _solidCollider;
         private bool _isTriggered;
         private Vector3 _originalVisualPosition;
+        private CancellationTokenSource _breakCts;
 
         private void Awake()
         {
@@ -35,6 +40,23 @@ namespace New_Scripts.Platform
             if (visualTransform != null)
             {
                 _originalVisualPosition = visualTransform.localPosition;
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (LevelResetManager.Instance != null)
+            {
+                LevelResetManager.Instance.Register(this);
+            }
+        }
+
+        private void OnDisable()
+        {
+            CancelBreakSequence();
+            if (LevelResetManager.Instance != null)
+            {
+                LevelResetManager.Instance.Unregister(this);
             }
         }
 
@@ -50,14 +72,30 @@ namespace New_Scripts.Platform
             
             if (hit != null)
             {
-                BreakSequenceAsync().Forget();
+                StartBreakSequence();
             }
         }
 
-        private async UniTaskVoid BreakSequenceAsync()
+        private void StartBreakSequence()
+        {
+            CancelBreakSequence();
+            _breakCts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+            BreakSequenceAsync(_breakCts.Token).Forget();
+        }
+
+        private void CancelBreakSequence()
+        {
+            if (_breakCts != null)
+            {
+                _breakCts.Cancel();
+                _breakCts.Dispose();
+                _breakCts = null;
+            }
+        }
+
+        private async UniTaskVoid BreakSequenceAsync(CancellationToken ct)
         {
             _isTriggered = true;
-            CancellationToken ct = this.GetCancellationTokenOnDestroy();
 
             float timer = 0f;
             while (timer < breakDelay)
@@ -90,7 +128,7 @@ namespace New_Scripts.Platform
             float rewindVFXDuration = 0.4f; 
             float initialWait = Mathf.Max(0f, respawnTime - rewindVFXDuration);
 
-            await UniTask.Delay(System.TimeSpan.FromSeconds(initialWait), cancellationToken: ct);
+            await UniTask.Delay(TimeSpan.FromSeconds(initialWait), cancellationToken: ct);
 
             if (reformVFXPrefab != null)
             {
@@ -98,10 +136,30 @@ namespace New_Scripts.Platform
                 Instantiate(reformVFXPrefab, center, Quaternion.identity);
             }
 
-            await UniTask.Delay(System.TimeSpan.FromSeconds(rewindVFXDuration), cancellationToken: ct);
+            await UniTask.Delay(TimeSpan.FromSeconds(rewindVFXDuration), cancellationToken: ct);
 
             if (visualTransform != null) visualTransform.gameObject.SetActive(true);
             _solidCollider.enabled = true;
+            _isTriggered = false;
+        }
+
+        /// <summary>
+        /// Platformu anında varsayılan durumuna (sağlam ve görünür) geri getirir.
+        /// </summary>
+        public void ResetToDefault()
+        {
+            CancelBreakSequence();
+
+            if (visualTransform != null)
+            {
+                visualTransform.localPosition = _originalVisualPosition;
+                visualTransform.gameObject.SetActive(true);
+            }
+
+            if (_solidCollider != null)
+            {
+                _solidCollider.enabled = true;
+            }
             _isTriggered = false;
         }
 

@@ -18,6 +18,8 @@ namespace New_Scripts.Platform
         [Tooltip("Saniye cinsinden tam bir tur süresi.")]
         [SerializeField] private float period = 4f;
 
+        public override float Period => period;
+
         [Tooltip("Saat yönünde mi yoksa saat yönünün tersinde mi döneceğini belirler.")]
         [SerializeField] private bool clockwise = true;
 

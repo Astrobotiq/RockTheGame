@@ -30,7 +30,13 @@ namespace New_Scripts.Player
         private IMovingSurface _currentMovingSurface;
         private IMovingSurface _currentLeftMovingSurface;
         private IMovingSurface _currentRightMovingSurface;
+        private IMovingSurface _lastMovingSurface;
         private int _groundAndOneWayMask;
+
+        public IMovingSurface CurrentMovingSurface => _currentMovingSurface;
+        public IMovingSurface CurrentLeftMovingSurface => _currentLeftMovingSurface;
+        public IMovingSurface CurrentRightMovingSurface => _currentRightMovingSurface;
+        public IMovingSurface LastMovingSurface => _lastMovingSurface;
 
         private void Awake()
         {
@@ -194,6 +200,19 @@ namespace New_Scripts.Player
                 IsGrounded = true;
                 hitCollider.TryGetComponent(out _currentMovingSurface);
                 break;
+            }
+
+            if (IsGrounded)
+            {
+                _lastMovingSurface = _currentMovingSurface;
+            }
+            else if (ClingingWallDirection == -1 && _currentLeftMovingSurface != null)
+            {
+                _lastMovingSurface = _currentLeftMovingSurface;
+            }
+            else if (ClingingWallDirection == 1 && _currentRightMovingSurface != null)
+            {
+                _lastMovingSurface = _currentRightMovingSurface;
             }
 
             int ceilingHitCount = Physics2D.BoxCastNonAlloc(position + _boxCollider.offset, verticalBoxSize, 0f,

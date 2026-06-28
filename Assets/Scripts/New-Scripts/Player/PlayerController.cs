@@ -45,10 +45,6 @@ namespace New_Scripts.Player
 
         [SerializeField] private LayerMask grappleLayerMask;
 
-        [SerializeField] bool useJumpGravity = false;
-        
-        public bool UseJumpGravity => useJumpGravity;
-
         // --- Core Components ---
         public Rigidbody2D PlayerRigidbody { get; private set; }
         public BoxCollider2D PlayerCollider { get; private set; }

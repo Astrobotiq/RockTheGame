@@ -1,3 +1,4 @@
+using New_Scripts.Platform;
 using UnityEngine;
 
 namespace New_Scripts.Player.States
@@ -16,11 +17,15 @@ namespace New_Scripts.Player.States
         private float _coyoteTimer;
         private float _horizontalInputLockoutTimer;
         private bool _isJumping;
-        private bool _isFromSwing;
         private bool _bypassJumpGravity;
+        private bool _bypassApexHangGravity;
+        private bool _bypassEndEarlyGravity;
+        private float _endEarlyGravityMultiplier;
 
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false, bool isFromSwing = false,
-            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f, bool bypassJumpGravity = false)
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
+            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f, 
+            bool bypassJumpGravity = false, bool bypassApexHangGravity = false, bool bypassEndEarlyGravity = false
+            , float endEarlyGravityMultiplier = 1f)
         {
             _context = context;
             _stats = context.Stats;
@@ -31,6 +36,14 @@ namespace New_Scripts.Player.States
             _coyoteTimer = coyote;
             _horizontalInputLockoutTimer = horizontalLockout;
             _bypassJumpGravity = bypassJumpGravity;
+            _bypassApexHangGravity = bypassApexHangGravity;
+            _bypassEndEarlyGravity = bypassEndEarlyGravity;
+            _endEarlyGravityMultiplier = endEarlyGravityMultiplier;
+
+            if (_endEarlyGravityMultiplier < 0f)
+                _endEarlyGravityMultiplier = 0f;
+            else if (_endEarlyGravityMultiplier > 1f)
+                _endEarlyGravityMultiplier = 1f;
         }
 
         public void EnterState()
@@ -88,7 +101,17 @@ namespace New_Scripts.Player.States
                 _coyoteTimer = 0f;
                 _isJumping = true;
                 if (_context.Audio != null) _context.Audio.PlayJump();
-                _currentVelocity.y = _stats.JumpVelocity;
+                
+                Vector2 jumpVelocityVector = new Vector2(_currentVelocity.x, _stats.JumpVelocity);
+                
+                IMovingSurface lastSurface = _context.PhysicsHandler.LastMovingSurface;
+                if (lastSurface != null && lastSurface.JumpBoostMultiplier > 0f)
+                {
+                    jumpVelocityVector += lastSurface.SurfaceVelocity * lastSurface.JumpBoostMultiplier;
+                    _bypassApexHangGravity = true;
+                }
+                
+                _currentVelocity = jumpVelocityVector;
             }
         }
 
@@ -125,7 +148,7 @@ namespace New_Scripts.Player.States
                     }
                     else if (_currentVelocity.y > 0f)
                     {
-                        gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier;
+                        gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier * _endEarlyGravityMultiplier;
                     }
                 }
                 else
@@ -134,19 +157,15 @@ namespace New_Scripts.Player.States
                     {
                         gravityMultiplier = _stats.FallGravityMultiplier;
                     }
-                    else if (_currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
+                    else if (!_bypassEndEarlyGravity && _currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
                     {
-                        gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier;
+                        gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier * _endEarlyGravityMultiplier;
                     }
-                    else if (Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
+                    else if (!_bypassApexHangGravity && Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
                     {
                         gravityMultiplier = _stats.ApexHangGravityMultiplier;
                     }
                 }
-            }
-            else if (_isFromSwing)
-            {
-                gravityMultiplier = 2f;
             }
 
             float gravityStep = _stats.Gravity * gravityMultiplier * Time.fixedDeltaTime;

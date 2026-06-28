@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using New_Scripts.Death;
 using UnityEngine;
 
 namespace New_Scripts.Platform
@@ -8,7 +9,7 @@ namespace New_Scripts.Platform
     /// to an ending boundary transform (rightBound). When a platform crosses the end bound,
     /// it wraps back to the start bound.
     /// </summary>
-    public class WrappingPlatformManager : MonoBehaviour
+    public class WrappingPlatformManager : MonoBehaviour, IResettable
     {
         [Header("References")]
         [Tooltip("The platforms to manage and wrap. Make sure they have PlatformController components with no MovementStrategy assigned.")]
@@ -28,6 +29,24 @@ namespace New_Scripts.Platform
         [SerializeField] private float maxSpeed = 3f;
 
         private float[] _speeds;
+        private float[] _initialSpeeds;
+        private Vector2[] _initialPositions;
+
+        private void OnEnable()
+        {
+            if (LevelResetManager.Instance != null)
+            {
+                LevelResetManager.Instance.Register(this);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (LevelResetManager.Instance != null)
+            {
+                LevelResetManager.Instance.Unregister(this);
+            }
+        }
 
         private void Start()
         {
@@ -39,9 +58,17 @@ namespace New_Scripts.Platform
             }
 
             _speeds = new float[platforms.Count];
+            _initialSpeeds = new float[platforms.Count];
+            _initialPositions = new Vector2[platforms.Count];
+
             for (int i = 0; i < platforms.Count; i++)
             {
+                if (platforms[i] != null)
+                {
+                    _initialPositions[i] = platforms[i].transform.position;
+                }
                 _speeds[i] = Random.Range(minSpeed, maxSpeed);
+                _initialSpeeds[i] = _speeds[i];
             }
         }
 
@@ -83,6 +110,26 @@ namespace New_Scripts.Platform
                 else
                 {
                     platform.MoveTo(newPos);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tüm platformları başlangıç pozisyonlarına döndürür ve hızlarını sıfırlar.
+        /// </summary>
+        public void ResetToDefault()
+        {
+            if (_initialPositions == null) return;
+
+            for (int i = 0; i < platforms.Count; i++)
+            {
+                if (platforms[i] != null && i < _initialPositions.Length)
+                {
+                    platforms[i].TeleportTo(_initialPositions[i]);
+                }
+                if (_speeds != null && _initialSpeeds != null && i < _speeds.Length)
+                {
+                    _speeds[i] = _initialSpeeds[i];
                 }
             }
         }

@@ -77,7 +77,25 @@ namespace New_Scripts.Player.States
             {
                 if (context.Audio != null) context.Audio.PlayJump();
                 Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
-                context.TransitionToState(new AirborneState(context, jumpVelocity,false, grappleLockout:0f, wallClimbLockout:0.2f));
+                
+                New_Scripts.Platform.IMovingSurface movingSurface = wallDirection == -1 
+                    ? context.PhysicsHandler.CurrentLeftMovingSurface 
+                    : context.PhysicsHandler.CurrentRightMovingSurface;
+                
+                bool bypassApexHangGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
+                if (bypassApexHangGravity)
+                {
+                    jumpVelocity += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
+                }
+
+                context.TransitionToState(new AirborneState(
+                    context: context,
+                    inheritedVelocity: jumpVelocity,
+                    isJumping: true,
+                    grappleLockout: 0f,
+                    wallClimbLockout: 0.2f,
+                    bypassApexHangGravity: bypassApexHangGravity
+                ));
                 return;
             }
 

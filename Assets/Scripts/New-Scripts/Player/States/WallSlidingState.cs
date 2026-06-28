@@ -92,7 +92,26 @@ namespace New_Scripts.Player.States
                 
                 Vector2 jumpDirection = new Vector2(-wallDirection * stats.WallSlideJumpForce.x, stats.WallSlideJumpForce.y);
                 
-                context.TransitionToState(new AirborneState(context, jumpDirection, true, grappleLockout:0f, wallClimbLockout:0f, coyote:0f, horizontalLockout:stats.WallJumpInputLockoutTime));
+                New_Scripts.Platform.IMovingSurface movingSurface = wallDirection == -1 
+                    ? context.PhysicsHandler.CurrentLeftMovingSurface 
+                    : context.PhysicsHandler.CurrentRightMovingSurface;
+                
+                bool bypassApexHangGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
+                if (bypassApexHangGravity)
+                {
+                    jumpDirection += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
+                }
+
+                context.TransitionToState(new AirborneState(
+                    context: context,
+                    inheritedVelocity: jumpDirection,
+                    isJumping: true,
+                    grappleLockout: 0f,
+                    wallClimbLockout: 0f,
+                    coyote: 0f,
+                    horizontalLockout: stats.WallJumpInputLockoutTime,
+                    bypassApexHangGravity: bypassApexHangGravity
+                ));
                 return;
             }
 

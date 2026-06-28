@@ -3,15 +3,22 @@ using UnityEngine;
 
 namespace New_Scripts.Platform
 {
-    [RequireComponent(typeof(Rigidbody2D)), DefaultExecutionOrder(-100)]
-    public class PlatformController : MonoBehaviour, IMovingSurface, IResettable
+    /// <summary>
+    /// Player üzerinde durduğu zaman harekete başlayan ve tam bir turu tamamlayana kadar durmayan platform kontrolcüsü.
+    /// </summary>
+    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D)), DefaultExecutionOrder(-100)]
+    public class TriggeredPlatformController : MonoBehaviour, IMovingSurface, IResettable
     {
         [SerializeField] private MovementStrategy movementStrategy;
+        [SerializeField] private LayerMask playerLayer;
 
         private Rigidbody2D _rigidbody2D;
+        private Collider2D _collider;
         private Vector2 _previousPosition;
         private Vector2 _initialPosition;
-        private float _timeOffset;
+        
+        private bool _isMoving;
+        private float _elapsedTime;
         private readonly Vector2[] _recentVelocities = new Vector2[3];
 
         public Vector2 DeltaPosition { get; private set; }
@@ -47,6 +54,7 @@ namespace New_Scripts.Platform
         private void Awake()
         {
             EnsureRigidbody();
+            _collider = GetComponent<Collider2D>();
             _initialPosition = transform.position;
         }
 
@@ -80,18 +88,58 @@ namespace New_Scripts.Platform
         {
             if (movementStrategy == null) return;
 
-            Vector2 newPosition = movementStrategy.GetPositionAtTime(Time.time - _timeOffset);
+            EnsureRigidbody();
+
+            bool playerOnTop = IsPlayerOnTop();
+
+            if (!_isMoving)
+            {
+                if (playerOnTop)
+                {
+                    _isMoving = true;
+                    _elapsedTime = 0f;
+                }
+            }
+
+            float evaluatedTime = 0f;
+
+            if (_isMoving)
+            {
+                _elapsedTime += Time.fixedDeltaTime;
+                evaluatedTime = _elapsedTime;
+
+                float period = movementStrategy.Period;
+                if (period > 0f && _elapsedTime >= period)
+                {
+                    // A full tour has completed
+                    if (playerOnTop)
+                    {
+                        // Player is still standing on the platform, start a new tour smoothly
+                        _elapsedTime %= period;
+                        evaluatedTime = _elapsedTime;
+                    }
+                    else
+                    {
+                        // Player has left, stop the platform at the starting position
+                        _isMoving = false;
+                        _elapsedTime = 0f;
+                        evaluatedTime = 0f;
+                    }
+                }
+            }
+
+            Vector2 newPosition = movementStrategy.GetPositionAtTime(evaluatedTime);
             
             DeltaPosition = newPosition - _previousPosition;
             Vector2 currentVelocity = DeltaPosition / Time.fixedDeltaTime;
-            
+
             _recentVelocities[2] = _recentVelocities[1];
             _recentVelocities[1] = _recentVelocities[0];
             _recentVelocities[0] = currentVelocity;
             
             _rigidbody2D.MovePosition(newPosition);
 
-            float? newRotation = movementStrategy.GetRotationAtTime(Time.time - _timeOffset);
+            float? newRotation = movementStrategy.GetRotationAtTime(evaluatedTime);
             if (newRotation.HasValue)
             {
                 _rigidbody2D.MoveRotation(newRotation.Value);
@@ -100,10 +148,33 @@ namespace New_Scripts.Platform
             _previousPosition = newPosition;
         }
 
-        /// <summary>
-        /// Moves the platform to a new position, updating delta position and velocity.
-        /// Used by external managers to drive the platform.
-        /// </summary>
+        private bool IsPlayerOnTop()
+        {
+            if (_collider == null) return false;
+            
+            if (_collider is BoxCollider2D boxCollider)
+            {
+                Vector2 boxCenter = (Vector2)transform.position + boxCollider.offset + (Vector2.up * 0.05f);
+                Vector2 boxSize = boxCollider.size;
+                boxSize.x *= transform.lossyScale.x;
+                boxSize.y *= transform.lossyScale.y;
+                boxSize.y += 0.05f;
+                
+                Collider2D hit = Physics2D.OverlapBox(boxCenter, boxSize, transform.eulerAngles.z, playerLayer);
+                return hit != null;
+            }
+            else
+            {
+                Bounds bounds = _collider.bounds;
+                Vector2 boxCenter = (Vector2)bounds.center + (Vector2.up * 0.05f);
+                Vector2 boxSize = bounds.size;
+                boxSize.y += 0.05f;
+                
+                Collider2D hit = Physics2D.OverlapBox(boxCenter, boxSize, 0f, playerLayer);
+                return hit != null;
+            }
+        }
+
         public void MoveTo(Vector2 newPosition)
         {
             EnsureRigidbody();
@@ -118,10 +189,6 @@ namespace New_Scripts.Platform
             _previousPosition = newPosition;
         }
 
-        /// <summary>
-        /// Instantly teleports the platform to a new position, resetting physics velocities
-        /// so that players standing on it do not experience the sudden teleportation delta.
-        /// </summary>
         public void TeleportTo(Vector2 newPosition)
         {
             EnsureRigidbody();
@@ -135,12 +202,11 @@ namespace New_Scripts.Platform
             _recentVelocities[2] = Vector2.zero;
         }
 
-        /// <summary>
-        /// Platformu başlangıç pozisyonuna ışınlar ve zaman bazlı hareketi sıfırlar.
-        /// </summary>
         public void ResetToDefault()
         {
-            _timeOffset = Time.time;
+            _isMoving = false;
+            _elapsedTime = 0f;
+
             Vector2 startPos = movementStrategy != null 
                 ? movementStrategy.GetPositionAtTime(0f) 
                 : _initialPosition;

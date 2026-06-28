@@ -20,6 +20,7 @@ namespace New_Scripts.Platform
 
         public Vector2 DeltaPosition { get; private set; }
         public Vector2 SurfaceVelocity { get; private set; }
+        public float JumpBoostMultiplier => 0f;
 
         private void Awake()
         {

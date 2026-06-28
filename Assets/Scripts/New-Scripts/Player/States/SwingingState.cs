@@ -245,13 +245,7 @@ namespace New_Scripts.Player.States
             {
                 ReleaseAnchor();
 
-                if (_context.UseJumpGravity)
-                {
-                    _context.TransitionToState(new AirborneState(_context, _currentVelocity, isFromSwing: true));
-                    return;
-                }
-
-                _context.TransitionToState(new AirborneState(_context, _currentVelocity, isJumping: true));
+                _context.TransitionToState(new AirborneState(_context, _currentVelocity, isJumping: true, bypassJumpGravity: true));
                 return;
             }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using New_Scripts.Player;
 
 namespace New_Scripts.Platform
 {
@@ -27,6 +28,23 @@ namespace New_Scripts.Platform
 
         [Tooltip("Initial time offset to shift the movement phase.")]
         [SerializeField] private float phaseOffset;
+
+        [Header("Boost Settings")]
+        [Tooltip("Platformdan zıplarken oyuncunun alacağı ek hız çarpanı.")]
+        [SerializeField] private float jumpBoostMultiplier = 1.5f;
+
+        [Header("Editor Trajectory Gizmo")]
+        [Tooltip("Karakterin fizik ayarlarını barındıran ScriptableObject.")]
+        [SerializeField] private PlayerStatsSO playerStats;
+
+        [Tooltip("Yörünge çizgisinin uzunluğu (adım sayısı).")]
+        [SerializeField] private int trajectorySteps = 60;
+
+        [Tooltip("Simülasyondaki her adımın zaman aralığı (saniye).")]
+        [SerializeField] private float stepDeltaTime = 0.02f;
+
+        public override float Period => forwardDuration + endDelay + returnDuration;
+        public override float JumpBoostMultiplier => jumpBoostMultiplier;
 
         private Vector2 _startPosition;
         private Vector2 _endPosition;
@@ -145,7 +163,109 @@ namespace New_Scripts.Platform
                 Gizmos.DrawLine(middle + direction * 0.5f, middle + direction * 0.3f - right * 0.15f);
             }
 
+            // --- Trajectory Preview ---
+            if (playerStats == null)
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:PlayerStatsSO");
+                if (guids != null && guids.Length > 0)
+                {
+                    string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
+                    playerStats = UnityEditor.AssetDatabase.LoadAssetAtPath<PlayerStatsSO>(assetPath);
+                }
+            }
+
+            if (playerStats == null) return;
+
+            // Calculate peak platform velocities at the end point (where velocity magnitude is highest for both trips)
+            Vector2 forwardVelocity = forwardDuration > 0f ? (currentEnd - currentStart) * (2f / forwardDuration) : Vector2.zero;
+            Vector2 returnVelocity = returnDuration > 0f ? (currentStart - currentEnd) * (2f / returnDuration) : Vector2.zero;
+
+            // Forward jump trajectory (Cyan)
+            DrawTrajectory(currentEnd, forwardVelocity, new Color(0f, 0.8f, 1f, 0.8f), "Forward Jump Boost");
+
+            // Return jump trajectory (Magenta/Pink)
+            DrawTrajectory(currentEnd, returnVelocity, new Color(1f, 0.2f, 0.6f, 0.8f), "Return Jump Boost");
+        }
+
+        private void DrawTrajectory(Vector2 startPos, Vector2 platformVelocity, Color color, string labelText)
+        {
+            if (playerStats == null) return;
+
+            Gizmos.color = color;
+            Vector2 currentPos = startPos;
             
+            // Initial velocity = base player jump velocity (upwards) + platform velocity boosted
+            Vector2 currentVel = new Vector2(0f, playerStats.JumpVelocity) + platformVelocity * jumpBoostMultiplier;
+
+            float gravity = playerStats.Gravity;
+            float fallGravityMult = playerStats.FallGravityMultiplier;
+            float jumpEarlyGravityMult = playerStats.JumpEndEarlyGravityMultiplier;
+            float terminalVel = playerStats.TerminalVelocity;
+            float airDrag = playerStats.AirDrag;
+
+            Vector2 lastPos = currentPos;
+            float maxHeight = startPos.y;
+            Vector2 maxHeightPos = startPos;
+
+            for (int i = 0; i < trajectorySteps; i++)
+            {
+                // Determine gravity multiplier
+                float gravityMultiplier = 1f;
+                if (currentVel.y < 0f)
+                {
+                    gravityMultiplier = fallGravityMult;
+                }
+                else if (currentVel.y > 0f)
+                {
+                    // Since bypassJumpGravity is true, endEarlyGravityMultiplier is 0.5f
+                    gravityMultiplier = jumpEarlyGravityMult * 0.5f;
+                }
+
+                // Apply gravity
+                float gravityStep = gravity * gravityMultiplier * stepDeltaTime;
+                currentVel.y += gravityStep;
+                currentVel.y = Mathf.Max(currentVel.y, terminalVel);
+
+                // Apply air drag (without input)
+                currentVel.x = Mathf.MoveTowards(currentVel.x, 0f, airDrag * stepDeltaTime);
+
+                // Update position
+                currentPos += currentVel * stepDeltaTime;
+
+                // Draw line segment
+                Gizmos.DrawLine(lastPos, currentPos);
+
+                if (currentPos.y > maxHeight)
+                {
+                    maxHeight = currentPos.y;
+                    maxHeightPos = currentPos;
+                }
+
+                // Draw dots at intervals
+                if (i % 4 == 0)
+                {
+                    Gizmos.DrawSphere(currentPos, 0.05f);
+                }
+
+                lastPos = currentPos;
+            }
+
+            // Draw a marker at the peak of the jump
+            Gizmos.color = new Color(color.r, color.g, color.b, 0.5f);
+            Gizmos.DrawWireSphere(maxHeightPos, 0.15f);
+            
+            // Draw a dashed or thin line at the max height
+            Gizmos.DrawLine(new Vector2(maxHeightPos.x - 0.5f, maxHeight), new Vector2(maxHeightPos.x + 0.5f, maxHeight));
+
+            // Use UnityEditor.Handles to draw text
+            GUIStyle style = new GUIStyle();
+            style.normal.textColor = color;
+            style.fontSize = 10;
+            style.fontStyle = FontStyle.Bold;
+            
+            float relativeHeight = maxHeight - startPos.y;
+            string displayText = $"{labelText} (Max Height: {relativeHeight:F2}m)";
+            UnityEditor.Handles.Label(maxHeightPos + Vector2.up * 0.25f, displayText, style);
         }
 
         private void DrawPlatformPreview(Vector2 position, Color color)

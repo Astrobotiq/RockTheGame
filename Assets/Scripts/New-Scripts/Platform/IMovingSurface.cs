@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Platform
 {
@@ -9,5 +9,6 @@ namespace New_Scripts.Platform
     {
         Vector2 DeltaPosition { get; }
         Vector2 SurfaceVelocity { get; }
+        float JumpBoostMultiplier { get; }
     }
 }

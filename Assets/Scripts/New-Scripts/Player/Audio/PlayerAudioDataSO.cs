@@ -18,6 +18,7 @@ namespace New_Scripts.Player
         [Header("Grapple & Slingshot Sounds")]
         [SerializeField] private AudioCueSO grappleLaunchCue;
         [SerializeField] private AudioCueSO grappleConnectCue;
+        [SerializeField] private AudioCueSO slingshotAnticipationCue;
         [SerializeField] private AudioCueSO slingshotLaunchCue;
 
         public AudioCueSO JumpCue => jumpCue;
@@ -25,6 +26,7 @@ namespace New_Scripts.Player
         public AudioCueSO DashCue => dashCue;
         public AudioCueSO GrappleLaunchCue => grappleLaunchCue;
         public AudioCueSO GrappleConnectCue => grappleConnectCue;
+        public AudioCueSO SlingshotAnticipationCue => slingshotAnticipationCue;
         public AudioCueSO SlingshotLaunchCue => slingshotLaunchCue;
     }
 }

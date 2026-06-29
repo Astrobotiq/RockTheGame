@@ -1,3 +1,4 @@
+using New_Scripts.Platform;
 using UnityEngine;
 
 namespace New_Scripts.Player.States
@@ -92,12 +93,12 @@ namespace New_Scripts.Player.States
                 
                 Vector2 jumpDirection = new Vector2(-wallDirection * stats.WallSlideJumpForce.x, stats.WallSlideJumpForce.y);
                 
-                New_Scripts.Platform.IMovingSurface movingSurface = wallDirection == -1 
+                IMovingSurface movingSurface = wallDirection == -1 
                     ? context.PhysicsHandler.CurrentLeftMovingSurface 
                     : context.PhysicsHandler.CurrentRightMovingSurface;
                 
-                bool bypassApexHangGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
-                if (bypassApexHangGravity)
+                bool bypassJumpGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
+                if (bypassJumpGravity)
                 {
                     jumpDirection += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
                 }
@@ -110,7 +111,8 @@ namespace New_Scripts.Player.States
                     wallClimbLockout: 0f,
                     coyote: 0f,
                     horizontalLockout: stats.WallJumpInputLockoutTime,
-                    bypassApexHangGravity: bypassApexHangGravity
+                    bypassJumpGravity: bypassJumpGravity,
+                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f
                 ));
                 return;
             }

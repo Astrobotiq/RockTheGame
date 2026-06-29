@@ -49,6 +49,11 @@ namespace New_Scripts.Player.States
             _context.ResetDash();
             _context.ColorController.ResetBodyColor();
 
+            if (_context.Audio != null)
+            {
+                _context.Audio.PlayGrappleConnect();
+            }
+
 
             if (_wasGrounded)
                 StartHopPhase();

@@ -45,6 +45,11 @@ namespace New_Scripts.Player
             PlaySound(audioData?.SlingshotLaunchCue);
         }
 
+        public void PlaySlingshotAnticipation()
+        {
+            PlaySound(audioData?.SlingshotAnticipationCue);
+        }
+
         private void PlaySound(AudioCueSO cue)
         {
             if (sfxPlayChannel != null && cue != null)

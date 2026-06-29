@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player
 {
@@ -20,12 +20,14 @@ namespace New_Scripts.Player
             initialColor = ghostRenderer.color;
         }
 
-        public void Initialize(Sprite playerSprite, Vector3 position, Quaternion rotation, float duration, Color color)
+        public void Initialize(Sprite playerSprite, Vector3 position, Quaternion rotation, float duration, Color color, bool flipX, bool flipY = false)
         {
             transform.position = position;
             transform.rotation = rotation;
             
             ghostRenderer.sprite = playerSprite;
+            ghostRenderer.flipX = flipX;
+            ghostRenderer.flipY = flipY;
             activeDuration = duration;
             activeTimer = 0f;
             

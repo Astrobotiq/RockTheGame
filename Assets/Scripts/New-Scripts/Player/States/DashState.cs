@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -29,6 +29,11 @@ namespace New_Scripts.Player.States
             
             _context.Velocity = _dashDirection * _stats.DashSpeed;
             _context.NotifyImpact(_dashDirection * _stats.DashImpactMultiplier);
+
+            if (_context.Audio != null)
+            {
+                _context.Audio.PlayDash();
+            }
         }
 
         public void UpdateState()

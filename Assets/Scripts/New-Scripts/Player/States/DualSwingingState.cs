@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -34,6 +34,11 @@ namespace New_Scripts.Player.States
             currentVelocity = context.Velocity;
             
             context.ResetDash();
+
+            if (context.Audio != null)
+            {
+                context.Audio.PlayGrappleConnect();
+            }
         }
 
         public void UpdateState()

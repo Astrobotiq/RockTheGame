@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Player.Audio.PlayerAudioDataSO
   jumpCue: {fileID: 11400000, guid: daa500deb76908e4791f3caab36e7460, type: 2}
   landCue: {fileID: 11400000, guid: 8b457a1a027d40842bbfc9b9e549b223, type: 2}
-  dashCue: {fileID: 0}
+  dashCue: {fileID: 11400000, guid: ac998af9c3efda147b866375ee589146, type: 2}
   grappleLaunchCue: {fileID: 0}
-  grappleConnectCue: {fileID: 0}
-  slingshotLaunchCue: {fileID: 0}
+  grappleConnectCue: {fileID: 11400000, guid: 998a24eff00247643b468dd67c2c67d4, type: 2}
+  slingshotAnticipationCue: {fileID: 11400000, guid: ceeef19a29674444faea8a8a0d98e184, type: 2}
+  slingshotLaunchCue: {fileID: 11400000, guid: 33fccec86365773418c62dfc32e0ac9f, type: 2}

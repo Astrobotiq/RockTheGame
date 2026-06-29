@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -40,6 +40,11 @@ namespace New_Scripts.Player.States
             
             currentPhase = SlingshotPhase.Anticipation;
             stateTimer = 0f;
+
+            if (context.Audio != null)
+            {
+                context.Audio.PlaySlingshotAnticipation();
+            }
         }
 
         public void UpdateState()
@@ -93,6 +98,10 @@ namespace New_Scripts.Player.States
                 stateTimer = 0f;
                 
                 context.NotifySlingshotLaunch();
+                if (context.Audio != null)
+                {
+                    context.Audio.PlaySlingshotLaunch();
+                }
                 
                 initialLaunchVelocity = Vector2.zero;
                 context.Velocity = initialLaunchVelocity;

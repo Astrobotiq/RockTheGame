@@ -1,3 +1,4 @@
+using New_Scripts.Platform;
 using UnityEngine;
 
 namespace New_Scripts.Player.States
@@ -78,12 +79,12 @@ namespace New_Scripts.Player.States
                 if (context.Audio != null) context.Audio.PlayJump();
                 Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
                 
-                New_Scripts.Platform.IMovingSurface movingSurface = wallDirection == -1 
+                IMovingSurface movingSurface = wallDirection == -1 
                     ? context.PhysicsHandler.CurrentLeftMovingSurface 
                     : context.PhysicsHandler.CurrentRightMovingSurface;
                 
-                bool bypassApexHangGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
-                if (bypassApexHangGravity)
+                bool bypassJumpGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
+                if (bypassJumpGravity)
                 {
                     jumpVelocity += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
                 }
@@ -94,7 +95,8 @@ namespace New_Scripts.Player.States
                     isJumping: true,
                     grappleLockout: 0f,
                     wallClimbLockout: 0.2f,
-                    bypassApexHangGravity: bypassApexHangGravity
+                    bypassJumpGravity: bypassJumpGravity,
+                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f
                 ));
                 return;
             }

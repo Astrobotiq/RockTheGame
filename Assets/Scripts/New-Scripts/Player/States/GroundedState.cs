@@ -92,7 +92,7 @@ namespace New_Scripts.Player.States
                     bypassJumpGravity = true;
                 }
                 
-                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true, bypassJumpGravity: bypassJumpGravity, endEarlyGravityMultiplier: 0.5f));
+                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true, bypassJumpGravity: bypassJumpGravity, endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f));
                 
 
                 

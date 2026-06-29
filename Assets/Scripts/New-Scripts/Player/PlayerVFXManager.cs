@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using New_Scripts.Player.States;
 using UnityEngine;
 
@@ -82,7 +82,15 @@ namespace New_Scripts.Player
                 ghostPool.Add(ghost);
             }
 
-            ghost.Initialize(playerSpriteRenderer.sprite, playerSpriteRenderer.transform.position, playerSpriteRenderer.transform.rotation, ghostDuration, ghostColor);
+            ghost.Initialize(
+                playerSpriteRenderer.sprite, 
+                playerSpriteRenderer.transform.position, 
+                playerSpriteRenderer.transform.rotation, 
+                ghostDuration, 
+                ghostColor,
+                playerSpriteRenderer.flipX,
+                playerSpriteRenderer.flipY
+            );
         }
     }
 }

@@ -28,7 +28,7 @@ MonoBehaviour:
   MomentumDecay: 5
   DashDistance: 7
   DashDuration: 0.2
-  DashImpactMultiplier: 10
+  DashImpactMultiplier: 0.5
   DashEndMomentumMultiplier: 0.3
   MaxSlingshotSpeed: 65
   SlingshotLaunchDuration: 0.01

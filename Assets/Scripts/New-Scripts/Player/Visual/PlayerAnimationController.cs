@@ -26,6 +26,9 @@ namespace New_Scripts.Player.Visual
         private static readonly int IsDashingHash = Animator.StringToHash("IsDashing");
         private static readonly int IsWallClimbingHash = Animator.StringToHash("IsWallClimbing");
         private static readonly int IsWallSlidingHash = Animator.StringToHash("IsWallSliding");
+        private static readonly int DashTriggerHash = Animator.StringToHash("DashTrigger");
+
+        private bool _wasDashing;
 
         private void Awake()
         {
@@ -67,8 +70,17 @@ namespace New_Scripts.Player.Visual
 
             // Gelişmiş State/Yetenek Parametreleri (Gelecekteki animasyon genişletmeleri için)
             var currentState = playerController.CurrentState;
+            bool isDashing = currentState is DashState;
+
+            // Dash yeni başladığında Trigger tetikle
+            if (isDashing && !_wasDashing)
+            {
+                animator.SetTrigger(DashTriggerHash);
+            }
+            _wasDashing = isDashing;
+
             animator.SetBool(IsSwingingHash, currentState is SwingingState || currentState is DualSwingingState);
-            animator.SetBool(IsDashingHash, currentState is DashState);
+            animator.SetBool(IsDashingHash, isDashing);
             animator.SetBool(IsWallClimbingHash, currentState is WallClimbingState);
             animator.SetBool(IsWallSlidingHash, currentState is WallSlidingState);
         }

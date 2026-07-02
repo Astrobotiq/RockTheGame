@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using EasyTextEffects.Editor.MyBoxCopy.Attributes;
 using New_Scripts.Death;
+using New_Scripts.Player;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace New_Scripts.LevelChange
 {
-    public class Room : MonoBehaviour
+    public class Room : MonoBehaviour, ICameraOverrideProvider
     {
         [SerializeField] private int roomId;
         [SerializeField] private Collider2D roomBounds;
@@ -20,11 +21,14 @@ namespace New_Scripts.LevelChange
         [Tooltip("Bu odadan doğrudan geçilebilen komşu odalar.")]
         [SerializeField] private List<Room> neighborRooms;
         
-        [Header("Camera Settings")]
-        [SerializeField] private bool overrideDynamicZoom = false;
+        [Header("Camera Override Settings")]
+        [SerializeField] private bool useRoomCameraOverride = false;
+        [SerializeField] private CameraOverrideSettings cameraOverrideSettings;
+        [SerializeField] private int cameraOverridePriority = 0;
 
-        [ConditionalField(nameof(overrideDynamicZoom))] 
-        [SerializeField] private float overrideCameraSize = 8f;
+        public int Priority => cameraOverridePriority;
+        public bool IsActive => useRoomCameraOverride;
+        public CameraOverrideSettings Settings => cameraOverrideSettings;
         
         [Header("Room Events")]
         [Tooltip("Oyuncu bu odaya tam olarak girdiğinde tetiklenir.")]
@@ -40,8 +44,8 @@ namespace New_Scripts.LevelChange
         
         public List<Room> NeighborRooms => neighborRooms;
         
-        public bool OverrideDynamicZoom => overrideDynamicZoom;
-        public float OverrideCameraSize => overrideCameraSize;
+        public bool OverrideDynamicZoom => useRoomCameraOverride && cameraOverrideSettings != null && cameraOverrideSettings.overrideZoom;
+        public float OverrideCameraSize => (useRoomCameraOverride && cameraOverrideSettings != null) ? cameraOverrideSettings.cameraSize : 8f;
 
         // 1. Durum: Oyuncu bu odanın içindeyken (Her şey aktif)
         public void SetAsCurrent()
@@ -52,6 +56,11 @@ namespace New_Scripts.LevelChange
             foreach (var trigger in triggers)
                 trigger.Enable();
             
+            if (useRoomCameraOverride && New_Scripts.Player.CameraController.Instance != null)
+            {
+                New_Scripts.Player.CameraController.Instance.RegisterOverride(this);
+            }
+
             OnRoomEntered?.Invoke();
         }
 
@@ -75,6 +84,11 @@ namespace New_Scripts.LevelChange
             foreach (var trigger in triggers)
                 trigger.Disable();
             
+            if (useRoomCameraOverride && New_Scripts.Player.CameraController.Instance != null)
+            {
+                New_Scripts.Player.CameraController.Instance.UnregisterOverride(this);
+            }
+
             OnRoomExited?.Invoke();
         }
     }

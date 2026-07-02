@@ -9,6 +9,8 @@ namespace New_Scripts.Player
     [RequireComponent(typeof(CinemachineImpulseSource))]
     public class CameraController : MonoBehaviour, ICameraTransitionHandler
     {
+        public static CameraController Instance { get; private set; }
+
         [Header("References")] [SerializeField]
         private CinemachineCamera virtualCamera;
 
@@ -19,9 +21,6 @@ namespace New_Scripts.Player
         [Header("Zoom Settings")] [SerializeField]
         private float minOrthoSize = 8f;
 
-        [SerializeField] private float maxOrthoSize = 16f;
-        [SerializeField] private float minVelocity = 5f;
-        [SerializeField] private float maxVelocity = 40f;
         [SerializeField] private float zoomLerpSpeed = 3f;
 
         private CinemachineImpulseSource impulseSource;
@@ -30,6 +29,15 @@ namespace New_Scripts.Player
 
         private bool isZoomOverridden;
         private float currentOverrideSize;
+        private float previousOrthoSize;
+
+        [Header("Swing Focus Settings")]
+        [SerializeField, Range(0f, 1f)] private float swingFocusWeight = 0.3f;
+
+        private PlayerController playerController;
+
+        private readonly System.Collections.Generic.List<ICameraOverrideProvider> activeOverrides = 
+            new System.Collections.Generic.List<ICameraOverrideProvider>();
 
 #if UNITY_EDITOR
         private Vector2 debugStartPos;
@@ -41,26 +49,67 @@ namespace New_Scripts.Player
 
         private void Awake()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else if (Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             impulseSource = GetComponent<CinemachineImpulseSource>();
+            if (targetRigidbody != null)
+            {
+                playerController = targetRigidbody.GetComponent<PlayerController>();
+            }
+
+            if (virtualCamera != null)
+            {
+                previousOrthoSize = virtualCamera.Lens.OrthographicSize;
+            }
         }
 
-        private void Start()
+        private void OnDestroy()
         {
-            // targetOrthoSize = minOrthoSize;
-            // virtualCamera.Lens.OrthographicSize = targetOrthoSize;
-            //
-            // if (targetRigidbody != null)
-            // {
-            //     cameraFollowTarget.position = targetRigidbody.position;
-            //
-            //     if (virtualCamera != null)
-            //     {
-            //         virtualCamera.PreviousStateIsValid = false;
-            //         virtualCamera.transform.position = new Vector3(targetRigidbody.position.x,
-            //             targetRigidbody.position.y, virtualCamera.transform.position.z);
-            //         confiner.InvalidateBoundingShapeCache();
-            //     }
-            // }
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
+        public void RegisterOverride(ICameraOverrideProvider provider)
+        {
+            if (provider != null && !activeOverrides.Contains(provider))
+            {
+                activeOverrides.Add(provider);
+            }
+        }
+
+        public void UnregisterOverride(ICameraOverrideProvider provider)
+        {
+            if (provider != null)
+            {
+                activeOverrides.Remove(provider);
+            }
+        }
+
+        private ICameraOverrideProvider GetHighestPriorityOverride()
+        {
+            ICameraOverrideProvider highest = null;
+            for (int i = 0; i < activeOverrides.Count; i++)
+            {
+                var provider = activeOverrides[i];
+                if (provider != null && provider.IsActive)
+                {
+                    if (highest == null || provider.Priority > highest.Priority)
+                    {
+                        highest = provider;
+                    }
+                }
+            }
+            return highest;
         }
 
         private void OnEnable()
@@ -93,25 +142,108 @@ namespace New_Scripts.Player
 
         private void UpdateFollowTarget()
         {
+            ICameraOverrideProvider activeOverride = GetHighestPriorityOverride();
+            CameraOverrideSettings settings = activeOverride?.Settings;
+
             Vector2 velocity = targetRigidbody.linearVelocity;
             float speed = velocity.magnitude;
 
-            float dynamicMaxDistance = Mathf.Lerp(2f, 12f, speed / 70f);
-            Vector2 rawLookAhead = Vector2.ClampMagnitude(velocity * lookAheadMultiplier, dynamicMaxDistance);
+            // 1. Look-Ahead Calculation
+            bool useLookAhead = settings == null || settings.focusType == CameraFocusType.Player || settings.focusType == CameraFocusType.PlayerAndTransform;
+            Vector2 targetLookAhead = Vector2.zero;
+
+            if (useLookAhead)
+            {
+                float activeLookAheadMultiplier = (settings != null && settings.overrideLookAhead)
+                    ? settings.lookAheadMultiplier
+                    : lookAheadMultiplier;
+
+                float dynamicMaxDistance = Mathf.Lerp(2f, 12f, speed / 70f);
+                targetLookAhead = Vector2.ClampMagnitude(velocity * activeLookAheadMultiplier, dynamicMaxDistance);
+            }
 
             _currentLookAheadOffset = Vector2.Lerp(
                 _currentLookAheadOffset,
-                rawLookAhead,
+                targetLookAhead,
                 Time.deltaTime * lookAheadLerpSpeed);
 
-            Vector2 targetPos = (Vector2)targetRigidbody.position + _currentLookAheadOffset;
+            // 2. Focus Center Position Calculation
+            Vector2 playerPos = targetRigidbody.position;
+            Vector2 focusCenterPos = playerPos;
 
-            float dynamicFollowSpeed = Mathf.Lerp(followLerpSpeed, followLerpSpeed * 4f, speed / 70f);
+            if (settings != null && settings.focusType != CameraFocusType.Player)
+            {
+                if (settings.focusType == CameraFocusType.StaticPosition)
+                {
+                    focusCenterPos = settings.staticFocusPosition;
+                }
+                else if (settings.focusType == CameraFocusType.TargetTransform)
+                {
+                    focusCenterPos = settings.targetFocusTransform != null
+                        ? (Vector2)settings.targetFocusTransform.position
+                        : playerPos;
+                }
+                else if (settings.focusType == CameraFocusType.PlayerAndTransform)
+                {
+                    Vector2 targetPos2 = settings.targetFocusTransform != null
+                        ? (Vector2)settings.targetFocusTransform.position
+                        : playerPos;
+                    focusCenterPos = Vector2.Lerp(playerPos, targetPos2, settings.focusWeight);
+                }
+            }
+            else
+            {
+                // Default player follow with swing focus helper
+                if (playerController != null)
+                {
+                    bool hasLeft = playerController.LeftAnchor.HasValue;
+                    bool hasRight = playerController.RightAnchor.HasValue;
+
+                    if (hasLeft && hasRight)
+                    {
+                        Vector2 anchorMidpoint = (playerController.LeftAnchor.Value + playerController.RightAnchor.Value) * 0.5f;
+                        focusCenterPos = Vector2.Lerp(playerPos, anchorMidpoint, swingFocusWeight);
+                    }
+                    else if (hasLeft)
+                    {
+                        focusCenterPos = Vector2.Lerp(playerPos, playerController.LeftAnchor.Value, swingFocusWeight);
+                    }
+                    else if (hasRight)
+                    {
+                        focusCenterPos = Vector2.Lerp(playerPos, playerController.RightAnchor.Value, swingFocusWeight);
+                    }
+                }
+            }
+
+            Vector2 targetPos = focusCenterPos + _currentLookAheadOffset;
+
+            // 3. Follow Speed Calculation
+            float dynamicFollowSpeed = (settings != null && settings.overrideFollowSpeed)
+                ? settings.followLerpSpeed
+                : Mathf.Lerp(followLerpSpeed, followLerpSpeed * 4f, speed / 70f);
 
             cameraFollowTarget.position = Vector3.Lerp(
                 cameraFollowTarget.position,
                 targetPos,
                 Time.deltaTime * dynamicFollowSpeed);
+
+            // 4. Zoom (Orthographic Size) Calculation
+            if (virtualCamera != null)
+            {
+                float normalOrthoSize = (settings != null && settings.overrideZoom)
+                    ? settings.cameraSize
+                    : (isZoomOverridden ? currentOverrideSize : minOrthoSize);
+
+                float currentSize = virtualCamera.Lens.OrthographicSize;
+                float newSize = Mathf.Lerp(currentSize, normalOrthoSize, Time.deltaTime * zoomLerpSpeed);
+                virtualCamera.Lens.OrthographicSize = newSize;
+
+                if (confiner != null && Mathf.Abs(newSize - previousOrthoSize) > 0.001f)
+                {
+                    confiner.InvalidateLensCache();
+                }
+                previousOrthoSize = newSize;
+            }
         }
 
         private void ClampFollowTargetToBounds()
@@ -137,16 +269,6 @@ namespace New_Scripts.Player
             virtualCamera.Lens.OrthographicSize = Mathf.Lerp(
                 virtualCamera.Lens.OrthographicSize,
                 currentOverrideSize,
-                Time.deltaTime * zoomLerpSpeed);
-        }
-
-        private void HandleDynamicZoom()
-        {
-            float currentSpeed = targetRigidbody.linearVelocity.magnitude;
-            float speedPercentage = Mathf.InverseLerp(minVelocity, maxVelocity, currentSpeed);
-
-            targetOrthoSize = Mathf.Lerp(minOrthoSize, maxOrthoSize, speedPercentage);
-            virtualCamera.Lens.OrthographicSize = Mathf.Lerp(virtualCamera.Lens.OrthographicSize, targetOrthoSize,
                 Time.deltaTime * zoomLerpSpeed);
         }
 

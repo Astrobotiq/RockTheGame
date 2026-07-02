@@ -232,6 +232,11 @@ namespace New_Scripts.Player
         public void OnStartRespawn(){
             _isPaused = true;
             Velocity = Vector2.zero;
+            LeftAnchor = null;
+            RightAnchor = null;
+            ResetDash();
+            ResetSlingshot();
+            RefillWallStamina();
         }
         
         public void OnEndRespawn(){

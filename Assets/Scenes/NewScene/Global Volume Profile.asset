@@ -44,8 +44,8 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 0.1
   apertureStrength:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.05
   shadowlines:
     m_OverrideState: 0
     m_Value: 0.341
@@ -56,14 +56,14 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0.3
   noiseSize:
-    m_OverrideState: 0
-    m_Value: 2.58
+    m_OverrideState: 1
+    m_Value: 1
   noiseSpeed:
-    m_OverrideState: 0
-    m_Value: 0.9
+    m_OverrideState: 1
+    m_Value: 10
   noiseAlpha:
-    m_OverrideState: 0
-    m_Value: 0.004
+    m_OverrideState: 1
+    m_Value: 0.02
   brightness:
     m_OverrideState: 1
     m_Value: 1
@@ -84,13 +84,13 @@ MonoBehaviour:
     m_Value: 1.136
   redOffset:
     m_OverrideState: 0
-    m_Value: -0.05
+    m_Value: 0.004
   greenOffset:
     m_OverrideState: 0
-    m_Value: 0.05
+    m_Value: -0.004
   blueOffset:
     m_OverrideState: 0
-    m_Value: -0.0236
+    m_Value: 0.005
   intensity:
     m_OverrideState: 1
     m_Value: 1

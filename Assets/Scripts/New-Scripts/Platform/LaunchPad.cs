@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using New_Scripts.Audio;
 using New_Scripts.Player;
 using New_Scripts.Player.States;
 using UnityEngine;
@@ -54,6 +55,13 @@ namespace New_Scripts.Platform
 
         [Tooltip("Fırlatma animasyonu tamamlanıp orijinal boyuta dönüldüğünde çalışacak olaylar.")]
         [SerializeField] private UnityEvent onLaunchComplete;
+
+        [Header("Audio")]
+        [Tooltip("Ses oynatma olay kanalı.")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+
+        [Tooltip("Fırlatma anında oynatılacak ses efekti.")]
+        [SerializeField] private AudioCueSO launchSoundCue;
 
         [Header("Juicy Scale Properties")]
         [SerializeField] private float squashDuration = 0.05f;
@@ -144,6 +152,12 @@ namespace New_Scripts.Platform
             if (launchVFXPrefab != null)
             {
                 Instantiate(launchVFXPrefab, transform.position, transform.rotation);
+            }
+
+            // Ses çalma olayını tetikle
+            if (sfxPlayChannel != null && launchSoundCue != null)
+            {
+                sfxPlayChannel.RaisePlayEvent(launchSoundCue, transform.position);
             }
 
             onLaunch?.Invoke();

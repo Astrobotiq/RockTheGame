@@ -109,9 +109,12 @@ MonoBehaviour:
   resetOnDeath: 1
   respawnsAfterDelay: 1
   respawnDelay: 3
+  hideVisualOnCollect: 1
   checkpointActivatedChannel: {fileID: 11400000, guid: efd0ec4e2a41875438eba018ad544623, type: 2}
   visualObject: {fileID: 7175862361795593417}
   collectibleCollider: {fileID: 6885446100221687479}
+  sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+  collectSoundCue: {fileID: 11400000, guid: ac4beb13470111746b65d9f2669570be, type: 2}
 --- !u!61 &6885446100221687479
 BoxCollider2D:
   m_ObjectHideFlags: 0

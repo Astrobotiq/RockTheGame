@@ -110,6 +110,8 @@ MonoBehaviour:
   onLaunchComplete:
     m_PersistentCalls:
       m_Calls: []
+  sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+  launchSoundCue: {fileID: 11400000, guid: 47446636165db6342b911291d6875ccc, type: 2}
   squashDuration: 0.05
   squashAmountScaleY: 0.6
   stretchAmountScaleX: 1.3

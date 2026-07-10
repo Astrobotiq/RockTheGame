@@ -185,6 +185,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Door.RoomDoor
   doorCollider: {fileID: 7791743082913312171}
   startOpen: 0
+  sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+  openSoundCue: {fileID: 11400000, guid: 65281a0bf906b6d439ef89ffbf2a8a50, type: 2}
+  closeSoundCue: {fileID: 11400000, guid: b13464f328f6d0446acbbb40753d90fc, type: 2}
 --- !u!1 &8620681100943351120
 GameObject:
   m_ObjectHideFlags: 0

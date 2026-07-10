@@ -20,6 +20,11 @@ namespace New_Scripts.Player
         [SerializeField] private float ghostDuration = 0.5f; 
         [SerializeField] private Color ghostColor = new Color(0.5f, 0.5f, 1f, 0.5f);
 
+        [Header("Dust Particles")]
+        [SerializeField] private ParticleSystem runDust;
+        [SerializeField] private ParticleSystem jumpDust;
+        [SerializeField] private ParticleSystem landDust;
+
         // Obje Havuzlama listesi.
         private List<GhostAfterimage> ghostPool = new List<GhostAfterimage>();
         private float ghostSpawnTimer;
@@ -36,6 +41,37 @@ namespace New_Scripts.Player
         {
             HandleTrailEffect();
             HandleGhostEffect();
+            HandleRunDust();
+        }
+
+        private void HandleRunDust()
+        {
+            if (runDust == null) return;
+
+            // Karakter yerdeyken ve yatay hızı sıfırdan farklıysa koşma tozunu aktif et
+            bool isRunning = playerContext.IsGrounded && Mathf.Abs(playerContext.Velocity.x) > 0.1f;
+            
+            var emission = runDust.emission;
+            if (emission.enabled != isRunning)
+            {
+                emission.enabled = isRunning;
+            }
+        }
+
+        public void PlayJumpDust()
+        {
+            if (jumpDust != null)
+            {
+                jumpDust.Play();
+            }
+        }
+
+        public void PlayLandDust()
+        {
+            if (landDust != null)
+            {
+                landDust.Play();
+            }
         }
 
         private void HandleTrailEffect()

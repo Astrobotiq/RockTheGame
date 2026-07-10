@@ -31,9 +31,10 @@ namespace New_Scripts.Player.States
             this.context.ColorController.ResetAllColors();
             this.context.ResetWallSlideTime();
 
-            if (Time.timeSinceLevelLoad > 0.1f && this.context.Audio != null)
+            if (Time.timeSinceLevelLoad > 0.1f)
             {
-                this.context.Audio.PlayLand();
+                if (this.context.Audio != null) this.context.Audio.PlayLand();
+                if (this.context.VFX != null) this.context.VFX.PlayLandDust();
             }
         }
 
@@ -81,6 +82,7 @@ namespace New_Scripts.Player.States
             {
                 this.context.ConsumeJumpBuffer();
                 if (this.context.Audio != null) this.context.Audio.PlayJump();
+                if (this.context.VFX != null) this.context.VFX.PlayJumpDust();
                 
                 Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
                 

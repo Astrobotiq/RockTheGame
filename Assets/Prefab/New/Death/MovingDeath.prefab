@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3558105412001044005}
   - component: {fileID: 4640271460979865479}
   - component: {fileID: 1419750148062506792}
-  - component: {fileID: 4182768810109198787}
+  - component: {fileID: 1617750257933626731}
   m_Layer: 8
   m_Name: Square
   m_TagString: Untagged
@@ -164,8 +164,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90787b1168ca4462b222ea15f232e4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.DeathZone
---- !u!58 &4182768810109198787
-CircleCollider2D:
+--- !u!61 &1617750257933626731
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -199,7 +199,17 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &4622498310714995761
 GameObject:
   m_ObjectHideFlags: 0

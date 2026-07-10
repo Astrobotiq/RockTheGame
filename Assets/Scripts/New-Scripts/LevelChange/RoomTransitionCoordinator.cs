@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using New_Scripts.Audio;
 using UnityEngine;
 
 namespace New_Scripts.LevelChange
@@ -13,6 +14,10 @@ namespace New_Scripts.LevelChange
         [SerializeField] private float transitionDuration = 0.5f;
         [SerializeField] float physicsCooldownDelay = 0.5f;
         [SerializeField] private RoomManager roomManager;
+
+        [Header("Audio")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+        [SerializeField] private AudioCueSO transitionSoundCue;
 
         private ICameraTransitionHandler cameraHandler;
         private CancellationTokenSource transitionCts;
@@ -34,6 +39,12 @@ namespace New_Scripts.LevelChange
             bool overrideZoom)
         {
             if (isTransitioning) return;
+
+            if (sfxPlayChannel != null && transitionSoundCue != null)
+            {
+                sfxPlayChannel.RaisePlayEvent(transitionSoundCue);
+            }
+
             transitionCts?.Cancel();
             transitionCts?.Dispose();
             transitionCts = CancellationTokenSource.CreateLinkedTokenSource(

@@ -48,6 +48,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3942497410242437136, guid: a76e893d24ea4e445898d6e30f95c9db, type: 3}
+      propertyPath: sfxPlayChannel
+      value: 
+      objectReference: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+    - target: {fileID: 3942497410242437136, guid: a76e893d24ea4e445898d6e30f95c9db, type: 3}
+      propertyPath: collectSoundCue
+      value: 
+      objectReference: {fileID: 11400000, guid: 47edb3ae4ce305b418438f7038aea3ce, type: 2}
     - target: {fileID: 8982856256650082551, guid: a76e893d24ea4e445898d6e30f95c9db, type: 3}
       propertyPath: m_Name
       value: Collectable-Pineaplle-Part Variant

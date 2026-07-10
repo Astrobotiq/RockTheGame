@@ -34,6 +34,7 @@ namespace New_Scripts.Player
         [SerializeField] private PlayerUIController uiController;
         [SerializeField] private PlayerColorController colorController;
         [SerializeField] private PlayerAudioController audioController;
+        [SerializeField] private PlayerVFXManager vfxManager;
 
         [Header("Visual References")] [SerializeField]
         private ArmController leftArm;
@@ -60,6 +61,7 @@ namespace New_Scripts.Player
         public PlayerColorController ColorController => colorController;
         public PlayerUIController UIController => uiController;
         public PlayerAudioController Audio => audioController;
+        public PlayerVFXManager VFX => vfxManager;
         public LayerMask GroundLayerMask => groundLayerMask;
 
         // --- Sensor Data ---

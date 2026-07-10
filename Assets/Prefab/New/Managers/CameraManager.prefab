@@ -51,10 +51,8 @@ MonoBehaviour:
   confiner: {fileID: 0}
   cameraFollowTarget: {fileID: 0}
   minOrthoSize: 12
-  maxOrthoSize: 18
-  minVelocity: 5
-  maxVelocity: 40
   zoomLerpSpeed: 3
+  swingFocusWeight: 0.3
   followLerpSpeed: 5
   lookAheadMultiplier: 0.15
   lookAheadLerpSpeed: 5
@@ -150,3 +148,5 @@ MonoBehaviour:
   transitionDuration: 1
   physicsCooldownDelay: 0.3
   roomManager: {fileID: 0}
+  sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+  transitionSoundCue: {fileID: 11400000, guid: 94c40515ed9756940ae5e70869550354, type: 2}

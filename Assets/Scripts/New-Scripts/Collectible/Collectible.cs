@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using New_Scripts.Audio;
 using New_Scripts.Death;
 using New_Scripts.Player;
 using UnityEngine;
@@ -36,6 +37,13 @@ namespace New_Scripts.Collectible
         
         [Tooltip("Kapsayan 2D Collider (Otomatik atanmazsa buradan seçilebilir).")]
         [SerializeField] private Collider2D collectibleCollider;
+
+        [Header("Audio")]
+        [Tooltip("Ses oynatma olay kanalı.")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+
+        [Tooltip("Toplandığında oynatılacak ses efekti.")]
+        [SerializeField] private AudioCueSO collectSoundCue;
 
         public event Action<Collectible> OnCollected;
 
@@ -111,6 +119,12 @@ namespace New_Scripts.Collectible
             // Görselleri ve fizik algılamayı kapat
             if (hideVisualOnCollect && visualObject != null) visualObject.SetActive(false);
             if (collectibleCollider != null) collectibleCollider.enabled = false;
+
+            // Ses çalma olayını tetikle
+            if (sfxPlayChannel != null && collectSoundCue != null)
+            {
+                sfxPlayChannel.RaisePlayEvent(collectSoundCue, transform.position);
+            }
 
             // Tüm bağlı efektleri tetikle (composition)
             foreach (var effect in effects)

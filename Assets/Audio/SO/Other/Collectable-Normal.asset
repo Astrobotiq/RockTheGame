@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5c4788d718517a47b2d853928832129, type: 3}
+  m_Name: Collectable-Normal
+  m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Audio.AudioCueSO
+  audioClips:
+  - {fileID: 8300000, guid: 4333aacce3c944448a6905c4b7e83912, type: 3}
+  mixerGroup: {fileID: 577363503066839824, guid: dca8de71f1c68814da53e15277f5b61d, type: 2}
+  volumeMin: 0.9
+  volumeMax: 1
+  pitchMin: 0.95
+  pitchMax: 1.05
+  loop: 0
+  is3D: 0
+  spatialBlend: 1
+  minDistance: 1
+  maxDistance: 30

@@ -47,9 +47,13 @@ namespace New_Scripts.LevelChange
         public bool OverrideDynamicZoom => useRoomCameraOverride && cameraOverrideSettings != null && cameraOverrideSettings.overrideZoom;
         public float OverrideCameraSize => (useRoomCameraOverride && cameraOverrideSettings != null) ? cameraOverrideSettings.cameraSize : 8f;
 
+        private bool _isCurrent = false;
+
         // 1. Durum: Oyuncu bu odanın içindeyken (Her şey aktif)
         public void SetAsCurrent()
         {
+            _isCurrent = true;
+
             if (dynamicContent != null)
                 dynamicContent.SetActive(true);
 
@@ -67,17 +71,28 @@ namespace New_Scripts.LevelChange
         // 2. Durum: Oyuncu komşu odadayken (Ön yükleme: İçerik aktif, kapılar kapalı)
         public void SetAsNeighbor()
         {
+            bool wasCurrent = _isCurrent;
+            _isCurrent = false;
+
             if (dynamicContent != null)
                 dynamicContent.SetActive(true);
 
             // Oyuncu henüz bu odada değil, kapı tetikleyicileri yanlışlıkla çalışmasın
             foreach (var trigger in triggers)
                 trigger.Disable();
+
+            if (wasCurrent)
+            {
+                OnRoomExited?.Invoke();
+            }
         }
 
         // 3. Durum: Oyuncu uzaktayken (Her şey kapalı, 0 performans harcaması)
         public void Sleep()
         {
+            bool wasCurrent = _isCurrent;
+            _isCurrent = false;
+
             if (dynamicContent != null)
                 dynamicContent.SetActive(false);
 
@@ -89,7 +104,10 @@ namespace New_Scripts.LevelChange
                 New_Scripts.Player.CameraController.Instance.UnregisterOverride(this);
             }
 
-            OnRoomExited?.Invoke();
+            if (wasCurrent)
+            {
+                OnRoomExited?.Invoke();
+            }
         }
     }
 }

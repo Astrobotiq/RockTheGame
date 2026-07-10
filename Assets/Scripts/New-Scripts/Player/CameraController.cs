@@ -282,6 +282,8 @@ namespace New_Scripts.Player
         public void PrepareForTransition()
         {
             isTransitioning = true;
+            activeOverrides.Clear();
+            isZoomOverridden = false;
 
             if (Camera.main != null)
             {

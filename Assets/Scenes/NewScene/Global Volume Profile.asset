@@ -44,7 +44,7 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 0.1
   apertureStrength:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.05
   shadowlines:
     m_OverrideState: 0
@@ -56,13 +56,13 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0.3
   noiseSize:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   noiseSpeed:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 10
   noiseAlpha:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.02
   brightness:
     m_OverrideState: 1
@@ -94,6 +94,100 @@ MonoBehaviour:
   intensity:
     m_OverrideState: 1
     m_Value: 1
+--- !u!114 &-2561428890930290547
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1afdf2d1804465b4f8589e21bafc4976, type: 3}
+  m_Name: CrtFilterVolume
+  m_EditorClassIdentifier: Assembly-CSharp::CRTEffect.CrtFilterVolume
+  active: 1
+  screenBend:
+    m_OverrideState: 1
+    m_Value: 10
+  screenOverscan:
+    m_OverrideState: 1
+    m_Value: 0
+  pixelResolution:
+    m_OverrideState: 1
+    m_Value: {x: 320, y: 240}
+  vignetteSize:
+    m_OverrideState: 1
+    m_Value: 1.532
+  vignetteSmooth:
+    m_OverrideState: 0
+    m_Value: 0.4
+  vignetteRound:
+    m_OverrideState: 0
+    m_Value: 1
+  blur:
+    m_OverrideState: 0
+    m_Value: 0
+  bleed:
+    m_OverrideState: 0
+    m_Value: 0
+  smidge:
+    m_OverrideState: 0
+    m_Value: 0
+  scanlinesStrength:
+    m_OverrideState: 0
+    m_Value: 0.04
+  apertureStrength:
+    m_OverrideState: 0
+    m_Value: 0
+  shadowlines:
+    m_OverrideState: 0
+    m_Value: 0
+  shadowlinesSpeed:
+    m_OverrideState: 0
+    m_Value: 1
+  shadowlinesAlpha:
+    m_OverrideState: 0
+    m_Value: 0.3
+  noiseSize:
+    m_OverrideState: 0
+    m_Value: 2
+  noiseSpeed:
+    m_OverrideState: 0
+    m_Value: 10
+  noiseAlpha:
+    m_OverrideState: 0
+    m_Value: 0
+  brightness:
+    m_OverrideState: 0
+    m_Value: 1
+  contrast:
+    m_OverrideState: 0
+    m_Value: 1
+  gamma:
+    m_OverrideState: 0
+    m_Value: 1
+  red:
+    m_OverrideState: 0
+    m_Value: 1
+  green:
+    m_OverrideState: 0
+    m_Value: 1
+  blue:
+    m_OverrideState: 0
+    m_Value: 1
+  redOffset:
+    m_OverrideState: 0
+    m_Value: 0
+  greenOffset:
+    m_OverrideState: 0
+    m_Value: 0
+  blueOffset:
+    m_OverrideState: 0
+    m_Value: 0
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,4 +201,4 @@ MonoBehaviour:
   m_Name: Global Volume Profile
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.VolumeProfile
   components:
-  - {fileID: -7862236140811489214}
+  - {fileID: -2561428890930290547}

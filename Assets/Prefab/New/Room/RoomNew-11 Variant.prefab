@@ -43506,16 +43506,52 @@ PrefabInstance:
       propertyPath: m_LocalScale.x
       value: 3.5
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6140653585582600661, guid: c574f2049d21c6240b42499420175487, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5494189926547863978, guid: c574f2049d21c6240b42499420175487, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2169697637015350294}
   m_SourcePrefab: {fileID: 100100000, guid: c574f2049d21c6240b42499420175487, type: 3}
+--- !u!1 &1466314534195709143 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5494189926547863978, guid: c574f2049d21c6240b42499420175487, type: 3}
+  m_PrefabInstance: {fileID: 6369829215668305277}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2169697637015350294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1466314534195709143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dace596250a353744aa9a7665b36c935, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Platform.TriggeredPlatformController
+  movementStrategy: {fileID: 3678733383478795440}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!4 &2165709474864653776 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5073314494656092333, guid: c574f2049d21c6240b42499420175487, type: 3}
   m_PrefabInstance: {fileID: 6369829215668305277}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3678733383478795440 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7740369899172635085, guid: c574f2049d21c6240b42499420175487, type: 3}
+  m_PrefabInstance: {fileID: 6369829215668305277}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1466314534195709143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9f5c135fa5a4660a34688716975d9ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Platform.TransformPingPongStrategy
 --- !u!1001 &7470206718220251671
 PrefabInstance:
   m_ObjectHideFlags: 0

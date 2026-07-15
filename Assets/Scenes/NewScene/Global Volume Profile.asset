@@ -115,10 +115,10 @@ MonoBehaviour:
     m_Value: 0
   pixelResolution:
     m_OverrideState: 1
-    m_Value: {x: 320, y: 240}
+    m_Value: {x: 480, y: 360}
   vignetteSize:
     m_OverrideState: 1
-    m_Value: 1.532
+    m_Value: 1.6
   vignetteSmooth:
     m_OverrideState: 0
     m_Value: 0.4
@@ -127,22 +127,22 @@ MonoBehaviour:
     m_Value: 1
   blur:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 0.3
   bleed:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 0.004
   smidge:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 0.1
   scanlinesStrength:
-    m_OverrideState: 0
-    m_Value: 0.04
+    m_OverrideState: 1
+    m_Value: 0.1
   apertureStrength:
     m_OverrideState: 0
     m_Value: 0
   shadowlines:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 0.3
   shadowlinesSpeed:
     m_OverrideState: 0
     m_Value: 1
@@ -159,29 +159,29 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   brightness:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 1
   contrast:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 1.1
   gamma:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 0.9
   red:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 1.141
   green:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 1.046
   blue:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 0.949
   redOffset:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: -0.05
   greenOffset:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 0.05
   blueOffset:
     m_OverrideState: 0
     m_Value: 0

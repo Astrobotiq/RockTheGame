@@ -49,6 +49,20 @@ namespace New_Scripts.LevelChange
 
         private bool _isCurrent = false;
 
+        private void Awake()
+        {
+            if (triggers == null)
+                triggers = new List<RoomTransitionTrigger>();
+
+            foreach (var trigger in GetComponentsInChildren<RoomTransitionTrigger>(true))
+            {
+                if (!triggers.Contains(trigger))
+                {
+                    triggers.Add(trigger);
+                }
+            }
+        }
+
         // 1. Durum: Oyuncu bu odanın içindeyken (Her şey aktif)
         public void SetAsCurrent()
         {

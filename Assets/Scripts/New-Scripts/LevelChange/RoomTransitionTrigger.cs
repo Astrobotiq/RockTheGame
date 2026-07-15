@@ -1,4 +1,4 @@
-﻿using New_Scripts.Death;
+using New_Scripts.Death;
 using UnityEngine;
 
 namespace New_Scripts.LevelChange
@@ -18,6 +18,7 @@ namespace New_Scripts.LevelChange
         private void Awake()
         {
             triggerCollider = GetComponent<BoxCollider2D>();
+            triggerCollider.enabled = false;
         }
 
         public void Enable() => triggerCollider.enabled = true;

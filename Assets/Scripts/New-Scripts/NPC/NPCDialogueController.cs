@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.Player;
+using New_Scripts.Death;
 using UnityEngine;
 
 namespace New_Scripts.NPC
@@ -11,6 +12,12 @@ namespace New_Scripts.NPC
         Single,      // Her yaklaşımda sadece ilk satırı yazar
         Sequential,  // Her yaklaşımda sıradaki satırı yazar (döngüsel)
         Random       // Her yaklaşımda rastgele bir satırı yazar
+    }
+
+    public enum DialogueAdvanceCondition
+    {
+        OnTriggerEnter, // Varsayılan: Her girip çıkıldığında sonraki diyaloğa geçer
+        OnPlayerDeath   // Sadece oyuncu öldüğünde sonraki diyaloğa geçer
     }
 
     [RequireComponent(typeof(Collider2D))]
@@ -23,6 +30,7 @@ namespace New_Scripts.NPC
         [TextArea(3, 5)]
         [SerializeField] private string[] dialogueLines;
         [SerializeField] private DialoguePlaybackMode playbackMode = DialoguePlaybackMode.Single;
+        [SerializeField] private DialogueAdvanceCondition advanceCondition = DialogueAdvanceCondition.OnTriggerEnter;
 
         [Header("Typewriter Settings")]
         [Tooltip("Her harfin ekranda belirmesi arasındaki süre (saniye).")]
@@ -32,6 +40,7 @@ namespace New_Scripts.NPC
         private int currentLineIndex = 0;
         private int lastRandomIndex = -1;
         private CancellationTokenSource activeCts;
+        private PlayerHealth cachedPlayerHealth;
 
         private void Awake()
         {
@@ -41,14 +50,45 @@ namespace New_Scripts.NPC
                 triggerCollider.isTrigger = true;
                 Debug.LogWarning($"[{name}] Collider2D isTrigger olarak ayarlandı.", this);
             }
+        }
+
+        private void Start()
+        {
+            if (dialogueBubble == null)
+            {
+                dialogueBubble = NPCDialogueBubble.Instance;
+                if (dialogueBubble == null)
+                {
+                    dialogueBubble = GetComponentInChildren<NPCDialogueBubble>();
+                }
+            }
 
             if (dialogueBubble == null)
             {
-                dialogueBubble = GetComponentInChildren<NPCDialogueBubble>();
-                if (dialogueBubble == null)
-                {
-                    Debug.LogError($"[{name}] NPCDialogueBubble bileşeni bulunamadı! Lütfen referans atayın.", this);
-                }
+                Debug.LogError($"[{name}] NPCDialogueBubble bileşeni bulunamadı! Lütfen sahnede bir NPCDialogueBubble bulunduğundan veya referans atadığınızdan emin olun.", this);
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (cachedPlayerHealth == null)
+            {
+                cachedPlayerHealth = FindObjectOfType<PlayerHealth>();
+            }
+
+            if (cachedPlayerHealth != null)
+            {
+                cachedPlayerHealth.OnDeath -= HandlePlayerDeath;
+                cachedPlayerHealth.OnDeath += HandlePlayerDeath;
+            }
+        }
+
+        private void OnDisable()
+        {
+            CancelActiveDialogue();
+            if (cachedPlayerHealth != null)
+            {
+                cachedPlayerHealth.OnDeath -= HandlePlayerDeath;
             }
         }
 
@@ -97,36 +137,73 @@ namespace New_Scripts.NPC
             }
         }
 
+        private void HandlePlayerDeath()
+        {
+            if (advanceCondition == DialogueAdvanceCondition.OnPlayerDeath)
+            {
+                AdvanceDialogueIndex();
+            }
+        }
+
+        private void AdvanceDialogueIndex()
+        {
+            if (dialogueLines == null || dialogueLines.Length <= 1)
+            {
+                return;
+            }
+
+            if (playbackMode == DialoguePlaybackMode.Sequential)
+            {
+                currentLineIndex = (currentLineIndex + 1) % dialogueLines.Length;
+            }
+            else if (playbackMode == DialoguePlaybackMode.Random)
+            {
+                int index = UnityEngine.Random.Range(0, dialogueLines.Length);
+                if (index == lastRandomIndex)
+                {
+                    index = (index + 1) % dialogueLines.Length;
+                }
+                lastRandomIndex = index;
+                currentLineIndex = index;
+            }
+        }
+
         private string GetNextDialogueLine()
         {
+            if (dialogueLines == null || dialogueLines.Length == 0)
+            {
+                return string.Empty;
+            }
+
             if (dialogueLines.Length == 1)
             {
                 return dialogueLines[0];
             }
 
-            switch (playbackMode)
+            if (advanceCondition == DialogueAdvanceCondition.OnTriggerEnter)
             {
-                case DialoguePlaybackMode.Single:
-                    return dialogueLines[0];
-
-                case DialoguePlaybackMode.Sequential:
+                if (playbackMode == DialoguePlaybackMode.Sequential)
+                {
                     string seqLine = dialogueLines[currentLineIndex];
                     currentLineIndex = (currentLineIndex + 1) % dialogueLines.Length;
                     return seqLine;
-
-                case DialoguePlaybackMode.Random:
+                }
+                else if (playbackMode == DialoguePlaybackMode.Random)
+                {
                     int index = UnityEngine.Random.Range(0, dialogueLines.Length);
-                    // Üst üste aynı satırı seçmemek için kontrol
                     if (index == lastRandomIndex)
                     {
                         index = (index + 1) % dialogueLines.Length;
                     }
                     lastRandomIndex = index;
-                    return dialogueLines[index];
-
-                default:
-                    return dialogueLines[0];
+                    currentLineIndex = index;
+                    return dialogueLines[currentLineIndex];
+                }
             }
+
+            // Eğer OnPlayerDeath modundaysak, zaten index death event ile ilerletildi.
+            // Direkt güncel indexteki satırı döndürürüz.
+            return dialogueLines[currentLineIndex];
         }
 
         private async UniTaskVoid ShowDialogueAsync(string line, CancellationToken ct)
@@ -153,11 +230,6 @@ namespace New_Scripts.NPC
                 activeCts.Dispose();
                 activeCts = null;
             }
-        }
-
-        private void OnDisable()
-        {
-            CancelActiveDialogue();
         }
 
         private void OnDestroy()

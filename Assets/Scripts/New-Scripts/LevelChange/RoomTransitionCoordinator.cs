@@ -82,11 +82,11 @@ namespace New_Scripts.LevelChange
 
             player.UnfreezeFromTransition(direction);
 
-            isTransitioning = false;
-
             await UniTask.Delay(
                 TimeSpan.FromSeconds(physicsCooldownDelay),
                 cancellationToken: token);
+
+            isTransitioning = false;
         }
 
         private void OnDestroy()

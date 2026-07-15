@@ -18,8 +18,12 @@ namespace New_Scripts.NPC
         [SerializeField] private Ease scaleInEase = Ease.OutBack;
         [SerializeField] private Ease scaleOutEase = Ease.InQuad;
 
+        public static NPCDialogueBubble Instance { get; private set; }
+
         private void Awake()
         {
+            Instance = this;
+
             if (bubbleContainer == null)
             {
                 bubbleContainer = GetComponent<RectTransform>();

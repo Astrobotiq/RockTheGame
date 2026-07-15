@@ -15,6 +15,7 @@ namespace New_Scripts.Door
 
         [Header("Settings")]
         [SerializeField] private bool startOpen = false;
+        [SerializeField] private bool disableColliderOnOpen = true;
 
         [Header("Audio")]
         [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
@@ -45,7 +46,7 @@ namespace New_Scripts.Door
             if (IsOpen) return;
             IsOpen = true;
 
-            if (doorCollider != null) doorCollider.enabled = false;
+            if (doorCollider != null && disableColliderOnOpen) doorCollider.enabled = false;
             
             if (_isInitialized && sfxPlayChannel != null && openSoundCue != null)
             {
@@ -61,7 +62,7 @@ namespace New_Scripts.Door
             if (!IsOpen) return;
             IsOpen = false;
 
-            if (doorCollider != null) doorCollider.enabled = true;
+            if (doorCollider != null && disableColliderOnOpen) doorCollider.enabled = true;
 
             if (_isInitialized && sfxPlayChannel != null && closeSoundCue != null)
             {

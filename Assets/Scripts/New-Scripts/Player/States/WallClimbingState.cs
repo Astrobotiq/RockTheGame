@@ -13,6 +13,8 @@ namespace New_Scripts.Player.States
         private readonly int wallDirection; 
         
         private bool warningTriggered;
+        private float ledgeClimbTimer;
+        private bool isLedgeDetected;
 
         public WallClimbingState(PlayerController context, int wallDirection)
         {
@@ -55,6 +57,34 @@ namespace New_Scripts.Player.States
             if (context.CurrentWallStamina <= 0f)
             {
                 context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f));
+                return;
+            }
+
+            // Check ledge climb
+            var ledgeResult = context.CheckLedge(wallDirection);
+            isLedgeDetected = ledgeResult.LedgeDetected;
+            if (isLedgeDetected)
+            {
+                if (context.Input.LeftStick.y > 0.5f)
+                {
+                    ledgeClimbTimer += Time.deltaTime;
+                    context.LedgeHoldTimerProgress = ledgeClimbTimer;
+                    if (ledgeClimbTimer >= stats.LedgeClimbHoldTime)
+                    {
+                        context.TransitionToState(new LedgeClimbState(context, context.PlayerRigidbody.position, ledgeResult.ClimbTarget));
+                        return;
+                    }
+                }
+                else
+                {
+                    ledgeClimbTimer = 0f;
+                    context.LedgeHoldTimerProgress = 0f;
+                }
+            }
+            else
+            {
+                ledgeClimbTimer = 0f;
+                context.LedgeHoldTimerProgress = 0f;
             }
 
             CheckInputTransitions();
@@ -63,6 +93,10 @@ namespace New_Scripts.Player.States
         public void FixedUpdateState()
         {
             float inputY = context.Input.LeftStick.y;
+            if (isLedgeDetected && inputY > 0f)
+            {
+                inputY = 0f; // Lock upward climbing when at a ledge
+            }
             context.Velocity = new Vector2(0f, inputY * stats.ClimbSpeed);
         }
 
@@ -77,7 +111,7 @@ namespace New_Scripts.Player.States
             if (context.Input.IsJumpPressed)
             {
                 if (context.Audio != null) context.Audio.PlayJump();
-                Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
+                Vector2 jumpVelocity = new Vector2(0f, stats.ClimbVerticalJumpVelocity);
                 
                 IMovingSurface movingSurface = wallDirection == -1 
                     ? context.PhysicsHandler.CurrentLeftMovingSurface 
@@ -113,6 +147,8 @@ namespace New_Scripts.Player.States
         public void ExitState()
         {
             context.PhysicsHandler.ClingingWallDirection = 0;
+            context.LatestLedgeResult = default;
+            context.LedgeHoldTimerProgress = 0f;
         }
     }
 }

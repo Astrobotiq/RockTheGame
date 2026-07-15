@@ -19,7 +19,7 @@ namespace New_Scripts.Player.States
             _context = context;
             _stats = context.Stats;
             
-            _dashDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : Vector2.right;
+            _dashDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : context.FacingDirection;
         }
 
         public void EnterState()

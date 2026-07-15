@@ -37,15 +37,19 @@ MonoBehaviour:
   SlingshotAnticipationSpeed: 10
   ClimbSpeed: 8
   WallJumpForce: {x: 11, y: 14}
+  ClimbVerticalJumpVelocity: 14
   MaxWallStamina: 6
   StaminaWarningThreshold: 1.5
   WallSnapRaycastDistance: 2
   WallSnapSafetyOffset: 0.02
+  LedgeClimbHoldTime: 0.1
+  LedgeClimbSafetyOffset: 0.05
+  LedgeClimbDuration: 0.2
   WallSlideMaxSpeed: 3
   WallSlideFriction: 10
-  WallSlideJumpForce: {x: 11, y: 14}
+  WallSlideJumpForce: {x: 11, y: 11}
   MaxWallSlideTime: 2
-  WallJumpInputLockoutTime: 0.2
+  WallJumpInputLockoutTime: 0.1
   DualSpringStiffness: 25
   DualSpringDamping: 5
   DualSwingForceMultiplier: 15

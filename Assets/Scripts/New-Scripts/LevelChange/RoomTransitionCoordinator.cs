@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.Audio;
+using New_Scripts.Player;
 using UnityEngine;
 
 namespace New_Scripts.LevelChange
@@ -18,6 +19,9 @@ namespace New_Scripts.LevelChange
         [Header("Audio")]
         [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
         [SerializeField] private AudioCueSO transitionSoundCue;
+
+        [Header("Vibration")]
+        [SerializeField] private TransitionVibrationSettingsSO vibrationSettings;
 
         private ICameraTransitionHandler cameraHandler;
         private CancellationTokenSource transitionCts;
@@ -71,6 +75,33 @@ namespace New_Scripts.LevelChange
 
             player.FreezeForTransition();
             cameraHandler.PrepareForTransition();
+
+            if (vibrationSettings != null && HapticManager.Instance != null)
+            {
+                RumbleProfile transitionProfile = default;
+                switch (direction)
+                {
+                    case TransitionDirection.Left:
+                        transitionProfile = vibrationSettings.TransitionLeft;
+                        break;
+                    case TransitionDirection.Right:
+                        transitionProfile = vibrationSettings.TransitionRight;
+                        break;
+                    case TransitionDirection.Up:
+                        transitionProfile = vibrationSettings.TransitionUp;
+                        break;
+                    case TransitionDirection.Down:
+                        transitionProfile = vibrationSettings.TransitionDown;
+                        break;
+                }
+
+                if (transitionProfile.duration <= 0f)
+                {
+                    transitionProfile.duration = transitionDuration;
+                }
+
+                HapticManager.Instance.Vibrate(transitionProfile);
+            }
 
             await cameraHandler.PanAndZoomCameraAsync(
                 spawnPosition, targetSize, overrideZoom,

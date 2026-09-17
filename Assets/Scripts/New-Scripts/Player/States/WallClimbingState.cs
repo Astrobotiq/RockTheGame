@@ -42,6 +42,14 @@ namespace New_Scripts.Player.States
             
             context.UIController.ShowStaminaBar();
             context.ResetWallSlideTime();
+
+            if (context.VibrationSettings != null && HapticManager.Instance != null)
+            {
+                var profile = wallDirection == -1 
+                    ? context.VibrationSettings.WallClimbLeft 
+                    : context.VibrationSettings.WallClimbRight;
+                HapticManager.Instance.StartContinuousVibration(profile);
+            }
         }
 
         public void UpdateState()
@@ -111,6 +119,10 @@ namespace New_Scripts.Player.States
             if (context.Input.IsJumpPressed)
             {
                 if (context.Audio != null) context.Audio.PlayJump();
+                if (context.VibrationSettings != null && HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.Vibrate(context.VibrationSettings.Jump);
+                }
                 Vector2 jumpVelocity = new Vector2(0f, stats.ClimbVerticalJumpVelocity);
                 
                 IMovingSurface movingSurface = wallDirection == -1 
@@ -149,6 +161,11 @@ namespace New_Scripts.Player.States
             context.PhysicsHandler.ClingingWallDirection = 0;
             context.LatestLedgeResult = default;
             context.LedgeHoldTimerProgress = 0f;
+
+            if (HapticManager.Instance != null)
+            {
+                HapticManager.Instance.StopContinuousVibration();
+            }
         }
     }
 }

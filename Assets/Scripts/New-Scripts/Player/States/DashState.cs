@@ -30,6 +30,11 @@ namespace New_Scripts.Player.States
             _context.Velocity = _dashDirection * _stats.DashSpeed;
             _context.NotifyImpact(_dashDirection * _stats.DashImpactMultiplier);
 
+            if (_context.VibrationSettings != null && HapticManager.Instance != null)
+            {
+                HapticManager.Instance.Vibrate(_context.VibrationSettings.Dash);
+            }
+
             if (_context.Audio != null)
             {
                 _context.Audio.PlayDash();

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using New_Scripts.Death;
+using New_Scripts.Player;
 using UnityEngine;
 
 namespace New_Scripts.Death
@@ -11,8 +12,28 @@ namespace New_Scripts.Death
     {
         public event Action OnDeath;
 
+        [Header("VFX Settings")]
+        [SerializeField] private GameObject deathParticlePrefab;
+
+        private PlayerController _playerController;
+
+        private void Awake()
+        {
+            _playerController = GetComponent<PlayerController>();
+        }
+
         public void Kill()
         {
+            if (_playerController != null && _playerController.VibrationSettings != null && HapticManager.Instance != null)
+            {
+                HapticManager.Instance.Vibrate(_playerController.VibrationSettings.Death);
+            }
+
+            if (deathParticlePrefab != null)
+            {
+                Instantiate(deathParticlePrefab, transform.position, Quaternion.identity);
+            }
+
             gameObject.SetActive(false);
             OnDeath?.Invoke();
         }

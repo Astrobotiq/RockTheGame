@@ -63,6 +63,9 @@ namespace New_Scripts.Platform
         [Tooltip("Fırlatma anında oynatılacak ses efekti.")]
         [SerializeField] private AudioCueSO launchSoundCue;
 
+        [Header("Vibration")]
+        [SerializeField] private PlatformVibrationSettingsSO vibrationSettings;
+
         [Header("Juicy Scale Properties")]
         [SerializeField] private float squashDuration = 0.05f;
         [SerializeField] private float squashAmountScaleY = 0.6f;
@@ -125,6 +128,11 @@ namespace New_Scripts.Platform
         private void LaunchPlayer(PlayerController player)
         {
             _cooldownTimer = triggerCooldown;
+
+            if (vibrationSettings != null && HapticManager.Instance != null)
+            {
+                HapticManager.Instance.Vibrate(vibrationSettings.LaunchPadProfile);
+            }
 
             // Fırlatma vektörünü hesapla (yerel transform.up yönü)
             Vector2 launchVelocity = (Vector2)transform.up * launchSpeed;

@@ -101,6 +101,10 @@ namespace New_Scripts.Player.States
                 _coyoteTimer = 0f;
                 _isJumping = true;
                 if (_context.Audio != null) _context.Audio.PlayJump();
+                if (_context.VibrationSettings != null && HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.Vibrate(_context.VibrationSettings.Jump);
+                }
                 
                 Vector2 jumpVelocityVector = new Vector2(_currentVelocity.x, _stats.JumpVelocity);
                 

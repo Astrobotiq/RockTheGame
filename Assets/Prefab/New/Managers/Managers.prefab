@@ -49,6 +49,50 @@ MonoBehaviour:
   respawnManager: {fileID: 8996300956129051386}
   playerTransform: {fileID: 0}
   cameraHandlerComponent: {fileID: 218214261598896010}
+--- !u!1 &1789538127396412583
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9215297679379602367}
+  - component: {fileID: 1386077576332705490}
+  m_Layer: 0
+  m_Name: HapticManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9215297679379602367
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789538127396412583}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5216712418114653651}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1386077576332705490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789538127396412583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7241231ddc6d4694797c7d72d83db6ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Player.HapticManager
 --- !u!1 &5612624944722297362
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,6 +175,7 @@ Transform:
   - {fileID: 5351492659561801608}
   - {fileID: 5999208437294898644}
   - {fileID: 1240488652760224280}
+  - {fileID: 9215297679379602367}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1049186247325395329
@@ -149,6 +194,10 @@ PrefabInstance:
       propertyPath: roomManager
       value: 
       objectReference: {fileID: 5402832445293070195}
+    - target: {fileID: 6753584654793138180, guid: 44a9b46b714b6474d866b2a897eae6ee, type: 3}
+      propertyPath: vibrationSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: bfb992aeb8d53024fbd9c728b0e575a4, type: 2}
     - target: {fileID: 6759354507214402645, guid: 44a9b46b714b6474d866b2a897eae6ee, type: 3}
       propertyPath: m_LocalPosition.x
       value: -523.9658

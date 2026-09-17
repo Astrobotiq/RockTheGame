@@ -26,6 +26,8 @@ namespace New_Scripts.Player
     public class PlayerController : MonoBehaviour, IFramePausable, IPlayerTransitionable
     {
         [Header("Data")] public PlayerStatsSO Stats;
+        [SerializeField] private PlayerVibrationSettingsSO vibrationSettings;
+        public PlayerVibrationSettingsSO VibrationSettings => vibrationSettings;
 
         [Header("System References")] [SerializeField]
         private NodeDetector nodeDetector;
@@ -183,6 +185,10 @@ namespace New_Scripts.Player
         {
             OnHighImpact?.Invoke(velocity);
             HitStopEvents.RequestHitStop?.Invoke(Stats.HitStopDuration);
+            if (vibrationSettings != null && HapticManager.Instance != null)
+            {
+                HapticManager.Instance.Vibrate(vibrationSettings.HighImpact);
+            }
         }
 
         // --- Ability & Resource Management ---
@@ -261,6 +267,10 @@ namespace New_Scripts.Player
             ResetDash();
             ResetSlingshot();
             RefillWallStamina();
+            if (HapticManager.Instance != null)
+            {
+                HapticManager.Instance.StopContinuousVibration();
+            }
         }
         
         public void OnEndRespawn(){

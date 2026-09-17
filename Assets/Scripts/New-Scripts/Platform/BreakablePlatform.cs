@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.Death;
+using New_Scripts.Player;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -21,6 +22,9 @@ namespace New_Scripts.Platform
         [SerializeField] private float breakDelay = 0.5f;
         [SerializeField] private float respawnTime = 3f;
         [SerializeField] private float shakeIntensity = 0.05f;
+
+        [Header("Vibration")]
+        [SerializeField] private PlatformVibrationSettingsSO vibrationSettings;
 
         [Header("References")]
         [Tooltip("Titreme efektinin verileceği, SpriteRenderer'ı taşıyan alt obje.")]
@@ -97,18 +101,33 @@ namespace New_Scripts.Platform
         {
             _isTriggered = true;
 
-            float timer = 0f;
-            while (timer < breakDelay)
+            if (vibrationSettings != null && HapticManager.Instance != null)
             {
-                timer += Time.deltaTime;
-                
-                if (visualTransform != null)
+                HapticManager.Instance.StartContinuousVibration(vibrationSettings.BreakablePlatformProfile);
+            }
+
+            try
+            {
+                float timer = 0f;
+                while (timer < breakDelay)
                 {
-                    Vector2 randomShake = Random.insideUnitCircle * shakeIntensity;
-                    visualTransform.localPosition = _originalVisualPosition + (Vector3)randomShake;
+                    timer += Time.deltaTime;
+                    
+                    if (visualTransform != null)
+                    {
+                        Vector2 randomShake = Random.insideUnitCircle * shakeIntensity;
+                        visualTransform.localPosition = _originalVisualPosition + (Vector3)randomShake;
+                    }
+                    
+                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
                 }
-                
-                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+            }
+            finally
+            {
+                if (HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.StopContinuousVibration();
+                }
             }
 
             if (visualTransform != null)

@@ -35,6 +35,10 @@ namespace New_Scripts.Player.States
             {
                 if (this.context.Audio != null) this.context.Audio.PlayLand();
                 if (this.context.VFX != null) this.context.VFX.PlayLandDust();
+                if (this.context.VibrationSettings != null && HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.Vibrate(this.context.VibrationSettings.Land);
+                }
             }
         }
 
@@ -83,6 +87,10 @@ namespace New_Scripts.Player.States
                 this.context.ConsumeJumpBuffer();
                 if (this.context.Audio != null) this.context.Audio.PlayJump();
                 if (this.context.VFX != null) this.context.VFX.PlayJumpDust();
+                if (this.context.VibrationSettings != null && HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.Vibrate(this.context.VibrationSettings.Jump);
+                }
                 
                 Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
                 

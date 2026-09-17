@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: MusicOne
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Audio.AudioCueSO
   audioClips:
-  - {fileID: 8300000, guid: 10f2e0d00ce7cb8478ff207ee245602a, type: 3}
+  - {fileID: 8300000, guid: 17319f8bea0ec094895b17a8070e82b0, type: 3}
   mixerGroup: {fileID: 2240978714450089237, guid: dca8de71f1c68814da53e15277f5b61d, type: 2}
-  volumeMin: 0.6
-  volumeMax: 0.6
+  volumeMin: 0.5
+  volumeMax: 0.5
   pitchMin: 1
   pitchMax: 1
   loop: 1

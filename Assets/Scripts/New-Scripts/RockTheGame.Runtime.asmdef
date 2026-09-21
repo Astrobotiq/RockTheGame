@@ -1,0 +1,24 @@
+{
+    "name": "RockTheGame.Runtime",
+    "rootNamespace": "New_Scripts",
+    "references": [
+        "UniTask",
+        "Unity.TextMeshPro",
+        "Unity.Cinemachine",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.ugui",
+        "DOTween.Modules",
+        "EasyTextEffects"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

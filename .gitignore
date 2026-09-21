@@ -70,3 +70,13 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Claude Code local settings and scratch
+.claude/settings.local.json
+
+# Obsidian workspace state (per-machine)
+docs/.obsidian/workspace.json
+
+# Sirket ici dokumanlar ve bunlardan turetilen notlar: uzak depoya gitmemeli
+/spark_ai_architecture.md
+/docs/spark-analizi.md

@@ -14,6 +14,11 @@ This is a Unity project with no CLI build/test/lint pipeline — there is no `pa
 - **Compile check:** Use the Unity Editor's Console window, or `mcp__ide__getDiagnostics` if available, to check for compile errors after editing scripts.
 - **Tests:** `com.unity.test-framework` is a package dependency, but there are no actual test assemblies or `*Tests.asmdef` in the repo — testing is done manually via Play Mode. Don't assume `dotnet test` or similar works here.
 - **No `.asmdef` files exist** — all scripts compile into the default `Assembly-CSharp`.
+- **Unity Editor interaction:** The Unity Pipeline package is installed and connects to a live, open Editor instance on port 7800. ALWAYS use `unity eval` / `unity command` for scene, GameObject, and component operations (creating/editing scenes, adding GameObjects, adding components like Rigidbody/Collider, etc.). Never hand-write `.unity` scene files as raw YAML — it's error-prone and may not reflect the Editor's actual behavior.
+
+## Design docs
+
+The game's GDD and design notes live in `docs/GDD.md`. Before working on a new mechanic or feature, check that file first for consistency with existing design intent (mechanics list, core pillars, NPC/enemy design constraints, etc.).
 
 ## Architecture
 

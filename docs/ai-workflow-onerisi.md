@@ -1,6 +1,6 @@
 # Solo Unity geliştirici için AI iş akışı önerisi
 
-*21 Eylül 2026. İnternet taramasına ve Spark mimari dokümanının incelenmesine dayanır.*
+*21 Eylül 2026. İnternet taramasına dayanır.*
 
 ## Kaynak kalitesi hakkında
 

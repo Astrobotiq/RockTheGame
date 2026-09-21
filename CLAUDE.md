@@ -25,7 +25,7 @@ These exist so that "done" is provable without re-reading every line of code.
 3. **Tests for pure logic.** Add or update an EditMode test when you change deterministic logic (rotation tracking, movement strategies, stat math). The human writes or approves tests for gameplay-critical behaviour; do not write a test just to make your own change pass.
 4. **Game feel is the human's call.** You cannot verify feel. Tune only via `PlayerStatsSO` values, keep the change minimal, state old and new values, and ask the human to playtest with a gamepad. `PlayerStatsSanityTests` guards the GDD bands (wall stamina ~6s, slide ~2s, ...): if you deliberately leave a band, update `docs/GDD.md` first, then the test.
 5. **Commit small, never push.** One logical change per commit on a feature branch, message explaining why. Force-push, `reset --hard`, `clean`, `branch -D` are denied. Pushing to `origin` needs an explicit request.
-6. **Leave the human's work alone.** Do not commit or discard unrelated working-tree changes (e.g. the Editor rewrites `_CrtTime` in `M_CRTFilter.mat` on its own). Company-internal notes (`spark_ai_architecture.md`, `docs/spark-analizi.md`) are git-ignored and must stay out of the repo.
+6. **Leave the human's work alone.** Do not commit or discard unrelated working-tree changes (e.g. the Editor rewrites `_CrtTime` in `M_CRTFilter.mat` on its own). Never add company-internal documents to this repo.
 7. **Plan before multi-file work**, and for a new mechanic check `docs/GDD.md` first (see below).
 
 ## Design docs

@@ -76,7 +76,3 @@ crashlytics-build.properties
 
 # Obsidian workspace state (per-machine)
 docs/.obsidian/workspace.json
-
-# Sirket ici dokumanlar ve bunlardan turetilen notlar: uzak depoya gitmemeli
-/spark_ai_architecture.md
-/docs/spark-analizi.md

@@ -222,7 +222,8 @@ Bunlar için Play Mode'da oyun içi kameradan (oyuncu ve HUD dahil, `source=scre
 - **Oyuncu:** Kinematik karakter; durum makinesi (yerde, havada, dash, swing, dual swing, slingshot, duvar tırmanma, kayma, kenar çıkma, oda geçişi).
 - **Veri:** Karakter ayarları tek bir ScriptableObject'te (`PlayerStatsSO`); ses, titreşim ve toplanabilirler de ScriptableObject tabanlı.
 - **Sinyaller:** Sistemler arası iletişim olay kanallarıyla (ScriptableObject) yapılır.
-- **Aktif kod:** `Assets/Scripts/New-Scripts/`. `Assets/Scripts/` altındaki dosyalar eski prototiptir ve kullanılmaz.
+- **Aktif kod:** `Assets/Scripts/New-Scripts/` (`RockTheGame.Runtime` ve `RockTheGame.Editor` assembly'leri). `Assets/Scripts/` altındaki diğer dosyalar eski prototiptir ve kullanılmaz.
+- **Test ve doğrulama:** `Assets/Tests/EditMode/` altında EditMode testleri; `unity command run_tests --mode EditMode`. Ajan oturumları, C# değişikliğinden sonra derleme + test kanıtı vermeden bitemez (`.claude/hooks/check-compile.sh`). Oyun hissi bu testlerin dışındadır, bkz. `docs/feel-notlari.md`.
 - **Ana sahne:** `NewScene.unity` (build'deki tek sahne, 23 oda prefab'ı).
 
 ---

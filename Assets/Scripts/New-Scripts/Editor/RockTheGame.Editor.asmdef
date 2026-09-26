@@ -1,0 +1,23 @@
+{
+    "name": "RockTheGame.Editor",
+    "rootNamespace": "New_Scripts",
+    "references": [
+        "RockTheGame.Runtime",
+        "UniTask",
+        "Unity.TextMeshPro",
+        "Unity.Cinemachine",
+        "Unity.InputSystem",
+        "EasyTextEffects"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

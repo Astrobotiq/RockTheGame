@@ -1,4 +1,5 @@
 using System;
+using New_Scripts.Audio;
 using UnityEngine;
 
 namespace New_Scripts.Door
@@ -14,16 +15,29 @@ namespace New_Scripts.Door
 
         [Header("Settings")]
         [SerializeField] private bool startOpen = false;
+        [SerializeField] private bool disableColliderOnOpen = true;
+
+        [Header("Audio")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+        [SerializeField] private AudioCueSO openSoundCue;
+        [SerializeField] private AudioCueSO closeSoundCue;
 
         public event Action OnOpened;
         public event Action OnClosed;
 
         public bool IsOpen { get; private set; }
 
+        private bool _isInitialized;
+
         private void Awake()
         {
             if (startOpen) Open();
             else Close();
+        }
+
+        private void Start()
+        {
+            _isInitialized = true;
         }
 
         [ContextMenu("TEST: Kapıyı Aç")]
@@ -32,8 +46,13 @@ namespace New_Scripts.Door
             if (IsOpen) return;
             IsOpen = true;
 
-            if (doorCollider != null) doorCollider.enabled = false;
+            if (doorCollider != null && disableColliderOnOpen) doorCollider.enabled = false;
             
+            if (_isInitialized && sfxPlayChannel != null && openSoundCue != null)
+            {
+                sfxPlayChannel.RaisePlayEvent(openSoundCue, transform.position);
+            }
+
             OnOpened?.Invoke();
         }
 
@@ -43,7 +62,12 @@ namespace New_Scripts.Door
             if (!IsOpen) return;
             IsOpen = false;
 
-            if (doorCollider != null) doorCollider.enabled = true;
+            if (doorCollider != null && disableColliderOnOpen) doorCollider.enabled = true;
+
+            if (_isInitialized && sfxPlayChannel != null && closeSoundCue != null)
+            {
+                sfxPlayChannel.RaisePlayEvent(closeSoundCue, transform.position);
+            }
 
             OnClosed?.Invoke();
         }

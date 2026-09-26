@@ -1,4 +1,4 @@
-﻿using New_Scripts.Player.Nodes.Rotation;
+using New_Scripts.Player.Nodes.Rotation;
 using UnityEngine;
 
 namespace New_Scripts.Player.States
@@ -49,6 +49,11 @@ namespace New_Scripts.Player.States
             _context.ResetDash();
             _context.ColorController.ResetBodyColor();
 
+            if (_context.Audio != null)
+            {
+                _context.Audio.PlayGrappleConnect();
+            }
+
 
             if (_wasGrounded)
                 StartHopPhase();
@@ -79,6 +84,10 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            if (_fullRotationNode != null)
+            {
+                _fullRotationNode.OnConnectionLost();
+            }
         }
 
         // --- 360 DÖNÜŞ METOTLARI ---
@@ -241,13 +250,7 @@ namespace New_Scripts.Player.States
             {
                 ReleaseAnchor();
 
-                if (_context.UseJumpGravity)
-                {
-                    _context.TransitionToState(new AirborneState(_context, _currentVelocity, isFromSwing: true));
-                    return;
-                }
-
-                _context.TransitionToState(new AirborneState(_context, _currentVelocity, isJumping: true));
+                _context.TransitionToState(new AirborneState(_context, _currentVelocity, isJumping: true, bypassJumpGravity: true));
                 return;
             }
 

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Platform
 {
@@ -11,6 +11,8 @@ namespace New_Scripts.Platform
         [SerializeField] private Vector2 endPoint;
         [SerializeField] private float period;
         [SerializeField] private float phaseOffset;
+
+        public override float Period => period;
 
         public override Vector2 GetPositionAtTime(float time)
         {

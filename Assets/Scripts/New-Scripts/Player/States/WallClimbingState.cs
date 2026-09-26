@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using New_Scripts.Platform;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -12,6 +13,8 @@ namespace New_Scripts.Player.States
         private readonly int wallDirection; 
         
         private bool warningTriggered;
+        private float ledgeClimbTimer;
+        private bool isLedgeDetected;
 
         public WallClimbingState(PlayerController context, int wallDirection)
         {
@@ -22,6 +25,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
+            context.PhysicsHandler.ClingingWallDirection = wallDirection;
             warningTriggered = context.CurrentWallStamina <= stats.StaminaWarningThreshold;
             context.Velocity = Vector2.zero; 
             
@@ -38,6 +42,14 @@ namespace New_Scripts.Player.States
             
             context.UIController.ShowStaminaBar();
             context.ResetWallSlideTime();
+
+            if (context.VibrationSettings != null && HapticManager.Instance != null)
+            {
+                var profile = wallDirection == -1 
+                    ? context.VibrationSettings.WallClimbLeft 
+                    : context.VibrationSettings.WallClimbRight;
+                HapticManager.Instance.StartContinuousVibration(profile);
+            }
         }
 
         public void UpdateState()
@@ -53,6 +65,34 @@ namespace New_Scripts.Player.States
             if (context.CurrentWallStamina <= 0f)
             {
                 context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f));
+                return;
+            }
+
+            // Check ledge climb
+            var ledgeResult = context.CheckLedge(wallDirection);
+            isLedgeDetected = ledgeResult.LedgeDetected;
+            if (isLedgeDetected)
+            {
+                if (context.Input.LeftStick.y > 0.5f)
+                {
+                    ledgeClimbTimer += Time.deltaTime;
+                    context.LedgeHoldTimerProgress = ledgeClimbTimer;
+                    if (ledgeClimbTimer >= stats.LedgeClimbHoldTime)
+                    {
+                        context.TransitionToState(new LedgeClimbState(context, context.PlayerRigidbody.position, ledgeResult.ClimbTarget));
+                        return;
+                    }
+                }
+                else
+                {
+                    ledgeClimbTimer = 0f;
+                    context.LedgeHoldTimerProgress = 0f;
+                }
+            }
+            else
+            {
+                ledgeClimbTimer = 0f;
+                context.LedgeHoldTimerProgress = 0f;
             }
 
             CheckInputTransitions();
@@ -61,6 +101,10 @@ namespace New_Scripts.Player.States
         public void FixedUpdateState()
         {
             float inputY = context.Input.LeftStick.y;
+            if (isLedgeDetected && inputY > 0f)
+            {
+                inputY = 0f; // Lock upward climbing when at a ledge
+            }
             context.Velocity = new Vector2(0f, inputY * stats.ClimbSpeed);
         }
 
@@ -74,8 +118,32 @@ namespace New_Scripts.Player.States
 
             if (context.Input.IsJumpPressed)
             {
-                Vector2 jumpVelocity = new Vector2(-wallDirection * stats.WallJumpForce.x, stats.WallJumpForce.y);
-                context.TransitionToState(new AirborneState(context, jumpVelocity,false, grappleLockout:0f, wallClimbLockout:0.2f));
+                if (context.Audio != null) context.Audio.PlayJump();
+                if (context.VibrationSettings != null && HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.Vibrate(context.VibrationSettings.Jump);
+                }
+                Vector2 jumpVelocity = new Vector2(0f, stats.ClimbVerticalJumpVelocity);
+                
+                IMovingSurface movingSurface = wallDirection == -1 
+                    ? context.PhysicsHandler.CurrentLeftMovingSurface 
+                    : context.PhysicsHandler.CurrentRightMovingSurface;
+                
+                bool bypassJumpGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
+                if (bypassJumpGravity)
+                {
+                    jumpVelocity += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
+                }
+
+                context.TransitionToState(new AirborneState(
+                    context: context,
+                    inheritedVelocity: jumpVelocity,
+                    isJumping: true,
+                    grappleLockout: 0f,
+                    wallClimbLockout: 0.2f,
+                    bypassJumpGravity: bypassJumpGravity,
+                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f
+                ));
                 return;
             }
 
@@ -90,6 +158,14 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            context.PhysicsHandler.ClingingWallDirection = 0;
+            context.LatestLedgeResult = default;
+            context.LedgeHoldTimerProgress = 0f;
+
+            if (HapticManager.Instance != null)
+            {
+                HapticManager.Instance.StopContinuousVibration();
+            }
         }
     }
 }

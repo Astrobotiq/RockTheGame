@@ -10,6 +10,9 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 
+# Profiler cikitilari (yerel, buyuk)
+/[Pp]rofiler[Cc]aptures/
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
@@ -70,3 +73,9 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Claude Code local settings and scratch
+.claude/settings.local.json
+
+# Obsidian workspace state (per-machine)
+docs/.obsidian/workspace.json

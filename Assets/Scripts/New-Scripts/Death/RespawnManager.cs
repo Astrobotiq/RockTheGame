@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.Player;
@@ -90,6 +90,11 @@ namespace New_Scripts.Death
             }
             
             await _transitionManager.PlayCloseTransitionAsync(_playerHealth.transform.position, token);
+
+            if (LevelResetManager.Instance != null)
+            {
+                LevelResetManager.Instance.ResetAll();
+            }
 
             _playerHealth.transform.position = _currentRespawnPoint.position;
         

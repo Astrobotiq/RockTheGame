@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using New_Scripts.Platform;
+using UnityEngine;
 
 namespace New_Scripts.Player.States
 {
@@ -22,7 +23,14 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            
+            context.PhysicsHandler.ClingingWallDirection = wallDirection;
+            if (context.VibrationSettings != null && HapticManager.Instance != null)
+            {
+                var profile = wallDirection == -1 
+                    ? context.VibrationSettings.WallSlideLeft 
+                    : context.VibrationSettings.WallSlideRight;
+                HapticManager.Instance.StartContinuousVibration(profile);
+            }
         }
 
         public void UpdateState()
@@ -67,6 +75,11 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            context.PhysicsHandler.ClingingWallDirection = 0;
+            if (HapticManager.Instance != null)
+            {
+                HapticManager.Instance.StopContinuousVibration();
+            }
         }
 
         private void HandleArmRouting()
@@ -89,9 +102,34 @@ namespace New_Scripts.Player.States
             {
                 context.ResetWallSlideTime();
                 
+                if (context.VibrationSettings != null && HapticManager.Instance != null)
+                {
+                    HapticManager.Instance.Vibrate(context.VibrationSettings.Jump);
+                }
+                
                 Vector2 jumpDirection = new Vector2(-wallDirection * stats.WallSlideJumpForce.x, stats.WallSlideJumpForce.y);
                 
-                context.TransitionToState(new AirborneState(context, jumpDirection, true, grappleLockout:0f, wallClimbLockout:0f, coyote:0f, horizontalLockout:stats.WallJumpInputLockoutTime));
+                IMovingSurface movingSurface = wallDirection == -1 
+                    ? context.PhysicsHandler.CurrentLeftMovingSurface 
+                    : context.PhysicsHandler.CurrentRightMovingSurface;
+                
+                bool bypassJumpGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
+                if (bypassJumpGravity)
+                {
+                    jumpDirection += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
+                }
+
+                context.TransitionToState(new AirborneState(
+                    context: context,
+                    inheritedVelocity: jumpDirection,
+                    isJumping: true,
+                    grappleLockout: 0f,
+                    wallClimbLockout: 0f,
+                    coyote: 0f,
+                    horizontalLockout: stats.WallJumpInputLockoutTime,
+                    bypassJumpGravity: bypassJumpGravity,
+                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f
+                ));
                 return;
             }
 

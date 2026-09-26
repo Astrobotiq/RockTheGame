@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using New_Scripts.Audio;
+using New_Scripts.Player;
 using UnityEngine;
 
 namespace New_Scripts.LevelChange
@@ -13,6 +15,13 @@ namespace New_Scripts.LevelChange
         [SerializeField] private float transitionDuration = 0.5f;
         [SerializeField] float physicsCooldownDelay = 0.5f;
         [SerializeField] private RoomManager roomManager;
+
+        [Header("Audio")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+        [SerializeField] private AudioCueSO transitionSoundCue;
+
+        [Header("Vibration")]
+        [SerializeField] private TransitionVibrationSettingsSO vibrationSettings;
 
         private ICameraTransitionHandler cameraHandler;
         private CancellationTokenSource transitionCts;
@@ -34,6 +43,12 @@ namespace New_Scripts.LevelChange
             bool overrideZoom)
         {
             if (isTransitioning) return;
+
+            if (sfxPlayChannel != null && transitionSoundCue != null)
+            {
+                sfxPlayChannel.RaisePlayEvent(transitionSoundCue);
+            }
+
             transitionCts?.Cancel();
             transitionCts?.Dispose();
             transitionCts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -61,6 +76,33 @@ namespace New_Scripts.LevelChange
             player.FreezeForTransition();
             cameraHandler.PrepareForTransition();
 
+            if (vibrationSettings != null && HapticManager.Instance != null)
+            {
+                RumbleProfile transitionProfile = default;
+                switch (direction)
+                {
+                    case TransitionDirection.Left:
+                        transitionProfile = vibrationSettings.TransitionLeft;
+                        break;
+                    case TransitionDirection.Right:
+                        transitionProfile = vibrationSettings.TransitionRight;
+                        break;
+                    case TransitionDirection.Up:
+                        transitionProfile = vibrationSettings.TransitionUp;
+                        break;
+                    case TransitionDirection.Down:
+                        transitionProfile = vibrationSettings.TransitionDown;
+                        break;
+                }
+
+                if (transitionProfile.duration <= 0f)
+                {
+                    transitionProfile.duration = transitionDuration;
+                }
+
+                HapticManager.Instance.Vibrate(transitionProfile);
+            }
+
             await cameraHandler.PanAndZoomCameraAsync(
                 spawnPosition, targetSize, overrideZoom,
                 newBounds, transitionDuration, token);
@@ -71,11 +113,11 @@ namespace New_Scripts.LevelChange
 
             player.UnfreezeFromTransition(direction);
 
-            isTransitioning = false;
-
             await UniTask.Delay(
                 TimeSpan.FromSeconds(physicsCooldownDelay),
                 cancellationToken: token);
+
+            isTransitioning = false;
         }
 
         private void OnDestroy()

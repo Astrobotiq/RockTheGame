@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using New_Scripts.LevelChange;
@@ -26,6 +26,8 @@ namespace New_Scripts.Player
     public class PlayerController : MonoBehaviour, IFramePausable, IPlayerTransitionable
     {
         [Header("Data")] public PlayerStatsSO Stats;
+        [SerializeField] private PlayerVibrationSettingsSO vibrationSettings;
+        public PlayerVibrationSettingsSO VibrationSettings => vibrationSettings;
 
         [Header("System References")] [SerializeField]
         private NodeDetector nodeDetector;
@@ -33,6 +35,9 @@ namespace New_Scripts.Player
         [SerializeField] private KinematicPhysicsHandler physicsHandler;
         [SerializeField] private PlayerUIController uiController;
         [SerializeField] private PlayerColorController colorController;
+        [SerializeField] private PlayerAudioController audioController;
+        [SerializeField] private PlayerVFXManager vfxManager;
+        [SerializeField] private SpriteRenderer spriteRenderer;
 
         [Header("Visual References")] [SerializeField]
         private ArmController leftArm;
@@ -44,24 +49,39 @@ namespace New_Scripts.Player
 
         [SerializeField] private LayerMask grappleLayerMask;
 
-        [SerializeField] bool useJumpGravity = false;
-        
-        public bool UseJumpGravity => useJumpGravity;
+        [SerializeField] private LayerMask deathLayerMask;
 
         // --- Core Components ---
         public Rigidbody2D PlayerRigidbody { get; private set; }
         public BoxCollider2D PlayerCollider { get; private set; }
         public IInputReader Input { get; private set; }
         public float JumpBufferTimer { get; private set; }
+        public SpriteRenderer SpriteRenderer => spriteRenderer;
         
         public Vector2 Velocity { get; set; }
 
         // --- Accessors ---
+        public KinematicPhysicsHandler PhysicsHandler => physicsHandler;
         public ArmController LeftArm => leftArm;
         public ArmController RightArm => rightArm;
         public PlayerColorController ColorController => colorController;
         public PlayerUIController UIController => uiController;
+        public PlayerAudioController Audio => audioController;
+        public PlayerVFXManager VFX => vfxManager;
         public LayerMask GroundLayerMask => groundLayerMask;
+        public LayerMask DeathLayerMask => deathLayerMask;
+
+        public Vector2 FacingDirection
+        {
+            get
+            {
+                if (SpriteRenderer != null)
+                {
+                    return SpriteRenderer.flipX ? Vector2.left : Vector2.right;
+                }
+                return Vector2.right;
+            }
+        }
 
         // --- Sensor Data ---
         public bool IsGrounded => physicsHandler.IsGrounded;
@@ -94,6 +114,11 @@ namespace New_Scripts.Player
             PlayerRigidbody = GetComponent<Rigidbody2D>();
             PlayerCollider = GetComponent<BoxCollider2D>();
             Input = GetComponent<IInputReader>();
+            
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            }
 
             PlayerRigidbody.bodyType = RigidbodyType2D.Kinematic;
             CurrentWallStamina = Stats.MaxWallStamina;
@@ -160,6 +185,10 @@ namespace New_Scripts.Player
         {
             OnHighImpact?.Invoke(velocity);
             HitStopEvents.RequestHitStop?.Invoke(Stats.HitStopDuration);
+            if (vibrationSettings != null && HapticManager.Instance != null)
+            {
+                HapticManager.Instance.Vibrate(vibrationSettings.HighImpact);
+            }
         }
 
         // --- Ability & Resource Management ---
@@ -175,7 +204,14 @@ namespace New_Scripts.Player
             HasDashCharge = false;
         }
 
-        public void ResetSlingshot() => CanSlingshot = true;
+        public void ResetSlingshot()
+        {
+            CanSlingshot = true;
+            if (colorController != null)
+            {
+                colorController.ResetArmColors();
+            }
+        }
 
         public void UseSlingshot()
         {
@@ -226,6 +262,15 @@ namespace New_Scripts.Player
         public void OnStartRespawn(){
             _isPaused = true;
             Velocity = Vector2.zero;
+            LeftAnchor = null;
+            RightAnchor = null;
+            ResetDash();
+            ResetSlingshot();
+            RefillWallStamina();
+            if (HapticManager.Instance != null)
+            {
+                HapticManager.Instance.StopContinuousVibration();
+            }
         }
         
         public void OnEndRespawn(){
@@ -289,6 +334,90 @@ namespace New_Scripts.Player
             OnSlingshotLaunch?.Invoke();
         }
 
+        public struct LedgeDetectionResult
+        {
+            public bool LedgeDetected;
+            public Vector2 ClimbTarget;
+            public Vector2 LowerHitPoint;
+            public Vector2 UpperHitPoint;
+            public Vector2 VerticalRayStart;
+            public Vector2 GroundHitPoint;
+            public bool SpaceClear;
+            public Vector2 UpperStart;
+            public Vector2 LowerStart;
+        }
+
+        public LedgeDetectionResult LatestLedgeResult { get; set; }
+        public float LedgeHoldTimerProgress { get; set; }
+
+        public LedgeDetectionResult CheckLedge(int wallDirection)
+        {
+            LedgeDetectionResult result = new LedgeDetectionResult();
+            if (wallDirection == 0) return result;
+
+            Bounds bounds = PlayerCollider.bounds;
+            Vector2 direction = wallDirection == -1 ? Vector2.left : Vector2.right;
+
+            // Look slightly ahead of the collider (extents.x + check offset)
+            float horizCheckDist = bounds.extents.x + 0.3f;
+            
+            // Lower check point at waist/mid body level
+            result.LowerStart = new Vector2(bounds.center.x, bounds.center.y - bounds.extents.y * 0.2f);
+            // Upper check point near head level
+            result.UpperStart = new Vector2(bounds.center.x, bounds.center.y + bounds.extents.y * 0.85f);
+
+            RaycastHit2D lowerHit = Physics2D.Raycast(result.LowerStart, direction, horizCheckDist, groundLayerMask);
+            RaycastHit2D upperHit = Physics2D.Raycast(result.UpperStart, direction, horizCheckDist, groundLayerMask);
+
+            result.LowerHitPoint = lowerHit.collider != null ? lowerHit.point : result.LowerStart + direction * horizCheckDist;
+            result.UpperHitPoint = upperHit.collider != null ? upperHit.point : result.UpperStart + direction * horizCheckDist;
+
+            bool lowerTouched = lowerHit.collider != null && !lowerHit.collider.isTrigger;
+            bool upperEmpty = upperHit.collider == null || upperHit.collider.isTrigger;
+
+            if (lowerTouched && upperEmpty)
+            {
+                float wallX = lowerHit.point.x;
+                float targetX = wallX + wallDirection * (bounds.extents.x + Stats.LedgeClimbSafetyOffset);
+                float startY = bounds.center.y + bounds.extents.y + 0.5f;
+                result.VerticalRayStart = new Vector2(targetX, startY);
+
+                float castDistance = bounds.extents.y + 0.8f;
+                RaycastHit2D groundHit = Physics2D.Raycast(result.VerticalRayStart, Vector2.down, castDistance, groundLayerMask);
+
+                if (groundHit.collider != null && !groundHit.collider.isTrigger)
+                {
+                    result.GroundHitPoint = groundHit.point;
+                    result.ClimbTarget = new Vector2(targetX, groundHit.point.y + bounds.extents.y + 0.05f);
+
+                    // Check if ground itself is death layer
+                    bool isGroundHazard = ((1 << groundHit.collider.gameObject.layer) & deathLayerMask) != 0;
+
+                    if (!isGroundHazard)
+                    {
+                        Vector2 boxSize = bounds.size * 0.95f;
+                        Collider2D overlap = Physics2D.OverlapBox(result.ClimbTarget, boxSize, 0f, groundLayerMask);
+                        
+                        // Check if there is an overlapping death layer hazard in the climb target space
+                        Collider2D deathOverlap = Physics2D.OverlapBox(result.ClimbTarget, boxSize, 0f, deathLayerMask);
+
+                        if ((overlap == null || overlap.isTrigger) && deathOverlap == null)
+                        {
+                            result.SpaceClear = true;
+                            result.LedgeDetected = true;
+                        }
+                    }
+                }
+                else
+                {
+                    result.GroundHitPoint = result.VerticalRayStart + Vector2.down * castDistance;
+                }
+            }
+
+            LatestLedgeResult = result;
+            return result;
+        }
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -305,6 +434,35 @@ namespace New_Scripts.Player
         
             string stateName = CurrentState != null ? CurrentState.GetType().Name : "No State";
             string debugText = $"State: {stateName}\nVel: {velocity.x:F1}, {velocity.y:F1}";
+
+            if (LatestLedgeResult.LowerStart != Vector2.zero)
+            {
+                var ledge = LatestLedgeResult;
+
+                // 1. Lower check
+                Gizmos.color = ledge.LedgeDetected ? Color.green : Color.yellow;
+                Gizmos.DrawLine(ledge.LowerStart, ledge.LowerHitPoint);
+                Gizmos.DrawWireSphere(ledge.LowerHitPoint, 0.04f);
+
+                // 2. Upper check
+                Gizmos.color = ledge.LedgeDetected ? Color.green : Color.red;
+                Gizmos.DrawLine(ledge.UpperStart, ledge.UpperHitPoint);
+                Gizmos.DrawWireSphere(ledge.UpperHitPoint, 0.04f);
+
+                if (ledge.LedgeDetected)
+                {
+                    // 3. Downward ray
+                    Gizmos.color = Color.cyan;
+                    Gizmos.DrawLine(ledge.VerticalRayStart, ledge.GroundHitPoint);
+                    Gizmos.DrawWireSphere(ledge.GroundHitPoint, 0.04f);
+
+                    // 4. Target Box
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawWireCube(ledge.ClimbTarget, PlayerCollider.bounds.size);
+
+                    debugText += $"\nLedge Hold: {LedgeHoldTimerProgress:F2}s / {Stats.LedgeClimbHoldTime:F2}s";
+                }
+            }
 
             GUIStyle style = new GUIStyle();
             style.normal.textColor = Color.white;

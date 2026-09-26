@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Material
+  m_Shader: {fileID: 4800000, guid: f8066f67709fa074d993e7e0851084f9, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - PixelSnap: 0
+    - _AcidLevel: -13
+    - _AlphaSplitEnabled: 0
+    - _BubbleGridSize: 8
+    - _BubbleMaxRadius: 2.5
+    - _BubbleSpeed: 2.5
+    - _BubbleThreshold: 1
+    - _FPS: 6
+    - _MidBandThickness: 10
+    - _OutlineThickness: 1
+    - _SteamFreqX1: 0.2
+    - _SteamFreqX2: 0.3
+    - _SteamFreqY1: 0.15
+    - _SteamFreqY2: 0.25
+    - _SteamHeight: 12
+    - _SteamPulseSpeed: 1.5
+    - _SteamSpeed: 2
+    - _SteamThreshold: 0.35
+    - _TopBandThickness: 3
+    - _UseSpriteMask: 0
+    - _WaveAmp1: 1.3
+    - _WaveAmp2: 1.4
+    - _WaveFreq1: 0.13
+    - _WaveFreq2: 0.27
+    - _WaveSpeed1: 1
+    - _WaveSpeed2: 1.3
+    m_Colors:
+    - _BubbleColor: {r: 0.9608, g: 1, b: 0.7216, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DeepColor: {r: 0.3059, g: 0.6039, b: 0, a: 1}
+    - _Flip: {r: 1, g: 1, b: 1, a: 0}
+    - _MidColor: {r: 0.5608, g: 0.8314, b: 0, a: 1}
+    - _OutlineColor: {r: 0.051, g: 0.1216, b: 0, a: 1}
+    - _PixelScale: {r: 64, g: 64, b: 0, a: 0}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SteamColor: {r: 0.9098, g: 1, b: 0.4196, a: 0.45}
+    - _TopColor: {r: 0.7686, g: 0.9412, b: 0.1725, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace New_Scripts.Player
 {
@@ -51,10 +51,14 @@ namespace New_Scripts.Player
         [Header("Wall Climb")]
         public float ClimbSpeed = 8f;
         public Vector2 WallJumpForce = new Vector2(15f, 20f);
+        public float ClimbVerticalJumpVelocity = 15f;
         public float MaxWallStamina = 6f;
         public float StaminaWarningThreshold = 1.5f;
         public float WallSnapRaycastDistance = 2f;
         public float WallSnapSafetyOffset = 0.02f;
+        public float LedgeClimbHoldTime = 0.3f;
+        public float LedgeClimbSafetyOffset = 0.05f;
+        public float LedgeClimbDuration = 0.25f;
         
         [Header("Wall Sliding")]
         public float WallSlideMaxSpeed = 3f;

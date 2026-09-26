@@ -79,3 +79,33 @@ Similarly, most systems keep their tunable/data payloads in ScriptableObjects ra
 ### Comments and naming
 
 Existing code mixes Turkish-language XML doc comments/summaries with English identifiers (see `PlayerController`, `RoomManager`). Match the surrounding file's language when adding comments rather than forcing consistency across the codebase.
+
+## Proje yönetimi ve planlama
+
+Görevler repo kökündeki `TASKS.md`'de (`Active` / `Waiting On` / `Someday` / `Done`). Format:
+`- [ ] **Başlık** #kategori - kısa bağlam, due YYYY-MM-DD` — kategoriler `#art`, `#test`, `#level`, `#code`.
+
+### Planlama kuralları
+
+Geliştirici tam zamanlı çalışıyor ve oyuna **haftada iki akşam** bakıyor: Pazartesi ve Cuma 20:00. Hafta içine task yığma.
+
+- **Due tarihi yalnızca Pazartesi veya Cuma** olabilir.
+- **Pazartesi:** `#art` ve `#test` task'ları, ek olarak en fazla 2 `#level`.
+- **Cuma:** `#code` ve `#level` task'ları.
+- **Bir akşama en fazla 3 task.** Her task tek akşamda (1–1.5 saat) bitebilecek büyüklükte olmalı; değilse parçalara böl.
+- Sığmayan task'ı bir sonraki uygun güne kaydır ya da `Someday`'e koy — **kaydırınca kullanıcıya söyle.**
+- Tartışılan fikirlerden task çıkar, ama `TASKS.md`'ye **eklemeden önce kullanıcıya sor.**
+- Bir oturumda bitmeyen task'ı sonraki uygun güne taşımayı öner.
+
+### Bilgi yapısı
+
+Oyun tasarımı `docs/GDD.md`'de; mekanik detayları `docs/systems/` altında, **mekanik başına bir dosya**. Yeni bir özellik üzerinde çalışmaya başlamadan önce ilgili dosyaya bak.
+
+### Oyun terimleri sözlüğü
+
+| Terim | Anlamı |
+|---|---|
+
+### Takvim senkronizasyonu
+
+Bir Pazartesi veya Cuma'nın task'larını eklediğinde, değiştirdiğinde veya kaydırdığında, o tarihteki "RockTheGame" takvim etkinliğinin açıklamasını o akşamın güncel task listesiyle güncelle — **sadece o tarihteki tekrarı, serinin tamamını değil.** Tek bir tekrar düzenlenemiyorsa, o tarihe task listesini içeren ayrı bir etkinlik aç. Her durumda güncellediğini kullanıcıya söyle.

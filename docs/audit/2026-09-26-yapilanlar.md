@@ -126,6 +126,8 @@ Gerçek build bunu çürüttü: `Build Finished, Result: Success.`
 
 ## 4. Yapılmayanlar
 
+> **Güncelleme — 2026-09-27 ikinci tur:** bu tablonun **C7, Grup 6 ve Grup 7** satırları artık geçerli değil; üçü de yapıldı. Ayrıntı için bkz. [§7 İkinci tur](#7-ikinci-tur-2026-09-27). Hâlâ bekleyenler: **B1** (elle, Editor yeniden başlatma), **Grup 8** (LFS — önerilmiyor), **A8** (şüpheli kullanılmayan asset'ler) ve **Grup 9**'un tamamı (his/görünüm kararları).
+
 | Bulgu | Neden |
 |---|---|
 | **B1** — `activeInputHandler` `Both` → `Input System Package` | Unity **yeniden başlatma** istiyor; oturum Editor'e canlı bağlı olduğu için yeniden başlatma kalan grupları yarıda keserdi. Elle yapılmalı: `Edit > Project Settings > Player > Active Input Handling`. Eski Input kullanımı 0 olduğu için davranış değişmez, konsoldaki tek gerçek uyarı susar. |
@@ -172,3 +174,70 @@ Bunlar commit edilmedi, değerlendirme geliştiriciye ait:
 - `Assets/UI/Fonts/Tiny5-Regular SDF.asset` — build sırasında TMP dinamik atlası
 - `Assets/Scenes/PhysicsTest.unity`, `PhysicsTest2.unity` (takipsiz)
 - `docs/setup-prompt.md`, `docs/audit-fix-prompt.md` (takipsiz)
+
+---
+
+## 7. İkinci tur (2026-09-27)
+
+Dal: **`audit-fixes-2`** (`main` üzerine açıldı), 6 commit. Denetimde ertelenen maddeler ele alındı.
+
+**Sonuç: proje artık 0 derleyici uyarısı ile derleniyor** (28 → 0).
+
+| Commit | Madde | Ne yapıldı |
+|---|---|---|
+| `9841fbc` | 1+2+3 | `FindObjectOfType` → `FindFirstObjectByType` (11 çağrı / 7 dosya) · `LaunchPad` + `AcceleratingPingPongStrategy`'deki "Editor Trajectory Gizmo" bloğu `#if UNITY_EDITOR` ile sarıldı · ölü `mergeDuration` alanı silindi. **28 → 7 uyarı** |
+| `26abc45` | 4 | `KinematicPhysicsHandler`'daki 7 deprecated `Physics2D *NonAlloc` çağrısı `ContactFilter2D` overload'larına taşındı. **7 → 0 uyarı** |
+| `78fd314` | 5 | Kullanılmayan 6 tag kaldırıldı (`Node`, `God`, `LeftFirePoint`, `RightFirePoint`, `MiddlePivot`, `destroyable`) |
+| `1b0fe9c` | 7 | 4 paket kaldırıldı: `visualscripting`, `ai.navigation`, `multiplayer.center`, `timeline` |
+| `9d08d7f` | 6 | 4 tile klasörü `Assets/Tiles/` altında birleştirildi, `Sprites/Enviroment` → `Environment`. 455 dosya R100 (birebir taşıma) |
+| `93052d5` | 6b | Referanssız 5 çöp sprite silindi, `Platette/` kaldırıldı (`Ground.prefab` → `Assets/Prefab/`) |
+
+Her commit sonrası: `compilationFailed=false`, 0 `error CS`, **EditMode testleri 22/22**.
+
+### Denetim raporundaki iki hata daha düzeltildi
+
+- **CS0414 "kullanılmayan alan, silinebilir" yanlıştı.** `trajectorySteps` ve `stepDeltaTime` gerçekten *kullanılıyor* — ama kullanımların hepsi zaten var olan `#if UNITY_EDITOR` bloğunun içinde, bu yüzden yalnızca player derlemesinde "atanmış ama kullanılmamış" görünüyorlardı. Silmek editördeki yörünge önizlemesini bozacaktı. Doğru düzeltme: tanımları da aynı korumaya almak.
+- **Tag sayıları yanlıştı.** Raporda "`Node`: 1 dosyada, `God`: 1 dosyada" yazıyordu. O sayım silme öncesinden geliyordu ve ayrıca `grep`'in satır sonu çıpası CRLF'e takıldığı için yanıltıcıydı. Çıpasız sayımda sahne/prefab'larda geçen tek tag `Untagged` (829) ve Unity'nin `MainCamera`'sı (5); kodda hiç `CompareTag` yok.
+
+### 4. madde neden beklenenden güvenli çıktı
+
+Riskin büyük kısmı `List` overload'una geçmek zorunda kalmaktan geliyordu: o, mevcut 16'lık tampon sınırını kaldırır ve sorgular eskiden görmediği çarpışmaları döndürebilirdi — sessiz bir davranış değişikliği. Unity'ye reflection ile hangi overload'ların var olduğu soruldu ve **deprecated olmayan dizi overload'larının durduğu** görüldü:
+
+```
+int BoxCast(origin, size, angle, direction, ContactFilter2D, RaycastHit2D[] results, distance)
+int OverlapBox(point, size, angle, ContactFilter2D, Collider2D[] results)
+```
+
+Böylece `_hitBuffer[16]` ve `_overlapBuffer[16]` aynen kaldı; ne ayırma davranışı ne de 16 hit sınırı değişti. Değişen tek şey `int layerMask` → `ContactFilter2D`.
+
+`useTriggers` bilinçli olarak `Physics2D.queriesHitTriggers`'a (projede `1`) bağlandı: eski çağrılar trigger'ları döndürüyordu, döngülerdeki `isTrigger` atlamaları buna göre yazılmış ve trigger'lar tamponda yer tutuyordu. `useTriggers = false` yapmak ek bir iyileştirme olurdu ama sonuçları değiştirirdi.
+
+### Paket kaldırmanın iki aşamalı doğrulaması
+
+1. **Ters bağımlılık:** `Client.List(true,false)` ile tüm paketlerin `dependencies` listesi tarandı; dördüne de bağlı hiçbir paket yok. Özellikle **Cinemachine 3.1.6'nın `timeline`'a bağlı olmadığı** doğrulandı (denetimde bundan emin değildim).
+2. **Projede kullanım:** `PlayableDirector`/`TimelineAsset`/`UnityEngine.Playables` yok, `.playable` dosyası yok; `ScriptMachine`/`Unity.VisualScripting` yok; `NavMeshAgent`/`NavMeshSurface`/`NavMeshObstacle` yok.
+
+`com.unity.modules.*` (terrain, cloth, vehicles, vr, xr, wind, umbra…) bilerek dokunulmadı. Not: `modules.terrain`'e `modules.terrainphysics` bağlı, o ikisi birlikte ele alınmalı.
+
+### İkinci turdan sonra elle test edilmesi gerekenler
+
+**`26abc45` en kritiği** — oyuncunun çarpışma çözümlemesine dokunuyor ve EditMode testleri oyun hissini ölçemez. Gamepad ile kontrol et:
+
+1. Zıplama ve düşme (coyote time, jump buffer)
+2. Dash — yatay ve çapraz
+3. Duvara tutunma, tırmanma, kayma, duvar zıplaması
+4. **Tek yönlü platformlar** — aşağıdan geçme, üstte durma (bu yol `_groundAndOneWayFilter` kullanıyor)
+5. Tavana çarpma
+6. Hareketli platform üstünde taşınma
+
+Beklenen sonuç: **hiçbir fark olmaması.** Fark varsa `26abc45` tek başına geri alınabilir.
+
+### Bu turdan sonra hâlâ bekleyenler
+
+| Bulgu | Durum |
+|---|---|
+| **B1** `activeInputHandler` Both → Input System Package | Elle yapılmalı: `Edit > Project Settings > Player > Active Input Handling`. Unity yeniden başlatma istiyor, ajan oturumu Editor'e canlı bağlı olduğu için yapılamadı. Eski Input kullanımı 0, davranış değişmez. |
+| **A8** 1082 asset build'den erişilemez | Şüpheli olarak duruyor. `Pixel Adventure 1/` (107 kullanılmayan) ve `Sprites/` (506) en büyük adaylar, ama `Resources.Load` veya editor aracıyla yüklenenler yanlış pozitif verebilir. |
+| **Grup 8** Git LFS | Önerilmiyor; geçmişi yeniden yazmak force-push gerektirir, bu repoda yasak. |
+| **Grup 9** his/görünüm kararları | B3 Color Space (Gamma→Linear), B4 Fixed Timestep (50→60 Hz), B6 Sorting Layer yapısı, E3 PPU standardizasyonu, E4 Pixel Perfect Camera, **H1 yerden sol tetikle swing**. Hepsi senin kararın. |
+| `com.unity.modules.*` | Ayrı karar olarak bekliyor. |

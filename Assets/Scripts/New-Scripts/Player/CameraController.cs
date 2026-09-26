@@ -138,6 +138,9 @@ namespace New_Scripts.Player
         [SerializeField] private float lookAheadMultiplier = 0.15f; // 65 * 0.15 = ~9.75 birim öne bakış
         [SerializeField] private float lookAheadLerpSpeed = 10f;    // Offset'in tepki hızı
 
+        [Tooltip("Öne bakış mesafesi ve takip hızı bu hıza göre normalize edilir (oyuncunun pratikteki üst hızı).")]
+        [SerializeField] private float speedNormalizationReference = 70f;
+
         private Vector2 _currentLookAheadOffset;
 
         private void UpdateFollowTarget()
@@ -158,7 +161,7 @@ namespace New_Scripts.Player
                     ? settings.lookAheadMultiplier
                     : lookAheadMultiplier;
 
-                float dynamicMaxDistance = Mathf.Lerp(2f, 12f, speed / 70f);
+                float dynamicMaxDistance = Mathf.Lerp(2f, 12f, speed / speedNormalizationReference);
                 targetLookAhead = Vector2.ClampMagnitude(velocity * activeLookAheadMultiplier, dynamicMaxDistance);
             }
 
@@ -220,7 +223,7 @@ namespace New_Scripts.Player
             // 3. Follow Speed Calculation
             float dynamicFollowSpeed = (settings != null && settings.overrideFollowSpeed)
                 ? settings.followLerpSpeed
-                : Mathf.Lerp(followLerpSpeed, followLerpSpeed * 4f, speed / 70f);
+                : Mathf.Lerp(followLerpSpeed, followLerpSpeed * 4f, speed / speedNormalizationReference);
 
             cameraFollowTarget.position = Vector3.Lerp(
                 cameraFollowTarget.position,

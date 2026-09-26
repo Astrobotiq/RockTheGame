@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using EasyTextEffects.Editor.MyBoxCopy.Attributes;
 using New_Scripts.Death;
 using New_Scripts.Player;
 using UnityEngine;

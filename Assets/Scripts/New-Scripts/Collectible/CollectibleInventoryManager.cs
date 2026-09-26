@@ -24,7 +24,7 @@ namespace New_Scripts.Collectible
                 checkpointActivatedChannel.OnEventRaised += HandleCheckpointActivated;
             }
 
-            playerHealth = FindObjectOfType<PlayerHealth>();
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.OnDeath += HandlePlayerDeath;

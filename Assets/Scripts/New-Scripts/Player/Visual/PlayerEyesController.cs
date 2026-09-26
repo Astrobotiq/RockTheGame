@@ -87,7 +87,7 @@ namespace New_Scripts.Player.Visual
         {
             if (playerController == null)
             {
-                playerController = GetComponentInParent<PlayerController>() ?? FindObjectOfType<PlayerController>();
+                playerController = GetComponentInParent<PlayerController>() ?? FindFirstObjectByType<PlayerController>();
             }
 
             if (mainSpriteRenderer == null && playerController != null)

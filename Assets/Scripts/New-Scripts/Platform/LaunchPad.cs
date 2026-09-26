@@ -33,6 +33,7 @@ namespace New_Scripts.Platform
         [Tooltip("Algılama alanının yerel genişlik ve yüksekliği.")]
         [SerializeField] private Vector2 detectionSize = new Vector2(1.8f, 0.2f);
 
+#if UNITY_EDITOR // sadece editor gizmo kullaniyor; player derlemesinde CS0414 uretiyordu
         [Header("Editor Trajectory Gizmo")]
         [Tooltip("Karakterin fizik ayarlarını barındıran ScriptableObject (Yörünge çizgisi çizimi için gereklidir).")]
         [SerializeField] private PlayerStatsSO playerStats;
@@ -42,6 +43,7 @@ namespace New_Scripts.Platform
         
         [Tooltip("Simülasyondaki her adımın zaman aralığı (saniye).")]
         [SerializeField] private float stepDeltaTime = 0.02f;
+#endif
 
         [Header("Juicy Feedback")]
         [Tooltip("Ezilme/bükülme animasyonu uygulanacak görsel alt obje.")]

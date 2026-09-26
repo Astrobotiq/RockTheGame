@@ -33,6 +33,7 @@ namespace New_Scripts.Platform
         [Tooltip("Platformdan zıplarken oyuncunun alacağı ek hız çarpanı.")]
         [SerializeField] private float jumpBoostMultiplier = 1.5f;
 
+#if UNITY_EDITOR // sadece editor gizmo kullaniyor; player derlemesinde CS0414 uretiyordu
         [Header("Editor Trajectory Gizmo")]
         [Tooltip("Karakterin fizik ayarlarını barındıran ScriptableObject.")]
         [SerializeField] private PlayerStatsSO playerStats;
@@ -42,6 +43,7 @@ namespace New_Scripts.Platform
 
         [Tooltip("Simülasyondaki her adımın zaman aralığı (saniye).")]
         [SerializeField] private float stepDeltaTime = 0.02f;
+#endif
 
         public override float Period => forwardDuration + endDelay + returnDuration;
         public override float JumpBoostMultiplier => jumpBoostMultiplier;

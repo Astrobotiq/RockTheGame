@@ -71,7 +71,7 @@ namespace New_Scripts.Collectible
         private void Start()
         {
             // PlayerHealth ve DeathZone ilişkileri sahneden dinamik bulunur
-            playerHealth = FindObjectOfType<PlayerHealth>();
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.OnDeath += HandlePlayerDeath;

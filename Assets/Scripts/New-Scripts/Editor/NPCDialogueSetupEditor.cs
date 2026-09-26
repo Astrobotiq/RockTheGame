@@ -47,7 +47,7 @@ namespace New_Scripts.Editor
         public static void CreateGlobalDialogueUI()
         {
             // Find existing Canvas in the scene
-            Canvas targetCanvas = Object.FindObjectOfType<Canvas>();
+            Canvas targetCanvas = Object.FindFirstObjectByType<Canvas>();
             if (targetCanvas == null)
             {
                 // Create a new Canvas if none exists
@@ -62,7 +62,7 @@ namespace New_Scripts.Editor
             }
 
             // Check if NPCDialogueBubble already exists in the scene
-            NPCDialogueBubble existingBubble = Object.FindObjectOfType<NPCDialogueBubble>();
+            NPCDialogueBubble existingBubble = Object.FindFirstObjectByType<NPCDialogueBubble>();
             if (existingBubble != null)
             {
                 EditorUtility.DisplayDialog("Dialogue UI Exists", $"A global dialogue bubble already exists on GameObject '{existingBubble.gameObject.name}'.", "OK");

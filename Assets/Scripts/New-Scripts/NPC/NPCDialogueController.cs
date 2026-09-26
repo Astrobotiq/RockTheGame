@@ -73,7 +73,7 @@ namespace New_Scripts.NPC
         {
             if (cachedPlayerHealth == null)
             {
-                cachedPlayerHealth = FindObjectOfType<PlayerHealth>();
+                cachedPlayerHealth = FindFirstObjectByType<PlayerHealth>();
             }
 
             if (cachedPlayerHealth != null)

@@ -40,8 +40,6 @@ namespace New_Scripts.Collectible
         [Tooltip("Uçuş kavisindeki rastgele sapma miktarı.")]
         [SerializeField] private float arcDeviation = 0.4f;
 
-        [Tooltip("Birleşme (merge) animasyonu süresi.")]
-        [SerializeField] private float mergeDuration = 0.3f;
 
         [Header("Merge Flying Settings")]
         [Tooltip("Bütün parçalar toplandıktan sonra hedef coine uçuş süresi.")]
@@ -109,8 +107,8 @@ namespace New_Scripts.Collectible
             }
 
             // Oyuncu referanslarını bul
-            player = FindObjectOfType<PlayerController>();
-            playerHealth = FindObjectOfType<PlayerHealth>();
+            player = FindFirstObjectByType<PlayerController>();
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.OnDeath += HandlePlayerDeath;
@@ -132,7 +130,7 @@ namespace New_Scripts.Collectible
             // Oyuncu referansı kaybolduysa tekrar bulmayı dene
             if (player == null)
             {
-                player = FindObjectOfType<PlayerController>();
+                player = FindFirstObjectByType<PlayerController>();
                 if (player == null) return;
             }
 
@@ -174,7 +172,7 @@ namespace New_Scripts.Collectible
                 {
                     if (player == null)
                     {
-                        player = FindObjectOfType<PlayerController>();
+                        player = FindFirstObjectByType<PlayerController>();
                     }
                     // Oyuncu zaten yere basıyorsa hemen birleşmeyi başlat
                     if (player != null && player.IsGrounded)

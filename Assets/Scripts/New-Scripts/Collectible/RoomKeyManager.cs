@@ -57,7 +57,7 @@ namespace New_Scripts.Collectible
 
         private void Start()
         {
-            playerHealth = FindObjectOfType<PlayerHealth>();
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.OnDeath += HandlePlayerDeath;

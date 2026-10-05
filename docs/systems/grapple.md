@@ -106,7 +106,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 ## Bilinen kenar durumlar ve GDD ile farklar
 
 1. **Yerden yalnızca sağ tetik** (GDD §12.6, `TASKS.md` 9 Ekim).
-2. **Swing ve slingshot çıkış hissi zıplama tuşuna bağlı.** Swing bırakışında yükselirken her zaman 3× yerçekimi var. Slingshot çıkışında ise A basılı değilse 3×, basılıysa 1× + apex hang. Bilinçli mi, değil mi, oynayarak karar verilmeli; `feel-notlari.md`'ye yazılmaya değer.
+2. **Kancadan üç çıkış, üç farklı yerçekimi.** Tek kanca bırakışında yükselirken her zaman 3× (tuştan bağımsız). Slingshot çıkışında A basılı değilse 3×, basılıysa 1× + apex hang (tuşa bağlı). Dual swing bırakışında sabit 1×. Bilinçli mi, değil mi, oynayarak karar verilmeli; `feel-notlari.md`'ye yazılmaya değer. Tam tablo: [`movement-core.md`](movement-core.md).
 3. **Slingshot fırlatma eğrisi fiilen yok.** `SlingshotLaunchDuration` (0.01) fizik adımından (0.02) kısa olduğu için ease-out tek adımda bitiyor.
 4. **Slingshot hakkı gerilme başında harcanıyor.** Gerilme sırasında vazgeçmek hakkı geri vermez.
 5. **GDD "dönen node hız patlaması verir" diyor.** Kodda bu, 1.2 sn boyunca yalnızca tek kanca sarkaç hız sınırının yükselmesi + tek seferlik ×1.2 hız. Hız patlaması prefab'ı hiçbir odada yok; sahnede kullanılan tek dönen node kapı açıyor.

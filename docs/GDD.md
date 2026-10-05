@@ -71,6 +71,8 @@ Bir karar tereddütte kalırsa bu dört maddeye bakılır.
 
 ### 5.2 Hareket seti
 
+> Nasıl çalıştığı, değerler ve koddaki farklar: [`systems/movement-core.md`](systems/movement-core.md), [`systems/grapple.md`](systems/grapple.md), [`systems/wall-movement.md`](systems/wall-movement.md).
+
 **Temel hareket**
 - **Koşma ve zıplama.** Zıplama yüksekliği bastığın süreye göre değişir. Kenardan düştükten hemen sonra hâlâ zıplayabilirsin (coyote time), zıplama tuşuna biraz erken basmak da sayılır (jump buffer).
 - **Dash.** Sol stick yönünde kısa, güçlü, yerçekimsiz bir atılma. Bir seferde **bir** hakkın var; yere inince ya da kancaya tutununca yenilenir.
@@ -93,6 +95,9 @@ Bir karar tereddütte kalırsa bu dört maddeye bakılır.
 - Dash ve slingshot hakkı tükendiğinde karakterin rengi değişerek oyuncuyu bilgilendirir.
 
 ### 5.3 Ölüm ve yeniden doğma
+
+> Ayrıntı: [`systems/death-respawn.md`](systems/death-respawn.md).
+
 - **Can barı yok.** Bir hazard'a temas edersen ölürsün.
 - Respawn **anında** ve en son alınan checkpoint'te olur.
 - Ölünce odadaki kırılan platformlar, hareketli tuzaklar ve anahtarlar başlangıç durumuna döner.
@@ -109,6 +114,8 @@ Oyun odalardan oluşur. Oyuncu bir kapıdan/çıkıştan diğer odaya geçer; ge
 Her odanın kendi checkpoint'i ve gerekirse kendi kamera ayarı (yakınlık/uzaklık) vardır. Odaların çoğunda kısa öğretici ipuçları bulunur.
 
 ### 6.2 Seviye elemanları
+
+> Ayrıntı: [`systems/platforms.md`](systems/platforms.md), [`systems/hazards.md`](systems/hazards.md), [`systems/collectibles.md`](systems/collectibles.md).
 
 **Platformlar**
 - **Hareketli platformlar** (düz, dairesel, hızlanan).

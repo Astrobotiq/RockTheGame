@@ -6,18 +6,18 @@ Yeni bir özellik üzerinde çalışmaya başlamadan önce ilgili dosyayı oku; 
 
 ## Dosyalar
 
-_(henüz yok)_
+| Dosya | Kapsam | GDD |
+|---|---|---|
+| [`movement-core.md`](movement-core.md) | Koşma, zıplama, havaya giriş yoluna göre yerçekimi, coyote/buffer, dash, hit-stop | §5.1, §5.2 |
+| [`grapple.md`](grapple.md) | Hedef seçimi, yerden kanca, tek/çift kanca, slingshot, dönen node | §5.2 |
+| [`wall-movement.md`](wall-movement.md) | Tırmanma, kenardan çıkma, kayma, duvar zıplaması | §5.2 |
+| [`death-respawn.md`](death-respawn.md) | Ölüm anı, respawn dizisi, neyin sıfırlandığı, checkpoint'ler | §5.3 |
+| [`platforms.md`](platforms.md) | Sürücü + strateji, taşıma, tetiklenen/kırılan/tek yönlü platform, launch pad, wrapping | §6.2 |
+| [`hazards.md`](hazards.md) | Diken, asit, hareketli/hızlanan/dönen/akan ölümcül nesneler | §6.2 |
+| [`collectibles.md`](collectibles.md) | Ananas, anahtar-kapı, slingshot yenileyici, tek nefeste ananas, envanter | §5.3, §6.2 |
 
-## GDD'den bölünmeye uygun bölümler
+Her dosyada aynı bölümler var: tasarım niyeti, nasıl çalıştığı, tunable'lar (asset'teki gerçek değerler), kod yolları ve **bilinen kenar durumlar / GDD ile farklar**. Son bölüm, kodun GDD'den ayrıldığı yerleri listeler; hangisinin doğru olduğu geliştiricinin kararıdır.
 
-Aşağıdaki GDD bölümleri buraya taşınmayı bekliyor. İlgili mekanik üzerinde çalışırken o dosyayı oluştur ve GDD'de tek paragraf özet + link bırak.
+Dosyalar 2026-10-05'te koda karşı doğrulandı. Kod değiştiğinde ilgili dosyayı güncelle ve "Son kod doğrulaması" tarihini yenile.
 
-| GDD bölümü | Önerilen dosya |
-|---|---|
-| §5.2 Temel hareket (koşma, zıplama, dash) | `movement-core.md` |
-| §5.2 Kanca ailesi (swing, dual swing, slingshot, dönen node) | `grapple.md` |
-| §5.2 Duvar (tırmanma, ledge climb, kayma, duvar zıplaması) | `wall-movement.md` |
-| §5.3 Ölüm ve yeniden doğma | `death-respawn.md` |
-| §6.2 Platformlar | `platforms.md` |
-| §6.2 Tehlikeler | `hazards.md` |
-| §6.2 Toplanabilirler | `collectibles.md` |
+Henüz dosyası olmayan sistemler (gerektiğinde oluştur): oda ve geçiş sistemi (`LevelChange/`, kamera), NPC diyalogları (GDD §7), ses, titreşim (`HapticManager`).

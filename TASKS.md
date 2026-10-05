@@ -7,7 +7,7 @@
 ## Active
 
 - [ ] **Git geçmişindeki şirket içi doküman izine karar ver** #code - `577078b` origin/main'de; geçmiş yeniden yazılacak mı, force-push gerekir (bkz. docs/sonraki-session.md §1), due 2026-10-09
-- [ ] **LinearPingPongStrategy period=0 NaN düzeltmesi** #code - `period` için alt sınır + EditMode testi, due 2026-10-09
+- [ ] **Ping-pong stratejilerinde period=0 NaN düzeltmesi** #code - Linear ve TransformPingPongStrategy; `period` için alt sınır + EditMode testi (docs/systems/platforms.md), due 2026-10-09
 - [ ] **Yerden sol tetik kararı + uygulaması** #code - GroundedState'te sol tetik dalı yok; bilinçli mi, eksik mi (GDD §12.6, docs/kalan-isler.md §1.1), due 2026-10-09
 - [ ] **Ses mixer parametrelerini expose et** #test - MainMixer'da MasterVolume/SFXVolume/MusicVolume yok, Ambient grubu yok (kalan-isler §2.1), due 2026-10-12
 - [ ] **Animator 'Hash 0' uyarısını teşhis et** #test - Play Mode'da çıkan eksik parametre uyarısının kaynağını bul (kalan-isler §2.2), due 2026-10-12

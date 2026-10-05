@@ -39,7 +39,7 @@ The game's GDD and design notes live in `docs/GDD.md`. Before working on a new m
 The repo contains two generations of gameplay code:
 
 - `Assets/Scripts/New-Scripts/` — the **active, current** system (namespace `New_Scripts.*`). All work referenced in recent commits/diffs happens here. Organized by feature folder: `Player/`, `Platform/`, `LevelChange/`, `Death/`, `Collectible/`, `Door/`, `NPC/`, `Audio/`, `UI/`, `Animation/`, `Editor/`.
-- `Assets/Scripts/` (top level, no namespace) — **legacy** scripts from an earlier prototype (`grapler.cs`, `leftGrapler.cs`, `fallablePlatform.cs`, `jumpPad.cs`, `GameCondition.cs`, `checkpoint.cs`, etc., matching the README's description). Treat these as superseded unless a scene explicitly still uses them — don't extend this system for new work; use `New-Scripts` equivalents instead (e.g. `Grappler.cs`, `LaunchPad.cs`, `Checkpoint.cs`).
+- `Assets/Scripts/` (top level, no namespace) — **legacy** scripts from an earlier prototype (`grapler.cs`, `leftGrapler.cs`, `fallablePlatform.cs`, `jumpPad.cs`, `GameCondition.cs`, `checkpoint.cs`, etc., matching the README's description). Treat these as superseded unless a scene explicitly still uses them — don't extend this system for new work; use `New-Scripts` equivalents instead (e.g. `NodeDetector.cs`, `LaunchPad.cs`, `Checkpoint.cs`).
 
 The root `README.md` describes the **legacy** system's class names and is out of date relative to `New-Scripts`; prefer reading `New-Scripts` code directly over trusting the README for architecture.
 
@@ -50,7 +50,7 @@ The root `README.md` describes the **legacy** system's class names and is out of
 Key supporting pieces:
 - `KinematicPhysicsHandler` resolves the FSM's intended velocity against collisions each `FixedUpdate` (kinematic Rigidbody2D, not dynamic) and reports back the resolved velocity.
 - `PlayerStatsSO` is the single ScriptableObject data source for tuning values (speeds, timers, thresholds) — prefer adding new tunables there over hardcoding constants in states.
-- `NodeDetector` + `Grappler`/`ArmController` implement grapple-target detection and the two-armed swing/pull mechanic (`LeftArm`/`RightArm`, `LeftAnchor`/`RightAnchor`).
+- `NodeDetector` (target selection) + `ArmController` (arm visuals) implement the two-armed grapple; anchors are plain `Vector2?` (`LeftAnchor`/`RightAnchor`) set instantly on cast. `Player/Grappler.cs` is unused dead code — don't build on it.
 - `HitStopEvents` (static C# events) drive brief pause-on-impact (i-frame/hitstop) independent of the FSM; `PlayerController` subscribes in `OnEnable`/`OnDisable`.
 - Haptics run through `HapticManager` + per-system `*VibrationSettingsSO` assets (`PlayerVibrationSettingsSO`, `PlatformVibrationSettingsSO`, `TransitionVibrationSettingsSO`) and `RumbleProfile` — new feedback should follow this SO-per-system pattern rather than hardcoding rumble values.
 
@@ -66,11 +66,15 @@ Similarly, most systems keep their tunable/data payloads in ScriptableObjects ra
 
 ### Platforms
 
-`Platform/` implements moving/breakable/launch platforms via a strategy pattern: `MovementStrategy` subclasses (`LinearPingPongStrategy`, `CircularMovementStrategy`, `AcceleratingPingPongStrategy`, `TransformPingPongStrategy`) plug into `MovingPlatform`/`PlatformController`, with `IWaypointPath`/`LinearWaypointPath` supplying paths and `IPassenger`/`IMovingSurface` used for carrying the player. Breakable platforms come in two forms: the simpler `BreakablePlatform`, and the newer segmented system `SegmentedBreakablePlatform` + `BreakableBlockUnit` (with a custom `SegmentedBreakablePlatformEditor` for editor-time authoring) — prefer the segmented system for new breakable platform work, as it's the actively developed one.
+`Platform/` implements moving/breakable/launch platforms via a strategy pattern: `MovementStrategy` subclasses (`LinearPingPongStrategy`, `CircularMovementStrategy`, `AcceleratingPingPongStrategy`, `TransformPingPongStrategy`) plug into `PlatformController` (always running) or `TriggeredPlatformController` (runs on step); both implement `IMovingSurface` (carrying the player, jump boost) and `IResettable`. `MovingPlatform`, `IWaypointPath`/`LinearWaypointPath` and `IPassenger` are an older waypoint driver used by no scene or prefab — don't extend them. Breakable platforms come in two forms: the simpler `BreakablePlatform`, and the newer segmented system `SegmentedBreakablePlatform` + `BreakableBlockUnit` (with a custom `SegmentedBreakablePlatformEditor` for editor-time authoring) — prefer the segmented system for new breakable platform work, as it's the actively developed one.
 
 ### Death, respawn, checkpoints
 
-`PlayerHealth` + `IKillable` handle player death; `DeathZone`/`AcidHazard` are hazard triggers. `Checkpoint` + `RespawnManager` + `LevelResetManager` (implementing `IResettable` on resettable objects) coordinate respawn state, using `TransformEventChannelSO` to communicate the respawn point.
+`PlayerHealth` + `IKillable` handle player death; `DeathZone`/`AcidHazard` are hazard triggers. `Checkpoint` + `RespawnManager` + `LevelResetManager` (implementing `IResettable` on resettable objects) coordinate respawn state, using `TransformEventChannelSO` to communicate the respawn point. Note that only platforms use `IResettable`; collectibles, keys and the coin inventory reset by subscribing to `PlayerHealth.OnDeath` directly (see `docs/systems/death-respawn.md`).
+
+### System docs
+
+Per-mechanic docs live in `docs/systems/` (see its `README.md`). Read the relevant one before changing a mechanic, and update it (plus its "Son kod doğrulaması" date) when behaviour changes.
 
 ### Async
 

@@ -1,42 +1,38 @@
-# 🪨 Rock The Game
+# Rock The Game
 
-> A fast-paced, grappling-hook driven action platformer built with Unity.
+A fast, demanding 2D pixel-art platformer built around two independent grappling hooks. Swing, launch and climb through connected rooms where one hit kills you and respawn is instant.
 
-Welcome to the **Rock The Game** repository! This project focuses on high-speed traversal, dynamic camera perspectives, and physics-based platforming mechanics. The core gameplay revolves around grappling hooks, momentum control, and navigating through hazard-filled environments.
+**Unity 6 (URP) · C# · solo project · in development, about 22 of 60 planned rooms · PC, gamepad only**
 
----
+## How it started
 
-## 🏃‍♂️ Core Mechanics & Traversal
+This began as my first Unity game, with a grapple built on Spring Joints. It taught me a lot, and it also showed me where built-in physics stops giving you precise control. I rebuilt the movement from scratch around a custom kinematic controller, so every acceleration and collision response is now under direct control.
 
-The movement system is designed to be fluid and highly responsive, giving players advanced mobility options:
+## Mechanics
 
-* **Grappling System:** Core mechanics implemented via `grapler` and `leftGrapler` scripts, allowing players to swing, pull, and maneuver through the air.
-* **Advanced Mobility:** Features like `SpecialMove` and `SpeedControl` handle momentum, dashing, or time-manipulation abilities to keep the pacing fast.
-* **Modern Inputs:** Utilizes the new **Unity Input System** (`Input.inputactions` & `Input.cs`) for robust, cross-platform controller and keyboard support.
+- **Hooks:** swing, dual swing and slingshot launches, plus rotating nodes that reward full rotations
+- **Traversal:** dash, wall climb, wall slide, wall jump and ledge climb
+- **Rooms:** moving and breakable platforms, launch pads, hazards, collectibles and keys
 
----
+## Architecture
 
-## ⚙️ Systems & Architecture
+| Area | Approach | Key classes |
+|:---|:---|:---|
+| **Movement** | Kinematic controller with its own collision resolution and ground and wall sensing | `KinematicPhysicsHandler`, `PlayerController` |
+| **Player logic** | State pattern, with one class per movement state | `IPlayerState`, `SwingingState`, `DualSwingingState`, `SlingshotState`, `DashState` |
+| **Grapple** | Hook logic and node detection kept apart from visuals | `Grappler`, `NodeDetector`, `GrappleVisualManager`, `FullRotationTracker` |
+| **Platforms** | Strategy pattern for movement paths, with interfaces for carrying the player | `MovementStrategy`, `CircularMovementStrategy`, `IMovingSurface`, `IPassenger` |
+| **Rooms and respawn** | Coordinated room transitions and state reset on death | `RoomManager`, `RoomTransitionCoordinator`, `LevelResetManager`, `RespawnManager` |
+| **Game feel** | Hit stop, gamepad rumble and afterimages | `HitStopManager`, `HapticManager`, `GhostAfterimage` |
+| **Data and audio** | ScriptableObject tuning data and audio cues | `PlayerStatsSO`, `AudioCueSO`, `AudioManager` |
 
-The project is heavily modularized to handle complex platforming environments:
+Gameplay code is in `Assets/Scripts/New-Scripts`.
 
-| System | Description | Key Classes |
-| :--- | :--- | :--- |
-| **Dynamic Camera** | Manages multi-perspective views, tracking, and smooth transitions. | `CameraController`, `SwitchCamera`, `followPlayer` |
-| **Hazards & Traps** | Physics-based obstacles that react to the player. | `Spike`, `BouncySpike`, `ColliderHandler` |
-| **Dynamic Platforms** | Environmental objects that require precise timing. | `fallablePlatform`, `jumpPad`, `door` |
-| **Game Flow** | Manages level progression, timing, and win/loss states. | `GameCondition`, `checkpoint`, `Timer` |
+## Tests and tools
 
----
+- 22 EditMode tests in `Assets/Tests/EditMode` cover platform movement strategies, rotation tracking and tuning data sanity
+- Custom editor tools include `RampTextureGeneratorWindow` and `PlatformStrategyConverterWindow`
 
-## 🧩 Environment & Collectibles
+## Running the project
 
-* **Interactive Elements:** The world features interactable nodes (`Node.cs`), specific entities (like `whale.cs`), and objects that change properties dynamically (`ColorOrganizer.cs`).
-* **Progression:** Players gather `Collectables` and `Ring` objects while racing against the `Timer` to reach the next `checkpoint`.
-
----
-
-## 🛠 Technical Notes
-
-* **Physics & Collisions:** The `ColliderHandler` acts as a centralized script to manage complex collision events between the fast-moving player and environmental hazards, preventing physics clipping.
-* **State & Condition Management:** Game states are cleanly tracked using `GameCondition`, ensuring that level transitions, checkpoint respawns, and failure states trigger correctly without breaking the game loop.
+Open the project in Unity 6000.3.10f1. A gamepad is required. The design document is in `docs/GDD.md` (in Turkish).

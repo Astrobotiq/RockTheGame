@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-10-05.*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-05.*
 
 ## Tasarım niyeti
 
@@ -31,7 +31,7 @@ Kanca bir tetikleyici değil, **basılı tutulan** bir eylem: tetik eşiği `Inp
 
 Yerdeyken **yalnızca sağ tetik** çalışır (`GroundedState.CheckGrappleInput`), sol tetik dalı yok. Tutununca `SwingingState(wasGrounded: true)` önce `SwingHopDuration` boyunca node tarafına doğru bir sıçrama yapar (`SwingHopForwardSpeed` yatay, `SwingHopUpwardSpeed` dikey, normal yerçekimi). Sıçrama bitince ip uzunluğu o anki mesafeye sabitlenir ve sarkaç başlar. Yerde sol kol görsel olarak hareket yönüne bakar, sağ kol sağ stick'e.
 
-Bu asimetri GDD §12 madde 6'da açık soru; karar `TASKS.md`'de (9 Ekim).
+Bu asimetri bilinçli bir tercih (GDD §5.1).
 
 ### Tek kanca (`SwingingState`)
 
@@ -39,7 +39,7 @@ Bu asimetri GDD §12 madde 6'da açık soru; karar `TASKS.md`'de (9 Ekim).
 - Her fizik adımında hız ipe teğet olacak şekilde izdüşürülür, oyuncu tekrar ip boyuna oturtulur.
 - Pompalama `SwingForceMultiplier` ile teğet hıza eklenir. `MaxSwingSpeed × ActiveSpeedMultiplier` üstüne pompalayarak çıkılamaz, ama yerçekimiyle bu sınır aşılabilir (sınır yalnızca girdinin eklenmesini engeller).
 - Girişte dash hakkı ve taç rengi yenilenir.
-- **Çarpışma:** `SwingCollisionRadius` yarıçaplı CircleCast. Çarpılan yüzey yataydan en fazla `MaxWallAngle` (45°) eğikse karakter yere iner (`GroundedState`). Daha dikse kanca kopar ve karakter havaya geçer.
+- **Çarpışma:** Oyuncunun kendi kutusuyla (1x1) BoxCast. Çarpılan yüzey yataydan en fazla `MaxWallAngle` (45°) eğikse karakter yere iner (`GroundedState`). Daha dikse kanca kopar ve karakter havaya geçer.
 - Swing sırasında dash ve duvara tutunma yok.
 - **Bırakma:** tetik bırakılınca `AirborneState(isJumping: true, bypassJumpGravity: true)`. Bu modda yükselirken hep `JumpEndEarlyGravityMultiplier` (3×), düşerken `FallGravityMultiplier` (1.5×) uygulanır; apex hang yok. Yani swing'den yukarı fırlayış zıplama tuşundan bağımsız ve hızla söner.
 
@@ -49,7 +49,7 @@ Bu asimetri GDD §12 madde 6'da açık soru; karar `TASKS.md`'de (9 Ekim).
 - Fizik farklı: iki ip birer **tek yönlü yay**. Yalnızca gerildiğinde (`mesafe > ip boyu`) `DualSpringStiffness` ve `DualSpringDamping` ile çeker, gevşekken hiçbir şey yapmaz. Yerçekimi `SwingGravity` (25), yani tek kancadan daha hafif.
 - Pompalama iki stick'in X ortalaması × `DualSwingForceMultiplier`. Hız sınırı yok.
 - Bir tetik bırakılırsa diğer kolla tek kancaya döner (hop yapmadan). İkisi birden bırakılırsa `AirborneState(isJumping: false)`: sabit yerçekimi, değişken zıplama çarpanları yok.
-- Çarpışma kuralı tek kancayla aynı (`DualSwingCollisionRadius`, `MaxWallAngle`).
+- Çarpışmada açı kuralı tek kancayla aynı (`MaxWallAngle`), ama arama oyuncu kutusuyla değil `DualSwingCollisionRadius` (0.4) daireyle yapılıyor.
 - Girişte dash hakkı yenilenir ama taç rengi sıfırlanmaz. Tek kancadan geçildiği için pratikte zaten sıfırlanmış olur.
 
 ### Slingshot (`SlingshotState`)
@@ -78,7 +78,7 @@ Bu asimetri GDD §12 madde 6'da açık soru; karar `TASKS.md`'de (9 Ekim).
 |---|---|---|
 | `SwingForceMultiplier` | 20 | tek kanca |
 | `MaxSwingSpeed` | 25 | tek kanca |
-| `SwingCollisionRadius` | 0.5 | tek kanca |
+| `SwingCollisionRadius` | 0.5 | hiçbir yer (ölü alan; tek kanca artık oyuncu kutusunu kullanıyor) |
 | `MaxWallAngle` | 45 | tek + çift kanca |
 | `SwingGravity` | 25 | **yalnızca** çift kanca |
 | `SwingInitialBoost` | 5 | hiçbir yer (ölü alan) |
@@ -105,15 +105,16 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 
 ## Bilinen kenar durumlar ve GDD ile farklar
 
-1. **Yerden yalnızca sağ tetik** (GDD §12.6, `TASKS.md` 9 Ekim).
-2. **Kancadan üç çıkış, üç farklı yerçekimi.** Tek kanca bırakışında yükselirken her zaman 3× (tuştan bağımsız). Slingshot çıkışında A basılı değilse 3×, basılıysa 1× + apex hang (tuşa bağlı). Dual swing bırakışında sabit 1×. Bilinçli mi, değil mi, oynayarak karar verilmeli; `feel-notlari.md`'ye yazılmaya değer. Tam tablo: [`movement-core.md`](movement-core.md).
+1. **Yerden yalnızca sağ tetik:** bilinçli tercih (GDD §5.1).
+2. **Kancadan üç çıkış, üç farklı yerçekimi.** Tek kanca bırakışında yükselirken her zaman 3× (tuştan bağımsız). Slingshot çıkışında A basılı değilse 3×, basılıysa 1× + apex hang (tuşa bağlı). Dual swing bırakışında sabit 1×. Geliştirici oynayıp karar verecek (`feel-notlari.md`). Tam tablo: [`movement-core.md`](movement-core.md).
 3. **Slingshot fırlatma eğrisi fiilen yok.** `SlingshotLaunchDuration` (0.01) fizik adımından (0.02) kısa olduğu için ease-out tek adımda bitiyor.
 4. **Slingshot hakkı gerilme başında harcanıyor.** Gerilme sırasında vazgeçmek hakkı geri vermez.
 5. **GDD "dönen node hız patlaması verir" diyor.** Kodda bu, 1.2 sn boyunca yalnızca tek kanca sarkaç hız sınırının yükselmesi + tek seferlik ×1.2 hız. Hız patlaması prefab'ı hiçbir odada yok; sahnede kullanılan tek dönen node kapı açıyor.
 6. **`OncePerNode` ölünce sıfırlanmıyor.** Ölmeden önce bir kez tamamlanan node, respawn'dan sonra tekrar tetiklenmez. Kapı açan node için bu sorun olmayabilir; bkz. [`death-respawn.md`](death-respawn.md).
 7. **Ölü kod:** `Player/Grappler.cs` hiçbir sahne ya da prefab'da kullanılmıyor (CLAUDE.md onu aktif sistemin parçası sayıyor). `SwingInitialBoost` okunmuyor.
 8. **Hareketli node'lar anchor'ı taşımaz.** Anchor bir `Vector2` kopyası. Node hareket ederse ip eski noktada kalır.
+9. **Çift kanca çarpışması hâlâ daire.** Tek kanca 5 Kasım 2026'dan beri oyuncu kutusuyla arıyor (eğimde takılma düzeltildi); çift kanca `DualSwingCollisionRadius` (0.4) daireyle arıyor ve eğimde test edilmedi. Ayrıntı: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).
 
 ## Testler
 
-`FullRotationTrackerTests`. Swing, dual swing ve slingshot için test yok.
+`FullRotationTrackerTests`, `SwingRulesTests`, `SlingshotRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).

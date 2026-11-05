@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-10-05.*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-05.*
 
 ## Tasarım niyeti
 
@@ -100,7 +100,7 @@ Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
 ## Bilinen kenar durumlar ve GDD ile farklar
 
 1. **Dar bir durumda taç rengi yanlış kalıyor.** `ResetDash()` yalnızca bool'u açar, rengi ayrıca sıfırlamak gerekir. Yer, tek kanca ve launch pad bunu yapıyor, `DualSwingingState` yapmıyor. Normalde dual swing'e tek kancadan geçildiği için sorun çıkmaz. Ama duvarda kayarken iki tetiğe aynı karede basılırsa doğrudan dual swing'e girilir: dash hakkı geri gelir, taç gri kalır.
-2. **Sahne açılışında dash hakkı yok.** `HasDashCharge` `false` başlar ve ilk state `AirborneState`'tir; yere ilk inişe kadar dash çalışmaz. Respawn bu sorunu yaşamaz (`OnStartRespawn` hakkı verir).
+2. **Sahne açılışında dash hakkı dolu.** `HasDashCharge` `true` başlar; respawn'la aynı davranış (5 Kasım 2026'da düzeltildi).
 3. **GDD §5.2 "sert bir çarpmada hit-stop" diyor.** Kodda çarpma algılanmıyor: hit-stop yalnızca dash başlangıcında ve slingshot fırlatışında tetikleniyor. Ya GDD cümlesi düzeltilmeli ya da gerçekten çarpma tabanlı bir tetik eklenmeli.
 4. **GDD §5.1 kontrol tablosunda sağ stick yok.** Sağ kol sağ stick'le, sol kol sol stick'le nişan alıyor (bkz. [`grapple.md`](grapple.md)).
 5. **Tek yönlü platformdan aşağı inilemiyor.** Aşağı + zıpla gibi bir "drop through" yok. Bilinçli olabilir; GDD §6.2 yalnızca "aşağıdan geçilir, üstünde durulur" diyor.
@@ -109,4 +109,4 @@ Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
 
 ## Testler
 
-`PlayerStatsSanityTests`: coyote/buffer bantları ve `DashSpeed` tutarlılığı. Hareketin kendisi için test yok (kinematik fizik + "bozulmamalı davranışlar" listesi bekleniyor, `TASKS.md` 19 Ekim).
+`PlayerStatsSanityTests`: coyote/buffer bantları ve `DashSpeed` tutarlılığı. Dash kuralları: `DashRulesTests` ve `PlayerStartStateTests`, liste [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).

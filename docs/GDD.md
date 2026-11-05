@@ -69,6 +69,8 @@ Bir karar tereddütte kalırsa bu dört maddeye bakılır.
 | **Sağ tetik** | Sağ kancayı fırlat / bırak |
 | Sol / sağ bumper | Soldaki / sağdaki duvara tutun |
 
+Yerdeyken kanca yalnızca **sağ tetikle** atılır. Bu bilinçli bir tercih; iki tetik de havadayken çalışır.
+
 ### 5.2 Hareket seti
 
 > Nasıl çalıştığı, değerler ve koddaki farklar: [`systems/movement-core.md`](systems/movement-core.md), [`systems/grapple.md`](systems/grapple.md), [`systems/wall-movement.md`](systems/wall-movement.md).
@@ -85,9 +87,9 @@ Bir karar tereddütte kalırsa bu dört maddeye bakılır.
 
 **Duvar**
 - **Tırmanma.** Bumper'ı basılı tutarak duvara tutunur ve tırmanırsın. Dayanıklılık (stamina) sınırlıdır (~6 sn), azalırken uyarı verir, yere inince dolar.
-- **Kenardan çıkma (ledge climb).** Tırmanırken köşeye gelince karakter otomatik olarak üste çıkar.
+- **Kenardan çıkma (ledge climb).** Tırmanırken köşeye gelince sol stick'i kısa süre yukarı tutarsan karakter üste çıkar.
 - **Kayma.** Duvarda en fazla ~2 sn yavaşça kayabilirsin. Kayarken zıplayabilir, tırmanabilir, dash atabilir ya da kanca fırlatabilirsin.
-- **Duvar zıplaması.** Duvardan dışarı doğru güçlü bir sıçrama.
+- **Duvar zıplaması.** Kayarken duvardan dışarı doğru güçlü bir sıçrama; tırmanırken ise düz yukarı.
 
 **His (game feel)**
 - Sert bir çarpmada kısa bir duraklama (hit-stop) ve gamepad titreşimi olur.
@@ -263,7 +265,6 @@ Bunlar için Play Mode'da oyun içi kameradan (oyuncu ve HUD dahil, `source=scre
 3. **Çok oyunculu:** yarış mı, yalnızca birlikte oynama mı, ikisi birden mi? Aynı odada oyuncular birbirini engeller mi?
 4. **Toplanabilirlerin amacı:** ananas/altın neye yarıyor? Şu an yalnızca sayaç gibi görünüyor.
 5. **60 odalık zorluk ve mekanik tanıtım eğrisi**: hangi dünyada hangi mekanik tanıtılacak?
-6. **Yerden swing yalnızca sağ tetikle** çalışıyor gibi görünüyor. Bilinçli mi, eksik mi?
 
 **Riskler**
 - **Ses/müzik lisansları:** Klasördeki parçaların bir kısmı üçüncü taraf (örn. Disney kısa filminden "The Skeleton Dance") ve ticari yayında sorun çıkarabilir. Yayın öncesi hepsi lisanslı, kendi yapımı ya da telifsiz olanlarla değiştirilmeli.

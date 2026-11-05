@@ -6,29 +6,24 @@
 
 ## Active
 
-- [ ] **Git geçmişindeki şirket içi doküman izine karar ver** #code - `577078b` origin/main'de; geçmiş yeniden yazılacak mı, force-push gerekir (bkz. docs/sonraki-session.md §1), due 2026-10-09
-- [ ] **Ping-pong stratejilerinde period=0 NaN düzeltmesi** #code - Linear ve TransformPingPongStrategy; `period` için alt sınır + EditMode testi (docs/systems/platforms.md), due 2026-10-09
-- [ ] **Yerden sol tetik kararı + uygulaması** #code - GroundedState'te sol tetik dalı yok; bilinçli mi, eksik mi (GDD §12.6, docs/kalan-isler.md §1.1), due 2026-10-09
-- [ ] **Ses mixer parametrelerini expose et** #test - MainMixer'da MasterVolume/SFXVolume/MusicVolume yok, Ambient grubu yok (kalan-isler §2.1), due 2026-10-12
-- [ ] **Animator 'Hash 0' uyarısını teşhis et** #test - Play Mode'da çıkan eksik parametre uyarısının kaynağını bul (kalan-isler §2.2), due 2026-10-12
 - [ ] **Player build al ve doğrula** #test - RockTheGame.Runtime'daki EasyTextEffects.Editor importu build'de patlıyor mu, due 2026-10-12
 - [ ] **Fixed Timestep 60 Hz denemesi** #code - 0.02 → 0.01667 dene, bir seviye oyna, beğenmezsen geri al (kalan-isler §1.2), due 2026-10-16
-- [ ] **Kullanılmayan modül paketlerini kaldır** #code - terrain+terrainphysics, cloth, vehicles, vr, xr, wind, umbra, adaptiveperformance (kalan-isler §3.1), due 2026-10-16
-- [ ] **"Bozulmamalı" davranışlar listesini yaz** #test - dash/swing/slingshot/duvar için test yazılabilmesi için beklenen davranışlar (sonraki-session §3), due 2026-10-19
-- [ ] **PPU standardı kararı** #art - 16/100/32... karışık; hangi standart, NPC'ler hariç (kalan-isler §1.4), due 2026-10-19
 - [ ] **Sorting Layer 1: katmanları tanımla, oyuncu ve platformlar** #level - Background/Platform/Player/VFX/UI (kalan-isler §1.6), due 2026-10-23
 - [ ] **Sorting Layer 2: arka plan, VFX, dekor** #art - kalan sprite'ları katmanlara ata, due 2026-10-26
 - [ ] **Renk uzayı kararı (Gamma/Linear)** #art - geçilirse CRT ve palet yeniden gözden geçirilir (kalan-isler §1.3), due 2026-10-26
 - [ ] **Oda 9 dikenleri + Play Mode görselleri** #test - oyun içi kamerada okunurluk, oyuncu+HUD çekimleri (sonraki-session §2), due 2026-10-26
-- [ ] **Pixel Perfect Camera denemesi** #art - PPU kararından sonra (kalan-isler §1.5), due 2026-11-02
-- [ ] **Kullanılmayan asset: Pixel Adventure 1 klasörü** #art - Select Dependencies / Find References ile doğrula, sonra sil (kalan-isler §3.2), due 2026-11-02
+- [ ] **Kullanılmayan asset: Pixel Adventure 1 klasörü** #art - klasörün tamamı silinmez: Terrain, Spikes, Background, Fruits ve Trampoline sahnede kullanılıyor; yalnızca referanssız dosyaları sil (kalan-isler §3.2), due 2026-11-02
 - [ ] **Kullanılmayan asset: Tiles/Zone-3 ve Tiles/Background** #art - aynı yöntem, due 2026-11-02
 - [ ] **Multiplayer mod kararı ve ağ yaklaşımı** #code - öncelikli, yeni özelliklerden önce sistem kurulacak; yarış mı birlikte mi (GDD §9, §12.3), ağ çözümü araştırması, sonraki adımlar buradan bölünür, due 2026-11-06
+- [ ] **DontDestroyOnLoad uyarısını düzelt** #code - Play Mode'da "only works for root GameObjects" çıkıyor; aday AudioManager.cs:72 ya da HapticManager.cs:26, kaynağı doğrula ve düzelt, due 2026-11-06
+- [ ] **Dayanıklılık uyarısı ekle** #code - GDD §5.2 son saniyelerde uyarı istiyor, kodda yok; çubuk mu titreşim mi seç, sonra uygula (docs/systems/wall-movement.md), due 2026-11-13
 
 ## Waiting On
 
 ## Someday
 
+- [ ] **PPU standardı kararı** #art - 5 Kasım'da ertelendi; ölçüm kalan-isler §1.4'te (zemin/diken/boru 16, oyuncu 24/32, büyütülmüş meyve/trambolin 5–14)
+- [ ] **Pixel Perfect Camera denemesi** #art - PPU kararından sonra (kalan-isler §1.5)
 - [ ] **Kullanılmayan asset: Sprites/ klasörü** #art - 506 dosya; alt klasör başına bir akşam
 - [ ] **GDD §8 "yeşil, pis asit" ile görsel uyumu** #art - metin mi sanat mı güncellenecek
 - [ ] **Beyaz dikdörtgen ve daireler** #art - odalar 2, 9, 12, 16, 19, 22: placeholder mı, bilerek mi
@@ -55,3 +50,10 @@
 - [ ] **Teleport platformlar** #code - DK Bananza'daki gibi; platform parçalarına dokunup onları örneğin alevli kapının üstüne ışınlayarak barikat kurmak
 
 ## Done
+
+- [x] ~~**"Bozulmamalı" davranışlar listesini yaz** #test~~ (2026-11-05) - `docs/bozulmamali-davranislar.md`; testler henüz yazılmadı
+- [x] ~~**Kullanılmayan modül paketlerini kaldır** #code~~ (2026-11-05) - 8 modül kaldırıldı; `terrain` kaldı, çünkü `render-pipelines.core` ona bağlı
+- [x] ~~**Animator 'Hash 0' uyarısını teşhis et** #test~~ (2026-11-05) - `GnomePukeAnimator` hash'i `OnEnable`'dan sonra hesaplıyordu; `Awake`'e alındı, uyarı kalktı
+- [x] ~~**Ses mixer parametrelerini expose et** #test~~ (2026-11-05) - dört parametre expose edildi; boş `Ambient` grubu eklendi, henüz hiçbir ses ona bağlı değil
+- [x] ~~**Ping-pong stratejilerinde period=0 NaN düzeltmesi** #code~~ (2026-11-05) - `period <= 0` iken başlangıç noktasında kalır, EditMode testleri eklendi
+- [x] ~~**Git geçmişindeki şirket içi doküman izine karar ver** #code~~ (2026-11-05) - karar: geçmiş olduğu gibi kalıyor, yeniden yazılmayacak

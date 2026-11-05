@@ -12,4 +12,6 @@ Hissi hiçbir test ölçmez; yalnızca gamepad'le oynayan kişi değerlendirebil
 
 ## Notlar
 
-*(Örn: "yerden swing yalnızca sağ tetikle çalışıyor" bilinçli mi eksik mi, GDD §12 madde 6.)*
+*(Oynarken fark ettiğin, henüz değer değişikliğine dönüşmemiş his notları.)*
+
+- **Kancadan çıkış yerçekimi (karar bekliyor):** Tek kanca bırakılınca yükselirken hep 3×, düşerken 1.5×. Çift kanca bırakılınca sabit 1×. Slingshot çıkışında zıplama tuşuna bağlı (basılıysa 1×, değilse 3×). Üçü de böyle mi kalsın, oynayıp karar ver.

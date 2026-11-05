@@ -14,6 +14,8 @@ Bunların hiçbiri hata değil. Hepsi oyunun **hissini veya görünüşünü** d
 
 ### 1.1 Yerde sol tetikle kanca atılamıyor
 
+> **Kapandı (5 Kasım 2026):** Bilinçli tercih, mevcut sistem kalıyor; kod değişmeyecek.
+
 **Durum:** Havadayken iki tetik de kanca atıyor. Yerdeyken **sadece sağ tetik** çalışıyor; sol tetik hiçbir şey yapmıyor. Ayrıca yerdeyken sol kol hareket ettiğin yöne bakıyor, sağ kol sağ stick'e bakıyor — yani iki kol yerde simetrik davranmıyor.
 
 **Nereden biliyoruz:** `GroundedState.cs`'de sol tetiği kontrol eden tek bir satır bile yok, sağ tetik için bir tane var. `AirborneState.cs`'de ikisi de var. GDD'nin 12. bölümü bunu zaten "bilinçli mi, eksik mi?" diye açık soru olarak yazmış — kod tarafı artık kesinleşti, cevap sende.
@@ -43,6 +45,15 @@ Bunların hiçbiri hata değil. Hepsi oyunun **hissini veya görünüşünü** d
 **Akşam:** Pazartesi (`#art`), ve muhtemelen tek akşam yetmez.
 
 ### 1.4 Piksel yoğunluğu (PPU) karışık
+
+> **Ölçüm (5 Kasım 2026), karar ertelendi.** Ekrandaki gerçek yoğunluk (PPU ÷ ölçek), sahnede kullanılanlar:
+> - **16 px/birim:** bütün tilemap'ler (zemin `Terrain Sliced`, dikenler, `plums` boruları, arka planlar), gnome'lar, platformlar.
+> - **Daha ince:** oyuncu `Sprites/Candy` 24–32, `Skeleton` ve `Shower-Pipe` 32, bir `Environment` görseli 91.
+> - **Daha iri (büyütülmüş):** trambolin 5–14 (PPU 100, ölçek 7–18), ananas ve portakal 12 (PPU 100, ölçek 8), çilek 11–13, gamepad ikonları 8–20.
+> - Sahnede 208 Unity varsayılan karesi/dairesi var; düz renk olduğu için yoğunluğu etkilemiyor.
+> - Kamera ortho 6.8: 1080p'de 1 birim = 79.4 ekran pikseli, 16 PPU'da sanat pikseli başına ~4.96. Ortho 6.75 tam 5 kat olurdu.
+>
+> Seçenekler: (1) 16, oyuncu NPC'ler gibi istisna; (2) 16, oyuncu yarı çözünürlükte yeniden çizilir; (3) 32, bütün tile'lar yeniden çizilir.
 
 **Durum:** Sprite'ların Pixels Per Unit değeri dağınık: 143 dosya 16, 107 dosya 100, gerisi 32/64/24/512/48/4.
 
@@ -80,6 +91,8 @@ Bunlar karar meselesi değil, bozuk şeyler. Denetimde değil, ben Play Mode'a g
 
 ### 2.1 Ses seviyesi ayarları hiç çalışmıyor
 
+> **Düzeltildi (5 Kasım 2026):** `MasterVolume`, `SFXVolume`, `MusicVolume` ve `AmbientVolume` expose edildi. `Ambient` grubu eklendi ama henüz hiçbir `AudioCueSO` ona bağlı değil. Aşağıdaki "alanı boş bırak" önerisi yanlıştı: `ApplyVolume` boş adı atlamıyor, uyarı sürerdi.
+
 **Durum:** `AudioManager` ses seviyelerini mixer'a yazmaya çalışıyor ama yazamıyor. Play Mode'a girer girmez konsola şu düşüyor:
 
 ```
@@ -98,6 +111,8 @@ Exposed name does not exist: SFXVolume
 
 ### 2.2 Animator'da eksik parametre
 
+> **Düzeltildi (5 Kasım 2026):** Kaynak `GnomePukeAnimator` (oda 21). Parametre aslında var; hash `Start`'ta hesaplanıyordu ama ilk `SetBool` ondan önce, `OnEnable`'da çalışıyordu. Hesaplama `Awake`'e alındı.
+
 **Durum:** Play Mode'da `Parameter 'Hash 0' does not exist.` uyarısı çıkıyor.
 
 **Sebebi:** Bir animasyon script'i, Animator Controller'da tanımlı olmayan bir parametreyi set etmeye çalışıyor. Hangi controller ve hangi parametre olduğunu daraltmadım.
@@ -111,6 +126,8 @@ Exposed name does not exist: SFXVolume
 ## 3. Temizlik — güvenli ama acelesi yok
 
 ### 3.1 Kullanılmayan Unity modülleri
+
+> **Yapıldı (5 Kasım 2026):** `terrainphysics`, `cloth`, `vehicles`, `vr`, `xr`, `wind`, `umbra` ve `adaptiveperformance` kaldırıldı; `xr`'a bağlı `subsystems` da onlarla gitti. `terrain` kalıyor, çünkü `com.unity.render-pipelines.core` ona bağlı.
 
 Denetimde dört paket kaldırıldı (`visualscripting`, `ai.navigation`, `multiplayer.center`, `timeline`). Geriye `com.unity.modules.*` ailesi kaldı: `terrain`, `terrainphysics`, `cloth`, `vehicles`, `vr`, `xr`, `wind`, `umbra`, `adaptiveperformance`. 2D bir oyunda hiçbiri kullanılmıyor.
 
@@ -154,11 +171,7 @@ Hiçbiri henüz `TASKS.md`'de değil — oraya eklemeden önce sana sormam gerek
 
 | İş | Kategori | Gün | Kaç akşam |
 |---|---|---|---|
-| Ses mixer parametrelerini expose et | `#test` | Pazartesi | yarım |
-| Animator parametre uyarısını teşhis et | `#test` | Pazartesi | yarım |
-| Yerden sol tetik kararı + uygulaması | `#code` | Cuma | 1 |
 | Fixed Timestep denemesi | `#code` | Cuma | 1 |
-| Kullanılmayan modül paketlerini kaldır | `#code` | Cuma | yarım |
 | Kullanılmayan asset klasörlerini ele | `#art` | Pazartesi | klasör başına 1 |
 | Sorting Layer yapısı kur | `#art` | Pazartesi | 2–3 |
 | PPU standardı kararı | `#art` | Pazartesi | 1 (sonra uygulama ayrı) |

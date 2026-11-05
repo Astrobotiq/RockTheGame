@@ -73,9 +73,9 @@ Sabit kodlu değerler: tutunma kilitleri 0.2 sn (bırakma) ve 0.5 sn (dayanıkl�
 
 ## Bilinen kenar durumlar ve GDD ile farklar
 
-1. **Dayanıklılık uyarısı yok.** GDD §5.2 "azalırken uyarı verir" diyor. `WallClimbingState` eşiği yakalayıp bir bayrak koyuyor ama hiçbir şey yapmıyor (kodda "ileride UI barını kırmızı yap" yorumu var). `PlayerController.TriggerStaminaWarning` / `OnStaminaWarning` hiçbir yerden çağrılmıyor ve dinlenmiyor. Uyarı için bir titreşim profili de yok. Oyuncu yalnızca çubuğun boşaldığını görüyor.
-2. **Tırmanırken duvar zıplaması dikey.** GDD "duvardan dışarı doğru güçlü bir sıçrama" diyor. Bu yalnızca **kayarken** geçerli. Tırmanırken zıplamak dümdüz yukarı atar (`WallJumpForce` hiç kullanılmıyor). Bilinçli olabilir (Celeste'te de tırmanırken yukarı zıplanır), ama GDD bunu ayırt etmiyor.
-3. **Kenardan çıkma tam otomatik değil.** GDD "otomatik olarak üste çıkar" diyor; kodda 0.1 sn yukarı basılı tutmak gerekiyor.
+1. **Dayanıklılık uyarısı yok, eklenecek (`TASKS.md`).** GDD §5.2 "azalırken uyarı verir" diyor. `WallClimbingState` eşiği yakalayıp bir bayrak koyuyor ama hiçbir şey yapmıyor (kodda "ileride UI barını kırmızı yap" yorumu var). `PlayerController.TriggerStaminaWarning` / `OnStaminaWarning` hiçbir yerden çağrılmıyor ve dinlenmiyor. Uyarı için bir titreşim profili de yok. Oyuncu yalnızca çubuğun boşaldığını görüyor.
+2. **Tırmanırken duvar zıplaması dikey (bilinçli).** Dışarı zıplama yalnızca **kayarken** var; tırmanırken zıplamak dümdüz yukarı atar (`WallJumpForce` hiç kullanılmıyor).
+3. **Kenardan çıkma tam otomatik değil (bilinçli).** 0.1 sn yukarı basılı tutmak gerekiyor.
 4. **Tırmanırken kanca atılamıyor**, kayarken atılabiliyor.
 5. **Kayma yalnızca düşerken başlar.** Yukarı doğru giderken duvara değmek kaymaya geçirmez; tırmanma için bumper gerekir.
-6. **Sınırsız duvar zıplaması zinciri.** Kayarken zıplamak kayma süresini yenilediği için iki duvar arasında sonsuza kadar yükselmek mümkün olabilir. Zıplama gücü (11, 11) ve kısa kayma buna izin veriyorsa seviye tasarımı bunu hesaba katmalı. Oynayarak doğrulanmadı.
+6. **Sınırsız duvar zıplaması zinciri (bilinçli).** Kayarken zıplamak kayma süresini yenilediği için iki duvar arasında sonsuza kadar yükselmek mümkün olabilir. Serbest kalıyor; seviye tasarımı bunu hesaba katmalı. Oynayarak doğrulanmadı.

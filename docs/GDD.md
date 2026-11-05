@@ -32,7 +32,7 @@ Bir karar tereddütte kalırsa bu dört maddeye bakılır.
 1. **Heyecan ve akış.** Oyuncu hareket ederken hızlanmalı, ritim bulmalı, bırakmak istememeli.
 2. **Kanca her şeyin merkezinde.** Yeni bir mekanik ya da seviye fikri kancayla nasıl konuşuyor? Konuşmuyorsa gözden geçirilir.
 3. **Zor ama adil.** Oyuncu ara sıra kızmalı ama hiçbir zaman "haksızlık" hissetmemeli. Ölüm hızlı ve ucuz, öğrenmek kolay olmalı.
-4. **Oyunu mekanik ve seviye doldurur.** Hikâye yok. Çeşitlilik yeni mekaniklerden, yeni dünyalardan ve tuhaf seviye fikirlerinden gelir.
+4. **Oyunu mekanik ve seviye doldurur.** Hikâye oyuncuya zorla anlatılmaz, seviyelerin içinden sezdirilir (bkz. §7). Çeşitlilik yeni mekaniklerden, yeni dünyalardan ve tuhaf seviye fikirlerinden gelir.
 
 ---
 
@@ -146,9 +146,11 @@ Her odanın kendi checkpoint'i ve gerekirse kendi kamera ayarı (yakınlık/uzak
 
 ## 7. Anlatı ve NPC'ler
 
-Oyunda **hikâye yok.** Bilinçli bir tercih: oyunu bölüm tasarımı ve mekanik doldurur.
+Oyunu hâlâ bölüm tasarımı ve mekanik doldurur, ama hikâye **seviyelerin içinde, çevreyle anlatılabilir.** Oyuncu arka planda gördüklerinden, seviyenin kurgusundan ve kısa diyaloglardan bir şeyler sezer; hikâye oyuncunun ağzına verilmez. Bilinçli bir tercih: anlatmak için oyunun akışı kesilmez.
 
-NPC'ler yalnızca kısa, esprili, çoğunlukla **4. duvarı yıkan** diyalog parçacıkları için var. Oyuncuyla doğrudan konuşmak istemediğin anlarda araya giren bir ses gibidirler. Bunlar zorunlu bir sistem değil; aklına geldikçe eklenecek bir baharattır.
+İlk fikir, Egg ve dondurma adamın seviyeler boyunca sezdirilen hikâyesi (fikirler `TASKS.md` → `Someday`).
+
+NPC'ler ayrıca kısa, esprili, çoğunlukla **4. duvarı yıkan** diyalog parçacıkları için var. Oyuncuyla doğrudan konuşmak istemediğin anlarda araya giren bir ses gibidirler. Bunlar zorunlu bir sistem değil; aklına geldikçe eklenecek bir baharattır.
 
 Teknik olarak diyalog satırları yazılıyor gibi görünür, sırayla ya da rastgele oynatılabilir ve istenirse yalnızca oyuncu ölünce bir sonraki satıra geçer (yani ölmek diyalog ilerletmenin bir yolu olabilir).
 

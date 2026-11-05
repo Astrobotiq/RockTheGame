@@ -16,6 +16,8 @@ namespace New_Scripts.Platform
 
         public override Vector2 GetPositionAtTime(float time)
         {
+            if (period <= 0f) return startPoint;
+
             float evaluatedTime = (time + phaseOffset) % period;
             float t = Mathf.PingPong(evaluatedTime, period / 2f) / (period / 2f);
             return Vector2.Lerp(startPoint, endPoint, t);

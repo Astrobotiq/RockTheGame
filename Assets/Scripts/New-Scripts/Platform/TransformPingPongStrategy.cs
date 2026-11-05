@@ -37,6 +37,8 @@ namespace New_Scripts.Platform
             if (!_isInitialized)
                 return Vector2.zero;
 
+            if (period <= 0f) return _startPosition;
+
             float evaluatedTime = (time + phaseOffset) % period;
             float t = Mathf.PingPong(evaluatedTime, period / 2f) / (period / 2f);
 

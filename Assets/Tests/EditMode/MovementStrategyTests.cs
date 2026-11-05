@@ -86,6 +86,45 @@ namespace RockTheGame.Tests
             Assert.AreEqual(4f, CreateLinear(period: 4f).Period, 0.0001f);
         }
 
+        [TestCase(0f)]
+        [TestCase(-1f)]
+        public void Linear_NonPositivePeriod_StaysAtStartPoint(float period)
+        {
+            var s = CreateLinear(period);
+
+            AssertVector(new Vector2(0f, 0f), s.GetPositionAtTime(1f));
+        }
+
+        // ---- TransformPingPongStrategy ----
+
+        private TransformPingPongStrategy CreateTransformPingPong(float period)
+        {
+            var s = Create<TransformPingPongStrategy>(Vector3.zero);
+            // Awake EditMode'da calismaz; onbellege alinan uclar elle ayarlanir.
+            Set(s, "_startPosition", new Vector2(0f, 0f));
+            Set(s, "_endPosition", new Vector2(10f, 0f));
+            Set(s, "_isInitialized", true);
+            Set(s, "period", period);
+            return s;
+        }
+
+        [Test]
+        public void TransformPingPong_ReachesEndAtHalfPeriod()
+        {
+            var s = CreateTransformPingPong(period: 4f);
+
+            AssertVector(new Vector2(10f, 0f), s.GetPositionAtTime(2f));
+        }
+
+        [TestCase(0f)]
+        [TestCase(-1f)]
+        public void TransformPingPong_NonPositivePeriod_StaysAtStartPosition(float period)
+        {
+            var s = CreateTransformPingPong(period);
+
+            AssertVector(new Vector2(0f, 0f), s.GetPositionAtTime(1f));
+        }
+
         // ---- CircularMovementStrategy ----
 
         private CircularMovementStrategy CreateCircular(bool clockwise, float initialAngle = 0f)

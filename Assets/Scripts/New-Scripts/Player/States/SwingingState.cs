@@ -299,7 +299,8 @@ namespace New_Scripts.Player.States
 
         private bool CheckSweepCollision(Vector2 playerPos, Vector2 movementDelta)
         {
-            RaycastHit2D hit = Physics2D.CircleCast(playerPos, _stats.SwingCollisionRadius, movementDelta.normalized,
+            // Oyuncunun kendi kutusuyla aranir: daire kosedeki temasi kaciriyordu, egimlerde karakter takili kaliyordu.
+            RaycastHit2D hit = Physics2D.BoxCast(playerPos, _context.PlayerCollider.bounds.size, 0f, movementDelta.normalized,
                 movementDelta.magnitude, _context.GroundLayerMask);
 
             if (hit.collider != null)

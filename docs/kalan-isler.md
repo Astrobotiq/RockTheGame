@@ -36,6 +36,8 @@ Bunların hiçbiri hata değil. Hepsi oyunun **hissini veya görünüşünü** d
 
 ### 1.3 Renk uzayı Gamma
 
+> **Karar (6 Kasım 2026): Gamma kalıyor.** Linear geçici olarak denendi ve geri alındı. 4 odada piksellerin ~%80'i değişti, ortalama parlaklık ~%6 düştü, renkler doygunlaştı, node arkasındaki halkalar pembeleşti ve CRT filtresinin kenar kararması neredeyse kayboldu. Oyunda hiç `Light2D` yok ve ana kamerada post-process kapalı, yani Linear'ın kazancı şu an küçük. 2D ışık eklenirse yeniden değerlendirilir.
+
 **Durum:** Proje Gamma renk uzayında. URP genelde Linear önerir.
 
 **Ne değişir:** **Oyundaki bütün renkler.** Linear'a geçmek daha doğru ışık ve blend matematiği verir, ama pixel art + kalıcı CRT filtresi düzeninde Gamma bilinçli bir tercih olabilir — kaynak sanat neyse ekranda o çıkar.
@@ -74,6 +76,14 @@ Bunların hiçbiri hata değil. Hepsi oyunun **hissini veya görünüşünü** d
 **Akşam:** Pazartesi (`#art`), 1.4'ten sonra.
 
 ### 1.6 Sıralama katmanı (Sorting Layer) yok
+
+> **Sorting Layer 1 yapıldı (6 Kasım 2026).** Sıra arkadan öne: `Background` → `Default` → `Platform` → `Player` → `VFX` → `UI`.
+> - `Background`: node arkasındaki `Circle-BG` daireleri (order -2).
+> - `Platform`: `RoomNew` zemin tilemap'i (0), diken tilemap'i (1), iki boru tilemap'i (2); hareketli, tek yönlü ve kırılan platformlar ile launch pad prefab'ları (0).
+> - `Player`: oyuncunun bütün renderer'ları ve nişan üçgenleri, order'ları değişmedi. `UI`: HUD `Canvas` ve `StaminaCanvas`. `VFX`: boş.
+> - `Default` bilerek platformların **arkasında**: ezici tehlikeler (`MovingDeath`), dönen ölümcül daireler ve asit zeminin içine gizleniyor. İlk denenen "Default platformun önünde" sırası bunları duvarların önüne çıkardı ve geri alındı.
+> - **Sorting Layer 2 (6 Kasım 2026):** `FX_AcidSplash`, `FX_AcidSplash 1`, `FX_AcidBubble`, `FX_AcidFog` → `VFX` (oyuncunun ve zeminin önünde). Gnome'lar, iskelet, duş borusu ve `Lying-Man` → `Background`. Tehlikeler, node'lar, kapılar, toplanabilirler ve eğitim yazıları bilerek `Default`'ta kaldı. Parçacıklar Edit Mode çekimlerinde oynamadığı için VFX değişikliği görselle doğrulanmadı.
+> - Önce/sonra karşılaştırması 6 odada (2, 5, 9, 16, 17, 21) yapıldı, değişen pikseller %0.4–2.5. Kalan farklar animasyonlu asit ve yazılar, dikenlerin zeminin önüne çıkması ve oda sınırları. Komşu odaların zemin tilemap'leri üst üste biniyor ve aynı katman/order'da berabere kalıyor; hangisinin üstte çizileceği önceden de belirsizdi.
 
 **Durum:** Projede tek bir sorting layer var: `Default`. Yani arka plan, platform, oyuncu, efekt ve arayüzün önde-arkada sırası tamamen "Order in Layer" sayıları ve Z pozisyonuyla yönetiliyor.
 
@@ -141,6 +151,8 @@ Denetim, `NewScene.unity`'den başlayıp referans zincirini takip etti ve 1453 a
 
 **Neden silinmedi:** Bu tarama yanılabilir. Koddan `Resources.Load` ile yüklenen, editor aracıyla kullanılan ya da ileride kullanmayı planladığın asset'ler "kullanılmıyor" görünür. 1082 dosyayı tarama sonucuna bakarak silmek fazla riskli.
 
+**Karar (6 Kasım 2026):** silinmeyecek. Asset'ler ileride işe yarayabilir; bu madde kapandı.
+
 **Nasıl ilerlenir:** Klasör klasör git. Bir klasörden örnek bir asset seç, Project penceresinde sağ tık → "Select Dependencies" ve sahne açıkken "Find References In Scene" ile kontrol et. Hiç sonuç yoksa o klasör gerçekten ölüdür. Silinenler git geçmişinde kalır.
 
 **Akşam:** Pazartesi (`#art`). Her akşam bir klasör; acele etme.
@@ -172,7 +184,6 @@ Hiçbiri henüz `TASKS.md`'de değil — oraya eklemeden önce sana sormam gerek
 | İş | Kategori | Gün | Kaç akşam |
 |---|---|---|---|
 | Fixed Timestep denemesi | `#code` | Cuma | 1 |
-| Kullanılmayan asset klasörlerini ele | `#art` | Pazartesi | klasör başına 1 |
 | Sorting Layer yapısı kur | `#art` | Pazartesi | 2–3 |
 | PPU standardı kararı | `#art` | Pazartesi | 1 (sonra uygulama ayrı) |
 | Pixel Perfect Camera | `#art` | Pazartesi | PPU'dan sonra |

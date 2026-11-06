@@ -14,8 +14,8 @@
 
 - [ ] **Player build hâlâ derleniyor mu?** `New-Scripts` artık ayrı bir assembly (`RockTheGame.Runtime`) ve `Room.cs` / `CameraOverrideSettings.cs` bir `EasyTextEffects.Editor...` namespace'ini import ediyor. Editor'de derleme temiz ama **gerçek bir Player build denenmedi**; runtime assembly'de editör-only bir referans build'de patlayabilir. Bir kez build al.
 - [ ] **Yeni oturumda Stop hook'u devrede mi?** `/hooks` ile `.claude/settings.json` içindeki `Stop` hook'unun yüklendiğini gör. Bilerek bozuk bir `.cs` ile bir kez dene.
-- [ ] **Oda 9 dikenleri** oyun içi kamera zoom'unda okunuyor mu? (Çekimler 2-5 kat uzaktandı.)
-- [ ] **Play Mode görselleri:** oyuncu + HUD'lu, oyun içi kameradan çekimler (`--source screen`). Karakter, NPC illüstrasyonları ve game feel hâlâ görsellerden değerlendirilemedi.
+- [x] **Oda 9 dikenleri** oyun içi kamerada okunuyor (6 Kasım 2026, ayrıntı `docs/systems/hazards.md`).
+- [x] **Play Mode görselleri** alındı (oda 5, 9, 16, 21 ve başlangıç). Not: `--source screen` gecikmeli kare veriyor ve Editor arka plandayken oyun duraklıyor; `Application.runInBackground = true` yapıp `--camera "Main Camera"` ile çek (HUD canvas'ı Screen Space Camera olduğu için kamerada görünür). Game feel hâlâ görsellerden değerlendirilemez.
 
 ## 3. Test kapsamını genişletmek için sana ihtiyacım var
 

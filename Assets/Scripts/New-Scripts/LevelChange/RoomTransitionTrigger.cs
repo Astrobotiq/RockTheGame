@@ -15,6 +15,9 @@ namespace New_Scripts.LevelChange
 
         private BoxCollider2D triggerCollider;
 
+        public Room TargetRoom => targetRoom;
+        public TransitionDirection Direction => direction;
+
         private void Awake()
         {
             triggerCollider = GetComponent<BoxCollider2D>();

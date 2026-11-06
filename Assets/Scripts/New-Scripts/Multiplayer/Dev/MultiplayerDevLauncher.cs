@@ -1,5 +1,8 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using New_Scripts.Multiplayer.Flags;
 using New_Scripts.Multiplayer.Ghost;
 using New_Scripts.Multiplayer.Messages;
 using New_Scripts.Multiplayer.Session;
@@ -28,6 +31,7 @@ namespace New_Scripts.Multiplayer.Dev
         private GhostView _ghost;
         private GhostInterpolator _interpolator = new GhostInterpolator();
         private bool _ghostVisible;
+        private readonly List<RaceFlag> _flags = new List<RaceFlag>();
 
         public RaceSession Session { get; private set; }
         public IRaceTransport Transport { get; private set; }
@@ -63,7 +67,11 @@ namespace New_Scripts.Multiplayer.Dev
             Transport.Connected += OnConnected;
             Transport.Disconnected += OnDisconnected;
             Transport.MessageReceived += OnMessage;
-            if (Application.isPlaying) SetUpGhost();
+            if (Application.isPlaying)
+            {
+                SetUpGhost();
+                SetUpFlags();
+            }
             Begin(role);
         }
 
@@ -99,6 +107,28 @@ namespace New_Scripts.Multiplayer.Dev
             _ghost = GhostView.CreateFrom(animation.GetComponent<SpriteRenderer>(), animation.GetComponent<Animator>(),
                 rope != null ? rope.GetComponent<LineRenderer>() : null, EyeSourceFrom(player));
             DontDestroyOnLoad(_ghost.gameObject);
+        }
+
+        /// <summary>Yarış modunda her RaceFlagPoint'e bir bayrak kurar; dokunulunca RaceSession'a bildirir.</summary>
+        private void SetUpFlags()
+        {
+            if (!RaceFlag.ShouldPlaceFlags(Session.Mode)) return;
+
+            var settings = RaceFlagSettingsSO.Load();
+            var points = FindObjectsByType<RaceFlagPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var point in points)
+            {
+                bool captured = Session.LocalCapturedRoomIds.Contains(point.RoomId);
+                _flags.Add(RaceFlag.Create(point, settings, captured, OnLocalFlagReached));
+            }
+            Debug.Log($"[MP] {_flags.Count} bayrak kuruldu");
+        }
+
+        private void OnLocalFlagReached(int roomId)
+        {
+            var messages = Session.OnLocalFlagReached(roomId);
+            Debug.Log($"[MP] Bayrak: oda {roomId}, sayaç {Session.LocalFlagCount}");
+            foreach (var message in messages) Send(message);
         }
 
         private static GhostEyeSource EyeSourceFrom(PlayerController player)
@@ -174,6 +204,9 @@ namespace New_Scripts.Multiplayer.Dev
             if (_broadcaster != null) Destroy(_broadcaster.gameObject);
             _ghost = null;
             _broadcaster = null;
+            foreach (var flag in _flags)
+                if (flag != null) Destroy(flag.gameObject);
+            _flags.Clear();
         }
 
         private void OnConnected()

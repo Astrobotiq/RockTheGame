@@ -7,10 +7,7 @@
 ## Active
 
 - [ ] **MP 0: Steam duman testi** #test - Facepunch.Steamworks 2.5.2 ayrı asmdef'te, `SteamClient.Init(480)`, iki bilgisayar arasında bağlantı; iki PC ve iki Steam hesabı gerekir (docs/systems/multiplayer.md §Aşamalar), due 2026-11-09
-- [ ] **MP 5: Bayrak işaretleri** #code - önce `RoomNew-22` ID'si 22; `RaceFlagPoint`, varsayılan yere yerleştirme komutu, `RaceFlag`, due 2026-12-04
-- [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle, due 2026-12-07
-- [ ] **MP 6: Ceza akışı** #code - önceki odaya ışınlama, kamera, checkpoint; PlayMode testi; `PenaltyHandler` hedefi uygularken `TryGetPenaltyTarget` ile okur, due 2026-12-11
-- [ ] **MP 7: Lobi sahnesi ve multiplayer HUD** #code - `MultiplayerLobby.unity`, mod seçimi, host/katıl, bayrak sayacı, rakibin odası, due 2026-12-18
+- [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle (sarı bayrak gizmo'su); oda 21 ve 22'ninkiler oda ortasında havada, mutlaka taşı, due 2026-12-07
 - [ ] **MP 8: Yarış kaydı, devam etme, kopma** #code - ayrı kayıt dosyası, `ProgressSync`, 30 sn bekleme, due 2026-12-25
 - [ ] **MP 9: Steam taşıyıcısı** #code - Facepunch.Steamworks, AppID 480, iki bilgisayar ve iki hesapla test, due 2027-01-01
 
@@ -52,6 +49,9 @@
 
 ## Done
 
+- [x] ~~**MP 7: Lobi sahnesi ve multiplayer HUD** #code~~ (2026-11-06) - altı hafta erken; `MultiplayerLobby.unity` (build index 1), host/katıl, modu host seçer, 3-2-1 geri sayım (`Ready`, protokol v2), HUD; `MultiplayerSession` başlatıcının yerine geçti. İki pencerede lobiden yarışa ve istemcinin 3 bayrağıyla host'a ceza ağ üzerinden doğrulandı (MP 5–6'nın iki pencere kontrolü de); başlama farkı editörde 0.4 sn. EditMode 164/164, PlayMode 41/41
+- [x] ~~**MP 6: Ceza akışı** #code~~ (2026-11-06) - beş hafta erken; `PenaltyHandler` respawn dizisiyle önceki odanın checkpoint'ine götürüyor, kamera ve oda geçiyor, sonraki ölüm orada doğuyor; oda 22 → 11; respawn/geçiş/ölüm sırasında bekliyor. EditMode 151/151, PlayMode 41/41 (5 yeni ceza testi); Play'de tek pencerede doğrulandı, iki pencerede ağ üzerinden denenmedi
+- [x] ~~**MP 5: Bayrak işaretleri** #code~~ (2026-11-06) - dört hafta erken; `RoomNew-22` ID 22, 22 odaya `RaceFlagPoint` kondu (menü komutu, yatay çıkışta zemine iner), yarış modunda dokununca kalkan bayrak; tek pencerede gerçek trigger'la doğrulandı (sayaç 1, 2, 0), iki pencerede denenmedi; EditMode 144/144, PlayMode 36/36
 - [x] ~~**MP 4: Hayalet** #code~~ (2026-11-06) - üç hafta erken; iki pencerede rakip yarı saydam hayalet olarak görünüyor, takip ediyor, uzak odada gizleniyor (ajan iki pencereyi CLI ile sürerek doğruladı); EditMode 120/120, PlayMode 36/36. Gamepad iki pencerede hâlâ denenmedi
 - [x] ~~**MP 3: Unity Transport taşıyıcısı** #code~~ (2026-11-06) - iki hafta erken; UTP adaptörü (gerçek localhost testleriyle) ve editör için geliştirici başlatıcısı; EditMode 100/100, PlayMode 36/36; MP 1–3 bir akşamda bitti, NGO'ya geçiş koşulu oluşmadı. Gamepad'in iki pencerede davranışı denenmedi
 - [x] ~~**MP 2: Yarış kuralları (`RaceSession`)** #code~~ (2026-11-06) - planlanandan bir hafta erken; gözden geçirmeden sonra ceza hedefi uygulama anında hesaplanıyor, ceza hep gönderiliyor, rakip sayacı 3'te sıfırlanıyor; EditMode 84/84

@@ -212,7 +212,7 @@ Bunlar için Play Mode'da oyun içi kameradan (oyuncu ve HUD dahil, `source=scre
 
 ## 9. Çok oyunculu
 
-> Kararlar 6 Kasım 2026'da verildi. Ayrıntılı tasarım: [`systems/multiplayer.md`](systems/multiplayer.md). Altyapının ilk aşaması (MP 1) kodda; oynanabilir değil.
+> Kararlar 6 Kasım 2026'da verildi. Ayrıntılı tasarım: [`systems/multiplayer.md`](systems/multiplayer.md). MP 1–7 kodda: editörde iki pencerede lobiden yarış oynanabiliyor (hayalet, bayrak, ceza, geri sayım, HUD); kayıt ve Steam yok.
 
 **Tek kişilik oyun bundan etkilenmez.** Çok oyunculu, ayrı bir girişten (lobi) açılan ayrı bir deneyimdir; ikisi aynı projede yaşar.
 

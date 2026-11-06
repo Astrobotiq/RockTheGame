@@ -3,6 +3,7 @@
     "rootNamespace": "RockTheGame.Tests.PlayMode",
     "references": [
         "RockTheGame.Runtime",
+        "RockTheGame.Multiplayer",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

@@ -1,6 +1,6 @@
 # Çok oyunculu
 
-*GDD §9. Durum: **tasarım onaylandı; MP 1–4 kodda** (mesajlar, `RaceSession` kuralları, bellek içi ve Unity Transport taşıyıcıları, editör başlatıcısı, rakip hayaleti). Bayrak ve ceza henüz yok (MP 5–6). Son kod doğrulaması: 2026-11-06.*
+*GDD §9. Durum: **tasarım onaylandı; MP 1–7 kodda** (mesajlar, `RaceSession` kuralları, bellek içi ve Unity Transport taşıyıcıları, editör başlatıcısı, rakip hayaleti, bayrak işaretleri ve bayraklar, ceza, lobi, geri sayım ve HUD). Kayıt, devam etme ve kopma sonrası (MP 8) ile Steam (MP 9) yok. Son kod doğrulaması: 2026-11-06.*
 
 ## Tasarım niyeti
 
@@ -70,24 +70,35 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - `Multiplayer/Messages/RaceMessages.cs`, `RaceMessageCodec.cs` — 7 mesaj; `Snapshot` 44 bayt (iki kanca noktası doluyken)
 - `Multiplayer/Transport/IRaceTransport.cs`, `InMemoryTransport.cs`
 - `Multiplayer/Transport/UnityTransportAdapter.cs` — `com.unity.transport` 2.7.4; `UnityTransportSettings.Default`: port 7777, kopma 5000 ms, heartbeat 500 ms. Her pakete 1 baytlık tür öneki ekler (veri / "kabul edildin"); istemci host'un kabulünü görene kadar `Connecting` kalır, bu sırada kapanırsa `Rejected` olur (host dolu).
-- `Multiplayer/Dev/MultiplayerDevSettings.cs`, `MultiplayerDevLauncher.cs` — yalnız editör (`#if UNITY_EDITOR`), MP 7'deki lobiye kadar geçici
+- `Multiplayer/MultiplayerSession.cs` — `[MP Session]`, `DontDestroyOnLoad`; taşıyıcı + `RaceLobbyFlow`. El sıkışma bitince `NewScene`'i `LoadSceneAsync` ile yükler (başlatıcıda sahne zaten yüklü), `sceneLoaded`'da (Start'tan önce) yayıncı, hayalet, ceza, bayraklar ve HUD'u kurar, oyuncuyu geri sayım boyunca `OnStartRespawn` ile dondurur, "Başla"da `OnEndRespawn`
+- `Multiplayer/Session/RaceLobbyFlow.cs` — saf: `Hello` (sürüm uyuşmazsa `Failed`, modu host belirler, istemcinin `RaceSession`'ı host'un Hello'sundan) → `ProgressSync` + sahne yükle → `Ready` → iki taraf hazırsa 3 sn geri sayım → `Racing`
+- `Multiplayer/Hud/` — `RaceHud` (`[MP HUD]`, overlay canvas, sortingOrder 100: sağ üstte "Bayrak N/3" ve "Rakip: Oda X · Bayrak N/3", üst ortada bağlantı uyarısı, ortada 3-2-1 / BAŞLA!), `RaceHudText` (saf), `MultiplayerUISettingsSO` (`Resources/Multiplayer/MultiplayerUISettings`, Tiny5 font)
+- `Multiplayer/Lobby/` — `MultiplayerLobbyUI` (Mod Yarış↔Birlikte, Host ol, adres `127.0.0.1`, Katıl, Vazgeç, durum satırı; gamepad seçimi kapanan düğmeden kurtarılır), `MultiplayerLobbyBuilder` (menü **Rock The Game → Multiplayer → Lobi sahnesini kur**; `Assets/Scenes/MultiplayerLobby.unity`, build listesinde NewScene'den sonra)
+- `Multiplayer/Dev/MultiplayerDevSettings.cs`, `MultiplayerDevLauncher.cs` — yalnız editör (`#if UNITY_EDITOR`); `NewScene`'de doğrudan Play'e basınca `MultiplayerSession`'ı "sahne yüklü" kipinde kurar. Lobiden girildiyse devreye girmez
 - `Multiplayer/Ghost/` — `GhostTiming` (20 Hz, 0.1 sn gecikme; ışınlanma eşiği hızla ölçekli: 100 b/sn × geçen süre + 1, en hızlı hareket sapan 65 b/sn; sıra numarası gönderenin gerçek saatinden), `SnapshotBuilder`, `GhostInterpolator`, `GhostVisibility` (saf C#); `GhostView` (görseli çalışırken oyuncunun `Animation` sprite/animator'ından, ipinden ve gözlerinden kurar; prefab yok, sahne kökünde `[MP Ghost]`; bütün sprite'lar 10 sıra geride, kendi içindeki sıra korunur), `GhostEyes` (yön çevirme, `EyePosition`'a göre dikey kayma, hıza göre göz bebeği; göz kırpma ve kollar yok), `LocalPlayerBroadcaster` (`[MP Broadcaster]`, oda girişlerini `Room.OnRoomEntered`'dan alır)
-- `Multiplayer/Session/RaceRules.cs` (`FlagsPerPenalty = 3`, `FirstRoomId = 1`), `RaceSession.cs` — ağ bilmez; yerel olaylar gidecek mesajları döndürür, `Receive` gelenleri işler
-- Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`, `RaceSessionLocalTests`, `RaceSessionRemoteTests`, `UnityTransportAdapterTests` (gerçek localhost bağlantısı), `MultiplayerDevLauncherTests`, `GhostLogicTests`, `GhostViewTests`)
+- `Multiplayer/Flags/` — `RaceFlagPoint` (işaret; Room'un doğrudan çocuğu, editörde sarı bayrak gizmo'su ve "Bayrak N" etiketi), `RaceFlagPlacement` (varsayılan yer: trigger'ın giriş tarafında 1.5 birim geri; yatay çıkışta ve merkezde aşağıdaki 6 birim içinde Ground/OneWay zemine iner), `RaceFlagPlacer` (menü **Rock The Game → Multiplayer → Bayrak işaretlerini yerleştir**, yalnız eksik odalar, Undo'lu), `RaceFlag` (`[MP Flag]`, Pixel Adventure `Flag.controller`: direk → dokununca bayrak kalkar; trigger 1.5×3 birim, tabanı işarette), `RaceFlagSettingsSO` (`Assets/Resources/Multiplayer/RaceFlagSettings.asset`). Runtime'a ekleme: `RoomTransitionTrigger.TargetRoom` / `.Direction` okuma özellikleri
+- `Multiplayer/Penalty/PenaltyHandler.cs` — `[MP Penalty]`; `RespawnManager` dizisinin aynısı (iris kapanır → `LevelResetManager.ResetAll` → hedef odanın `InitialCheckpoint`'i → checkpoint etkinleşir → kamera `SnapToRoomBounds` → `RoomManager.TransitionToRoom` → 0.5 sn → iris açılır). Oyuncu kapalı, `IsPaused` ya da `PlayerTransitionState`'teyken bekler; cezalar sırayla. Runtime'a ekleme: `PlayerController.IsPaused`. Multiplayer asmdef'e `UniTask` referansı eklendi
+- `Multiplayer/Session/RaceRules.cs` (`FlagsPerPenalty = 3`, `FirstRoomId = 1`, `PreviousRoomId`: `RoomId − 1` komşuysa o, değilse komşulardan küçük en büyük; yan oda 22 → 11), `RaceSession.cs` — ağ bilmez; yerel olaylar gidecek mesajları döndürür, `Receive` gelenleri işler
+- Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`, `RaceSessionLocalTests`, `RaceSessionRemoteTests`, `UnityTransportAdapterTests` (gerçek localhost bağlantısı), `MultiplayerDevLauncherTests`, `GhostLogicTests`, `GhostViewTests`, `RaceFlagPlacementTests`, `RaceFlagTests`, `PenaltyRulesTests`); PlayMode `PenaltyFlowTests` (gerçek `NewScene`: 3 → 2, 22 → 11, oda 1'de işlemez, ölüyken bekler, ceza sonrası ölüm hedef checkpoint'te doğar)
 
 ### Editörde nasıl test edilir
+
+**Lobiden (asıl yol, 6 Kasım'da iki pencerede doğrulandı):** `MultiplayerLobby.unity`'yi aç, Player 2'yi etkinleştir, Play. Ana pencerede **Host ol**, Player 2'de **Katıl**. İki taraf `NewScene`'i yükler, HUD'da 3-2-1 görünür, oyuncular donuktur; **BAŞLA!**'da serbest kalırlar. Player 2 kendi son açtığı sahneyle başlayabilir (6 Kasım'da `NewScene` açtı); o zaman Player 2'de de lobiyi aç ya da geliştirici başlatıcısını kapat. İki tarafın başlama anı editörde ~0.4 sn farklı ölçüldü: arka plandaki ana editör `Ready`'yi geç işliyor. Gerçek ağda fark tek yönlü gecikme kadar olur.
+
+**Doğrudan `NewScene`'den (geliştirici başlatıcısı):**
 
 1. Menü **Rock The Game → Multiplayer → Geliştirici başlatıcısı**'nı aç (işaretli olur; Play Mode dışında değiştirilebilir). Kapalıyken tek kişilik oyun aynen çalışır, sahnede ağ nesnesi oluşmaz.
 2. **Window → Multiplayer → Multiplayer Play Mode**'da bir sanal oyuncu (Player 2) etkinleştir. **İlk açılışta Player 2 penceresinin sahneyi yüklemesini bekle** (Game görünümünde oda görünene kadar); erken Play'e basılırsa Player 2 boş bir sahneyle başlar (6 Kasım'da görüldü, Multiplayer Play Mode'un ilk açılış zamanlaması).
 3. Play'e bas. Başlatıcı Play süresince `Application.runInBackground`'u açar; yoksa odakta olmayan pencere durur ve 5 sn'de bağlantı kopar (PlayerSettings değişmez). Ana editör host olur (`[MP] Host dinliyor :7777`), sanal oyuncu `127.0.0.1`'e bağlanır; istemci host'tan önce açılırsa saniyede bir yeniden dener.
-4. Console'da `[MP] Bağlandı`, `→ Hello`, `← ProgressSync` satırlarını gör.
+4. Console'da `[MP] Bağlandı`, `→ Hello`, `← ProgressSync` satırlarını gör. Yarış modunda `[MP] 22 bayrak kuruldu`.
 5. Her pencerede rakibin karakteri açık mavi, yarı saydam bir hayalet olarak, kendi karakterinin arkasında görünür; ~0.1 sn geriden takip eder, animasyonlarını ve kanca iplerini oynatır. Rakip senin odanda ya da komşu odada değilse gizlenir. Rakip ölünce hayaleti ölüm noktasında kaybolur (snapshot'ın `IsHidden` biti, oyuncu nesnesi kapalıyken gider) ve respawn noktasında kaydırmadan yeniden belirir; `RespawnManager` oyuncuyu iris kapanınca açtığı için hayalet, ölen oyuncunun kendi ekranındaki iris açılmadan biraz önce görünür.
+6. Yarış modunda her odada bir direk durur; dokununca bayrak kalkar, Console'da `[MP] Bayrak: oda N, sayaç K` ve `→ FlagCaptured` görünür, karşı pencerede `← FlagCaptured`. 3. bayrakta sayaç 0'a döner ve `→ Penalty` gider; karşı pencerede iris kapanır, rakip bir önceki odanın başlangıcında açılır (`[MP] Ceza: oda X → Y`). Birlikte modunda bayrak yok.
 
 Ajan da iki pencereli akışı CLI ile sürebiliyor: Player 2 açıkken `unity` CLI varsayılan olarak kopyaya bağlanır; ana editör için `UNITY_PROJECT_PATH` proje köküne, kopya için `Library/VP/<id>` yoluna ayarlanır.
 
 Rol elle seçilmez: Multiplayer Play Mode'un `CurrentPlayer.IsMainEditor` değeri belirler. Başlatıcı `NewScene`'e konmaz, `RuntimeInitializeOnLoadMethod` ile kökte `[MP Dev Launcher]` nesnesini oluşturur.
 
-**Gamepad:** iki pencerenin aynı gamepad'i okuyup okumadığı henüz denenmedi (sanal oyuncu penceresini ajan açamıyor). İlk elle denemede bakılacak; gerekirse MP 4'te ele alınır.
+**Gamepad:** iki pencerenin aynı gamepad'i okuyup okumadığı henüz denenmedi. Klavyeyle (6 Kasım) odaktaki pencere kontrol ediliyor.
 
 ## Mesajlar
 
@@ -102,6 +113,7 @@ Rol elle seçilmez: Multiplayer Play Mode'un `CurrentPlayer.IsMainEditor` değer
 | `Penalty` | 3. bayrakta | Güvenilir | Rakibin gideceği oda |
 | `ProgressSync` | Bağlanınca / yeniden bağlanınca | Güvenilir | Oda, sayaç, alınmış bayraklar, süre |
 | `Finished` | Son oda bitince | Güvenilir | Süre |
+| `Ready` | Sahne yüklenince | Güvenilir | Yok (protokol v2, MP 7); iki taraf görünce 3 sn geri sayım |
 
 Animasyon için `PlayerAnimationController`'ın animator'a yolladığı 8 değer yeterli: `Speed`, `IsGrounded`, `VerticalVelocity`, `IsSwinging`, `IsDashing`, `IsWallClimbing`, `IsWallSliding`, `DashTrigger`. **`DashTrigger` bir bool olarak değil, her dash'te bir artan `DashCount` sayacı olarak gider:** güvenilmez kanalda tek bir paket kaybolsa da alıcı sayacın değiştiğini görüp dash animasyonunu oynatır.
 
@@ -113,9 +125,9 @@ Hayalet gelen konumları göndericinin sıra numarasıyla sıralar ve ~100 ms ge
 
 **Oda takibi.** `Room.OnRoomEntered` olayı dinlenir. Bu olayın her oda girişinde çağrıldığı uygulamada doğrulanmalı; çağrılmıyorsa `RoomManager`'a ek bir olay konur.
 
-**Oda sırası.** `Room.RoomId` sıra numarası olarak kullanılır; yeni alan yok. 6 Kasım'da 1–21 doğru, `RoomNew-22`'nin ID'si 0 (22 yapılacak). Eski `RoomNew-MayIncluded` sahneden silindi.
+**Oda sırası.** `Room.RoomId` sıra numarası olarak kullanılır; yeni alan yok. 1–21 ana yol; `RoomNew-22` (ID 22, 6 Kasım'da 0'dan düzeltildi) oda 11'den sağa açılan, tek çıkışı 11'e dönen bir **yan oda**. Kullanıcı kararıyla (6 Kasım) onda da bayrak var. Cezada öncesi 11 sayılır (`RaceRules.PreviousRoomId`, oda grafiğinden). Eski `RoomNew-MayIncluded` sahneden silindi.
 
-**Bayrak yerleri.** Bir editör menü komutu, `RaceFlagPoint`'i olmayan her odaya onu varsayılan yere koyar: bir sonraki odaya (`RoomId + 1`) giden `RoomTransitionTrigger`'ın hemen önü. Geliştirici sonra sahnede sürükleyip istediği yere taşır. Komut tekrar çalıştırıldığında yalnızca eksik odaları doldurur, taşınmış işaretlere dokunmaz.
+**Bayrak yerleri.** Bir editör menü komutu, `RaceFlagPoint`'i olmayan her odaya onu varsayılan yere koyar: bir sonraki odaya (`RoomId + 1`) giden `RoomTransitionTrigger`'ın hemen önü. Geliştirici sonra sahnede sürükleyip istediği yere taşır. Komut tekrar çalıştırıldığında yalnızca eksik odaları doldurur, taşınmış işaretlere dokunmaz. Böyle bir geçişi olmayan odalarda (21 son oda, 22 yan oda) işaret oda merkezine konur ve havada kalabilir; elle taşınmalı. İşaretler 6 Kasım'da 22 odaya kondu (`NewScene`).
 
 **Hayalet görünürlüğü.** Rakibin odası senin odan ya da komşu odalarından biriyse görünür, değilse gizlenir. Yarı saydam ve farklı renk; `Player` katmanında, gerçek oyuncunun arkasında.
 

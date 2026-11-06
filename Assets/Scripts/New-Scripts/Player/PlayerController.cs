@@ -103,6 +103,8 @@ namespace New_Scripts.Player
 
         // --- Hit Stop & Frame Pause ---
         private bool _isPaused;
+        /// <summary>Respawn ya da hitstop sırasında true; oyuncu girdi ve fizik işlemez.</summary>
+        public bool IsPaused => _isPaused;
         private Vector2 _velocityCache;
 
         // --- Events ---

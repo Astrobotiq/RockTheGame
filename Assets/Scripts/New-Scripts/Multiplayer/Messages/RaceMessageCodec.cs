@@ -65,6 +65,8 @@ namespace New_Scripts.Multiplayer.Messages
                 case FinishedMessage finished:
                     writer.Write(finished.ElapsedSeconds);
                     break;
+                case ReadyMessage _:
+                    break;
                 default:
                     throw new ArgumentException($"Bilinmeyen mesaj tipi: {message.GetType().Name}", nameof(message));
             }
@@ -125,6 +127,9 @@ namespace New_Scripts.Multiplayer.Messages
                     }
                     case RaceMessageType.Finished:
                         message = new FinishedMessage { ElapsedSeconds = reader.ReadSingle() };
+                        break;
+                    case RaceMessageType.Ready:
+                        message = new ReadyMessage();
                         break;
                     default:
                         return false;

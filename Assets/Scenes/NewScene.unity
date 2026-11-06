@@ -119,6 +119,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &7665298
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7665299}
+  - component: {fileID: 7665300}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7665299
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7665298}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14.359985, y: -7.0000153, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4154893024604077476}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7665300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7665298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1 &11099106
 GameObject:
   m_ObjectHideFlags: 0
@@ -425,6 +469,94 @@ ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 6440509146467898513, guid: b6e207e1ec45a6c48af2203ed75e8f35, type: 3}
   m_PrefabInstance: {fileID: 70351641}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &74392067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 74392068}
+  - component: {fileID: 74392069}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &74392068
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74392067}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4, y: 28.32, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 522054438646206104}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &74392069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74392067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
+--- !u!1 &109243789
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 109243790}
+  - component: {fileID: 109243791}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &109243790
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109243789}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.8451538, y: 14.355835, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2094685716645012202}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &109243791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109243789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1 &164387390
 GameObject:
   m_ObjectHideFlags: 0
@@ -573,6 +705,50 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4c014b44c4949b4438ebc0afec807a00, type: 3}
+--- !u!1 &215527697
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 215527698}
+  - component: {fileID: 215527699}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &215527698
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215527697}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 117.48001, y: 6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5420602742644437617}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &215527699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215527697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!213 &223665390
 Sprite:
   m_ObjectHideFlags: 0
@@ -874,6 +1050,50 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &293435235
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 293435236}
+  - component: {fileID: 293435237}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &293435236
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293435235}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 22.450012, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5959706223778774401}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &293435237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293435235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1 &297015916
 GameObject:
   m_ObjectHideFlags: 0
@@ -1043,6 +1263,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 309543638}
   m_CullTransparentMesh: 1
+--- !u!1 &343371621
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 343371622}
+  - component: {fileID: 343371623}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &343371622
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343371621}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -20.519989, y: -10.669998, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5796138431732712101}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &343371623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343371621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1 &356365581
 GameObject:
   m_ObjectHideFlags: 0
@@ -1122,6 +1386,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &378963110
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 378963111}
+  - component: {fileID: 378963112}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &378963111
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 378963110}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 31.5, y: -11.999999, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6306062706622852315}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &378963112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 378963110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1 &406825548
 GameObject:
   m_ObjectHideFlags: 0
@@ -1254,6 +1562,50 @@ MonoBehaviour:
   punchDuration: 0.3
   punchScale: {x: 0.2, y: 0.2, z: 0}
   punchVibrato: 10
+--- !u!1 &448692483
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 448692484}
+  - component: {fileID: 448692485}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &448692484
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448692483}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 72.81, y: 9.999985, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2671760368305329226}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &448692485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448692483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &452758650 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6421924258773432537, guid: 4e33d4b07f5d48b4c975ebc70a2ca3b9, type: 3}
@@ -1472,6 +1824,50 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
+--- !u!1 &502212184
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 502212185}
+  - component: {fileID: 502212186}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &502212185
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 502212184}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -70.58002, y: -7, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1641139098745691780}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &502212186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 502212184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &509642262 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8456735380957913428, guid: d8bb0694c9c444942956973fd3754d1b, type: 3}
@@ -1499,6 +1895,50 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7443542621018969283, guid: 4c014b44c4949b4438ebc0afec807a00, type: 3}
   m_PrefabInstance: {fileID: 2095928818}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &537277381
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 537277382}
+  - component: {fileID: 537277383}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &537277382
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537277381}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.3331299, y: 6.015793, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4673813191107391891}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &537277383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537277381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &544445996 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8480980335992524463, guid: 3d7fc05ca821952489eabad4813e6262, type: 3}
@@ -1521,6 +1961,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 854d4151882c4be588d1b804c9802f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.Checkpoint
+--- !u!1 &596153466
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 596153467}
+  - component: {fileID: 596153468}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &596153467
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 596153466}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.4299927, y: -3.000015, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 232033790062063420}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &596153468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 596153466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &617745101 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7666808314225701190, guid: 43dba26f2a17bdc49a782670373b46a0, type: 3}
@@ -2934,6 +3418,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 854d4151882c4be588d1b804c9802f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.Checkpoint
+--- !u!1 &1314299101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1314299102}
+  - component: {fileID: 1314299103}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1314299102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1314299101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 15.380005, y: 0.99998474, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7993224141891117170}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1314299103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1314299101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &1317876392 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6107433641216312037, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
@@ -2967,6 +3495,94 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb233f1ab8f49f2ab42f443dc1016e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.LevelChange.Room
+--- !u!1 &1353451963
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1353451964}
+  - component: {fileID: 1353451965}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1353451964
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1353451963}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -35.589966, y: -13.000015, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1254596164788112542}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1353451965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1353451963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
+--- !u!1 &1366345161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1366345162}
+  - component: {fileID: 1366345163}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1366345162
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366345161}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9.5099945, y: 29.379997, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5425555020729779882}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1366345163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366345161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1001 &1373972054
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3035,6 +3651,94 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb233f1ab8f49f2ab42f443dc1016e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.LevelChange.Room
+--- !u!1 &1425427661
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1425427662}
+  - component: {fileID: 1425427663}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1425427662
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425427661}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -51.48999, y: 32.630005, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8335652825027216840}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1425427663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425427661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
+--- !u!1 &1453387427
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1453387428}
+  - component: {fileID: 1453387429}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1453387428
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453387427}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -11.470001, y: -6.090004, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4940560348508356799}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1453387429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453387427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &1455349851 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3165683841975889104, guid: 5cdf52baccc2e1543b1878210444df84, type: 3}
@@ -3559,6 +4263,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 854d4151882c4be588d1b804c9802f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.Checkpoint
+--- !u!1 &1796526925
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1796526926}
+  - component: {fileID: 1796526927}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1796526926
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796526925}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -18.5, y: -17.410004, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2761574552817994880}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1796526927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796526925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &1824486488 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 703632576592912835, guid: f78e41f49d0647147b1c387f492ff400, type: 3}
@@ -3667,6 +4415,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1880445165}
   m_CullTransparentMesh: 1
+--- !u!1 &1916604654
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1916604655}
+  - component: {fileID: 1916604656}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1916604655
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916604654}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 153.5, y: 17.489998, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8313414091316695900}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1916604656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916604654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &1931039137 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4347872123324180813, guid: d8bb0694c9c444942956973fd3754d1b, type: 3}
@@ -3689,6 +4481,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b1d088f8234697b95bfa8791cac9ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomTransitionCoordinator
+--- !u!1 &1946243919
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1946243920}
+  - component: {fileID: 1946243921}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1946243920
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946243919}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 26.449997, y: -4.0000105, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8668321395236481612}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1946243921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946243919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1001 &1983355725
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3938,6 +4774,50 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7443542621018969283, guid: 4c014b44c4949b4438ebc0afec807a00, type: 3}
   m_PrefabInstance: {fileID: 1373972054}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2093491901
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2093491902}
+  - component: {fileID: 2093491903}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2093491902
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093491901}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -10.080017, y: 41.000015, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5679021950133497594}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2093491903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093491901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &2093705967 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5358934804723171434, guid: dc4509c43382a6d44bf33eb436a4f16d, type: 3}
@@ -4006,6 +4886,50 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4c014b44c4949b4438ebc0afec807a00, type: 3}
+--- !u!1 &2114430333
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2114430334}
+  - component: {fileID: 2114430335}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2114430334
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114430333}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 20.5, y: 16, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5783272087119982745}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2114430335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114430333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!114 &2115839208 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7315430292290315473, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
@@ -4017,6 +4941,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 854d4151882c4be588d1b804c9802f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.Checkpoint
+--- !u!1 &2119402693
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2119402694}
+  - component: {fileID: 2119402695}
+  m_Layer: 0
+  m_Name: RaceFlagPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2119402694
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119402693}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 43.45999, y: -7.0000076, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2579596212631688937}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2119402695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119402693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
 --- !u!1 &2138907603
 GameObject:
   m_ObjectHideFlags: 0
@@ -17805,7 +18773,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3768089602743421948, guid: dc4509c43382a6d44bf33eb436a4f16d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 596153467}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5455161544936288598, guid: dc4509c43382a6d44bf33eb436a4f16d, type: 3}
       insertIndex: -1
@@ -17817,6 +18788,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: dc4509c43382a6d44bf33eb436a4f16d, type: 3}
+--- !u!4 &232033790062063420 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3768089602743421948, guid: dc4509c43382a6d44bf33eb436a4f16d, type: 3}
+  m_PrefabInstance: {fileID: 232033790062063419}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &338235378360284002
 Transform:
   m_ObjectHideFlags: 0
@@ -19279,7 +20255,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1553372648787212658, guid: 13010f734227c4a44846332973b33a0b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 74392068}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3046685655035184399, guid: 13010f734227c4a44846332973b33a0b, type: 3}
       insertIndex: -1
@@ -19300,6 +20279,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 13010f734227c4a44846332973b33a0b, type: 3}
+--- !u!4 &522054438646206104 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1553372648787212658, guid: 13010f734227c4a44846332973b33a0b, type: 3}
+  m_PrefabInstance: {fileID: 522054438646206103}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &941071129482998493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27630,9 +28614,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7251127368022726210, guid: de38772747c53204a986b5890e7efd5c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1353451964}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de38772747c53204a986b5890e7efd5c, type: 3}
+--- !u!4 &1254596164788112542 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7251127368022726210, guid: de38772747c53204a986b5890e7efd5c, type: 3}
+  m_PrefabInstance: {fileID: 1254596164788112541}
+  m_PrefabAsset: {fileID: 0}
 --- !u!61 &1319197775289618951
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -59723,9 +60715,17 @@ PrefabInstance:
       objectReference: {fileID: 1478568968}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4804407639494839584, guid: 3d7fc05ca821952489eabad4813e6262, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 502212185}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3d7fc05ca821952489eabad4813e6262, type: 3}
+--- !u!4 &1641139098745691780 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4804407639494839584, guid: 3d7fc05ca821952489eabad4813e6262, type: 3}
+  m_PrefabInstance: {fileID: 1641139098745691779}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1993756419392081631
 GameObject:
   m_ObjectHideFlags: 0
@@ -62734,7 +63734,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6521018056213060359, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 109243790}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3469631683581066345, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
       insertIndex: -1
@@ -62746,6 +63749,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
+--- !u!4 &2094685716645012202 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6521018056213060359, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
+  m_PrefabInstance: {fileID: 2094685716645012201}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2120646058331455151
 Transform:
   m_ObjectHideFlags: 0
@@ -65053,7 +66061,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 594843114830587284, guid: f395424b0e64c534c85f2a644b0435a6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2119402694}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8628650232504213310, guid: f395424b0e64c534c85f2a644b0435a6, type: 3}
       insertIndex: -1
@@ -65074,6 +66085,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: f395424b0e64c534c85f2a644b0435a6, type: 3}
+--- !u!4 &2579596212631688937 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 594843114830587284, guid: f395424b0e64c534c85f2a644b0435a6, type: 3}
+  m_PrefabInstance: {fileID: 2579596212631688936}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2671760368305329225
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -79332,6 +80348,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5952475521122281310, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
       insertIndex: 1
       addedObject: {fileID: 976697629}
+    - targetCorrespondingSourceObject: {fileID: 5952475521122281310, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 448692484}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
 --- !u!4 &2671760368305329226 stripped
@@ -79529,9 +80548,17 @@ PrefabInstance:
       objectReference: {fileID: 1824486488}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6195536808499439430, guid: 5cdf52baccc2e1543b1878210444df84, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1796526926}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5cdf52baccc2e1543b1878210444df84, type: 3}
+--- !u!4 &2761574552817994880 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6195536808499439430, guid: 5cdf52baccc2e1543b1878210444df84, type: 3}
+  m_PrefabInstance: {fileID: 2761574552817994879}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &3047689321135340908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95195,9 +96222,17 @@ PrefabInstance:
       objectReference: {fileID: 1319771430}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6173334609154090527, guid: f8bfb938ad1f1e44392318de34d783bf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7665299}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f8bfb938ad1f1e44392318de34d783bf, type: 3}
+--- !u!4 &4154893024604077476 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6173334609154090527, guid: f8bfb938ad1f1e44392318de34d783bf, type: 3}
+  m_PrefabInstance: {fileID: 4154893024604077475}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4187811844742992930
 GameObject:
   m_ObjectHideFlags: 0
@@ -95360,6 +96395,10 @@ PrefabInstance:
       value: RoomNew-22
       objectReference: {fileID: 0}
     - target: {fileID: 8497046367852500699, guid: 9f86a5ee9f20ec34fa1d7f66aec6d8b5, type: 3}
+      propertyPath: roomId
+      value: 22
+      objectReference: {fileID: 0}
+    - target: {fileID: 8497046367852500699, guid: 9f86a5ee9f20ec34fa1d7f66aec6d8b5, type: 3}
       propertyPath: neighborRooms.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -95369,9 +96408,17 @@ PrefabInstance:
       objectReference: {fileID: 1455349851}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 864587699544317261, guid: 9f86a5ee9f20ec34fa1d7f66aec6d8b5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 537277382}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f86a5ee9f20ec34fa1d7f66aec6d8b5, type: 3}
+--- !u!4 &4673813191107391891 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 864587699544317261, guid: 9f86a5ee9f20ec34fa1d7f66aec6d8b5, type: 3}
+  m_PrefabInstance: {fileID: 4673813191107391890}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &4673813191107391892 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4386910708628577986, guid: 9f86a5ee9f20ec34fa1d7f66aec6d8b5, type: 3}
@@ -99074,9 +100121,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 2813467044085412687, guid: 4e33d4b07f5d48b4c975ebc70a2ca3b9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1453387428}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4e33d4b07f5d48b4c975ebc70a2ca3b9, type: 3}
+--- !u!4 &4940560348508356799 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2813467044085412687, guid: 4e33d4b07f5d48b4c975ebc70a2ca3b9, type: 3}
+  m_PrefabInstance: {fileID: 4940560348508356798}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5018044740481452007
 Transform:
   m_ObjectHideFlags: 0
@@ -105914,11 +106969,19 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4529811970913575500, guid: f78e41f49d0647147b1c387f492ff400, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 215527698}
     - targetCorrespondingSourceObject: {fileID: 8492228503706700219, guid: f78e41f49d0647147b1c387f492ff400, type: 3}
       insertIndex: 1
       addedObject: {fileID: 1983355726}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f78e41f49d0647147b1c387f492ff400, type: 3}
+--- !u!4 &5420602742644437617 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4529811970913575500, guid: f78e41f49d0647147b1c387f492ff400, type: 3}
+  m_PrefabInstance: {fileID: 5420602742644437616}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5425555020729779881
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -106345,7 +107408,10 @@ PrefabInstance:
       objectReference: {fileID: 823269178}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 5635030619346344204, guid: 6e65d73ba0b7ce44f9be6170ff04d84d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1366345162}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3588796590829577126, guid: 6e65d73ba0b7ce44f9be6170ff04d84d, type: 3}
       insertIndex: -1
@@ -106363,6 +107429,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 6e65d73ba0b7ce44f9be6170ff04d84d, type: 3}
+--- !u!4 &5425555020729779882 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5635030619346344204, guid: 6e65d73ba0b7ce44f9be6170ff04d84d, type: 3}
+  m_PrefabInstance: {fileID: 5425555020729779881}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5679021950133497593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -117657,9 +118728,17 @@ PrefabInstance:
       objectReference: {fileID: 684807846}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4774534550608044763, guid: d8bb0694c9c444942956973fd3754d1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2093491902}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d8bb0694c9c444942956973fd3754d1b, type: 3}
+--- !u!4 &5679021950133497594 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4774534550608044763, guid: d8bb0694c9c444942956973fd3754d1b, type: 3}
+  m_PrefabInstance: {fileID: 5679021950133497593}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5783272087119982744
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -117842,9 +118921,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3769037084928936576, guid: fee35db3310cf714080170fcb765cea5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2114430334}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fee35db3310cf714080170fcb765cea5, type: 3}
+--- !u!4 &5783272087119982745 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3769037084928936576, guid: fee35db3310cf714080170fcb765cea5, type: 3}
+  m_PrefabInstance: {fileID: 5783272087119982744}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5796138431732712100
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -117939,9 +119026,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8883488301729372569, guid: 205e2fb7fe44b00448659c98655bd8e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 343371622}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 205e2fb7fe44b00448659c98655bd8e9, type: 3}
+--- !u!4 &5796138431732712101 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8883488301729372569, guid: 205e2fb7fe44b00448659c98655bd8e9, type: 3}
+  m_PrefabInstance: {fileID: 5796138431732712100}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5959706223778774400
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -118048,9 +119143,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8812637678392544817, guid: bf2012ebf8ca8744ab98607dfa59b45f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 293435236}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bf2012ebf8ca8744ab98607dfa59b45f, type: 3}
+--- !u!4 &5959706223778774401 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8812637678392544817, guid: bf2012ebf8ca8744ab98607dfa59b45f, type: 3}
+  m_PrefabInstance: {fileID: 5959706223778774400}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6306062706622852312
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -123661,7 +124764,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7206418327975168700, guid: 6f320e37f3bb3b04da58cbff1b6f79d9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 378963111}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2151658896081442705, guid: 6f320e37f3bb3b04da58cbff1b6f79d9, type: 3}
       insertIndex: -1
@@ -123701,6 +124807,11 @@ MonoBehaviour:
   stopMusicOnExit: 0
   roomAmbientCue: {fileID: 0}
   stopAmbientOnExit: 1
+--- !u!4 &6306062706622852315 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7206418327975168700, guid: 6f320e37f3bb3b04da58cbff1b6f79d9, type: 3}
+  m_PrefabInstance: {fileID: 6306062706622852312}
+  m_PrefabAsset: {fileID: 0}
 --- !u!61 &6306062706622852316 stripped
 BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 2955482348536916440, guid: 6f320e37f3bb3b04da58cbff1b6f79d9, type: 3}
@@ -133186,7 +134297,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1473181491947305680, guid: 43dba26f2a17bdc49a782670373b46a0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1314299102}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43dba26f2a17bdc49a782670373b46a0, type: 3}
 --- !u!114 &7993224141891117169 stripped
@@ -133200,6 +134314,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 854d4151882c4be588d1b804c9802f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.Checkpoint
+--- !u!4 &7993224141891117170 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1473181491947305680, guid: 43dba26f2a17bdc49a782670373b46a0, type: 3}
+  m_PrefabInstance: {fileID: 7993224141891117168}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8313414091316695899
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -133398,9 +134517,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 2480701374439347911, guid: 7ead1b7a63f055e4897699eee1b4fae3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1916604655}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7ead1b7a63f055e4897699eee1b4fae3, type: 3}
+--- !u!4 &8313414091316695900 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2480701374439347911, guid: 7ead1b7a63f055e4897699eee1b4fae3, type: 3}
+  m_PrefabInstance: {fileID: 8313414091316695899}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8335652825027216838
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149787,7 +150914,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3086590555281803635, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1425427662}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
 --- !u!114 &8335652825027216839 stripped
@@ -149801,6 +150931,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 854d4151882c4be588d1b804c9802f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.Checkpoint
+--- !u!4 &8335652825027216840 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3086590555281803635, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+  m_PrefabInstance: {fileID: 8335652825027216838}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8668321395236481611
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -164248,7 +165383,10 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 0}
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 5597666190720472357, guid: f9efc20877932ab4e823b68e77b9f5d7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1946243920}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3625598618973155215, guid: f9efc20877932ab4e823b68e77b9f5d7, type: 3}
       insertIndex: -1
@@ -164260,6 +165398,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: f9efc20877932ab4e823b68e77b9f5d7, type: 3}
+--- !u!4 &8668321395236481612 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5597666190720472357, guid: f9efc20877932ab4e823b68e77b9f5d7, type: 3}
+  m_PrefabInstance: {fileID: 8668321395236481611}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8986646861882068478
 Transform:
   m_ObjectHideFlags: 0

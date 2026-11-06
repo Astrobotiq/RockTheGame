@@ -4,7 +4,11 @@
     "references": [
         "RockTheGame.Runtime",
         "Unity.Networking.Transport",
-        "Unity.Collections"
+        "Unity.Collections",
+        "UniTask",
+        "Unity.TextMeshPro",
+        "Unity.ugui",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

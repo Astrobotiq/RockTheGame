@@ -58,6 +58,13 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Hello_ResumeFlag_RoundTrips([Values(false, true)] bool resume)
+        {
+            var hello = new HelloMessage { ProtocolVersion = 3, Mode = RaceMode.Race, RaceId = FixedRaceId, PlayerName = "A", Resume = resume };
+            Assert.AreEqual(resume, RoundTrip<HelloMessage>(hello).Resume);
+        }
+
+        [Test]
         public void Snapshot_RoundTrips_WithAnchors()
         {
             var s = FullSnapshot();

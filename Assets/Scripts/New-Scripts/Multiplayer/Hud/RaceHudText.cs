@@ -35,6 +35,12 @@ namespace New_Scripts.Multiplayer.Hud
             }
         }
 
+        public static string Reconnecting(int secondsLeft) => $"Rakip bağlantısı koptu, bekleniyor… ({secondsLeft})";
+
+        /// <summary>Lobideki "Devam et" düğmesi: kayıt yoksa null.</summary>
+        public static string ResumeLabel(bool on, int roomId, int flagCount) =>
+            on ? $"Devam et: Açık (Oda {roomId}, Bayrak {flagCount}/{RaceRules.FlagsPerPenalty})" : "Devam et: Kapalı";
+
         public static string Status(LobbyPhase phase, TransportState transport, string failureReason)
         {
             if (phase == LobbyPhase.Failed) return failureReason ?? "Bağlantı kurulamadı";

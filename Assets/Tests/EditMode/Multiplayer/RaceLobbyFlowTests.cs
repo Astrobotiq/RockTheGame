@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using New_Scripts.Multiplayer;
 using New_Scripts.Multiplayer.Messages;
+using New_Scripts.Multiplayer.Save;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
 
@@ -164,6 +165,97 @@ namespace RockTheGame.Tests.Multiplayer
             Pump();
 
             Assert.AreEqual(4, _host.Flow.Session.OpponentRoomId);
+        }
+
+        // ---------------- Devam etme (MP 8) ----------------
+
+        private static readonly Guid SavedRace = new Guid("cccccccc-0000-4000-8000-000000000008");
+
+        private static RaceSaveData Save(Guid id, int room, int flags, params int[] captured)
+        {
+            var session = new RaceSession(RaceMode.Race);
+            session.RestoreLocal(room, flags, captured);
+            return RaceSaveData.From(session, id, "rakip", 42f);
+        }
+
+        private void ConnectWith(RaceLobbyFlow hostFlow, RaceLobbyFlow clientFlow)
+        {
+            var (h, c) = InMemoryTransport.CreatePair();
+            _host = MakePeer(h, hostFlow);
+            _client = MakePeer(c, clientFlow);
+            h.Host();
+            c.Join("ignored");
+            Pump();
+        }
+
+        [Test]
+        public void NewRace_ClientAdoptsHostRaceId()
+        {
+            Connect(RaceMode.Race, RaceMode.Race);
+            Assert.AreNotEqual(Guid.Empty, _host.Flow.RaceId);
+            Assert.AreEqual(_host.Flow.RaceId, _client.Flow.RaceId);
+        }
+
+        [Test]
+        public void Resume_SameRace_RestoresEachSideAndSharesProgress()
+        {
+            ConnectWith(new RaceLobbyFlow(true, RaceMode.Coop, "Host", Guid.NewGuid(), resume: Save(SavedRace, 7, 2, 5, 6)),
+                        new RaceLobbyFlow(false, RaceMode.Coop, "Client", Guid.Empty, resume: Save(SavedRace, 4, 1, 3)));
+
+            Assert.AreEqual(LobbyPhase.Loading, _host.Flow.Phase);
+            Assert.AreEqual(LobbyPhase.Loading, _client.Flow.Phase);
+            Assert.AreEqual(RaceMode.Race, _client.Flow.Session.Mode, "mod kayıttan");
+            Assert.AreEqual(7, _host.Flow.Session.LocalRoomId);
+            Assert.AreEqual(2, _host.Flow.Session.LocalFlagCount);
+            Assert.AreEqual(4, _client.Flow.Session.LocalRoomId);
+            Assert.AreEqual(4, _host.Flow.Session.OpponentRoomId);
+            Assert.AreEqual(7, _client.Flow.Session.OpponentRoomId);
+            Assert.AreEqual(SavedRace, _client.Flow.RaceId);
+        }
+
+        [Test]
+        public void Resume_HostResumesClientNew_BothFailWithReason()
+        {
+            ConnectWith(new RaceLobbyFlow(true, RaceMode.Race, "Host", Guid.NewGuid(), resume: Save(SavedRace, 7, 0)),
+                        new RaceLobbyFlow(false, RaceMode.Race, "Client", Guid.Empty));
+
+            Assert.AreEqual(LobbyPhase.Failed, _host.Flow.Phase);
+            Assert.AreEqual(LobbyPhase.Failed, _client.Flow.Phase);
+            StringAssert.Contains("Devam et", _host.Flow.FailureReason);
+            StringAssert.Contains("Devam et", _client.Flow.FailureReason);
+        }
+
+        [Test]
+        public void Resume_DifferentSaves_BothFail()
+        {
+            ConnectWith(new RaceLobbyFlow(true, RaceMode.Race, "Host", Guid.NewGuid(), resume: Save(SavedRace, 7, 0)),
+                        new RaceLobbyFlow(false, RaceMode.Race, "Client", Guid.Empty, resume: Save(Guid.NewGuid(), 4, 0)));
+
+            Assert.AreEqual(LobbyPhase.Failed, _host.Flow.Phase);
+            Assert.AreEqual(LobbyPhase.Failed, _client.Flow.Phase);
+            StringAssert.Contains("farklı", _host.Flow.FailureReason);
+        }
+
+        [Test]
+        public void Reconnect_WithExistingSessions_KeepsStateAndCountsDownAgain()
+        {
+            var hostSession = new RaceSession(RaceMode.Race);
+            hostSession.RestoreLocal(9, 1, new[] { 8 });
+            var clientSession = new RaceSession(RaceMode.Race);
+            clientSession.RestoreLocal(6, 0, new int[0]);
+            var hostFlow = new RaceLobbyFlow(true, RaceMode.Race, "Host", SavedRace, existingSession: hostSession);
+            var clientFlow = new RaceLobbyFlow(false, RaceMode.Race, "Client", SavedRace, existingSession: clientSession);
+            hostFlow.LoadSceneRequested += () => _host.Send(hostFlow.OnSceneReady(_host.Now));
+            clientFlow.LoadSceneRequested += () => _client.Send(clientFlow.OnSceneReady(_client.Now));
+
+            ConnectWith(hostFlow, clientFlow);
+            Pump();
+
+            Assert.AreSame(hostSession, hostFlow.Session);
+            Assert.AreSame(clientSession, clientFlow.Session);
+            Assert.AreEqual(LobbyPhase.Countdown, hostFlow.Phase);
+            Assert.AreEqual(LobbyPhase.Countdown, clientFlow.Phase);
+            Assert.AreEqual(6, hostSession.OpponentRoomId);
         }
 
         [Test]

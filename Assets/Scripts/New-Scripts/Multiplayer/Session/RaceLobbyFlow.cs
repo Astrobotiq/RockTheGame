@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using New_Scripts.Multiplayer.Messages;
+using New_Scripts.Multiplayer.Save;
 
 namespace New_Scripts.Multiplayer.Session
 {
@@ -27,8 +28,9 @@ namespace New_Scripts.Multiplayer.Session
         public const float CountdownSeconds = 3f;
 
         private readonly string _playerName;
-        private readonly Guid _raceId;
         private readonly RaceMode _hostMode;
+        private readonly RaceSaveData _resume;
+        private readonly RaceSession _existingSession;
         private bool _helloSent;
         private bool _helloReceived;
         private bool _sceneReady;
@@ -37,6 +39,10 @@ namespace New_Scripts.Multiplayer.Session
         private double _goAt;
 
         public bool IsHost { get; }
+        /// <summary>Kayıtlı yarışa devam ya da yarış içinde yeniden bağlanma.</summary>
+        public bool IsResume { get; }
+        /// <summary>Yarış kimliği. Yeni yarışta istemci host'un kimliğini Hello'dan alır.</summary>
+        public Guid RaceId { get; private set; }
         public LobbyPhase Phase { get; private set; } = LobbyPhase.Idle;
         /// <summary>Host'ta baştan var; istemcide host'un Hello'su gelince kurulur.</summary>
         public RaceSession Session { get; private set; }
@@ -48,14 +54,23 @@ namespace New_Scripts.Multiplayer.Session
         public event Action RaceStarted;
         public event Action<string> Failed;
 
-        public RaceLobbyFlow(bool isHost, RaceMode hostMode, string playerName, Guid raceId)
+        /// <param name="resume">Lobide "Devam et": kimlik, mod ve yerel durum kayıttan.</param>
+        /// <param name="existingSession">Yarış içinde kopup yeniden bağlanma: var olan oturum aynen sürer.</param>
+        public RaceLobbyFlow(bool isHost, RaceMode hostMode, string playerName, Guid raceId,
+            RaceSaveData resume = null, RaceSession existingSession = null)
         {
             IsHost = isHost;
-            _hostMode = hostMode;
             _playerName = playerName;
-            _raceId = raceId;
-            if (isHost) Session = new RaceSession(hostMode);
+            _resume = resume;
+            _existingSession = existingSession;
+            IsResume = resume != null || existingSession != null;
+            _hostMode = existingSession?.Mode ?? resume?.RaceMode ?? hostMode;
+            RaceId = resume != null ? resume.Id : (isHost || IsResume ? raceId : Guid.Empty);
+            if (isHost || existingSession != null) Session = CreateLocalSession();
         }
+
+        private RaceSession CreateLocalSession() =>
+            _existingSession ?? _resume?.CreateSession() ?? new RaceSession(_hostMode);
 
         public IReadOnlyList<IRaceMessage> OnConnected()
         {
@@ -64,7 +79,7 @@ namespace New_Scripts.Multiplayer.Session
             _helloSent = true;
             var sent = new List<IRaceMessage>
             {
-                new HelloMessage { ProtocolVersion = RaceProtocol.Version, Mode = _hostMode, RaceId = _raceId, PlayerName = _playerName }
+                new HelloMessage { ProtocolVersion = RaceProtocol.Version, Mode = _hostMode, RaceId = RaceId, PlayerName = _playerName, Resume = IsResume }
             };
             TryCompleteHandshake(sent);
             return sent;
@@ -84,9 +99,19 @@ namespace New_Scripts.Multiplayer.Session
                         Fail($"Sürüm uyuşmuyor: rakip v{hello.ProtocolVersion}, bu oyun v{RaceProtocol.Version}");
                         return Array.Empty<IRaceMessage>();
                     }
+                    string mismatch = ResumeMismatch(hello);
+                    if (mismatch != null)
+                    {
+                        Fail(mismatch);
+                        return Array.Empty<IRaceMessage>();
+                    }
                     _helloReceived = true;
                     OpponentName = hello.PlayerName;
-                    if (!IsHost) Session = new RaceSession(hello.Mode);
+                    if (!IsHost)
+                    {
+                        if (!IsResume) RaceId = hello.RaceId;
+                        Session ??= IsResume ? CreateLocalSession() : new RaceSession(hello.Mode);
+                    }
                     TryCompleteHandshake(sent);
                     break;
                 case ReadyMessage _:
@@ -124,6 +149,18 @@ namespace New_Scripts.Multiplayer.Session
             Phase = LobbyPhase.Failed;
             FailureReason = reason;
             Failed?.Invoke(reason);
+        }
+
+        /// <summary>İki taraf aynı şeyi istemeli: ikisi de yeni yarış ya da ikisi de aynı kayıtlı yarış.</summary>
+        private string ResumeMismatch(HelloMessage hello)
+        {
+            if (IsResume && !hello.Resume)
+                return "Rakip yeni bir yarış başlatıyor; kayıtlı yarış için ikiniz de Devam et'i seçin";
+            if (!IsResume && hello.Resume)
+                return "Rakip kayıtlı bir yarışa devam etmek istiyor; ikiniz de Devam et'i ya da yeni yarışı seçin";
+            if (IsResume && hello.RaceId != RaceId)
+                return "Kayıtlar farklı yarışlara ait; bu ikiliyle devam edilemez";
+            return null;
         }
 
         private void TryCompleteHandshake(List<IRaceMessage> sent)

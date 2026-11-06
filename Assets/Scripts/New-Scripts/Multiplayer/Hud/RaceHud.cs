@@ -87,7 +87,9 @@ namespace New_Scripts.Multiplayer.Hud
             _flags.text = race.Mode == RaceMode.Race ? RaceHudText.LocalFlags(race.LocalFlagCount) : "";
             _opponent.text = RaceHudText.Opponent(race.Mode, race.OpponentRoomId, race.OpponentFlagCount);
             var transport = _session.Transport != null ? _session.Transport.State : TransportState.Disconnected;
-            _status.text = RaceHudText.Status(flow.Phase, transport, flow.FailureReason);
+            _status.text = _session.IsWaitingForReconnect
+                ? RaceHudText.Reconnecting(_session.ReconnectSecondsLeft)
+                : RaceHudText.Status(flow.Phase, transport, flow.FailureReason);
 
             if (flow.Phase == LobbyPhase.Countdown)
                 _countdown.text = RaceHudText.Countdown(flow.CountdownRemaining(Time.realtimeSinceStartupAsDouble));

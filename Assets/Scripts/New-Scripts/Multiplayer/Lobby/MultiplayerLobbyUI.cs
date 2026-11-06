@@ -1,5 +1,6 @@
 using New_Scripts.Multiplayer.Hud;
 using New_Scripts.Multiplayer.Messages;
+using New_Scripts.Multiplayer.Save;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
 using TMPro;
@@ -24,9 +25,14 @@ namespace New_Scripts.Multiplayer.Lobby
         [SerializeField] private Button joinButton;
         [SerializeField] private Button cancelButton;
         [SerializeField] private TMP_Text statusText;
+        [SerializeField] private Button resumeButton;
+        [SerializeField] private TMP_Text resumeLabel;
 
         private RaceMode _mode = RaceMode.Race;
         private MultiplayerSession _session;
+        private RaceSaveData _save;
+        private bool _resumeOn;
+        private string _exitReason;
 
         public void Wire(Button mode, TMP_Text modeText, Button host, TMP_InputField address, Button join, Button cancel, TMP_Text status)
         {
@@ -39,12 +45,28 @@ namespace New_Scripts.Multiplayer.Lobby
             statusText = status;
         }
 
+        public void WireResume(Button resume, TMP_Text label)
+        {
+            resumeButton = resume;
+            resumeLabel = label;
+        }
+
         private void Awake()
         {
             modeButton.onClick.AddListener(ToggleMode);
             hostButton.onClick.AddListener(StartHost);
             joinButton.onClick.AddListener(StartJoin);
             cancelButton.onClick.AddListener(Cancel);
+            _exitReason = MultiplayerSession.LastExitReason;
+            MultiplayerSession.LastExitReason = null;
+            if (resumeButton != null)
+            {
+                bool hasSave = new RaceSaveStore().TryRead(out _save);
+                if (!hasSave) _save = null;
+                resumeButton.gameObject.SetActive(hasSave);
+                resumeButton.onClick.AddListener(ToggleResume);
+                _resumeOn = hasSave; // kopup lobiye dönüldüyse devam en olası seçim
+            }
             if (string.IsNullOrWhiteSpace(addressField.text)) addressField.text = DefaultAddress;
             Refresh();
         }
@@ -55,16 +77,24 @@ namespace New_Scripts.Multiplayer.Lobby
             Refresh();
         }
 
+        private void ToggleResume()
+        {
+            _resumeOn = !_resumeOn && _save != null;
+            Refresh();
+        }
+
+        private RaceSaveData Resume => _resumeOn ? _save : null;
+
         private void StartHost()
         {
-            BeginSession().Host(_mode);
+            BeginSession().Host(_mode, Resume);
             Refresh();
         }
 
         private void StartJoin()
         {
             string address = string.IsNullOrWhiteSpace(addressField.text) ? DefaultAddress : addressField.text.Trim();
-            BeginSession().Join(address);
+            BeginSession().Join(address, Resume);
             Refresh();
         }
 
@@ -94,14 +124,26 @@ namespace New_Scripts.Multiplayer.Lobby
         private void Refresh()
         {
             bool active = _session != null && _session.Flow != null && _session.Flow.Phase != LobbyPhase.Failed;
-            modeLabel.text = _mode == RaceMode.Race ? "Mod: Yarış" : "Mod: Birlikte";
-            modeButton.interactable = !active;
+            RaceMode shownMode = Resume != null ? Resume.RaceMode : _mode;
+            modeLabel.text = shownMode == RaceMode.Race ? "Mod: Yarış" : "Mod: Birlikte";
+            modeButton.interactable = !active && Resume == null; // devam edilen yarışın modu kayıttan
+            if (resumeButton != null && _save != null)
+            {
+                resumeButton.interactable = !active;
+                resumeLabel.text = RaceHudText.ResumeLabel(_resumeOn, _save.RoomId, _save.FlagCount);
+            }
             hostButton.interactable = !active;
             joinButton.interactable = !active;
             addressField.interactable = !active;
             cancelButton.interactable = active;
 
             var flow = _session != null ? _session.Flow : null;
+            if (flow == null && !string.IsNullOrEmpty(_exitReason))
+            {
+                statusText.text = _exitReason;
+                return;
+            }
+            if (flow != null) _exitReason = null;
             statusText.text = RaceHudText.LobbyStatus(flow?.Phase, flow != null && flow.IsHost, flow?.FailureReason,
                 UnityTransportSettings.Default.Port);
 

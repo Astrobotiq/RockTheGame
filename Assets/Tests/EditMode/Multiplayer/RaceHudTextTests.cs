@@ -44,6 +44,14 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Reconnecting_AndResumeLabel()
+        {
+            Assert.AreEqual("Rakip bağlantısı koptu, bekleniyor… (27)", RaceHudText.Reconnecting(27));
+            Assert.AreEqual("Devam et: Açık (Oda 7, Bayrak 2/3)", RaceHudText.ResumeLabel(true, 7, 2));
+            Assert.AreEqual("Devam et: Kapalı", RaceHudText.ResumeLabel(false, 7, 2));
+        }
+
+        [Test]
         public void Status_DescribesWaitingAndDisconnect()
         {
             Assert.AreEqual("Rakip yükleniyor…", RaceHudText.Status(LobbyPhase.WaitingForOpponent, TransportState.Connected, null));

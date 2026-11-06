@@ -6,7 +6,7 @@ namespace New_Scripts.Multiplayer
     /// </summary>
     public static class RaceProtocol
     {
-        public const ushort Version = 2; // 2: ReadyMessage (MP 7)
+        public const ushort Version = 3; // 2: ReadyMessage (MP 7), 3: Hello.Resume (MP 8)
         public const int MaxPlayerNameLength = 32;
     }
 }

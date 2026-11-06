@@ -88,6 +88,24 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Build_HiddenWhileDead_ThenTeleportsOnReappear()
+        {
+            // Ölünce oyuncu kapanır (gizli), respawn'da yeni yerde açılır: açıldığı ilk snapshot ışınlanmadır,
+            // mesafe eşiğin altında olsa bile (aynı odada yakın checkpoint).
+            var builder = new SnapshotBuilder();
+            var alive = builder.Build(new PlayerPoseInput { Position = Vector2.zero }, 0.0);
+            var dead = builder.Build(new PlayerPoseInput { Position = Vector2.zero, IsHidden = true }, 0.05);
+            var back = builder.Build(new PlayerPoseInput { Position = new Vector2(1f, 0f) }, 1.5);
+            var next = builder.Build(new PlayerPoseInput { Position = new Vector2(1.1f, 0f) }, 1.55);
+
+            Assert.IsFalse(alive.IsHidden);
+            Assert.IsTrue(dead.IsHidden);
+            Assert.IsFalse(back.IsHidden);
+            Assert.IsTrue(back.Teleported, "yeniden belirdiği snapshot ışınlanma olmalı");
+            Assert.IsFalse(next.Teleported);
+        }
+
+        [Test]
         public void Build_SequenceFollowsRealTime_SkipsAfterHitch()
         {
             // 150 ms'lik takılmadan sonra sıra numarası gerçek zamana göre atlar; zaman ekseni geride kalmaz.
@@ -200,6 +218,16 @@ namespace RockTheGame.Tests.Multiplayer
             double now = last / (double)GhostTiming.SnapshotRate * skew + Offset;
             Assert.IsTrue(interp.TrySample(now, out GhostPose pose));
             Assert.Less(pose.Position.x, last * 0.1f - 1e-3f, "en yeni snapshot'ta takılı kaldı, ara değer yok");
+        }
+
+        [Test]
+        public void Sample_HiddenFlag_PassesThrough()
+        {
+            var interp = new GhostInterpolator();
+            interp.Add(new SnapshotMessage { Sequence = 0, IsHidden = true }, Arrival(0));
+
+            Assert.IsTrue(interp.TrySample(Arrival(0) + 1.0, out GhostPose pose));
+            Assert.IsTrue(pose.IsHidden);
         }
 
         [Test]

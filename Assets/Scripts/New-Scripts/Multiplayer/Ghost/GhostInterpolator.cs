@@ -18,6 +18,7 @@ namespace New_Scripts.Multiplayer.Ghost
         public bool IsWallClimbing;
         public bool IsWallSliding;
         public byte DashCount;
+        public bool IsHidden;
         public Vector2? LeftAnchor;
         public Vector2? RightAnchor;
     }
@@ -138,6 +139,7 @@ namespace New_Scripts.Multiplayer.Ghost
             IsWallClimbing = s.IsWallClimbing,
             IsWallSliding = s.IsWallSliding,
             DashCount = s.DashCount,
+            IsHidden = s.IsHidden,
             LeftAnchor = s.LeftAnchor,
             RightAnchor = s.RightAnchor
         };

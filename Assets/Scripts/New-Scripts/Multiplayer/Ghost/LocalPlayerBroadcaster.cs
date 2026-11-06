@@ -95,7 +95,9 @@ namespace New_Scripts.Multiplayer.Ghost
                 IsWallClimbing = state is WallClimbingState,
                 IsWallSliding = state is WallSlidingState,
                 LeftAnchor = _player.LeftAnchor,
-                RightAnchor = _player.RightAnchor
+                RightAnchor = _player.RightAnchor,
+                // PlayerHealth ölünce oyuncu nesnesini kapatır, RespawnManager yeni yerde açar.
+                IsHidden = !_player.gameObject.activeInHierarchy
             };
         }
 

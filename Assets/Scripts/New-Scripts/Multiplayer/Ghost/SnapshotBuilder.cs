@@ -20,6 +20,8 @@ namespace New_Scripts.Multiplayer.Ghost
         public Vector2? RightAnchor;
         /// <summary>Açık ışınlanma (respawn, ceza): hayalet kaydırmadan yerleşsin.</summary>
         public bool Teleported;
+        /// <summary>Oyuncu nesnesi kapalı (öldü, respawn bekliyor).</summary>
+        public bool IsHidden;
     }
 
     /// <summary>
@@ -34,6 +36,7 @@ namespace New_Scripts.Multiplayer.Ghost
         private double _lastTime;
         private byte _dashCount;
         private bool _wasDashing;
+        private bool _wasHidden;
         private Vector2? _lastPosition;
 
         public SnapshotMessage Build(PlayerPoseInput input, double realtimeSeconds)
@@ -44,7 +47,9 @@ namespace New_Scripts.Multiplayer.Ghost
             if (input.IsDashing && !_wasDashing) _dashCount++;
             _wasDashing = input.IsDashing;
 
-            bool teleported = input.Teleported;
+            // Gizliyken (ölü) yeniden belirdiği ilk snapshot ışınlanmadır: respawn noktası yakın olsa da kaymasın.
+            bool teleported = input.Teleported || (_wasHidden && !input.IsHidden);
+            _wasHidden = input.IsHidden;
             if (_lastPosition.HasValue)
             {
                 double elapsed = Math.Max(realtimeSeconds - _lastTime, 1.0 / GhostTiming.SnapshotRate);
@@ -71,6 +76,7 @@ namespace New_Scripts.Multiplayer.Ghost
                 IsWallSliding = input.IsWallSliding,
                 DashCount = _dashCount,
                 Teleported = teleported,
+                IsHidden = input.IsHidden,
                 LeftAnchor = input.LeftAnchor,
                 RightAnchor = input.RightAnchor
             };

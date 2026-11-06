@@ -82,6 +82,21 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Apply_HiddenPose_HidesBodyAndRopesEvenWhenVisible()
+        {
+            // Rakip öldü: hayalet aynı odada olsa da görünmez; respawn'da yeniden belirir.
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope);
+            _ghost.SetVisible(true);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, LeftAnchor = Vector2.one, IsHidden = true });
+            Assert.IsFalse(_ghost.GetComponentInChildren<SpriteRenderer>().enabled);
+            foreach (var rope in _ghost.GetComponentsInChildren<LineRenderer>(true)) Assert.IsFalse(rope.enabled);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, IsHidden = false });
+            Assert.IsTrue(_ghost.GetComponentInChildren<SpriteRenderer>().enabled);
+        }
+
+        [Test]
         public void SetVisible_False_HidesRenderers()
         {
             _ghost = GhostView.CreateFrom(_body, _animator, _rope);

@@ -60,8 +60,7 @@ namespace New_Scripts.Multiplayer.Ghost
         public void SetVisible(bool visible)
         {
             _visible = visible;
-            _body.enabled = visible;
-            UpdateRopes();
+            UpdateRenderers();
         }
 
         public void Apply(GhostPose pose)
@@ -70,6 +69,15 @@ namespace New_Scripts.Multiplayer.Ghost
             transform.position = new Vector3(pose.Position.x, pose.Position.y, transform.position.z);
             _body.flipX = !pose.FacingRight;
             ApplyAnimator(pose);
+            UpdateRenderers();
+        }
+
+        // Rakip ölüyken (IsHidden) hayalet aynı odada olsa da görünmez.
+        private bool ShouldShow => _visible && !_pose.IsHidden;
+
+        private void UpdateRenderers()
+        {
+            _body.enabled = ShouldShow;
             UpdateRopes();
         }
 
@@ -98,7 +106,7 @@ namespace New_Scripts.Multiplayer.Ghost
 
         private void UpdateRope(LineRenderer rope, Vector2? anchor)
         {
-            rope.enabled = _visible && anchor.HasValue;
+            rope.enabled = ShouldShow && anchor.HasValue;
             if (!anchor.HasValue) return;
             rope.SetPosition(0, new Vector3(_pose.Position.x, _pose.Position.y, 0f));
             rope.SetPosition(1, new Vector3(anchor.Value.x, anchor.Value.y, 0f));

@@ -1,6 +1,6 @@
 # Çok oyunculu
 
-*GDD §9. Durum: **tasarım onaylandı; MP 1 kodda** (assembly, `IRaceTransport`, `InMemoryTransport`, mesajlar ve codec). Son kod doğrulaması: 2026-11-06.*
+*GDD §9. Durum: **tasarım onaylandı; MP 1–3 kodda** (assembly, mesajlar, `RaceSession` kuralları, bellek içi ve Unity Transport taşıyıcıları, editör için geliştirici başlatıcısı). Henüz oynanabilir değil: hayalet MP 4'te. Son kod doğrulaması: 2026-11-06.*
 
 ## Tasarım niyeti
 
@@ -18,6 +18,8 @@
 | Bayrak | Her odanın sonunda bir bayrak. Her oyuncu her odanın bayrağını **bir kez** alabilir (yoksa geri gönderilen oyuncu aynı bayrağı tekrar toplar). |
 | Ceza | **Otomatik.** 3. bayrakta rakip bir önceki odanın (`RoomId - 1`) başlangıç checkpoint'ine gider, sayaç 0'a döner. Rakip oda 1'deyse ceza boşa gider. |
 | Bağlantı koparsa | Yarış kaydedilir, aynı iki kişi sonra kaldıkları yerden devam eder. |
+| Ceza hedefi | **Alıcı belirler.** Gönderen 3. bayrakta cezayı her zaman yollar (bildiği oda eski olabilir); `PenaltyMessage.TargetRoomId` yalnız bilgi. Alıcı cezayı **uyguladığı an** kendi odasının bir öncesine gider (`RaceSession.TryGetPenaltyTarget`); ceza oda geçişi ya da respawn sırasında bekletilirse hedef o sırada değişmiş olabilir. İlk odadaki, birlikte modundaki ya da bitirmiş oyuncuya ceza işlemez. Rakibin bayrak sayacı da 3'te alıcıda 0'a döner. |
+| Rakibin odası | Yalnız güvenilir mesajlardan (`RoomEntered`, `ProgressSync`); `Snapshot.RoomId` kullanılmaz, çünkü iki kanal birbirine göre sıralı değil. |
 | Platform | Steam. Geliştirme ve testte Steam'in ücretsiz test uygulaması (Spacewar, AppID 480); kendi AppID'si (100 $) mağaza sayfası / dış test zamanı alınır. |
 | Ağ çözümü | Kendi ince arayüzümüz (`IRaceTransport`) + değiştirilebilir taşıyıcılar. Netcode for GameObjects ve Unity Relay/Lobby kullanılmaz. |
 
@@ -67,7 +69,21 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - `Multiplayer/RaceProtocol.cs` — `Version = 1`, `MaxPlayerNameLength = 32`
 - `Multiplayer/Messages/RaceMessages.cs`, `RaceMessageCodec.cs` — 7 mesaj; `Snapshot` 44 bayt (iki kanca noktası doluyken)
 - `Multiplayer/Transport/IRaceTransport.cs`, `InMemoryTransport.cs`
-- Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`)
+- `Multiplayer/Transport/UnityTransportAdapter.cs` — `com.unity.transport` 2.7.4; `UnityTransportSettings.Default`: port 7777, kopma 5000 ms, heartbeat 500 ms. Her pakete 1 baytlık tür öneki ekler (veri / "kabul edildin"); istemci host'un kabulünü görene kadar `Connecting` kalır, bu sırada kapanırsa `Rejected` olur (host dolu).
+- `Multiplayer/Dev/MultiplayerDevSettings.cs`, `MultiplayerDevLauncher.cs` — yalnız editör (`#if UNITY_EDITOR`), MP 7'deki lobiye kadar geçici
+- `Multiplayer/Session/RaceRules.cs` (`FlagsPerPenalty = 3`, `FirstRoomId = 1`), `RaceSession.cs` — ağ bilmez; yerel olaylar gidecek mesajları döndürür, `Receive` gelenleri işler
+- Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`, `RaceSessionLocalTests`, `RaceSessionRemoteTests`, `UnityTransportAdapterTests` (gerçek localhost bağlantısı), `MultiplayerDevLauncherTests`)
+
+### Editörde nasıl test edilir
+
+1. Menü **Rock The Game → Multiplayer → Geliştirici başlatıcısı**'nı aç (işaretli olur; Play Mode dışında değiştirilebilir). Kapalıyken tek kişilik oyun aynen çalışır, sahnede ağ nesnesi oluşmaz.
+2. **Window → Multiplayer → Multiplayer Play Mode**'da bir sanal oyuncu (Player 2) etkinleştir.
+3. Play'e bas. Ana editör host olur (`[MP] Host dinliyor :7777`), sanal oyuncu `127.0.0.1`'e bağlanır; istemci host'tan önce açılırsa saniyede bir yeniden dener.
+4. Console'da `[MP] Bağlandı`, `→ Hello`, `← ProgressSync` satırlarını gör. MP 3'te ekranda bir şey değişmez; hayalet MP 4'te gelir.
+
+Rol elle seçilmez: Multiplayer Play Mode'un `CurrentPlayer.IsMainEditor` değeri belirler. Başlatıcı `NewScene`'e konmaz, `RuntimeInitializeOnLoadMethod` ile kökte `[MP Dev Launcher]` nesnesini oluşturur.
+
+**Gamepad:** iki pencerenin aynı gamepad'i okuyup okumadığı henüz denenmedi (sanal oyuncu penceresini ajan açamıyor). İlk elle denemede bakılacak; gerekirse MP 4'te ele alınır.
 
 ## Mesajlar
 
@@ -144,10 +160,10 @@ Her biri tek akşamlık (Cuma, `#code`), sırayla:
 2. `RaceSession` kuralları ve testleri
 3. `UnityTransportAdapter` ve iki kopyanın bağlanması
 4. `LocalPlayerBroadcaster` ve `GhostPlayer` prefab'ı
-5. `RaceFlagPoint`, yerleştirme komutu, `RaceFlag`; ardından geliştiricinin `#level` akşamı: bayrakları yerleştirmek
+5. `RaceFlagPoint`, yerleştirme komutu, `RaceFlag`; önce `RoomNew-22`'nin ID'si 22 yapılır (bayrak yeri `RoomId + 1` ile bulunur, ve ID 0 "bilinmiyor" ile karışıyor); ardından geliştiricinin `#level` akşamı: bayrakları yerleştirmek
 6. Ceza akışı ve PlayMode testi
 7. Lobi sahnesi ve multiplayer HUD
-8. Yarış kaydı, devam etme, kopma yönetimi
+8. Yarış kaydı, devam etme, kopma yönetimi (`RaceSession`'a kayıttan yerel durumu geri yükleme eklenir; ilk bağlantı dahil her bağlantıda `ProgressSync` yollanır, yoksa rakip ilk odada "bilinmiyor" görünür)
 9. `SteamTransport` (AppID 480) ve iki bilgisayarlı test
 
 ## Kapsam dışı

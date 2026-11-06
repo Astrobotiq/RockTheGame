@@ -1,6 +1,6 @@
 # Çok oyunculu
 
-*GDD §9. Durum: **tasarım onaylandı; MP 1–7 kodda** (mesajlar, `RaceSession` kuralları, bellek içi ve Unity Transport taşıyıcıları, editör başlatıcısı, rakip hayaleti, bayrak işaretleri ve bayraklar, ceza, lobi, geri sayım ve HUD). Kayıt, devam etme ve kopma sonrası (MP 8) ile Steam (MP 9) yok. Son kod doğrulaması: 2026-11-06.*
+*GDD §9. Durum: **tasarım onaylandı; MP 1–8 kodda** (mesajlar, `RaceSession` kuralları, bellek içi ve Unity Transport taşıyıcıları, editör başlatıcısı, rakip hayaleti, bayrak işaretleri ve bayraklar, ceza, lobi, geri sayım, HUD, yarış kaydı, devam etme ve kopma). Steam (MP 9) ve yarış bitişi yok. Son kod doğrulaması: 2026-11-06.*
 
 ## Tasarım niyeti
 
@@ -71,7 +71,10 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - `Multiplayer/Transport/IRaceTransport.cs`, `InMemoryTransport.cs`
 - `Multiplayer/Transport/UnityTransportAdapter.cs` — `com.unity.transport` 2.7.4; `UnityTransportSettings.Default`: port 7777, kopma 5000 ms, heartbeat 500 ms. Her pakete 1 baytlık tür öneki ekler (veri / "kabul edildin"); istemci host'un kabulünü görene kadar `Connecting` kalır, bu sırada kapanırsa `Rejected` olur (host dolu).
 - `Multiplayer/MultiplayerSession.cs` — `[MP Session]`, `DontDestroyOnLoad`; taşıyıcı + `RaceLobbyFlow`. El sıkışma bitince `NewScene`'i `LoadSceneAsync` ile yükler (başlatıcıda sahne zaten yüklü), `sceneLoaded`'da (Start'tan önce) yayıncı, hayalet, ceza, bayraklar ve HUD'u kurar, oyuncuyu geri sayım boyunca `OnStartRespawn` ile dondurur, "Başla"da `OnEndRespawn`
-- `Multiplayer/Session/RaceLobbyFlow.cs` — saf: `Hello` (sürüm uyuşmazsa `Failed`, modu host belirler, istemcinin `RaceSession`'ı host'un Hello'sundan) → `ProgressSync` + sahne yükle → `Ready` → iki taraf hazırsa 3 sn geri sayım → `Racing`
+- `Multiplayer/Save/` — `RaceSaveData` (JsonUtility: yarış kimliği, mod, rakip adı, oda, sayaç, alınmış bayraklar, süre, rakibin odası/sayacı, zaman), `RaceSaveStore` (`persistentDataPath/multiplayer-race.json`; editörde Multiplayer Play Mode'un sanal oyuncusu `multiplayer-race-<id>.json` yazar, yoksa iki pencere aynı dosyayı paylaşır). Yerel durum değişince (oda, bayrak, ceza), kopunca ve lobiye dönerken yazılır
+- `Multiplayer/Session/ConnectionWatch.cs` — 3 sn paket gelmezse sessiz; kopunca 30 sn pencere
+- `Multiplayer/Penalty/RoomPlacement.cs` — oyuncuyu odanın başlangıcına koyar (ışınlama, checkpoint, kamera, oda); ceza ve devam etme ortak
+- `Multiplayer/Session/RaceLobbyFlow.cs` — saf: `Hello` (sürüm uyuşmazsa `Failed`, modu host belirler, istemcinin `RaceSession`'ı host'un Hello'sundan) → `ProgressSync` + sahne yükle → `Ready` → iki taraf hazırsa 3 sn geri sayım → `Racing`. Devam (`resume`) ve yarış içinde yeniden bağlanma (`existingSession`): `Hello.Resume` iki tarafta aynı ve kimlikler eşit olmalı, yoksa iki taraf da açık mesajla `Failed`. Yeni yarışta istemci `Guid.Empty` yollar, host'un kimliğini alır
 - `Multiplayer/Hud/` — `RaceHud` (`[MP HUD]`, overlay canvas, sortingOrder 100: sağ üstte "Bayrak N/3" ve "Rakip: Oda X · Bayrak N/3", üst ortada bağlantı uyarısı, ortada 3-2-1 / BAŞLA!), `RaceHudText` (saf), `MultiplayerUISettingsSO` (`Resources/Multiplayer/MultiplayerUISettings`, Tiny5 font)
 - `Multiplayer/Lobby/` — `MultiplayerLobbyUI` (Mod Yarış↔Birlikte, Host ol, adres `127.0.0.1`, Katıl, Vazgeç, durum satırı; gamepad seçimi kapanan düğmeden kurtarılır), `MultiplayerLobbyBuilder` (menü **Rock The Game → Multiplayer → Lobi sahnesini kur**; `Assets/Scenes/MultiplayerLobby.unity`, build listesinde NewScene'den sonra)
 - `Multiplayer/Dev/MultiplayerDevSettings.cs`, `MultiplayerDevLauncher.cs` — yalnız editör (`#if UNITY_EDITOR`); `NewScene`'de doğrudan Play'e basınca `MultiplayerSession`'ı "sahne yüklü" kipinde kurar. Lobiden girildiyse devreye girmez
@@ -82,6 +85,8 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`, `RaceSessionLocalTests`, `RaceSessionRemoteTests`, `UnityTransportAdapterTests` (gerçek localhost bağlantısı), `MultiplayerDevLauncherTests`, `GhostLogicTests`, `GhostViewTests`, `RaceFlagPlacementTests`, `RaceFlagTests`, `PenaltyRulesTests`); PlayMode `PenaltyFlowTests` (gerçek `NewScene`: 3 → 2, 22 → 11, oda 1'de işlemez, ölüyken bekler, ceza sonrası ölüm hedef checkpoint'te doğar)
 
 ### Editörde nasıl test edilir
+
+**Kopma ve devam (6 Kasım'da iki pencerede doğrulandı):** yarış sürerken Player 2 Play'den çıkınca host donar, HUD'da "Rakip bağlantısı koptu, bekleniyor… (N)" görünür, host yeniden dinler. 30 sn içinde dönülmezse kayıt yazılır ve lobiye dönülür; lobi nedeni gösterir, "Devam et: Açık (Oda N, Bayrak K/3)" kendiliğinden açıktır. İki taraf Devam et ile Host / Katıl deyince herkes kendi kayıtlı odasının başlangıcında 3-2-1 ile sürdürür; süre kayıttan devam eder. Bu denemede ana editörün Console'undaki **Error Pause** CLI zaman aşımı hatalarıyla Play'i duraklattı; duraklayan host eski bağlantıyı kabul edip yenisini reddetti. Elle denerken Error Pause'u kapalı tut.
 
 **Lobiden (asıl yol, 6 Kasım'da iki pencerede doğrulandı):** `MultiplayerLobby.unity`'yi aç, Player 2'yi etkinleştir, Play. Ana pencerede **Host ol**, Player 2'de **Katıl**. İki taraf `NewScene`'i yükler, HUD'da 3-2-1 görünür, oyuncular donuktur; **BAŞLA!**'da serbest kalırlar. Player 2 kendi son açtığı sahneyle başlayabilir (6 Kasım'da `NewScene` açtı); o zaman Player 2'de de lobiyi aç ya da geliştirici başlatıcısını kapat. İki tarafın başlama anı editörde ~0.4 sn farklı ölçüldü: arka plandaki ana editör `Ready`'yi geç işliyor. Gerçek ağda fark tek yönlü gecikme kadar olur.
 
@@ -106,7 +111,7 @@ Rol elle seçilmez: Multiplayer Play Mode'un `CurrentPlayer.IsMainEditor` değer
 
 | Mesaj | Ne zaman | Kanal | İçerik |
 |---|---|---|---|
-| `Hello` | Bağlanınca | Güvenilir | Protokol sürümü, mod, yarış kimliği, oyuncu adı |
+| `Hello` | Bağlanınca | Güvenilir | Protokol sürümü, mod, yarış kimliği, oyuncu adı, devam biti (v3) |
 | `Snapshot` | Saniyede 20 kez | Güvenilmez | Sıra no, oda, konum, yön, 7 animasyon değeri + dash sayacı, iki kanca noktası, "ışınlandı" biti (~50 byte) |
 | `RoomEntered` | Oda değişince | Güvenilir | Oda ID |
 | `FlagCaptured` | Bayrak alınınca | Güvenilir | Oda ID, yeni sayaç |
@@ -146,9 +151,9 @@ Ceza, oyuncu oda geçişinin ya da respawn'ın ortasındaysa o bitene kadar bekl
 
 **Kayıt.** Her oyuncu kendi ilerlemesini ayrı bir dosyaya yazar (`Application.persistentDataPath`): yarış kimliği, mod, rakip, oda, bayrak sayacı, alınmış bayraklar, süre. Oda girişinde, bayrakta ve cezada yazılır.
 
-**Devam etme.** İki taraf "Devam et" seçer; `Hello`'daki yarış kimlikleri karşılaştırılır. Uyuşmazsa bağlantı açık bir mesajla reddedilir, uyuşursa `ProgressSync` ile durumlar paylaşılır.
+**Devam etme.** Lobide kayıt varsa "Devam et" düğmesi görünür (açıkken mod kayıttan gelir). İki taraf da Devam et açıkken Host / Katıl der; `Hello.Resume` ve yarış kimlikleri karşılaştırılır. Uyuşmazsa iki taraf da kendi lobisinde açık bir mesaj görür; uyuşursa `ProgressSync` ile durumlar paylaşılır ve her oyuncu kendi kayıtlı odasının başlangıcına konur. Yarış bitişi henüz yok; kayıt silinmez, Devam et kapatılıp yeni yarış başlatılınca üzerine yazılır.
 
-**Kopma.** Oturum katmanı 3 saniye rakipten paket gelmezse rakibi "koptu" sayar (taşıyıcıdan bağımsız). Hayalet gizlenir, "Rakip bağlantısı koptu, bekleniyor…" yazısı çıkar. Adil kalsın diye oyuncu `FreezeForTransition` ile dondurulur. 30 saniye içinde rakip dönerse sürer; dönmezse kayıt alınır ve lobiye dönülür.
+**Kopma.** Oturum katmanı 3 saniye rakipten paket gelmezse rakibi "koptu" sayar (taşıyıcıdan bağımsız); taşıyıcının kopma olayı da aynı yola girer. Hayalet gizlenir, "Rakip bağlantısı koptu, bekleniyor… (N)" yazısı çıkar. Adil kalsın diye oyuncu dondurulur (`OnStartRespawn`, geri sayımdaki gibi) ve süre durur. Host yeniden dinler, istemci saniyede bir yeniden katılmayı dener. 30 saniye içinde rakip dönerse el sıkışma yenilenir ve 3-2-1 ile sürer; dönmezse kayıt alınır ve lobiye dönülür.
 
 **Sürüm uyuşmazlığı.** Protokol sürümleri farklıysa bağlantı baştan reddedilir.
 

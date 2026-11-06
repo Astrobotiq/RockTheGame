@@ -35,7 +35,13 @@ namespace New_Scripts.Multiplayer.Dev
             if (role == DevRole.Off) return null;
 
             var go = new GameObject(ObjectName);
-            if (Application.isPlaying) DontDestroyOnLoad(go);
+            if (Application.isPlaying)
+            {
+                DontDestroyOnLoad(go);
+                // İki pencereden yalnız biri odakta olur; diğerinin oyun döngüsü durursa 5 sn'de bağlantı kopar.
+                // Yalnız bu Play oturumu için: PlayerSettings.runInBackground değişmez.
+                Application.runInBackground = true;
+            }
             var launcher = go.AddComponent<MultiplayerDevLauncher>();
             launcher.Initialize(role, MultiplayerDevSettings.Address, MultiplayerDevSettings.Mode);
             return launcher;

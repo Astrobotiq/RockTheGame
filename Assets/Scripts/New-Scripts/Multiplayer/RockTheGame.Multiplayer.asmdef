@@ -1,7 +1,10 @@
 {
     "name": "RockTheGame.Multiplayer",
     "rootNamespace": "New_Scripts.Multiplayer",
-    "references": [],
+    "references": [
+        "Unity.Networking.Transport",
+        "Unity.Collections"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -66,6 +66,20 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void OnDisable_DisposesTransport()
+        {
+            // Play Mode'da script yeniden derlenince OnDestroy çağrılmaz ama OnDisable çağrılır; sürücü ve port orada bırakılmalı.
+            _spawned = MultiplayerDevLauncher.Spawn(DevRole.Host);
+            var onDisable = typeof(MultiplayerDevLauncher).GetMethod("OnDisable",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            Assert.IsNotNull(onDisable, "OnDisable yok");
+
+            onDisable.Invoke(_spawned, null);
+
+            Assert.IsNull(_spawned.Transport);
+        }
+
+        [Test]
         public void Spawn_Off_CreatesNothing()
         {
             _spawned = MultiplayerDevLauncher.Spawn(DevRole.Off);

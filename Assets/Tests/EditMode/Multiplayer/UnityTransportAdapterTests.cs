@@ -182,10 +182,15 @@ namespace RockTheGame.Tests.Multiplayer
             Assert.IsTrue(PumpUntil(() => host.State == TransportState.Connected && first.State == TransportState.Connected, host, first));
 
             DisconnectReason? secondReason = null;
+            bool secondConnected = false;
             second.Disconnected += r => secondReason = r;
+            second.Connected += () => secondConnected = true;
             second.Join("127.0.0.1");
 
             Assert.IsTrue(PumpUntil(() => secondReason.HasValue, host, first, second), $"ikinci {second.State}");
+            // UTP bağlantıyı Accept'ten önce kabul eder; istemci host'un onayını beklemeli, reddedilince Rejected görmeli.
+            Assert.IsFalse(secondConnected, "Reddedilen istemci Connected görmemeli");
+            Assert.AreEqual(DisconnectReason.Rejected, secondReason);
             Assert.AreEqual(TransportState.Connected, host.State);
             Assert.AreEqual(TransportState.Connected, first.State);
 
@@ -210,6 +215,23 @@ namespace RockTheGame.Tests.Multiplayer
 
             Assert.IsTrue(PumpUntil(() => reason.HasValue, host), $"durum {host.State}");
             Assert.AreEqual(DisconnectReason.Rejected, reason);
+        }
+
+        [Test]
+        public void RetryInsideDisconnectedHandler_FiresOnNextPollNotSamePoll()
+        {
+            // Sözleşme: Host/Join hatası "bir sonraki Poll'da" gelir. Handler hemen tekrar denerse aynı Poll'da
+            // tekrar tetiklenmemeli; yoksa ana thread sonsuz döngüye girer (gözden geçirme bulgusu M1).
+            var client = Create(FreePort());
+            int calls = 0;
+            client.Disconnected += _ => { calls++; if (calls < 1000) client.Join("geçersiz adres"); };
+            client.Join("geçersiz adres");
+
+            client.Poll();
+
+            Assert.AreEqual(1, calls);
+            client.Poll();
+            Assert.AreEqual(2, calls);
         }
 
         [Test]

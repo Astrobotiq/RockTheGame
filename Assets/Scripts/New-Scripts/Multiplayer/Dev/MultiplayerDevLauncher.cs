@@ -78,7 +78,12 @@ namespace New_Scripts.Multiplayer.Dev
             }
         }
 
-        private void OnDestroy()
+        // Play Mode'da script yeniden derlenince OnDestroy gelmez ama OnDisable gelir: sürücü ve 7777 portu burada bırakılır.
+        private void OnDisable() => Shutdown();
+
+        private void OnDestroy() => Shutdown();
+
+        private void Shutdown()
         {
             Transport?.Dispose();
             Transport = null;
@@ -100,8 +105,9 @@ namespace New_Scripts.Multiplayer.Dev
         private void OnDisconnected(DisconnectReason reason)
         {
             Debug.Log($"[MP] Bağlantı kapandı: {reason}");
-            // Kopyalar aynı anda açılınca istemci host'tan önce davranabilir: istemci kısa aralıkla yeniden dener.
-            if (_role == DevRole.Client && reason != DisconnectReason.LocalRequest)
+            // Kopyalar aynı anda açılınca istemci host'tan önce davranabilir: host'a ulaşamazsa (Timeout) yeniden dener.
+            // Reddedilince (host dolu, adres hatalı) denemez; yoksa saniyede bir sonsuz döngüye girer.
+            if (_role == DevRole.Client && reason == DisconnectReason.Timeout)
                 _retryAt = Time.unscaledTime + ClientRetryDelaySeconds;
         }
 

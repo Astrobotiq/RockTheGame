@@ -32,6 +32,11 @@ namespace New_Scripts.Multiplayer.Transport
     /// </summary>
     public sealed class UnityTransportAdapter : IRaceTransport
     {
+        // Her paketin ilk baytı türünü söyler. UTP bağlantıyı host Accept etmeden kabul ettiği için istemci,
+        // host'un "kabul edildin" paketini görene kadar Connecting kalır; bu sırada kapanırsa Rejected olur.
+        private const byte DataKind = 0;
+        private const byte AcceptedKind = 1;
+
         private readonly UnityTransportSettings _settings;
         private readonly Queue<byte[]> _pendingReliable = new Queue<byte[]>();
         private readonly Queue<DisconnectReason> _pendingDisconnects = new Queue<DisconnectReason>();
@@ -103,7 +108,9 @@ namespace New_Scripts.Multiplayer.Transport
         {
             if (State != TransportState.Connected || payload == null) return false;
 
-            byte[] copy = (byte[])payload.Clone();
+            byte[] copy = new byte[payload.Length + 1];
+            copy[0] = DataKind;
+            Buffer.BlockCopy(payload, 0, copy, 1, payload.Length);
             if (reliable && _pendingReliable.Count > 0)
             {
                 // Sıra bozulmasın: kuyrukta bekleyen varsa yenisi de arkasına girer.
@@ -123,7 +130,9 @@ namespace New_Scripts.Multiplayer.Transport
 
         public void Poll()
         {
-            while (_pendingDisconnects.Count > 0)
+            // Yalnız bu Poll başında bekleyenler: handler hemen tekrar denerse yeni hata bir sonraki Poll'a kalır.
+            int pending = _pendingDisconnects.Count;
+            for (int i = 0; i < pending; i++)
                 Disconnected?.Invoke(_pendingDisconnects.Dequeue());
 
             if (!_driver.IsCreated) return;
@@ -140,19 +149,18 @@ namespace New_Scripts.Multiplayer.Transport
                 switch (type)
                 {
                     case NetworkEvent.Type.Connect:
-                        SetConnected();
+                        // İstemci: UTP bağlandı ama host henüz kabul etmedi; AcceptedKind paketi beklenir.
                         break;
                     case NetworkEvent.Type.Data:
-                        var buffer = new NativeArray<byte>(reader.Length, Allocator.Temp);
-                        reader.ReadBytes(buffer);
-                        byte[] bytes = buffer.ToArray();
-                        buffer.Dispose();
-                        MessageReceived?.Invoke(bytes);
+                        HandleData(ref reader);
                         break;
                     case NetworkEvent.Type.Disconnect:
-                        var reason = (Unity.Networking.Transport.Error.DisconnectReason)reader.ReadByte();
+                        var reason = Map((Unity.Networking.Transport.Error.DisconnectReason)reader.ReadByte());
+                        bool wasConnected = State == TransportState.Connected;
                         DisposeDriver();
-                        Disconnected?.Invoke(Map(reason));
+                        // Kabul edilmeden kapanan bağlantı reddedilmiştir (örn. host dolu).
+                        if (!wasConnected && reason == DisconnectReason.RemoteLeft) reason = DisconnectReason.Rejected;
+                        Disconnected?.Invoke(reason);
                         return;
                 }
             }
@@ -164,6 +172,29 @@ namespace New_Scripts.Multiplayer.Transport
         {
             Disconnect();
             _pendingDisconnects.Clear();
+        }
+
+        private void HandleData(ref DataStreamReader reader)
+        {
+            if (reader.Length == 0) return;
+
+            var buffer = new NativeArray<byte>(reader.Length, Allocator.Temp);
+            reader.ReadBytes(buffer);
+            byte[] packet = buffer.ToArray();
+            buffer.Dispose();
+
+            if (packet[0] == AcceptedKind && !_isHost)
+            {
+                SetConnected();
+                return;
+            }
+
+            // Kabulden önce gelen güvenilmez veri düşer: sözleşmeye göre mesajlar yalnız bağlıyken teslim edilir.
+            if (packet[0] != DataKind || State != TransportState.Connected) return;
+
+            byte[] payload = new byte[packet.Length - 1];
+            Buffer.BlockCopy(packet, 1, payload, 0, payload.Length);
+            MessageReceived?.Invoke(payload);
         }
 
         private void AcceptConnections()
@@ -179,6 +210,7 @@ namespace New_Scripts.Multiplayer.Transport
                 }
 
                 _connection = incoming;
+                TrySend(new[] { AcceptedKind }, reliable: true);
                 SetConnected();
             }
         }

@@ -48,7 +48,7 @@ namespace RockTheGame.Tests.Multiplayer
             var sprite = _ghost.GetComponentInChildren<SpriteRenderer>();
             Assert.IsNotNull(sprite);
             Assert.AreEqual(_body.sortingLayerID, sprite.sortingLayerID);
-            Assert.AreEqual(4, sprite.sortingOrder);
+            Assert.AreEqual(5 - GhostView.SortingOrderOffset, sprite.sortingOrder);
             Assert.AreEqual(0.55f, sprite.color.a, 1e-3f);
             Assert.IsNotNull(_ghost.GetComponentInChildren<Animator>());
             Assert.AreEqual(2, _ghost.GetComponentsInChildren<LineRenderer>(true).Length);
@@ -94,6 +94,93 @@ namespace RockTheGame.Tests.Multiplayer
 
             _ghost.Apply(new GhostPose { Position = Vector2.zero, IsHidden = false });
             Assert.IsTrue(_ghost.GetComponentInChildren<SpriteRenderer>().enabled);
+        }
+
+        private GhostEyeSource FakeEyes(out Transform eyesRoot)
+        {
+            eyesRoot = new GameObject("Eyes").transform;
+            eyesRoot.SetParent(_source.transform, false);
+            var source = new GhostEyeSource
+            {
+                Root = eyesRoot,
+                VelocitySensitivity = 0.01f,
+                MaxPupilOffset = 0.1f,
+                PupilSmoothSpeed = 10f,
+                FlipParentTransform = true
+            };
+            foreach (var (name, x) in new[] { ("LeftEyesContainer", 0f), ("RightContainer", 0.39f) })
+            {
+                var container = new GameObject(name).transform;
+                container.SetParent(eyesRoot, false);
+                container.localPosition = new Vector3(x, 0.52f, 0f);
+                SpriteRenderer Make(string n, int order)
+                {
+                    var r = new GameObject(n).AddComponent<SpriteRenderer>();
+                    r.transform.SetParent(container, false);
+                    r.sortingLayerName = "Player";
+                    r.sortingOrder = order;
+                    return r;
+                }
+                source.Eyes.Add(new GhostEyeSource.Eye { Container = container, Background = Make("EyeBg", 4), Pupil = Make("Eye", 5), Blink = Make("EyeFg", 6) });
+            }
+            return source;
+        }
+
+        [Test]
+        public void CreateFrom_WithEyes_CopiesEyesAboveGhostBodyBelowRealPlayer()
+        {
+            _body.sortingOrder = 0;
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope, FakeEyes(out _));
+
+            var renderers = _ghost.GetComponentsInChildren<SpriteRenderer>(true);
+            Assert.AreEqual(7, renderers.Length, "gövde + 2 göz x 3 katman");
+            int bodyOrder = -GhostView.SortingOrderOffset;
+            foreach (var r in renderers)
+            {
+                if (r.name == "Body") continue;
+                Assert.Greater(r.sortingOrder, bodyOrder, $"{r.name} hayalet gövdesinin önünde olmalı");
+                Assert.Less(r.sortingOrder, 0, $"{r.name} gerçek oyuncunun arkasında olmalı");
+                Assert.AreEqual(0.55f, r.color.a, 1e-3f);
+            }
+        }
+
+        [Test]
+        public void Apply_FacingLeft_MirrorsEyes()
+        {
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope, FakeEyes(out _));
+            _ghost.SetVisible(true);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, FacingRight = false });
+            _ghost.TickEyes(0.016f);
+
+            var eyesRoot = _ghost.transform.Find("Eyes");
+            Assert.IsNotNull(eyesRoot);
+            Assert.AreEqual(-1f, eyesRoot.localScale.x);
+        }
+
+        [Test]
+        public void Pupils_LookAlongMovement()
+        {
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope, FakeEyes(out _));
+            _ghost.SetVisible(true);
+            var pupil = _ghost.transform.Find("Eyes/RightContainer/Eye");
+            float rest = pupil.localPosition.x;
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, FacingRight = true, Speed = 20f });
+            for (int i = 0; i < 30; i++) _ghost.TickEyes(0.05f);
+
+            Assert.Greater(pupil.localPosition.x, rest + 0.05f, "koşarken göz bebeği ileri bakmalı");
+        }
+
+        [Test]
+        public void HiddenPose_HidesEyesToo()
+        {
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope, FakeEyes(out _));
+            _ghost.SetVisible(true);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, IsHidden = true });
+
+            foreach (var r in _ghost.GetComponentsInChildren<SpriteRenderer>(true)) Assert.IsFalse(r.enabled, r.name);
         }
 
         [Test]

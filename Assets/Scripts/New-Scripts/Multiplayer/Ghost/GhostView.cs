@@ -10,6 +10,8 @@ namespace New_Scripts.Multiplayer.Ghost
     public sealed class GhostView : MonoBehaviour
     {
         public const string ObjectName = "[MP Ghost]";
+        /// <summary>Hayaletin bütün sprite'ları bu kadar geri alınır: kendi içindeki sıra korunur, hepsi gerçek oyuncunun arkasında kalır.</summary>
+        public const int SortingOrderOffset = 10;
         private static readonly Color Tint = new Color(0.55f, 0.85f, 1f, 0.55f);
 
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -28,8 +30,10 @@ namespace New_Scripts.Multiplayer.Ghost
         private bool _visible;
         private byte? _lastDashCount;
         private GhostPose _pose;
+        private GhostEyes _eyes;
 
-        public static GhostView CreateFrom(SpriteRenderer bodySource, Animator animatorSource, LineRenderer ropeSource)
+        public static GhostView CreateFrom(SpriteRenderer bodySource, Animator animatorSource, LineRenderer ropeSource,
+            GhostEyeSource eyesSource = null)
         {
             var root = new GameObject(ObjectName);
             var view = root.AddComponent<GhostView>();
@@ -44,11 +48,14 @@ namespace New_Scripts.Multiplayer.Ghost
             view._body.sprite = bodySource.sprite;
             view._body.sharedMaterial = bodySource.sharedMaterial;
             view._body.sortingLayerID = bodySource.sortingLayerID;
-            view._body.sortingOrder = bodySource.sortingOrder - 1; // gerçek oyuncunun arkasında
+            view._body.sortingOrder = bodySource.sortingOrder - SortingOrderOffset; // gerçek oyuncunun arkasında
             view._body.color = Tint;
 
             view._animator = bodyGo.AddComponent<Animator>();
             if (animatorSource != null) view._animator.runtimeAnimatorController = animatorSource.runtimeAnimatorController;
+
+            if (eyesSource?.Root != null)
+                view._eyes = GhostEyes.Create(eyesSource, root.transform, bodyGo.transform, bodySource.transform, Tint, SortingOrderOffset);
 
             view._leftRope = CreateRope(root.transform, "LeftRope", ropeSource, view._body);
             view._rightRope = CreateRope(root.transform, "RightRope", ropeSource, view._body);
@@ -78,8 +85,14 @@ namespace New_Scripts.Multiplayer.Ghost
         private void UpdateRenderers()
         {
             _body.enabled = ShouldShow;
+            _eyes?.SetVisible(ShouldShow);
             UpdateRopes();
         }
+
+        /// <summary>Gözleri pozla günceller; LateUpdate'te, animator EyePosition'ı oynattıktan sonra çağrılır.</summary>
+        public void TickEyes(float deltaTime) => _eyes?.Tick(_pose, deltaTime);
+
+        private void LateUpdate() => TickEyes(Time.deltaTime);
 
         private void ApplyAnimator(GhostPose pose)
         {

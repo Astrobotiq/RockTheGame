@@ -38,7 +38,7 @@
 
 1. **Ayrı assembly.** Kod `RockTheGame.Multiplayer` assembly'sinde. Bu assembly `RockTheGame.Runtime`'ı görür, Runtime onu **göremez**. Tek kişilik kodun multiplayer'a bağlanması derleme hatası verir.
 2. **Ayrı giriş.** Tek kişilik oyun `NewScene`'i bugünkü gibi açar. Multiplayer `MultiplayerLobby.unity`'den girer, bağlantı kurulunca `NewScene`'i yükler ve kendi nesnelerini çalışırken ekler.
-3. **Runtime'a dokunuş yalnızca ekleme.** Gerekirse yeni bir olay ya da okuma özelliği eklenir; mevcut davranış değişmez.
+3. **Runtime'a dokunuş yalnızca ekleme.** Gerekirse yeni bir olay ya da okuma özelliği eklenir; mevcut davranış değişmez. (6 Kasım: `PlayerEyesController`'a hayalet gözleri için yalnız okunur özellikler eklendi.)
 4. **Oda prefab'larında yalnız işaret noktası.** `RaceFlagPoint`'in görüntüsü, collider'ı, `Update`'i yok; tek kişilik oyunda hiçbir şey yapmaz.
 5. **Ayrı kayıt dosyası.** Yarış kaydı tek kişilik kayıttan bağımsız.
 6. **Her aşamada testler.** 28 EditMode ve 36 PlayMode testi (bkz. [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md)) her multiplayer aşamasından sonra yeşil olmalı.
@@ -71,7 +71,7 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - `Multiplayer/Transport/IRaceTransport.cs`, `InMemoryTransport.cs`
 - `Multiplayer/Transport/UnityTransportAdapter.cs` — `com.unity.transport` 2.7.4; `UnityTransportSettings.Default`: port 7777, kopma 5000 ms, heartbeat 500 ms. Her pakete 1 baytlık tür öneki ekler (veri / "kabul edildin"); istemci host'un kabulünü görene kadar `Connecting` kalır, bu sırada kapanırsa `Rejected` olur (host dolu).
 - `Multiplayer/Dev/MultiplayerDevSettings.cs`, `MultiplayerDevLauncher.cs` — yalnız editör (`#if UNITY_EDITOR`), MP 7'deki lobiye kadar geçici
-- `Multiplayer/Ghost/` — `GhostTiming` (20 Hz, 0.1 sn gecikme; ışınlanma eşiği hızla ölçekli: 100 b/sn × geçen süre + 1, en hızlı hareket sapan 65 b/sn; sıra numarası gönderenin gerçek saatinden), `SnapshotBuilder`, `GhostInterpolator`, `GhostVisibility` (saf C#); `GhostView` (görseli çalışırken oyuncunun `Animation` sprite/animator'ından ve ipinden kurar, prefab yok, sahne kökünde `[MP Ghost]`), `LocalPlayerBroadcaster` (`[MP Broadcaster]`, oda girişlerini `Room.OnRoomEntered`'dan alır)
+- `Multiplayer/Ghost/` — `GhostTiming` (20 Hz, 0.1 sn gecikme; ışınlanma eşiği hızla ölçekli: 100 b/sn × geçen süre + 1, en hızlı hareket sapan 65 b/sn; sıra numarası gönderenin gerçek saatinden), `SnapshotBuilder`, `GhostInterpolator`, `GhostVisibility` (saf C#); `GhostView` (görseli çalışırken oyuncunun `Animation` sprite/animator'ından, ipinden ve gözlerinden kurar; prefab yok, sahne kökünde `[MP Ghost]`; bütün sprite'lar 10 sıra geride, kendi içindeki sıra korunur), `GhostEyes` (yön çevirme, `EyePosition`'a göre dikey kayma, hıza göre göz bebeği; göz kırpma ve kollar yok), `LocalPlayerBroadcaster` (`[MP Broadcaster]`, oda girişlerini `Room.OnRoomEntered`'dan alır)
 - `Multiplayer/Session/RaceRules.cs` (`FlagsPerPenalty = 3`, `FirstRoomId = 1`), `RaceSession.cs` — ağ bilmez; yerel olaylar gidecek mesajları döndürür, `Receive` gelenleri işler
 - Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`, `RaceSessionLocalTests`, `RaceSessionRemoteTests`, `UnityTransportAdapterTests` (gerçek localhost bağlantısı), `MultiplayerDevLauncherTests`, `GhostLogicTests`, `GhostViewTests`)
 

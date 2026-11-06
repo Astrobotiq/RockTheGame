@@ -9,7 +9,11 @@ namespace New_Scripts.Multiplayer.Ghost
         /// <summary>Hayalet bu kadar geriden çizilir: 20 Hz'de bir kayıp paketi takılmadan atlatır.</summary>
         public const float InterpolationDelaySeconds = 0.1f;
 
-        /// <summary>İki ardışık snapshot arasında bundan büyük sıçrama ışınlanma sayılır (ölüm, ceza).</summary>
-        public const float TeleportDistance = 3f;
+        /// <summary>
+        /// Işınlanma eşiği hız olarak: iki snapshot arasındaki sıçrama TeleportSpeed * geçen süre + TeleportMargin'i
+        /// aşarsa ışınlanma sayılır. Oyundaki en yüksek hız sapan (65 b/sn); 100 bununla güvenli payı bırakır.
+        /// </summary>
+        public const float TeleportSpeed = 100f;
+        public const float TeleportMargin = 1f;
     }
 }

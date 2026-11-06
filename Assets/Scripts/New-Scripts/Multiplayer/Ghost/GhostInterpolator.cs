@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using New_Scripts.Multiplayer.Messages;
 using UnityEngine;
@@ -23,17 +24,23 @@ namespace New_Scripts.Multiplayer.Ghost
 
     /// <summary>
     /// Gelen snapshot'ları gönderenin zaman ekseninde (Sequence / SnapshotRate) tutar ve InterpolationDelaySeconds
-    /// geriden ara değer üretir. Alıcı ile gönderen saati arasındaki fark, görülen en küçük değerle tahmin edilir;
-    /// böylece ağ titremesi hayaleti sarsmaz. Eski ya da tekrar gelen snapshot atılır, paket gelmezse son durumda
+    /// geriden ara değer üretir. Alıcı ile gönderen saati arasındaki fark, son OffsetWindowSeconds içinde görülen en
+    /// küçük değerle tahmin edilir: düşüşü hemen alınır (hayalet ileri gider), yükselişi en fazla OffsetMaxRiseRate
+    /// hızla izlenir (çizim saati hiç geri gitmez). Böylece ağ titremesi hayaleti sarsmaz, iki makinenin saat farkı
+    /// uzun bir yarışta birikmez. Eski ya da tekrar gelen snapshot atılır, paket gelmezse son durumda
     /// beklenir (ileri tahmin yok), ışınlanmada tampon temizlenir.
     /// </summary>
     public sealed class GhostInterpolator
     {
         private const int MaxBuffered = 32;
+        private const double OffsetWindowSeconds = 2.0;
+        private const double OffsetMaxRiseRate = 0.02; // çizim saati en fazla %2 yavaşlar
 
         private readonly List<(SnapshotMessage snapshot, double senderTime)> _buffer = new List<(SnapshotMessage, double)>();
+        private readonly Queue<(double receiveTime, double offset)> _recentOffsets = new Queue<(double, double)>();
         private uint? _lastSequence;
         private double? _clockOffset;
+        private double _lastReceiveTime;
 
         public void Add(SnapshotMessage snapshot, double receiveTime)
         {
@@ -42,12 +49,28 @@ namespace New_Scripts.Multiplayer.Ghost
             _lastSequence = snapshot.Sequence;
 
             double senderTime = snapshot.Sequence / (double)GhostTiming.SnapshotRate;
-            double offset = receiveTime - senderTime;
-            if (!_clockOffset.HasValue || offset < _clockOffset.Value) _clockOffset = offset;
+            UpdateClockOffset(receiveTime, receiveTime - senderTime);
 
             if (snapshot.Teleported) _buffer.Clear();
             _buffer.Add((snapshot, senderTime));
             if (_buffer.Count > MaxBuffered) _buffer.RemoveAt(0);
+        }
+
+        private void UpdateClockOffset(double receiveTime, double sample)
+        {
+            _recentOffsets.Enqueue((receiveTime, sample));
+            while (_recentOffsets.Count > 1 && receiveTime - _recentOffsets.Peek().receiveTime > OffsetWindowSeconds)
+                _recentOffsets.Dequeue();
+
+            double windowMin = double.MaxValue;
+            foreach (var (_, offset) in _recentOffsets) if (offset < windowMin) windowMin = offset;
+
+            if (!_clockOffset.HasValue || windowMin < _clockOffset.Value)
+                _clockOffset = windowMin;
+            else
+                _clockOffset = Math.Min(windowMin, _clockOffset.Value + (receiveTime - _lastReceiveTime) * OffsetMaxRiseRate);
+
+            _lastReceiveTime = receiveTime;
         }
 
         public bool TrySample(double now, out GhostPose pose)

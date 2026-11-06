@@ -75,7 +75,7 @@ namespace New_Scripts.Multiplayer.Ghost
             if (_sendAccumulator < interval) return;
             _sendAccumulator %= interval;
 
-            var snapshot = _builder.Build(ReadPose());
+            var snapshot = _builder.Build(ReadPose(), Time.realtimeSinceStartupAsDouble);
             if (_transport.State == TransportState.Connected)
                 _transport.Send(RaceMessageCodec.Encode(snapshot), reliable: false);
         }

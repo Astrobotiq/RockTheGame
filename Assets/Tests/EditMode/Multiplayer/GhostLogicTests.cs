@@ -28,9 +28,9 @@ namespace RockTheGame.Tests.Multiplayer
             var builder = new SnapshotBuilder();
             var input = new PlayerPoseInput { RoomId = 4, Position = new Vector2(1f, 2f), Velocity = new Vector2(-3f, 5f), FacingRight = false, IsGrounded = true };
 
-            var first = builder.Build(input);
-            var second = builder.Build(input);
-            var third = builder.Build(input);
+            var first = builder.Build(input, 0.0);
+            var second = builder.Build(input, 0.05);
+            var third = builder.Build(input, 0.10);
 
             Assert.AreEqual(0u, first.Sequence);
             Assert.AreEqual(1u, second.Sequence);
@@ -52,21 +52,51 @@ namespace RockTheGame.Tests.Multiplayer
 
             for (int i = 0; i < dashing.Length; i++)
             {
-                var snapshot = builder.Build(new PlayerPoseInput { IsDashing = dashing[i] });
+                var snapshot = builder.Build(new PlayerPoseInput { IsDashing = dashing[i] }, i * 0.05);
                 Assert.AreEqual(expected[i], snapshot.DashCount, $"adım {i}");
                 Assert.AreEqual(dashing[i], snapshot.IsDashing);
             }
         }
 
         [Test]
-        public void Build_JumpOver3Units_SetsTeleportedOnce()
+        public void Build_LargeJump_SetsTeleportedOnce()
         {
             var builder = new SnapshotBuilder();
             float[] xs = { 0f, 0.5f, 10f, 10.2f };
             bool[] expected = { false, false, true, false };
 
             for (int i = 0; i < xs.Length; i++)
-                Assert.AreEqual(expected[i], builder.Build(new PlayerPoseInput { Position = new Vector2(xs[i], 0f) }).Teleported, $"adım {i}");
+                Assert.AreEqual(expected[i], builder.Build(new PlayerPoseInput { Position = new Vector2(xs[i], 0f) }, i * 0.05).Teleported, $"adım {i}");
+        }
+
+        [Test]
+        public void Build_FastLegitMovement_IsNotTeleport()
+        {
+            // Sapan en yüksek hız 65 b/sn: 50 ms'de 3.25 birim; 15 FPS'te 66 ms'de 4.3 birim. İkisi de ışınlanma değil.
+            var builder = new SnapshotBuilder();
+            builder.Build(new PlayerPoseInput { Position = Vector2.zero }, 0.0);
+            Assert.IsFalse(builder.Build(new PlayerPoseInput { Position = new Vector2(3.25f, 0f) }, 0.05).Teleported);
+            Assert.IsFalse(builder.Build(new PlayerPoseInput { Position = new Vector2(3.25f + 4.3f, 0f) }, 0.116).Teleported);
+        }
+
+        [Test]
+        public void Build_ExplicitTeleportFlag_SetsTeleported()
+        {
+            var builder = new SnapshotBuilder();
+            builder.Build(new PlayerPoseInput { Position = Vector2.zero }, 0.0);
+            Assert.IsTrue(builder.Build(new PlayerPoseInput { Position = new Vector2(0.5f, 0f), Teleported = true }, 0.05).Teleported);
+        }
+
+        [Test]
+        public void Build_SequenceFollowsRealTime_SkipsAfterHitch()
+        {
+            // 150 ms'lik takılmadan sonra sıra numarası gerçek zamana göre atlar; zaman ekseni geride kalmaz.
+            var builder = new SnapshotBuilder();
+            double[] times = { 0.0, 0.05, 0.10, 0.30 };
+            uint[] expected = { 0, 1, 2, 6 };
+
+            for (int i = 0; i < times.Length; i++)
+                Assert.AreEqual(expected[i], builder.Build(default, times[i]).Sequence, $"adım {i}");
         }
 
         // ---- GhostInterpolator ----
@@ -141,6 +171,35 @@ namespace RockTheGame.Tests.Multiplayer
                 Assert.GreaterOrEqual(pose.Position.x, previous - 1e-4f, $"geri gitti, now={now:0.000}");
                 previous = pose.Position.x;
             }
+        }
+
+        [Test]
+        public void Sample_SkippedSequences_StillInterpolates()
+        {
+            var interp = new GhostInterpolator();
+            for (uint seq = 0; seq <= 19; seq++) interp.Add(Snap(seq, seq), Arrival(seq));
+            for (uint seq = 22; seq <= 30; seq++) interp.Add(Snap(seq, seq), Arrival(seq));
+
+            // Çizim saati 1.0 sn → seq19 (0.95) ile seq22 (1.10) arası: x 19 ile 22 arasında, uçlarda değil.
+            Assert.IsTrue(interp.TrySample(Offset + 0.1 + 1.0, out GhostPose pose));
+            Assert.Greater(pose.Position.x, 19f);
+            Assert.Less(pose.Position.x, 22f);
+        }
+
+        [Test]
+        public void Sample_ReceiverClockRunsFaster_KeepsInterpolatingInLongSession()
+        {
+            // Alıcının saati %0.2 hızlı: 120 sn sonra 0.24 sn kayma. Saat farkı tahmini yükselemezse
+            // çizim saati en yeni snapshot'ı geçer ve hayalet 20 Hz'de basamaklı oynar.
+            var interp = new GhostInterpolator();
+            const double skew = 1.002;
+            uint last = 120 * GhostTiming.SnapshotRate;
+            for (uint seq = 0; seq <= last; seq++)
+                interp.Add(Snap(seq, seq * 0.1f), seq / (double)GhostTiming.SnapshotRate * skew + Offset);
+
+            double now = last / (double)GhostTiming.SnapshotRate * skew + Offset;
+            Assert.IsTrue(interp.TrySample(now, out GhostPose pose));
+            Assert.Less(pose.Position.x, last * 0.1f - 1e-3f, "en yeni snapshot'ta takılı kaldı, ara değer yok");
         }
 
         [Test]

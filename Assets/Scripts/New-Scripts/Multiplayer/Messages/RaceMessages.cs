@@ -14,7 +14,8 @@ namespace New_Scripts.Multiplayer.Messages
         FlagCaptured = 4,
         Penalty = 5,
         ProgressSync = 6,
-        Finished = 7
+        Finished = 7,
+        Ready = 8
     }
 
     public enum RaceMode : byte
@@ -97,5 +98,11 @@ namespace New_Scripts.Multiplayer.Messages
     {
         public RaceMessageType Type => RaceMessageType.Finished;
         public float ElapsedSeconds;
+    }
+
+    /// <summary>Sahne yüklendi, oyuncu donuk bekliyor. İki taraf da Ready görünce ortak geri sayım başlar.</summary>
+    public sealed class ReadyMessage : IRaceMessage
+    {
+        public RaceMessageType Type => RaceMessageType.Ready;
     }
 }

@@ -38,7 +38,23 @@ namespace New_Scripts.Multiplayer.Ghost
             var animation = player.GetComponentInChildren<PlayerAnimationController>(true);
             broadcaster._bodySprite = animation != null ? animation.GetComponent<SpriteRenderer>() : null;
             broadcaster.SubscribeToRooms();
+            broadcaster.EnterRoomContainingPlayer();
             return broadcaster;
+        }
+
+        /// <summary>
+        /// Sahne önceden yüklüyse (geliştirici başlatıcısı) ilk odanın OnRoomEntered'ı kaçmıştır: oyuncunun içinde durduğu
+        /// oda ilk oda sayılır. Lobi yolunda LevelBootstrapper ardından gerçek başlangıç odasını yine bildirir.
+        /// </summary>
+        private void EnterRoomContainingPlayer()
+        {
+            Vector2 position = _player.transform.position;
+            foreach (var (room, _) in _subscriptions)
+            {
+                if (room.RoomBounds == null || !room.RoomBounds.OverlapPoint(position)) continue;
+                OnRoomEntered(room);
+                return;
+            }
         }
 
         private void SubscribeToRooms()

@@ -152,6 +152,14 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Ready_RoundTrips_AsSingleByte()
+        {
+            byte[] bytes = RaceMessageCodec.Encode(new ReadyMessage());
+            Assert.AreEqual(1, bytes.Length);
+            Assert.IsNotNull(RoundTrip<ReadyMessage>(new ReadyMessage()));
+        }
+
+        [Test]
         public void ProgressSync_RoundTrips([Values(0, 3)] int capturedCount)
         {
             int[] captured = new int[capturedCount];

@@ -5,7 +5,10 @@
         "RockTheGame.Runtime",
         "Unity.Networking.Transport",
         "Unity.Collections",
-        "UniTask"
+        "UniTask",
+        "Unity.TextMeshPro",
+        "Unity.ugui",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

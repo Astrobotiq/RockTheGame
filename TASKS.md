@@ -7,7 +7,6 @@
 ## Active
 
 - [ ] **MP 0: Steam duman testi** #test - Facepunch.Steamworks 2.5.2 ayrı asmdef'te, `SteamClient.Init(480)`, iki bilgisayar arasında bağlantı; iki PC ve iki Steam hesabı gerekir (docs/systems/multiplayer.md §Aşamalar), due 2026-11-09
-- [ ] **MP 4: Hayalet** #code - `LocalPlayerBroadcaster` + `GhostPlayer` prefab'ı; `Room.OnRoomEntered`'ın her girişte çağrıldığını doğrula, due 2026-11-27
 - [ ] **MP 5: Bayrak işaretleri** #code - önce `RoomNew-22` ID'si 22; `RaceFlagPoint`, varsayılan yere yerleştirme komutu, `RaceFlag`, due 2026-12-04
 - [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle, due 2026-12-07
 - [ ] **MP 6: Ceza akışı** #code - önceki odaya ışınlama, kamera, checkpoint; PlayMode testi; `PenaltyHandler` hedefi uygularken `TryGetPenaltyTarget` ile okur, due 2026-12-11
@@ -53,6 +52,7 @@
 
 ## Done
 
+- [x] ~~**MP 4: Hayalet** #code~~ (2026-11-06) - üç hafta erken; iki pencerede rakip yarı saydam hayalet olarak görünüyor, takip ediyor, uzak odada gizleniyor (ajan iki pencereyi CLI ile sürerek doğruladı); EditMode 120/120, PlayMode 36/36. Gamepad iki pencerede hâlâ denenmedi
 - [x] ~~**MP 3: Unity Transport taşıyıcısı** #code~~ (2026-11-06) - iki hafta erken; UTP adaptörü (gerçek localhost testleriyle) ve editör için geliştirici başlatıcısı; EditMode 100/100, PlayMode 36/36; MP 1–3 bir akşamda bitti, NGO'ya geçiş koşulu oluşmadı. Gamepad'in iki pencerede davranışı denenmedi
 - [x] ~~**MP 2: Yarış kuralları (`RaceSession`)** #code~~ (2026-11-06) - planlanandan bir hafta erken; gözden geçirmeden sonra ceza hedefi uygulama anında hesaplanıyor, ceza hep gönderiliyor, rakip sayacı 3'te sıfırlanıyor; EditMode 84/84
 - [x] ~~**MP 1: Assembly'ler, taşıyıcı arayüzü, bellek içi taşıyıcı, mesajlar** #code~~ (2026-11-06) - `feature/multiplayer` dalında 4 commit; EditMode 60/60, PlayMode 36/36; gözden geçirmenin 6 küçük bulgusu ertelendi (docs/systems/multiplayer.md)

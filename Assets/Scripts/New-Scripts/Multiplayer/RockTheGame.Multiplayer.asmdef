@@ -2,6 +2,7 @@
     "name": "RockTheGame.Multiplayer",
     "rootNamespace": "New_Scripts.Multiplayer",
     "references": [
+        "RockTheGame.Runtime",
         "Unity.Networking.Transport",
         "Unity.Collections"
     ],

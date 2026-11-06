@@ -5,6 +5,7 @@ using System.Linq;
 using New_Scripts.Multiplayer.Flags;
 using New_Scripts.Multiplayer.Ghost;
 using New_Scripts.Multiplayer.Messages;
+using New_Scripts.Multiplayer.Penalty;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
 using New_Scripts.Player;
@@ -32,6 +33,7 @@ namespace New_Scripts.Multiplayer.Dev
         private GhostInterpolator _interpolator = new GhostInterpolator();
         private bool _ghostVisible;
         private readonly List<RaceFlag> _flags = new List<RaceFlag>();
+        private PenaltyHandler _penalty;
 
         public RaceSession Session { get; private set; }
         public IRaceTransport Transport { get; private set; }
@@ -102,6 +104,9 @@ namespace New_Scripts.Multiplayer.Dev
 
             _broadcaster = LocalPlayerBroadcaster.Create(player, Session, Transport);
             DontDestroyOnLoad(_broadcaster.gameObject);
+
+            _penalty = PenaltyHandler.Create(Session, player);
+            Session.PenaltyReceived += _penalty.Enqueue;
 
             var rope = player.transform.Find("LeftRope");
             _ghost = GhostView.CreateFrom(animation.GetComponent<SpriteRenderer>(), animation.GetComponent<Animator>(),
@@ -202,6 +207,12 @@ namespace New_Scripts.Multiplayer.Dev
             Transport = null;
             if (_ghost != null) Destroy(_ghost.gameObject);
             if (_broadcaster != null) Destroy(_broadcaster.gameObject);
+            if (_penalty != null)
+            {
+                if (Session != null) Session.PenaltyReceived -= _penalty.Enqueue;
+                Destroy(_penalty.gameObject);
+            }
+            _penalty = null;
             _ghost = null;
             _broadcaster = null;
             foreach (var flag in _flags)

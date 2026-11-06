@@ -130,6 +130,16 @@ namespace New_Scripts.Multiplayer.Session
             return Mode == RaceMode.Race && !LocalFinished && LocalRoomId > RaceRules.FirstRoomId;
         }
 
+        /// <summary>
+        /// TryGetPenaltyTarget ile aynı kapı; hedef oda grafiğinden bulunur (RaceRules.PreviousRoomId), yan odada da doğru.
+        /// </summary>
+        public bool TryGetPenaltyTarget(IEnumerable<int> localNeighborRoomIds, out int roomId)
+        {
+            bool applies = TryGetPenaltyTarget(out roomId);
+            roomId = RaceRules.PreviousRoomId(LocalRoomId, localNeighborRoomIds);
+            return applies;
+        }
+
         private void SetOpponentRoom(int roomId)
         {
             if (roomId == OpponentRoomId) return;

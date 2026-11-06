@@ -52,6 +52,18 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void MultiplayerEntry_OnlyWithArgument()
+        {
+            Assert.IsTrue(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(new[] { "RockTheGame.exe", "-multiplayer" }));
+            Assert.IsTrue(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(new[] { "x", "-MULTIPLAYER" }));
+            Assert.IsFalse(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(new[] { "RockTheGame.exe" }));
+            Assert.IsFalse(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(null));
+            Assert.IsTrue(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(new[] { "x", "-mp-host" }));
+            Assert.AreEqual("100.64.0.7", New_Scripts.Multiplayer.Lobby.MultiplayerEntry.JoinAddress(new[] { "x", "-mp-join", "100.64.0.7" }));
+            Assert.IsNull(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.JoinAddress(new[] { "x", "-mp-join" }));
+        }
+
+        [Test]
         public void Status_DescribesWaitingAndDisconnect()
         {
             Assert.AreEqual("Rakip yükleniyor…", RaceHudText.Status(LobbyPhase.WaitingForOpponent, TransportState.Connected, null));

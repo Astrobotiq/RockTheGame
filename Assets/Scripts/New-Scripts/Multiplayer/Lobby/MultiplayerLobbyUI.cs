@@ -57,6 +57,7 @@ namespace New_Scripts.Multiplayer.Lobby
             hostButton.onClick.AddListener(StartHost);
             joinButton.onClick.AddListener(StartJoin);
             cancelButton.onClick.AddListener(Cancel);
+            Debug.Log($"[MP] Lobi açıldı (protokol v{RaceProtocol.Version})");
             _exitReason = MultiplayerSession.LastExitReason;
             MultiplayerSession.LastExitReason = null;
             if (resumeButton != null)
@@ -69,6 +70,23 @@ namespace New_Scripts.Multiplayer.Lobby
             }
             if (string.IsNullOrWhiteSpace(addressField.text)) addressField.text = DefaultAddress;
             Refresh();
+        }
+
+        // Build'de Host.bat / -mp-join ile kendiliğinden başla (yalnız ilk açılışta; lobiye dönülünce tekrar etmez).
+        private static bool _autoStartUsed;
+
+        private void Start()
+        {
+            if (_autoStartUsed || Application.isEditor) return;
+            _autoStartUsed = true;
+            var args = System.Environment.GetCommandLineArgs();
+            string join = MultiplayerEntry.JoinAddress(args);
+            if (MultiplayerEntry.HasHostArgument(args)) StartHost();
+            else if (join != null)
+            {
+                addressField.text = join;
+                StartJoin();
+            }
         }
 
         private void ToggleMode()

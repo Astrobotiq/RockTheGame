@@ -263,11 +263,11 @@ namespace New_Scripts.Multiplayer
             Disconnected?.Invoke(reason);
         }
 
-        private static string DescribeDisconnect(DisconnectReason reason)
+        private string DescribeDisconnect(DisconnectReason reason)
         {
             switch (reason)
             {
-                case DisconnectReason.Timeout: return "Host'a ulaşılamadı";
+                case DisconnectReason.Timeout: return _isHost ? "Rakibin bağlantısı zaman aşımına uğradı" : "Host'a ulaşılamadı";
                 case DisconnectReason.Rejected: return "Bağlantı reddedildi (host dolu ya da adres yanlış)";
                 case DisconnectReason.RemoteLeft: return "Rakip ayrıldı";
                 default: return "Bağlantı koptu";

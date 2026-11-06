@@ -1,6 +1,6 @@
 # Çok oyunculu
 
-*GDD §9. Durum: **tasarım onaylandı; MP 1 kodda** (assembly, `IRaceTransport`, `InMemoryTransport`, mesajlar ve codec). Son kod doğrulaması: 2026-11-06.*
+*GDD §9. Durum: **tasarım onaylandı; MP 1–2 kodda** (assembly, `IRaceTransport`, `InMemoryTransport`, mesajlar ve codec, `RaceSession` kuralları). Oynanabilir değil. Son kod doğrulaması: 2026-11-06.*
 
 ## Tasarım niyeti
 
@@ -18,6 +18,8 @@
 | Bayrak | Her odanın sonunda bir bayrak. Her oyuncu her odanın bayrağını **bir kez** alabilir (yoksa geri gönderilen oyuncu aynı bayrağı tekrar toplar). |
 | Ceza | **Otomatik.** 3. bayrakta rakip bir önceki odanın (`RoomId - 1`) başlangıç checkpoint'ine gider, sayaç 0'a döner. Rakip oda 1'deyse ceza boşa gider. |
 | Bağlantı koparsa | Yarış kaydedilir, aynı iki kişi sonra kaldıkları yerden devam eder. |
+| Ceza hedefi | **Alıcı belirler:** ceza geldiği an kendi odasının bir öncesine gider (gecikmede oda değişmiş olabilir); `PenaltyMessage.TargetRoomId` yalnız bilgi. Rakibin odası bilinmiyorsa ceza boşa gider. Bitirmiş oyuncuya ceza işlemez. |
+| Rakibin odası | Yalnız güvenilir mesajlardan (`RoomEntered`, `ProgressSync`); `Snapshot.RoomId` kullanılmaz, çünkü iki kanal birbirine göre sıralı değil. |
 | Platform | Steam. Geliştirme ve testte Steam'in ücretsiz test uygulaması (Spacewar, AppID 480); kendi AppID'si (100 $) mağaza sayfası / dış test zamanı alınır. |
 | Ağ çözümü | Kendi ince arayüzümüz (`IRaceTransport`) + değiştirilebilir taşıyıcılar. Netcode for GameObjects ve Unity Relay/Lobby kullanılmaz. |
 
@@ -67,7 +69,8 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - `Multiplayer/RaceProtocol.cs` — `Version = 1`, `MaxPlayerNameLength = 32`
 - `Multiplayer/Messages/RaceMessages.cs`, `RaceMessageCodec.cs` — 7 mesaj; `Snapshot` 44 bayt (iki kanca noktası doluyken)
 - `Multiplayer/Transport/IRaceTransport.cs`, `InMemoryTransport.cs`
-- Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`)
+- `Multiplayer/Session/RaceRules.cs` (`FlagsPerPenalty = 3`, `FirstRoomId = 1`), `RaceSession.cs` — ağ bilmez; yerel olaylar gidecek mesajları döndürür, `Receive` gelenleri işler
+- Testler: `Assets/Tests/EditMode/Multiplayer/` (`AssemblySeparationTests`, `RaceMessageCodecTests`, `InMemoryTransportTests`, `RaceSessionLocalTests`, `RaceSessionRemoteTests`)
 
 ## Mesajlar
 

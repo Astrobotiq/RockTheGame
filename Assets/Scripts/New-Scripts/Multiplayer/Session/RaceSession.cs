@@ -25,6 +25,13 @@ namespace New_Scripts.Multiplayer.Session
         public bool OpponentFinished { get; private set; }
         public float OpponentElapsedSeconds { get; private set; }
 
+        /// <summary>Rakip ceza yolladı; argüman yerel oyuncunun gideceği oda (o anki odasının bir öncesi).</summary>
+        public event Action<int> PenaltyReceived;
+        public event Action<int> OpponentRoomChanged;
+        public event Action<int> OpponentFlagCountChanged;
+        /// <summary>Rakip yarışı bitirdi; argüman rakibin süresi.</summary>
+        public event Action<float> OpponentFinishedRace;
+
         public RaceSession(RaceMode mode, int startRoomId = RaceRules.FirstRoomId)
         {
             Mode = mode;
@@ -77,14 +84,50 @@ namespace New_Scripts.Multiplayer.Session
             };
         }
 
+        /// <summary>
+        /// Rakipten gelen mesajı işler. Rakibin odası yalnız güvenilir mesajlardan (RoomEntered, ProgressSync) alınır:
+        /// Snapshot güvenilmez kanalda gelir ve RoomEntered'a göre sırasız olabilir. Hello ve Snapshot burada yok sayılır.
+        /// </summary>
         public void Receive(IRaceMessage message)
         {
             switch (message)
             {
                 case RoomEnteredMessage room:
-                    OpponentRoomId = room.RoomId;
+                    SetOpponentRoom(room.RoomId);
+                    break;
+                case FlagCapturedMessage flag:
+                    SetOpponentFlagCount(flag.NewCount);
+                    break;
+                case PenaltyMessage _:
+                    // Hedefi alıcı belirler: gecikme sırasında oda değişmiş olabilir, gönderenin TargetRoomId'si yalnız bilgi.
+                    if (Mode == RaceMode.Race && !LocalFinished && LocalRoomId > RaceRules.FirstRoomId)
+                        PenaltyReceived?.Invoke(LocalRoomId - 1);
+                    break;
+                case ProgressSyncMessage sync:
+                    SetOpponentRoom(sync.RoomId);
+                    SetOpponentFlagCount(sync.FlagCount);
+                    break;
+                case FinishedMessage finished:
+                    if (OpponentFinished) break;
+                    OpponentFinished = true;
+                    OpponentElapsedSeconds = finished.ElapsedSeconds;
+                    OpponentFinishedRace?.Invoke(finished.ElapsedSeconds);
                     break;
             }
+        }
+
+        private void SetOpponentRoom(int roomId)
+        {
+            if (roomId == OpponentRoomId) return;
+            OpponentRoomId = roomId;
+            OpponentRoomChanged?.Invoke(roomId);
+        }
+
+        private void SetOpponentFlagCount(int count)
+        {
+            if (count == OpponentFlagCount) return;
+            OpponentFlagCount = count;
+            OpponentFlagCountChanged?.Invoke(count);
         }
     }
 }

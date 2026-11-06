@@ -229,6 +229,22 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void TryDecode_HelloWithMalformedNameLength_ReturnsFalseWithoutThrowing()
+        {
+            // Tip, sürüm, mod, 16 bayt Guid, ardından 5 devam baytlı geçersiz 7-bit uzunluk öneki:
+            // BinaryReader.ReadString burada FormatException atar (gözden geçirme bulgusu #1).
+            // Düzen: [0] tip, [1-2] sürüm, [3] mod, [4-19] Guid, [20-24] uzunluk öneki.
+            byte[] bytes = new byte[25];
+            bytes[0] = (byte)RaceMessageType.Hello;
+            bytes[1] = 1;
+            for (int i = 20; i < 25; i++) bytes[i] = 0xFF;
+
+            bool ok = true;
+            Assert.DoesNotThrow(() => ok = RaceMessageCodec.TryDecode(bytes, out _));
+            Assert.IsFalse(ok);
+        }
+
+        [Test]
         public void TryDecode_ProgressSyncWithHugeArrayLength_ReturnsFalse()
         {
             // Tip baytı + RoomId + FlagCount + dizi uzunluğu = int.MaxValue, sonrası yok.

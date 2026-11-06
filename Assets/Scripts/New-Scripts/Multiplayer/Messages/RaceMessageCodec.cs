@@ -137,8 +137,10 @@ namespace New_Scripts.Multiplayer.Messages
 
                 return true;
             }
-            catch (Exception e) when (e is EndOfStreamException || e is IOException || e is ArgumentException)
+            catch (Exception)
             {
+                // Ağdan gelen veri güvenilmez: BinaryReader EndOfStream, IO, Argument ve bozuk uzunluk önekinde
+                // FormatException atabilir. Sözleşme "asla istisna atmaz" olduğu için hepsi false'a döner.
                 message = null;
                 return false;
             }

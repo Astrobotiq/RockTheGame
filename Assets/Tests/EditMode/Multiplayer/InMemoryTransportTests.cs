@@ -183,6 +183,28 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void DisconnectInsideHandler_StopsBatchAndRaisesOnNextPoll()
+        {
+            Connect();
+            DisconnectReason? clientReason = null, hostReason = null;
+            _client.Disconnected += r => clientReason = r;
+            _host.Disconnected += r => hostReason = r;
+            _client.MessageReceived += m => { if (m[0] == 1) _client.Disconnect(); };
+
+            _host.Send(new byte[] { 1 }, true);
+            _host.Send(new byte[] { 2 }, true);
+            Assert.DoesNotThrow(() => _client.Poll());
+
+            Assert.AreEqual(1, _clientReceived.Count, "Disconnect'ten sonra kalan mesajlar teslim edilmemeli");
+            Assert.IsNull(clientReason, "Disconnected olayı bir sonraki Poll'da gelmeli");
+
+            _client.Poll();
+            _host.Poll();
+            Assert.AreEqual(DisconnectReason.LocalRequest, clientReason);
+            Assert.AreEqual(DisconnectReason.RemoteLeft, hostReason);
+        }
+
+        [Test]
         public void SendInsideOwnHandler_DoesNotThrowAndArrivesNextPoll()
         {
             // Aynı uç kendi Poll'u sırasında hem alır hem karşıya yollar; karşı uç da aynı turda yanıtlar.

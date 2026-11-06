@@ -358,7 +358,8 @@ namespace New_Scripts.Multiplayer
 
             var rope = _player.transform.Find("LeftRope");
             _ghost = GhostView.CreateFrom(animation.GetComponent<SpriteRenderer>(), animation.GetComponent<Animator>(),
-                rope != null ? rope.GetComponent<LineRenderer>() : null, GhostEyeSourceFactory.From(_player));
+                rope != null ? rope.GetComponent<LineRenderer>() : null, GhostEyeSourceFactory.From(_player),
+                GhostEyeSourceFactory.ArmsFrom(_player), GhostEyeSourceFactory.DashFrom(_player));
             DontDestroyOnLoad(_ghost.gameObject);
 
             _penalty = PenaltyHandler.Create(Session, _player);

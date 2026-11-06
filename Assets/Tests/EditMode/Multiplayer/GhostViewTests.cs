@@ -183,6 +183,110 @@ namespace RockTheGame.Tests.Multiplayer
             foreach (var r in _ghost.GetComponentsInChildren<SpriteRenderer>(true)) Assert.IsFalse(r.enabled, r.name);
         }
 
+        // ---------------- Kollar ve dash efekti (6 Kasım, kullanıcı isteği) ----------------
+
+        private GhostArmSource FakeArms()
+        {
+            var source = new GhostArmSource();
+            foreach (var (name, x) in new[] { ("LeftArmPivot", -0.54f), ("RightArmPivot", 0.22f) })
+            {
+                var pivot = new GameObject(name).transform;
+                pivot.SetParent(_source.transform, false);
+                pivot.localPosition = new Vector3(x, 0f, 0f);
+                pivot.localScale = Vector3.one * 0.6f;
+                var square = new GameObject("Square").AddComponent<SpriteRenderer>();
+                square.transform.SetParent(pivot, false);
+                square.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+                square.transform.localScale = new Vector3(1f, 0.3f, 1f);
+                square.sortingLayerName = "Player";
+                square.sortingOrder = 1;
+                if (x < 0f) { source.LeftPivot = pivot; source.LeftSprite = square; }
+                else { source.RightPivot = pivot; source.RightSprite = square; }
+            }
+            return source;
+        }
+
+        private GhostView GhostWithFx(out GhostDashSource dash)
+        {
+            dash = new GhostDashSource { SpawnInterval = 0.05f, Duration = 0.5f, Color = new Color(0.5f, 0.5f, 1f, 0.5f), Trail = null };
+            var ghost = GhostView.CreateFrom(_body, _animator, _rope, null, FakeArms(), dash);
+            ghost.SetVisible(true);
+            return ghost;
+        }
+
+        [Test]
+        public void Arm_ShownOnlyWhileHooked_PointsAtAnchor_RopeStartsAtHand()
+        {
+            _ghost = GhostWithFx(out _);
+            var leftArm = _ghost.transform.Find("LeftArmPivot");
+            Assert.IsNotNull(leftArm);
+            var armSprite = leftArm.GetComponentInChildren<SpriteRenderer>(true);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero });
+            Assert.IsFalse(armSprite.enabled, "kanca yokken kol gizli");
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, LeftAnchor = new Vector2(-0.54f, 5f) });
+            Assert.IsTrue(armSprite.enabled, "kanca atılınca kol görünür");
+            Assert.AreEqual(90f, leftArm.eulerAngles.z, 0.5f, "kol tutunduğu yere bakar");
+
+            var rope = _ghost.transform.Find("LeftRope").GetComponent<LineRenderer>();
+            Vector3 start = rope.GetPosition(0);
+            Assert.AreEqual(-0.54f, start.x, 1e-3f);
+            Assert.AreEqual(0.6f, start.y, 1e-3f, "ip kolun ucundan (0.6 birim) çıkar");
+        }
+
+        [Test]
+        public void Arm_HiddenWhenGhostHidden()
+        {
+            _ghost = GhostWithFx(out _);
+            var armSprite = _ghost.transform.Find("RightArmPivot").GetComponentInChildren<SpriteRenderer>(true);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, RightAnchor = new Vector2(3f, 3f), IsHidden = true });
+
+            Assert.IsFalse(armSprite.enabled);
+        }
+
+        [Test]
+        public void Dash_LeavesFadingAfterimages_OnlyWhileVisible()
+        {
+            _ghost = GhostWithFx(out _);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, IsDashing = true });
+            for (int i = 0; i < 5; i++) _ghost.TickEffects(0.05f);
+            int spawned = _ghost.ActiveAfterimageCount;
+            Assert.GreaterOrEqual(spawned, 3, "dash sırasında 0.05 sn'de bir kopya");
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, IsDashing = false });
+            for (int i = 0; i < 12; i++) _ghost.TickEffects(0.05f);
+            Assert.AreEqual(0, _ghost.ActiveAfterimageCount, "0.5 sn'de solar");
+
+            _ghost.SetVisible(false);
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, IsDashing = true });
+            for (int i = 0; i < 5; i++) _ghost.TickEffects(0.05f);
+            Assert.AreEqual(0, _ghost.ActiveAfterimageCount, "görünmezken kopya yok");
+        }
+
+        [Test]
+        public void Trail_EmitsWhileSwingingOrDashing()
+        {
+            var trailSource = new GameObject("Trail").AddComponent<TrailRenderer>();
+            trailSource.transform.SetParent(_source.transform, false);
+            trailSource.time = 0.25f;
+            var dash = new GhostDashSource { Trail = trailSource, Color = Color.white };
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope, null, null, dash);
+            _ghost.SetVisible(true);
+            var trail = _ghost.GetComponentInChildren<TrailRenderer>(true);
+            Assert.IsNotNull(trail);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, IsSwinging = true });
+            _ghost.TickEffects(0.016f);
+            Assert.IsTrue(trail.emitting);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero });
+            _ghost.TickEffects(0.016f);
+            Assert.IsFalse(trail.emitting);
+        }
+
         [Test]
         public void SetVisible_False_HidesRenderers()
         {

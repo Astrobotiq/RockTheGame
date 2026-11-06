@@ -15,6 +15,7 @@ Yeni bir özellik üzerinde çalışmaya başlamadan önce ilgili dosyayı oku; 
 | [`platforms.md`](platforms.md) | Sürücü + strateji, taşıma, tetiklenen/kırılan/tek yönlü platform, launch pad, wrapping | §6.2 |
 | [`hazards.md`](hazards.md) | Diken, asit, hareketli/hızlanan/dönen/akan ölümcül nesneler | §6.2 |
 | [`collectibles.md`](collectibles.md) | Ananas, anahtar-kapı, slingshot yenileyici, tek nefeste ananas, envanter | §5.3, §6.2 |
+| [`multiplayer.md`](multiplayer.md) | Hayalet rakip, yarış ve birlikte modları, bayrak cezası, taşıyıcılar, yarış kaydı (MP 1 kodda: assembly, taşıyıcı arayüzü, mesajlar) | §9 |
 
 Her dosyada aynı bölümler var: tasarım niyeti, nasıl çalıştığı, tunable'lar (asset'teki gerçek değerler), kod yolları ve **bilinen kenar durumlar / GDD ile farklar**. Son bölüm, kodun GDD'den ayrıldığı yerleri listeler; hangisinin doğru olduğu geliştiricinin kararıdır.
 

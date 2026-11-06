@@ -47,7 +47,7 @@ Hareketli tehlikeler `PlatformController` / `WrappingPlatformManager` üzerinden
 ## Bilinen kenar durumlar ve tasarım notları
 
 1. **Hit-stop sırasında tehlikeler durmuyor.** Dash başlangıcında ve slingshot fırlatışında oyuncu `HitStopDuration` (0.2 sn) boyunca donuyor, dünya donmuyor ([`movement-core.md`](movement-core.md)). Hareketli bir tehlike bu sürede oyuncuya çarpabilir. Sık kullanılan "hareketli tuzak + dash" kombinasyonunda haksız bir ölüm gibi hissedilebilir; oynayarak kontrol edilmeli.
-2. **Okunurluk henüz oyun içinden doğrulanmadı.** GDD §8.1 oda 9'daki dikenlerin uzaktan soluk durduğunu yazıyor. Oyun içi kamerayla kontrol `TASKS.md`'de (26 Ekim).
+2. **Okunurluk (oyun içi kamerayla, 6 Kasım 2026).** Oda 9'da dikenler gümüş ve koyu çerçeveli, mavi zeminde net okunuyor. En zayıf yer, node arkasındaki pembe ve lila halkaların üstündeki sıralar; çerçeve sayesinde yine seçiliyor. Oda 16'da kamera çok uzak (ortho 22) ve zemindeki dikenler ince bir noktalı çizgi gibi duruyor. Aynı odada beyaz ezici bloklar node'ların önünden geçerken node'u tamamen örtüyor. Beyaz dikdörtgen ve daireler tehlike (`MovingDeath`, `RotatingDeath`) ve Unity'nin varsayılan kare/dairesiyle çizilmiş.
 3. **Rastgele hızlı wrapping** `minSpeed ≠ maxSpeed` ise ölümden ölüme farklı davranır. Ölümcül varyantta deterministik tutulmalı.
 4. **Asit ve diken görsel olarak farklı katmanlarda yaşıyor.** Diken bir Tilemap (oda prefab'ının parçası), asit ayrı prefab. Diken eklemek boyamakla, asit eklemek prefab koymakla yapılıyor.
 5. **GDD §6.2 tehlike listesi dikeni saymıyor**, ama her oda prefab'ında bir diken Tilemap'i var ve §8.1 dikenleri oda 9 ve 22'de gösteriyor.

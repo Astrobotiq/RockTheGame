@@ -33,8 +33,9 @@ namespace New_Scripts.Animation
         private int isPukingHash;
         private CancellationTokenSource cts;
 
-        private void Start()
+        private void Awake()
         {
+            // OnEnable'daki ilk SetBool'dan önce hazır olmalı; Start bunun için geç kalır.
             isPukingHash = Animator.StringToHash(isPukingParameterName);
 
             if (gnomeAnimator1 == null || gnomeAnimator2 == null)

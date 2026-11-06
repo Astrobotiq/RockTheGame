@@ -94,7 +94,7 @@ namespace New_Scripts.Player
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
 
-        public bool HasDashCharge { get; private set; }
+        public bool HasDashCharge { get; private set; } = true;
         public bool CanSlingshot { get; private set; } = true;
         public bool CanWallClimb { get; private set; } = true;
         public float CurrentWallStamina { get; private set; }

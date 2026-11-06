@@ -1,6 +1,6 @@
 # Platformlar
 
-*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-10-05.*
+*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-05.*
 
 ## Tasarım niyeti
 
@@ -87,7 +87,7 @@ Bir grup `PlatformController`'ı (stratejisiz) `leftBound`'dan `rightBound`'a ta
 
 ## Bilinen kenar durumlar
 
-1. **`period = 0` NaN üretiyor:** hem `LinearPingPongStrategy` hem `TransformPingPongStrategy` `% period` ve `/ (period / 2)` yapıyor. `AcceleratingPingPong` ve `Circular` korumalı. Düzeltme `TASKS.md`'de (9 Ekim).
+1. **`period <= 0` hareket etmez:** `LinearPingPongStrategy` ve `TransformPingPongStrategy` bu durumda başlangıç noktasında kalır (`AcceleratingPingPong` ile aynı davranış). `Circular` ise `period = 0` iken 1 sn'ye düşer.
 2. **Kullanılmayan kod:** `MovingPlatform` + `LinearWaypointPath` + `IWaypointPath` (waypoint tabanlı eski sürücü) ve `IPassenger` hiçbir sahne/prefab'da yok. CLAUDE.md bunları aktif sistemin parçası olarak anlatıyor.
 3. **Algılama kutuları yanları da kapsıyor.** Kırılan, tetiklenen platformlar ve launch pad "üstüne basma"yı collider'ın tamamını kaplayan bir kutuyla algılıyor. Yandan tutunmak ya da yandan değmek de tetikleyebilir.
 4. **Sürekli titreşim tek kanallı.** Kırılan platform bitince `StopContinuousVibration` çağırıyor. Oyuncu o sırada duvara tutunuyorsa duvar titreşimi de kesilir.

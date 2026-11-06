@@ -1,8 +1,11 @@
 #if UNITY_EDITOR
 using System;
+using New_Scripts.Multiplayer.Ghost;
 using New_Scripts.Multiplayer.Messages;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
+using New_Scripts.Player;
+using New_Scripts.Player.Visual;
 using UnityEngine;
 
 namespace New_Scripts.Multiplayer.Dev
@@ -21,6 +24,10 @@ namespace New_Scripts.Multiplayer.Dev
         private DevRole _role;
         private string _address;
         private float _retryAt = -1f;
+        private LocalPlayerBroadcaster _broadcaster;
+        private GhostView _ghost;
+        private GhostInterpolator _interpolator = new GhostInterpolator();
+        private bool _ghostVisible;
 
         public RaceSession Session { get; private set; }
         public IRaceTransport Transport { get; private set; }
@@ -56,6 +63,7 @@ namespace New_Scripts.Multiplayer.Dev
             Transport.Connected += OnConnected;
             Transport.Disconnected += OnDisconnected;
             Transport.MessageReceived += OnMessage;
+            if (Application.isPlaying) SetUpGhost();
             Begin(role);
         }
 
@@ -73,9 +81,78 @@ namespace New_Scripts.Multiplayer.Dev
             }
         }
 
+        /// <summary>Yerel oyuncunun yayıncısını ve rakibin hayaletini kurar (yalnız Play Mode, sahne kökünde).</summary>
+        private void SetUpGhost()
+        {
+            var player = FindFirstObjectByType<PlayerController>();
+            var animation = player != null ? player.GetComponentInChildren<PlayerAnimationController>(true) : null;
+            if (animation == null)
+            {
+                Debug.LogWarning("[MP] Oyuncu bulunamadı; hayalet kurulmadı.");
+                return;
+            }
+
+            _broadcaster = LocalPlayerBroadcaster.Create(player, Session, Transport);
+            DontDestroyOnLoad(_broadcaster.gameObject);
+
+            var rope = player.transform.Find("LeftRope");
+            _ghost = GhostView.CreateFrom(animation.GetComponent<SpriteRenderer>(), animation.GetComponent<Animator>(),
+                rope != null ? rope.GetComponent<LineRenderer>() : null, EyeSourceFrom(player));
+            DontDestroyOnLoad(_ghost.gameObject);
+        }
+
+        private static GhostEyeSource EyeSourceFrom(PlayerController player)
+        {
+            var eyes = player.GetComponentInChildren<PlayerEyesController>(true);
+            if (eyes == null) return null;
+
+            var source = new GhostEyeSource
+            {
+                Root = eyes.transform,
+                DefaultRootLocalPosition = eyes.DefaultLocalPosition,
+                AnimatedAnchor = eyes.AnimatedAnchor,
+                DefaultAnchorLocalPosition = eyes.DefaultAnchorLocalPosition,
+                VelocitySensitivity = eyes.VelocitySensitivity,
+                MaxPupilOffset = eyes.MaxPupilOffset,
+                PupilSmoothSpeed = eyes.PupilSmoothSpeed,
+                FlipParentTransform = eyes.FlipParentTransform
+            };
+            foreach (var eye in eyes.Eyes)
+            {
+                if (eye == null) continue;
+                source.Eyes.Add(new GhostEyeSource.Eye
+                {
+                    Container = eye.eyeContainer,
+                    Background = eye.eyeBgRenderer,
+                    Pupil = eye.pupilRenderer,
+                    Blink = eye.blinkRenderer,
+                    DefaultContainerLocalPosition = eye.defaultContainerLocalPos,
+                    DefaultPupilLocalPosition = eye.defaultPupilLocalPosition
+                });
+            }
+            return source;
+        }
+
+        private void UpdateGhost()
+        {
+            if (_ghost == null || _broadcaster == null) return;
+
+            bool hasPose = _interpolator.TrySample(Time.realtimeSinceStartupAsDouble, out GhostPose pose);
+            if (hasPose) _ghost.Apply(pose);
+
+            bool visible = hasPose && Transport != null && Transport.State == TransportState.Connected &&
+                           GhostVisibility.IsVisible(Session.OpponentRoomId, _broadcaster.LocalRoomId, _broadcaster.LocalNeighborRoomIds);
+            if (visible != _ghostVisible)
+            {
+                _ghostVisible = visible;
+                _ghost.SetVisible(visible);
+            }
+        }
+
         private void Update()
         {
             Transport?.Poll();
+            UpdateGhost();
 
             if (_retryAt > 0f && Time.unscaledTime >= _retryAt)
             {
@@ -93,6 +170,10 @@ namespace New_Scripts.Multiplayer.Dev
         {
             Transport?.Dispose();
             Transport = null;
+            if (_ghost != null) Destroy(_ghost.gameObject);
+            if (_broadcaster != null) Destroy(_broadcaster.gameObject);
+            _ghost = null;
+            _broadcaster = null;
         }
 
         private void OnConnected()
@@ -111,6 +192,7 @@ namespace New_Scripts.Multiplayer.Dev
         private void OnDisconnected(DisconnectReason reason)
         {
             Debug.Log($"[MP] Bağlantı kapandı: {reason}");
+            _interpolator = new GhostInterpolator();
             // Kopyalar aynı anda açılınca istemci host'tan önce davranabilir: host'a ulaşamazsa (Timeout) yeniden dener.
             // Reddedilince (host dolu, adres hatalı) denemez; yoksa saniyede bir sonsuz döngüye girer.
             if (_role == DevRole.Client && reason == DisconnectReason.Timeout)
@@ -125,7 +207,13 @@ namespace New_Scripts.Multiplayer.Dev
                 return;
             }
 
-            if (message.Type != RaceMessageType.Snapshot) Debug.Log($"[MP] ← {Describe(message)}");
+            if (message is SnapshotMessage snapshot)
+            {
+                _interpolator.Add(snapshot, Time.realtimeSinceStartupAsDouble);
+                return;
+            }
+
+            Debug.Log($"[MP] ← {Describe(message)}");
             Session.Receive(message);
         }
 

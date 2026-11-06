@@ -83,6 +83,16 @@ namespace New_Scripts.Player.Visual
         
         private CancellationTokenSource blinkCts;
 
+        // Multiplayer hayaleti gözleri kopyalarken okur; yalnız okunur, davranışı değiştirmez.
+        public IReadOnlyList<SingleEyeSetup> Eyes => eyes;
+        public Transform AnimatedAnchor => animatedAnchor;
+        public Vector3 DefaultLocalPosition => defaultParentLocalPos;
+        public Vector3 DefaultAnchorLocalPosition => defaultAnchorLocalPos;
+        public float VelocitySensitivity => velocitySensitivity;
+        public float MaxPupilOffset => maxPupilOffset;
+        public float PupilSmoothSpeed => pupilSmoothSpeed;
+        public bool FlipParentTransform => flipParentTransform;
+
         private void Awake()
         {
             if (playerController == null)

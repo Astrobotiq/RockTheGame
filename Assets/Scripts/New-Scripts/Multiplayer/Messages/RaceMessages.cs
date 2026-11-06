@@ -58,6 +58,8 @@ namespace New_Scripts.Multiplayer.Messages
         public bool IsWallSliding;
         public byte DashCount;
         public bool Teleported;
+        /// <summary>Oyuncu görünmüyor (öldü, respawn bekliyor): hayalet gizlenir.</summary>
+        public bool IsHidden;
         public Vector2? LeftAnchor;
         public Vector2? RightAnchor;
     }

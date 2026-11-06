@@ -20,6 +20,7 @@ namespace New_Scripts.Multiplayer.Messages
         private const byte IsWallClimbingBit = 1 << 4;
         private const byte IsWallSlidingBit = 1 << 5;
         private const byte TeleportedBit = 1 << 6;
+        private const byte IsHiddenBit = 1 << 7;
 
         private const byte LeftAnchorBit = 1 << 0;
         private const byte RightAnchorBit = 1 << 1;
@@ -171,6 +172,7 @@ namespace New_Scripts.Multiplayer.Messages
             if (s.IsWallClimbing) flags |= IsWallClimbingBit;
             if (s.IsWallSliding) flags |= IsWallSlidingBit;
             if (s.Teleported) flags |= TeleportedBit;
+            if (s.IsHidden) flags |= IsHiddenBit;
             writer.Write(flags);
             writer.Write(s.DashCount);
 
@@ -201,6 +203,7 @@ namespace New_Scripts.Multiplayer.Messages
             s.IsWallClimbing = (flags & IsWallClimbingBit) != 0;
             s.IsWallSliding = (flags & IsWallSlidingBit) != 0;
             s.Teleported = (flags & TeleportedBit) != 0;
+            s.IsHidden = (flags & IsHiddenBit) != 0;
             s.DashCount = reader.ReadByte();
 
             byte anchors = reader.ReadByte();

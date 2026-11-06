@@ -88,7 +88,7 @@ namespace RockTheGame.Tests.Multiplayer
             var s = FullSnapshot();
             s.FacingRight = !s.FacingRight; s.IsGrounded = !s.IsGrounded; s.IsSwinging = !s.IsSwinging;
             s.IsDashing = !s.IsDashing; s.IsWallClimbing = !s.IsWallClimbing; s.IsWallSliding = !s.IsWallSliding;
-            s.DashCount = 7; s.Teleported = !s.Teleported;
+            s.DashCount = 7; s.Teleported = !s.Teleported; s.IsHidden = !s.IsHidden;
 
             var r = RoundTrip<SnapshotMessage>(s);
 
@@ -100,6 +100,7 @@ namespace RockTheGame.Tests.Multiplayer
             Assert.AreEqual(s.IsWallSliding, r.IsWallSliding);
             Assert.AreEqual(s.DashCount, r.DashCount);
             Assert.AreEqual(s.Teleported, r.Teleported);
+            Assert.AreEqual(s.IsHidden, r.IsHidden);
         }
 
         [Test]

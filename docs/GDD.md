@@ -17,7 +17,7 @@ Oyuncu, birbirine bağlı odalardan geçerek ilerler. Her oda küçük bir bulma
 | **Hedef süre** | 2-3 saat |
 | **Hedef boyut** | ~60 oda |
 | **Platform** | PC, yalnızca gamepad |
-| **Çok oyunculu** | Online, iki kişilik yarış (ayrıntılar sonra) |
+| **Çok oyunculu** | Online, iki kişi: yarış ve birlikte modları (Steam) |
 | **Motor** | Unity 6 (URP, 2D) |
 
 ### Tek cümlelik vaat
@@ -210,20 +210,26 @@ Bunlar için Play Mode'da oyun içi kameradan (oyuncu ve HUD dahil, `source=scre
 
 ---
 
-## 9. Çok oyunculu (taslak)
+## 9. Çok oyunculu
 
-> Ayrıntılar daha sonra verilecek. Bu bölüm şu anki fikri kaydeder.
+> Kararlar 6 Kasım 2026'da verildi. Ayrıntılı tasarım: [`systems/multiplayer.md`](systems/multiplayer.md). Altyapının ilk aşaması (MP 1) kodda; oynanabilir değil.
 
-**Yarış modu.** İki oyuncu oyunun tamamını yarışarak geçer. Her odanın sonunda bir **bayrak** vardır. **3 bayrak toplayan oyuncu rakibini 1 oda geriye gönderir.** Başka bir etkileşim yoktur; iki oyuncu birbirini engellemez, sadece "beraber oynuyormuş" hissi yaşar.
+**Tek kişilik oyun bundan etkilenmez.** Çok oyunculu, ayrı bir girişten (lobi) açılan ayrı bir deneyimdir; ikisi aynı projede yaşar.
 
-**Alternatif.** Bayrak kapmacasının olmadığı, iki kişinin yalnızca birlikte oynadığı bir hâl.
+**Hayalet rakip.** Rakibini görürsün ama çarpışmaz, platformlara ve tehlikelere dokunmaz. Her oyuncunun dünyası kendine aittir.
+
+**Yarış modu.** İki oyuncu oyunun tamamını yarışarak geçer. Her odanın sonunda bir **bayrak** vardır; her oyuncu her odanın bayrağını bir kez alabilir. **3 bayrak toplayan oyuncu rakibini otomatik olarak 1 oda geriye gönderir** ve sayacı sıfırlanır; rakip ilk odadaysa ceza boşa gider. Başka bir etkileşim yoktur.
+
+**Birlikte modu.** Bayrak ve ceza olmadan, iki kişinin yalnızca yan yana oynadığı hâl. İki mod da lobide seçilir.
+
+**Bağlantı koparsa** yarış kaydedilir; aynı iki kişi sonra kaldıkları yerden devam eder.
 
 **Kurallar**
 - Oyun **online** olacak.
 - **Her oyuncu kendi odasını görür**, respawn anında olur.
-- İki oyuncu aynı odadaysa birbirlerini görürler.
+- İki oyuncu aynı ya da komşu odadaysa birbirlerini görürler.
 
-**Teknik durum.** Şu an projede **ağ altyapısı yok.** Mevcut oda, respawn ve kamera sistemleri tek oyuncu düşünülerek yazılmış; iki oyuncunun farklı odalarda olabilmesi bu yapıyı önemli ölçüde etkiler. Bu karar 60 oda tamamlanmadan verilirse odaları sonradan uyarlamak daha ucuza gelir.
+**Teknik durum.** Hayalet yaklaşımı sayesinde mevcut oda, respawn ve kamera sistemleri tek oyunculu kalır; ağdan yalnızca konum ve birkaç olay geçer. Platform Steam; geliştirmede Steam'in ücretsiz test uygulaması kullanılır.
 
 ---
 
@@ -262,13 +268,13 @@ Bunlar için Play Mode'da oyun içi kameradan (oyuncu ve HUD dahil, `source=scre
 **Kararlar bekleyenler**
 1. **Assist / yardım modu** olacak mı? Hem hardcore hem orta seviye hedeflendiği için bu önemli bir karar.
 2. **Hamster topu** koruyucusu yapılacak mı? Yapılırsa tek vuruşta ölüm felsefesini ve zorluk dengesini değiştirir.
-3. **Çok oyunculu:** yarış mı, yalnızca birlikte oynama mı, ikisi birden mi? Aynı odada oyuncular birbirini engeller mi?
+3. ~~**Çok oyunculu:** yarış mı, yalnızca birlikte oynama mı?~~ Karar verildi (6 Kasım 2026): ikisi de var, oyuncular birbirini engellemez (§9).
 4. **Toplanabilirlerin amacı:** ananas/altın neye yarıyor? Şu an yalnızca sayaç gibi görünüyor.
 5. **60 odalık zorluk ve mekanik tanıtım eğrisi**: hangi dünyada hangi mekanik tanıtılacak?
 
 **Riskler**
 - **Ses/müzik lisansları:** Klasördeki parçaların bir kısmı üçüncü taraf (örn. Disney kısa filminden "The Skeleton Dance") ve ticari yayında sorun çıkarabilir. Yayın öncesi hepsi lisanslı, kendi yapımı ya da telifsiz olanlarla değiştirilmeli.
-- **Ağ mimarisi:** Yukarıda §9'da anlatıldığı gibi.
+- **Çok oyunculu kapsamı:** ~9 akşamlık iş (`systems/multiplayer.md` §Aşamalar). Tam oyunluk yarış bir yarış kaydı gerektiriyor; tek kişilik kayıt sistemi de henüz yok.
 - **Kapsam:** ~22 oda kaldığı için 38 oda daha üretmek gerekiyor. Asit dışında tema olmaması, çeşitlilik açısından da risk taşıyor.
 - **Kod temizliği:** `Room.cs` bir editor namespace'ini (`EasyTextEffects.Editor...`) import ediyor; build'de sorun çıkarabilir. Eski prototip dosyaları (~25 adet) ve kullanılmayan sahneler temizlenebilir.
 

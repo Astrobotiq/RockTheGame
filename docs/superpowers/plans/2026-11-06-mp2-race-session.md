@@ -23,14 +23,14 @@
 
 ## Kararlar (spec'in açık bıraktığı yerler)
 
-- **Ceza hedefini alıcı belirler.** Gönderen `PenaltyMessage.TargetRoomId`'ye rakibin bildiği son odasının bir öncesini yazar, ama alıcı ceza geldiği an **kendi** odasının bir öncesine gider (gecikme sırasında oda değiştirmiş olabilir). `TargetRoomId` yalnızca bilgi. Alıcı ilk odadaysa ceza yok sayılır.
+- **Ceza hedefini alıcı belirler.** Gönderen `PenaltyMessage.TargetRoomId`'ye rakibin bildiği son odasının bir öncesini yazar, ama alıcı **cezayı uyguladığı an** kendi odasının bir öncesine gider (`TryGetPenaltyTarget`). `TargetRoomId` yalnızca bilgi. Alıcı ilk odadaysa ceza yok sayılır. *(Gözden geçirme sonrası: gönderen cezayı artık her zaman yollar; `PenaltyReceived` argümansız.)*
 - **Rakibin odası yalnız güvenilir mesajlardan** (`RoomEntered`, `ProgressSync`) güncellenir, `Snapshot.RoomId`'den değil: güvenilmez ve güvenilir kanal birbirine göre sıralı değil (MP 1 sözleşmesi), geç gelen bir snapshot odayı geri alabilir.
 - **Kazanan:** MP 2 yalnız iki tarafın bitişini kaydeder (`LocalFinished`, `OpponentFinished`, süreler). Kazananın ekranda gösterilmesi MP 7'de.
 
 ## Review Focus
 
 1. **Aynı odanın bayrağına ikinci kez dokunmak** (ceza ile geri gelince ya da trigger iki kez tetiklenince) → mesaj yok, sayaç değişmez. Test: Task 1.
-2. **Rakibin odası bilinmezken 3. bayrak** (bağlanır bağlanmaz, `RoomEntered` gelmeden) → `Penalty` gönderilmez, sayaç sıfırlanır. Test: Task 1.
+2. **Rakibin odası bilinmezken 3. bayrak** (bağlanır bağlanmaz, `RoomEntered` gelmeden) → sayaç sıfırlanır; *gözden geçirme sonrası:* `Penalty` yine gönderilir, boşa gidip gitmediğine alıcı karar verir. Test: Task 1.
 3. **Ceza, alıcı ilk odadayken gelir** → `PenaltyReceived` tetiklenmez. Test: Task 2.
 4. **Bitişten sonra gelen olaylar** (yerel oyuncu bitirdikten sonra bayrak/oda) → yok sayılır, mesaj üretilmez. Test: Task 1.
 5. **`ProgressSync` ile gelen sayaç ve oda** rakibin durumunu tamamen değiştirir (yeniden bağlanmada eski değer kalmaz); `CapturedRoomIds` null gelirse çökmez. Test: Task 2.

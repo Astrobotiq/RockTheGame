@@ -25,8 +25,11 @@ namespace New_Scripts.Multiplayer.Session
         public bool OpponentFinished { get; private set; }
         public float OpponentElapsedSeconds { get; private set; }
 
-        /// <summary>Rakip ceza yolladı; argüman yerel oyuncunun gideceği oda (o anki odasının bir öncesi).</summary>
-        public event Action<int> PenaltyReceived;
+        /// <summary>
+        /// Rakip ceza yolladı ve ceza bu oyuncuya işliyor. Hedef oda burada verilmez: ceza oda geçişi ya da respawn
+        /// bitene kadar bekletilebilir; uygulayan taraf o an TryGetPenaltyTarget ile hedefi okur.
+        /// </summary>
+        public event Action PenaltyReceived;
         public event Action<int> OpponentRoomChanged;
         public event Action<int> OpponentFlagCountChanged;
         /// <summary>Rakip yarışı bitirdi; argüman rakibin süresi.</summary>
@@ -57,9 +60,9 @@ namespace New_Scripts.Multiplayer.Session
             if (LocalFlagCount >= RaceRules.FlagsPerPenalty)
             {
                 LocalFlagCount = 0;
-                // Rakip ilk odadaysa ya da odası henüz bilinmiyorsa ceza boşa gider.
-                if (OpponentRoomId > RaceRules.FirstRoomId)
-                    sent.Add(new PenaltyMessage { TargetRoomId = OpponentRoomId - 1 });
+                // Ceza her zaman yollanır; boşa gidip gitmediğine alıcı karar verir (ilk odadaysa işlemez).
+                // Burada bilinen oda eski olabilir (RoomEntered yolda); TargetRoomId yalnız bilgi.
+                sent.Add(new PenaltyMessage { TargetRoomId = Math.Max(0, OpponentRoomId - 1) });
             }
 
             return sent;
@@ -96,12 +99,13 @@ namespace New_Scripts.Multiplayer.Session
                     SetOpponentRoom(room.RoomId);
                     break;
                 case FlagCapturedMessage flag:
+                    // Gönderen 3. bayrakta kendi sayacını sıfırladı; buradaki kopya da sıfırlanır (HUD önce 3'ü görür).
                     SetOpponentFlagCount(flag.NewCount);
+                    if (flag.NewCount >= RaceRules.FlagsPerPenalty) SetOpponentFlagCount(0);
                     break;
                 case PenaltyMessage _:
                     // Hedefi alıcı belirler: gecikme sırasında oda değişmiş olabilir, gönderenin TargetRoomId'si yalnız bilgi.
-                    if (Mode == RaceMode.Race && !LocalFinished && LocalRoomId > RaceRules.FirstRoomId)
-                        PenaltyReceived?.Invoke(LocalRoomId - 1);
+                    if (TryGetPenaltyTarget(out _)) PenaltyReceived?.Invoke();
                     break;
                 case ProgressSyncMessage sync:
                     SetOpponentRoom(sync.RoomId);
@@ -114,6 +118,16 @@ namespace New_Scripts.Multiplayer.Session
                     OpponentFinishedRace?.Invoke(finished.ElapsedSeconds);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Cezanın şu an uygulanacağı oda: yerel oyuncunun o anki odasının bir öncesi. Birlikte modunda, yarışı bitirmişken
+        /// ya da ilk odadayken ceza işlemez ve false döner.
+        /// </summary>
+        public bool TryGetPenaltyTarget(out int roomId)
+        {
+            roomId = LocalRoomId - 1;
+            return Mode == RaceMode.Race && !LocalFinished && LocalRoomId > RaceRules.FirstRoomId;
         }
 
         private void SetOpponentRoom(int roomId)

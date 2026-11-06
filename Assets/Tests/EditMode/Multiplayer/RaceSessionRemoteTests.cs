@@ -51,16 +51,43 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
-        public void RemotePenalty_RaisesWithLocalPreviousRoom()
+        public void RemoteFlagCaptured_ThirdFlag_ResetsOpponentCountToZero()
+        {
+            // Gönderen 3. bayrakta kendi sayacını sıfırlar; alıcıdaki kopya da sıfırlanmalı (ceza boşa gitse bile).
+            var session = new RaceSession(RaceMode.Race);
+
+            session.Receive(new FlagCapturedMessage { RoomId = 4, NewCount = RaceRules.FlagsPerPenalty });
+
+            Assert.AreEqual(0, session.OpponentFlagCount);
+        }
+
+        [Test]
+        public void RemotePenalty_RaisesAndTargetIsLocalPreviousRoom()
         {
             var session = new RaceSession(RaceMode.Race);
             session.OnLocalRoomEntered(5);
-            int? target = null;
-            session.PenaltyReceived += room => target = room;
+            bool raised = false;
+            session.PenaltyReceived += () => raised = true;
 
             session.Receive(new PenaltyMessage { TargetRoomId = 9 });
 
+            Assert.IsTrue(raised);
+            Assert.IsTrue(session.TryGetPenaltyTarget(out int target));
             Assert.AreEqual(4, target);
+        }
+
+        [Test]
+        public void PenaltyTarget_IsComputedWhenApplied_NotWhenReceived()
+        {
+            // Ceza oda geçişi sırasında gelir ve geçiş bitene kadar bekletilirse oyuncu iki değil bir oda geri gitmeli.
+            var session = new RaceSession(RaceMode.Race);
+            session.OnLocalRoomEntered(5);
+            session.Receive(new PenaltyMessage { TargetRoomId = 4 });
+
+            session.OnLocalRoomEntered(6);
+
+            Assert.IsTrue(session.TryGetPenaltyTarget(out int target));
+            Assert.AreEqual(5, target);
         }
 
         [Test]
@@ -68,11 +95,12 @@ namespace RockTheGame.Tests.Multiplayer
         {
             var session = new RaceSession(RaceMode.Race);
             bool raised = false;
-            session.PenaltyReceived += _ => raised = true;
+            session.PenaltyReceived += () => raised = true;
 
             session.Receive(new PenaltyMessage { TargetRoomId = 0 });
 
             Assert.IsFalse(raised);
+            Assert.IsFalse(session.TryGetPenaltyTarget(out _));
         }
 
         [Test]
@@ -81,7 +109,7 @@ namespace RockTheGame.Tests.Multiplayer
             var session = new RaceSession(RaceMode.Coop);
             session.OnLocalRoomEntered(5);
             bool raised = false;
-            session.PenaltyReceived += _ => raised = true;
+            session.PenaltyReceived += () => raised = true;
 
             session.Receive(new PenaltyMessage { TargetRoomId = 4 });
 
@@ -138,7 +166,7 @@ namespace RockTheGame.Tests.Multiplayer
             clientTransport.Poll();
 
             int? bTarget = null;
-            b.PenaltyReceived += room => bTarget = room;
+            b.PenaltyReceived += () => { if (b.TryGetPenaltyTarget(out int room)) bTarget = room; };
 
             Send(clientTransport, b.OnLocalRoomEntered(6));
             hostTransport.Poll();
@@ -149,7 +177,7 @@ namespace RockTheGame.Tests.Multiplayer
             clientTransport.Poll();
 
             Assert.AreEqual(5, bTarget);
-            Assert.AreEqual(3, b.OpponentFlagCount);
+            Assert.AreEqual(0, b.OpponentFlagCount);
 
             hostTransport.Dispose();
             clientTransport.Dispose();

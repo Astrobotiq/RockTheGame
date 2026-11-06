@@ -81,21 +81,22 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
-        public void ThirdFlag_OpponentInFirstRoom_PenaltyWastedCounterResets()
+        public void ThirdFlag_OpponentInFirstRoom_StillSendsPenalty_ReceiverDecides()
         {
+            // Gönderenin bildiği oda eski olabilir (RoomEntered yolda): cezayı yine yollar, boşa gidip gitmediğine alıcı karar verir.
             var session = RaceWithOpponentIn(RaceRules.FirstRoomId);
             session.OnLocalFlagReached(1);
             session.OnLocalFlagReached(2);
 
             var sent = session.OnLocalFlagReached(3);
 
-            Assert.AreEqual(1, sent.Count);
-            Assert.IsInstanceOf<FlagCapturedMessage>(sent[0]);
+            Assert.AreEqual(2, sent.Count);
+            Assert.IsInstanceOf<PenaltyMessage>(sent[1]);
             Assert.AreEqual(0, session.LocalFlagCount);
         }
 
         [Test]
-        public void ThirdFlag_OpponentRoomUnknown_PenaltyWastedCounterResets()
+        public void ThirdFlag_OpponentRoomUnknown_StillSendsPenalty_ReceiverDecides()
         {
             var session = new RaceSession(RaceMode.Race);
             session.OnLocalFlagReached(1);
@@ -103,8 +104,9 @@ namespace RockTheGame.Tests.Multiplayer
 
             var sent = session.OnLocalFlagReached(3);
 
-            Assert.AreEqual(1, sent.Count);
-            Assert.IsInstanceOf<FlagCapturedMessage>(sent[0]);
+            Assert.AreEqual(2, sent.Count);
+            Assert.IsInstanceOf<PenaltyMessage>(sent[1]);
+            Assert.GreaterOrEqual(((PenaltyMessage)sent[1]).TargetRoomId, 0);
             Assert.AreEqual(0, session.LocalFlagCount);
         }
 

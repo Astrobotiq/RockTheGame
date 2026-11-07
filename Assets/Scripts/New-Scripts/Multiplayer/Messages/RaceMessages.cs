@@ -37,6 +37,8 @@ namespace New_Scripts.Multiplayer.Messages
         public RaceMode Mode;
         public Guid RaceId;
         public string PlayerName;
+        /// <summary>Kayıtlı yarışa devam ediliyor (protokol v3). Yeni yarışta istemci RaceId olarak Guid.Empty yollar.</summary>
+        public bool Resume;
     }
 
     /// <summary>

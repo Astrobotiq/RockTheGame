@@ -99,15 +99,7 @@ namespace New_Scripts.Multiplayer.Penalty
 
                 if (LevelResetManager.Instance != null) LevelResetManager.Instance.ResetAll();
 
-                Vector3 spawn = target.InitialCheckpoint != null ? target.InitialCheckpoint.transform.position : target.transform.position;
-                _player.transform.position = new Vector3(spawn.x, spawn.y, _player.transform.position.z);
-                _player.Velocity = Vector2.zero;
-                if (target.InitialCheckpoint != null) target.InitialCheckpoint.ActivateCheckpoint();
-
-                if (CameraController.Instance is ICameraTransitionHandler cameraHandler && target.RoomBounds != null)
-                    cameraHandler.SnapToRoomBounds(target.RoomBounds, spawn, target.OverrideCameraSize, target.OverrideDynamicZoom);
-                // SetAsCurrent → Room.OnRoomEntered → yayıncı RoomEntered'ı yollar, RaceSession'ın odası güncellenir.
-                if (_roomManager != null) _roomManager.TransitionToRoom(target);
+                Vector3 spawn = RoomPlacement.PlaceAt(_player, target, _roomManager);
 
                 await UniTask.Delay(TimeSpan.FromSeconds(CameraCatchUpSeconds), cancellationToken: token);
 

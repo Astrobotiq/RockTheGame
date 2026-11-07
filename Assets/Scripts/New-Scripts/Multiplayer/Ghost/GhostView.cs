@@ -31,9 +31,18 @@ namespace New_Scripts.Multiplayer.Ghost
         private byte? _lastDashCount;
         private GhostPose _pose;
         private GhostEyes _eyes;
+        private GhostArms _arms;
+        private GhostDashFx _dashFx;
+        private bool _hasPose;
+        private bool _wasShown;
+
+        /// <summary>Bu kadardan büyük sıçrama ışınlanmadır (ölüm/respawn, ceza): iz temizlenir.</summary>
+        private const float TrailClearDistance = 3f;
+
+        public int ActiveAfterimageCount => _dashFx?.ActiveCount ?? 0;
 
         public static GhostView CreateFrom(SpriteRenderer bodySource, Animator animatorSource, LineRenderer ropeSource,
-            GhostEyeSource eyesSource = null)
+            GhostEyeSource eyesSource = null, GhostArmSource armsSource = null, GhostDashSource dashSource = null)
         {
             var root = new GameObject(ObjectName);
             var view = root.AddComponent<GhostView>();
@@ -57,6 +66,11 @@ namespace New_Scripts.Multiplayer.Ghost
             if (eyesSource?.Root != null)
                 view._eyes = GhostEyes.Create(eyesSource, root.transform, bodyGo.transform, bodySource.transform, Tint, SortingOrderOffset);
 
+            if (armsSource != null)
+                view._arms = GhostArms.Create(armsSource, root.transform, Tint, SortingOrderOffset);
+            if (dashSource != null)
+                view._dashFx = GhostDashFx.Create(dashSource, root.transform, view._body, Tint, SortingOrderOffset);
+
             view._leftRope = CreateRope(root.transform, "LeftRope", ropeSource, view._body);
             view._rightRope = CreateRope(root.transform, "RightRope", ropeSource, view._body);
 
@@ -72,6 +86,8 @@ namespace New_Scripts.Multiplayer.Ghost
 
         public void Apply(GhostPose pose)
         {
+            if (_hasPose && Vector2.Distance(_pose.Position, pose.Position) > TrailClearDistance) _dashFx?.ClearTrail();
+            _hasPose = true;
             _pose = pose;
             transform.position = new Vector3(pose.Position.x, pose.Position.y, transform.position.z);
             _body.flipX = !pose.FacingRight;
@@ -84,15 +100,28 @@ namespace New_Scripts.Multiplayer.Ghost
 
         private void UpdateRenderers()
         {
-            _body.enabled = ShouldShow;
-            _eyes?.SetVisible(ShouldShow);
+            bool shown = ShouldShow;
+            if (shown && !_wasShown) _dashFx?.ClearTrail(); // yeniden belirince eski konumdan iz çekilmesin
+            _wasShown = shown;
+            _body.enabled = shown;
+            _eyes?.SetVisible(shown);
+            _arms?.Update(_pose.LeftAnchor, _pose.RightAnchor, shown);
             UpdateRopes();
         }
 
         /// <summary>Gözleri pozla günceller; LateUpdate'te, animator EyePosition'ı oynattıktan sonra çağrılır.</summary>
         public void TickEyes(float deltaTime) => _eyes?.Tick(_pose, deltaTime);
 
-        private void LateUpdate() => TickEyes(Time.deltaTime);
+        /// <summary>Dash kopyalarını ve izi ilerletir (LateUpdate'te; testler doğrudan çağırır).</summary>
+        public void TickEffects(float deltaTime) => _dashFx?.Tick(_pose, ShouldShow, _body, deltaTime);
+
+        private void LateUpdate()
+        {
+            TickEyes(Time.deltaTime);
+            TickEffects(Time.deltaTime);
+        }
+
+        private void OnDestroy() => _dashFx?.Dispose();
 
         private void ApplyAnimator(GhostPose pose)
         {
@@ -113,15 +142,16 @@ namespace New_Scripts.Multiplayer.Ghost
 
         private void UpdateRopes()
         {
-            UpdateRope(_leftRope, _pose.LeftAnchor);
-            UpdateRope(_rightRope, _pose.RightAnchor);
+            UpdateRope(_leftRope, _pose.LeftAnchor, left: true);
+            UpdateRope(_rightRope, _pose.RightAnchor, left: false);
         }
 
-        private void UpdateRope(LineRenderer rope, Vector2? anchor)
+        private void UpdateRope(LineRenderer rope, Vector2? anchor, bool left)
         {
             rope.enabled = ShouldShow && anchor.HasValue;
             if (!anchor.HasValue) return;
-            rope.SetPosition(0, new Vector3(_pose.Position.x, _pose.Position.y, 0f));
+            Vector2 start = _arms != null ? _arms.RopeStart(left, anchor, _pose.Position) : _pose.Position;
+            rope.SetPosition(0, new Vector3(start.x, start.y, 0f));
             rope.SetPosition(1, new Vector3(anchor.Value.x, anchor.Value.y, 0f));
         }
 

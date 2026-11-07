@@ -40,6 +40,7 @@ namespace New_Scripts.Multiplayer.Messages
                     writer.Write((byte)hello.Mode);
                     writer.Write(hello.RaceId.ToByteArray());
                     writer.Write(TruncateName(hello.PlayerName));
+                    writer.Write(hello.Resume);
                     break;
                 case SnapshotMessage s:
                     WriteSnapshot(writer, s);
@@ -98,6 +99,7 @@ namespace New_Scripts.Multiplayer.Messages
                         if (guid.Length != 16) return false;
                         hello.RaceId = new Guid(guid);
                         hello.PlayerName = reader.ReadString();
+                        hello.Resume = reader.ReadBoolean();
                         message = hello;
                         break;
                     }

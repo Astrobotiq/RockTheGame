@@ -78,6 +78,23 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void FinishLine_ReachedOnce_IsTriggerChildOfPoint()
+        {
+            var pointGo = new GameObject(RaceFinishPoint.ObjectName);
+            pointGo.transform.SetParent(_room.transform, false);
+            var point = pointGo.AddComponent<RaceFinishPoint>();
+            int reached = 0;
+
+            var line = RaceFinishLine.Create(point, _settings, () => reached++);
+            line.Reach();
+            line.Reach();
+
+            Assert.AreEqual(1, reached);
+            Assert.AreEqual(point.transform, line.transform.parent);
+            Assert.IsTrue(line.GetComponent<BoxCollider2D>().isTrigger);
+        }
+
+        [Test]
         public void ShouldPlaceFlags_RaceOnly()
         {
             Assert.IsTrue(RaceFlag.ShouldPlaceFlags(RaceMode.Race));

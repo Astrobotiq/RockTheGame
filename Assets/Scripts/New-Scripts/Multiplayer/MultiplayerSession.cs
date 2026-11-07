@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using New_Scripts.LevelChange;
 using New_Scripts.Multiplayer.Flags;
 using New_Scripts.Multiplayer.Ghost;
 using New_Scripts.Multiplayer.Hud;
 using New_Scripts.Multiplayer.Messages;
 using New_Scripts.Multiplayer.Penalty;
+using New_Scripts.Multiplayer.Save;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
 using New_Scripts.Player;
@@ -24,11 +27,13 @@ namespace New_Scripts.Multiplayer
     {
         public const string ObjectName = "[MP Session]";
         public const string GameSceneName = "NewScene";
+        public const string LobbySceneName = "MultiplayerLobby";
 
         private bool _gameSceneLoaded;
         private string _playerName = "Oyuncu";
         private Guid _raceId = Guid.NewGuid();
         private bool _loadRequested;
+        private bool _sceneLoadInProgress;
         private bool _worldReady;
 
         private PlayerController _player;
@@ -41,12 +46,39 @@ namespace New_Scripts.Multiplayer
         private PenaltyHandler _penalty;
         private RaceHud _hud;
 
+        // persistentDataPath kurucuda okunamaz (Unity); ilk kullanımda kurulur.
+        private RaceSaveStore _storeInstance;
+        private RaceSaveStore Store => _storeInstance ??= new RaceSaveStore();
+        private readonly ConnectionWatch _watch = new ConnectionWatch();
+        private RaceSaveData _resume;
+        private int _resumeRoomId;
+        private bool _pendingResumePlacement;
+        private bool _isHost;
+        private string _address;
+        private double _reconnectAt;
+        private float _elapsed;
+        private bool _raceEverStarted;
+        private (int room, int flags, int captured) _lastSaved = (-1, -1, -1);
+        private RaceFinishLine _finishLine;
+        private float _finishedAt = -1f;
+        private const float ReturnHintDelaySeconds = 1.5f;
+
         public static MultiplayerSession Current { get; private set; }
 
         public IRaceTransport Transport { get; private set; }
         public RaceLobbyFlow Flow { get; private set; }
         public RaceSession Session => Flow?.Session;
         public float RaceStartedAt { get; private set; } = -1f;
+        /// <summary>Yarış süresi: yalnız yarış sürerken ve kopma beklemesi yokken sayılır; kayda girer.</summary>
+        public float ElapsedSeconds => _elapsed;
+        public bool IsWaitingForReconnect => _watch.IsWaitingForReconnect;
+        /// <summary>Yerel oyuncu bitirdi ve A / Enter ile lobiye dönebilir.</summary>
+        public bool CanReturnToLobby => Session != null && Session.LocalFinished && _finishedAt >= 0f &&
+                                        Time.unscaledTime - _finishedAt >= ReturnHintDelaySeconds;
+        public int ReconnectSecondsLeft => _watch.SecondsLeft(Now);
+
+        /// <summary>Oturum lobiye dönerek bittiyse nedeni; lobi bir kez gösterir ve temizler.</summary>
+        public static string LastExitReason { get; set; }
 
         /// <summary>Bağlantı kapandı (zaman aşımı, reddedildi, karşı taraf ayrıldı, sürüm uyuşmadı).</summary>
         public event Action<DisconnectReason> Disconnected;
@@ -76,23 +108,37 @@ namespace New_Scripts.Multiplayer
             return session;
         }
 
-        public void Host(RaceMode mode)
+        /// <param name="resume">Lobide "Devam et" seçildiyse kayıt; null ise yeni yarış.</param>
+        public void Host(RaceMode mode, RaceSaveData resume = null)
         {
-            NewFlow(isHost: true, mode);
+            _isHost = true;
+            UseResume(resume);
+            NewFlow(isHost: true, mode, resume);
             Transport.Host();
-            Debug.Log($"[MP] Host dinliyor ({mode})");
+            Debug.Log($"[MP] Host dinliyor ({Flow.Session.Mode}{(resume != null ? ", devam" : "")})");
         }
 
-        public void Join(string address)
+        public void Join(string address, RaceSaveData resume = null)
         {
-            NewFlow(isHost: false, RaceMode.Race);
+            _isHost = false;
+            _address = address;
+            UseResume(resume);
+            NewFlow(isHost: false, RaceMode.Race, resume);
             Transport.Join(address);
-            Debug.Log($"[MP] Bağlanılıyor → {address}");
+            Debug.Log($"[MP] Bağlanılıyor → {address}{(resume != null ? " (devam)" : "")}");
         }
 
-        private void NewFlow(bool isHost, RaceMode mode)
+        private void UseResume(RaceSaveData resume)
         {
-            Flow = new RaceLobbyFlow(isHost, mode, _playerName, _raceId);
+            _resume = resume;
+            _resumeRoomId = resume?.RoomId ?? 0;
+            _elapsed = resume?.ElapsedSeconds ?? 0f;
+        }
+
+        private void NewFlow(bool isHost, RaceMode mode, RaceSaveData resume = null, RaceSession existing = null)
+        {
+            Guid raceId = existing != null && Flow != null ? Flow.RaceId : _raceId;
+            Flow = new RaceLobbyFlow(isHost, mode, _playerName, raceId, resume, existing);
             Flow.LoadSceneRequested += OnLoadSceneRequested;
             Flow.RaceStarted += OnRaceStarted;
             Flow.Failed += reason => Debug.LogWarning($"[MP] {reason}");
@@ -106,6 +152,119 @@ namespace New_Scripts.Multiplayer
             Transport?.Poll();
             Flow?.Tick(Now);
             UpdateGhost();
+            TickRace();
+            if (CanReturnToLobby && ReturnPressed()) ReturnToLobby();
+        }
+
+        private static bool ReturnPressed()
+        {
+            var pad = UnityEngine.InputSystem.Gamepad.current;
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            return (pad != null && pad.buttonSouth.wasPressedThisFrame) ||
+                   (keyboard != null && keyboard.enterKey.wasPressedThisFrame);
+        }
+
+        private void ReturnToLobby()
+        {
+            Debug.Log("[MP] Yarış bitti; lobiye dönülüyor");
+            LastExitReason = RaceHudText.Result(Session.Mode, true, _elapsed, Session.OpponentFinished,
+                Session.OpponentElapsedSeconds, false).Replace("\n", " · ");
+            Shutdown();
+            SceneManager.LoadScene(LobbySceneName);
+            Destroy(gameObject);
+        }
+
+        // ---------------- Süre, kayıt, kopma ----------------
+
+        private void TickRace()
+        {
+            if (Flow == null || Session == null) return;
+            if (_watch.IsWaitingForReconnect)
+            {
+                TickReconnect();
+                return;
+            }
+
+            if (Flow.Phase == LobbyPhase.Racing)
+            {
+                if (!Session.LocalFinished) _elapsed += Time.unscaledDeltaTime;
+                if (Transport != null && Transport.State == TransportState.Connected && _watch.IsSilent(Now) && !EitherFinished)
+                    BeginReconnectWait("Rakipten 3 sn paket gelmedi");
+            }
+
+            if ((Flow.Phase == LobbyPhase.Countdown || Flow.Phase == LobbyPhase.Racing) && !_pendingResumePlacement &&
+                !Session.LocalFinished) SaveIfChanged();
+        }
+
+        private void SaveIfChanged()
+        {
+            var state = (Session.LocalRoomId, Session.LocalFlagCount, Session.LocalCapturedRoomIds.Count);
+            if (state == _lastSaved) return;
+            _lastSaved = state;
+            WriteSave();
+        }
+
+        /// <summary>Biri bitirdiyse kopma beklenmez: bitiren zaten donuk, kalan tek başına sürer.</summary>
+        private bool EitherFinished => Session != null && (Session.LocalFinished || Session.OpponentFinished);
+
+        private void WriteSave()
+        {
+            if (Session == null || Flow == null || Flow.RaceId == Guid.Empty || Session.LocalFinished) return;
+            try
+            {
+                Store.Write(RaceSaveData.From(Session, Flow.RaceId, Flow.OpponentName, _elapsed));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[MP] Yarış kaydı yazılamadı: {e.Message}");
+            }
+        }
+
+        /// <summary>Yarış sürerken rakip koptu: kaydet, oyuncuyu dondur, hayaleti gizle, 30 sn yeniden bağlanmayı dene.</summary>
+        private void BeginReconnectWait(string why)
+        {
+            if (_watch.IsWaitingForReconnect) return;
+            Debug.LogWarning($"[MP] Rakip koptu ({why}); {ConnectionWatch.ReconnectWindowSeconds:0} sn bekleniyor");
+            WriteSave();
+            Freeze();
+            _watch.BeginReconnectWait(Now);
+            _ghostVisible = false;
+            if (_ghost != null) _ghost.SetVisible(false);
+            _reconnectAt = Now;
+            if (Transport != null && Transport.State != TransportState.Disconnected) Transport.Disconnect();
+        }
+
+        private void TickReconnect()
+        {
+            if (_watch.HasExpired(Now))
+            {
+                GiveUp();
+                return;
+            }
+
+            if (Transport == null || Transport.State != TransportState.Disconnected || Now < _reconnectAt) return;
+            _reconnectAt = Now + 1.0;
+            // Aynı oturum sürer; el sıkışma yeniden yapılır, sahne yüklü olduğu için hemen Ready ve 3-2-1.
+            NewFlow(_isHost, Session.Mode, null, Session);
+            if (_isHost) Transport.Host();
+            else Transport.Join(_address);
+        }
+
+        private void GiveUp()
+        {
+            Debug.LogWarning("[MP] Rakip geri dönmedi; yarış kaydedildi, lobiye dönülüyor");
+            WriteSave();
+            LastExitReason = "Rakip geri dönmedi; yarış kaydedildi. İkiniz de Devam et ile sürdürebilirsiniz.";
+            Shutdown();
+            SceneManager.LoadScene(LobbySceneName);
+            Destroy(gameObject);
+        }
+
+        private void Freeze()
+        {
+            if (_playerFrozen || _player == null) return;
+            _player.OnStartRespawn();
+            _playerFrozen = true;
         }
 
         private void OnConnected()
@@ -118,16 +277,27 @@ namespace New_Scripts.Multiplayer
         {
             Debug.Log($"[MP] Bağlantı kapandı: {reason}");
             _interpolator = new GhostInterpolator();
-            if (Flow != null && Flow.Phase != LobbyPhase.Racing && Flow.Phase != LobbyPhase.Failed && reason != DisconnectReason.LocalRequest)
-                Flow.Fail(DescribeDisconnect(reason));
+
+            if (_watch.IsWaitingForReconnect)
+            {
+                // Yeniden bağlanma denemesi tutmadı (zaman aşımı, host henüz dinlemiyor): saniyede bir tekrar.
+                _reconnectAt = Math.Max(_reconnectAt, Now + 1.0);
+            }
+            else if (reason != DisconnectReason.LocalRequest && Flow != null && Flow.Phase != LobbyPhase.Failed)
+            {
+                // El sıkışma bittiyse (sahne yükleniyor ya da yarış sürüyor) beklenir; bitmediyse lobi hatayı gösterir.
+                if (EitherFinished) Debug.Log("[MP] Bitişten sonra bağlantı kapandı; beklenmiyor");
+                else if (Flow.Phase >= LobbyPhase.Loading) BeginReconnectWait(DescribeDisconnect(reason));
+                else Flow.Fail(DescribeDisconnect(reason));
+            }
             Disconnected?.Invoke(reason);
         }
 
-        private static string DescribeDisconnect(DisconnectReason reason)
+        private string DescribeDisconnect(DisconnectReason reason)
         {
             switch (reason)
             {
-                case DisconnectReason.Timeout: return "Host'a ulaşılamadı";
+                case DisconnectReason.Timeout: return _isHost ? "Rakibin bağlantısı zaman aşımına uğradı" : "Host'a ulaşılamadı";
                 case DisconnectReason.Rejected: return "Bağlantı reddedildi (host dolu ya da adres yanlış)";
                 case DisconnectReason.RemoteLeft: return "Rakip ayrıldı";
                 default: return "Bağlantı koptu";
@@ -142,6 +312,7 @@ namespace New_Scripts.Multiplayer
                 return;
             }
 
+            _watch.OnPacket(Now);
             if (message is SnapshotMessage snapshot)
             {
                 _interpolator.Add(snapshot, Now);
@@ -178,6 +349,9 @@ namespace New_Scripts.Multiplayer
                 return;
             }
 
+            // Yükleme sürerken kopup yeniden bağlanılırsa sahne ikinci kez yüklenmez; sceneLoaded bekleneni yapar.
+            if (_sceneLoadInProgress) return;
+            _sceneLoadInProgress = true;
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.LoadSceneAsync(GameSceneName);
         }
@@ -187,8 +361,9 @@ namespace New_Scripts.Multiplayer
         {
             if (scene.name != GameSceneName) return;
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            _sceneLoadInProgress = false;
             _gameSceneLoaded = true;
-            SetUpWorldAndReady();
+            if (_loadRequested) SetUpWorldAndReady();
         }
 
         private void SetUpWorldAndReady()
@@ -213,19 +388,44 @@ namespace New_Scripts.Multiplayer
 
             var rope = _player.transform.Find("LeftRope");
             _ghost = GhostView.CreateFrom(animation.GetComponent<SpriteRenderer>(), animation.GetComponent<Animator>(),
-                rope != null ? rope.GetComponent<LineRenderer>() : null, GhostEyeSourceFactory.From(_player));
+                rope != null ? rope.GetComponent<LineRenderer>() : null, GhostEyeSourceFactory.From(_player),
+                GhostEyeSourceFactory.ArmsFrom(_player), GhostEyeSourceFactory.DashFrom(_player));
             DontDestroyOnLoad(_ghost.gameObject);
 
             _penalty = PenaltyHandler.Create(Session, _player);
             Session.PenaltyReceived += _penalty.Enqueue;
 
             SetUpFlags();
+            SetUpFinish();
 
             _hud = RaceHud.Create(this);
 
             // Geri sayım boyunca oyuncu donuk; ceza da bu sırada bekler (PenaltyHandler.IsPlayerBusy).
-            _player.OnStartRespawn();
-            _playerFrozen = true;
+            Freeze();
+
+            if (_resumeRoomId > 0) PlaceAtResumeRoomAsync(_resumeRoomId).Forget();
+        }
+
+        /// <summary>
+        /// Kayıtlı yarışa devam: LevelBootstrapper.Start oyuncuyu başlangıç odasına koyduktan sonra kayıttaki odanın
+        /// başlangıcına taşır. Oyuncu bu sırada geri sayım için donuk.
+        /// </summary>
+        private async UniTaskVoid PlaceAtResumeRoomAsync(int roomId)
+        {
+            _pendingResumePlacement = true;
+            await UniTask.Yield(PlayerLoopTiming.Update);
+            await UniTask.Yield(PlayerLoopTiming.Update);
+            _pendingResumePlacement = false;
+            if (this == null || _player == null) return;
+
+            var room = RoomPlacement.FindRoom(roomId);
+            if (room == null)
+            {
+                Debug.LogWarning($"[MP] Kayıttaki oda {roomId} sahnede yok; başlangıç odasında kalındı");
+                return;
+            }
+            RoomPlacement.PlaceAt(_player, room, FindFirstObjectByType<RoomManager>());
+            Debug.Log($"[MP] Kayıttan devam: oda {roomId}");
         }
 
         private void SetUpFlags()
@@ -241,6 +441,28 @@ namespace New_Scripts.Multiplayer
             Debug.Log($"[MP] {_flags.Count} bayrak kuruldu");
         }
 
+        private void SetUpFinish()
+        {
+            var point = FindFirstObjectByType<RaceFinishPoint>(FindObjectsInactive.Include);
+            if (point == null)
+            {
+                Debug.LogWarning("[MP] Sahnede RaceFinishPoint yok; yarış bitirilemez");
+                return;
+            }
+            _finishLine = RaceFinishLine.Create(point, RaceFlagSettingsSO.Load(), OnLocalFinish);
+        }
+
+        private void OnLocalFinish()
+        {
+            if (Session == null || Session.LocalFinished) return;
+            var messages = Session.OnLocalFinished(_elapsed);
+            Debug.Log($"[MP] Bitirdin: {RaceHudText.FormatTime(_elapsed)}");
+            Send(messages);
+            Freeze();
+            _finishedAt = Time.unscaledTime;
+            try { Store.Delete(); } catch (Exception e) { Debug.LogWarning($"[MP] Kayıt silinemedi: {e.Message}"); }
+        }
+
         private void OnLocalFlagReached(int roomId)
         {
             var messages = Session.OnLocalFlagReached(roomId);
@@ -251,6 +473,13 @@ namespace New_Scripts.Multiplayer
         private void OnRaceStarted()
         {
             RaceStartedAt = Time.unscaledTime;
+            _raceEverStarted = true;
+            if (_watch.IsWaitingForReconnect)
+            {
+                _watch.EndReconnectWait();
+                Debug.Log("[MP] Rakip döndü; yarış sürüyor");
+            }
+            _watch.Reset();
             Debug.Log("[MP] Yarış başladı");
             if (_playerFrozen && _player != null) _player.OnEndRespawn();
             _playerFrozen = false;
@@ -283,6 +512,7 @@ namespace New_Scripts.Multiplayer
         public void Shutdown()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (_raceEverStarted && Transport != null) WriteSave();
             if (Transport != null)
             {
                 Transport.Connected -= OnConnected;
@@ -297,6 +527,8 @@ namespace New_Scripts.Multiplayer
             DestroyOwned(_ghost);
             DestroyOwned(_broadcaster);
             DestroyOwned(_hud);
+            DestroyOwned(_finishLine);
+            _finishLine = null;
             foreach (var flag in _flags) DestroyOwned(flag);
             _flags.Clear();
             _penalty = null;

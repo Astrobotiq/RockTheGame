@@ -41,6 +41,16 @@ namespace New_Scripts.Multiplayer.Session
             LocalRoomId = startRoomId;
         }
 
+        /// <summary>Kayıttan yerel durumu geri yükler (devam etme). Mesaj üretmez; rakibe ProgressSync ile bildirilir.</summary>
+        public void RestoreLocal(int roomId, int flagCount, IEnumerable<int> capturedRoomIds)
+        {
+            LocalRoomId = roomId;
+            LocalFlagCount = flagCount;
+            _capturedRooms.Clear();
+            if (capturedRoomIds != null)
+                foreach (int id in capturedRoomIds) _capturedRooms.Add(id);
+        }
+
         public IReadOnlyList<IRaceMessage> OnLocalRoomEntered(int roomId)
         {
             if (LocalFinished || roomId == LocalRoomId) return Array.Empty<IRaceMessage>();

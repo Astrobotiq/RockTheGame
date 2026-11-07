@@ -25,6 +25,12 @@ namespace New_Scripts.Player
         [SerializeField] private ParticleSystem jumpDust;
         [SerializeField] private ParticleSystem landDust;
 
+        // Multiplayer hayaleti aynı efekti kopyalamak için okur (yalnız okunur).
+        public float GhostSpawnRate => ghostSpawnRate;
+        public float GhostDuration => ghostDuration;
+        public Color GhostColor => ghostColor;
+        public TrailRenderer MovementTrail => movementTrail;
+
         // Obje Havuzlama listesi.
         private List<GhostAfterimage> ghostPool = new List<GhostAfterimage>();
         private float ghostSpawnTimer;

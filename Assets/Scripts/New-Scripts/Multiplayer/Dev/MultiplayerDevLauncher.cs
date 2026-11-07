@@ -67,7 +67,8 @@ namespace New_Scripts.Multiplayer.Dev
         {
             // Kopyalar aynı anda açılınca istemci host'tan önce davranabilir: host'a ulaşamazsa (Timeout) yeniden dener.
             // Reddedilince (host dolu, adres hatalı) denemez; yoksa saniyede bir sonsuz döngüye girer.
-            if (_role == DevRole.Client && reason == DisconnectReason.Timeout && Multiplayer.Flow.Phase != LobbyPhase.Racing)
+            if (_role == DevRole.Client && reason == DisconnectReason.Timeout && !Multiplayer.IsWaitingForReconnect &&
+                Multiplayer.Flow.Phase < LobbyPhase.Loading)
                 _retryAt = Time.unscaledTime + ClientRetryDelaySeconds;
         }
 

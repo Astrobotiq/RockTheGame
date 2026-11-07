@@ -35,6 +35,42 @@ namespace New_Scripts.Multiplayer.Hud
             }
         }
 
+        public static string FormatTime(float seconds)
+        {
+            if (seconds < 0f) seconds = 0f;
+            int tenths = (int)Math.Round(seconds * 10f, MidpointRounding.AwayFromZero);
+            return $"{tenths / 600:00}:{tenths / 10 % 60:00}.{tenths % 10}";
+        }
+
+        /// <summary>Bitişten sonra ortadaki sonuç metni; yerel oyuncu bitirmediyse boş.</summary>
+        public static string Result(RaceMode mode, bool localFinished, float localSeconds, bool opponentFinished,
+            float opponentSeconds, bool showReturnHint)
+        {
+            if (!localFinished) return "";
+            string text;
+            if (!opponentFinished) text = $"Bitirdin! {FormatTime(localSeconds)}\nRakip bekleniyor…";
+            else
+            {
+                string headline = mode == RaceMode.Coop ? "Birlikte bitirdiniz!"
+                    : Math.Abs(localSeconds - opponentSeconds) < 0.05f ? "Berabere!"
+                    : localSeconds < opponentSeconds ? "Kazandın!" : "Kaybettin.";
+                text = $"{headline} {FormatTime(localSeconds)}\nRakip: {FormatTime(opponentSeconds)}";
+            }
+            return showReturnHint ? text + "\nA: Lobiye dön" : text;
+        }
+
+        public static string OpponentFinished(float opponentSeconds) => $"Rakip bitirdi: {FormatTime(opponentSeconds)}";
+
+        public static string Reconnecting(int secondsLeft) => $"Rakip bağlantısı koptu, bekleniyor… ({secondsLeft})";
+
+        /// <summary>Lobideki "Devam et" düğmesi: kayıt yoksa null.</summary>
+        public static string ResumeLabel(bool on, int roomId, int flagCount) =>
+            on ? $"Devam et: Açık (Oda {roomId}, Bayrak {flagCount}/{RaceRules.FlagsPerPenalty})" : "Devam et: Kapalı";
+
+        public static string InviteIdle(string service) => $"Host ol ve {service} arkadaşını davet et, ya da davet bekle";
+
+        public static string InviteWaiting(string service) => $"Rakip bekleniyor… {service} davetini gönder (Shift+Tab)";
+
         public static string Status(LobbyPhase phase, TransportState transport, string failureReason)
         {
             if (phase == LobbyPhase.Failed) return failureReason ?? "Bağlantı kurulamadı";

@@ -1,0 +1,21 @@
+{
+    "name": "RockTheGame.Multiplayer.Steam",
+    "rootNamespace": "New_Scripts.Multiplayer.Steam",
+    "references": [
+        "RockTheGame.Multiplayer"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Facepunch.Steamworks.Win64.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

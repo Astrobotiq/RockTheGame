@@ -16,6 +16,14 @@ namespace New_Scripts.Multiplayer.Flags
         [Tooltip("Görselin işarete göre kayması (sprite pivotu ortadaysa yukarı kaldırmak için).")]
         public Vector2 VisualOffset = Vector2.zero;
         public Vector2 TriggerSize = new Vector2(1.5f, 3f);
+        [Header("Bitiş çizgisi")]
+        public Sprite FinishSprite;
+        public Vector3 FinishScale = Vector3.one;
+        [Tooltip("Görselin işarete göre kayması (dünya birimi).")]
+        public Vector2 FinishVisualOffset = Vector2.zero;
+        [Tooltip("Dokunma alanı (dünya birimi).")]
+        public Vector2 FinishTriggerSize = new Vector2(2f, 3f);
+
         public string SortingLayerName = "Default";
         public int SortingOrder;
 

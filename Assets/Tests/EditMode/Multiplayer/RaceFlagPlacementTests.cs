@@ -144,6 +144,27 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void PlaceFinish_GoesToLastMainPathRoom_NotSideRoom_AndOnlyOnce()
+        {
+            var r1 = MakeRoom(1, Vector2.zero, new Vector2(10f, 10f));
+            var r2 = MakeRoom(2, new Vector2(20f, 0f), new Vector2(10f, 10f));
+            var side = MakeRoom(3, new Vector2(0f, 20f), new Vector2(10f, 10f)); // oda 1'den açılan yan oda (2'den gelinmiyor)
+            AddTrigger(r1, r2, TransitionDirection.Right, new Vector2(5f, 0f), new Vector2(1f, 4f));
+            AddTrigger(r1, side, TransitionDirection.Up, new Vector2(0f, 5f), new Vector2(4f, 1f));
+            var rooms = new[] { r1, r2, side };
+
+            var placed = RaceFlagPlacer.PlaceFinishIfMissing(rooms);
+
+            Assert.AreEqual(r2, placed, "ana yolun son odası: bir öncekinden girilen en büyük kimlik");
+            Assert.IsNotNull(r2.GetComponentInChildren<RaceFinishPoint>());
+            Assert.IsNull(side.GetComponentInChildren<RaceFinishPoint>());
+            Assert.AreEqual(new Vector3(20f, 0f, 0f), r2.GetComponentInChildren<RaceFinishPoint>().transform.position);
+
+            Assert.IsNull(RaceFlagPlacer.PlaceFinishIfMissing(rooms), "zaten varsa ikincisi konmaz");
+            Assert.AreEqual(1, Object.FindObjectsByType<RaceFinishPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length);
+        }
+
+        [Test]
         public void PlaceMissing_RoomIdZero_IsSkipped()
         {
             var room = MakeRoom(0, Vector2.zero, Vector2.one);

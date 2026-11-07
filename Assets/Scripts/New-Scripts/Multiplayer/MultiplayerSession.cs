@@ -59,6 +59,9 @@ namespace New_Scripts.Multiplayer
         private float _elapsed;
         private bool _raceEverStarted;
         private (int room, int flags, int captured) _lastSaved = (-1, -1, -1);
+        private RaceFinishLine _finishLine;
+        private float _finishedAt = -1f;
+        private const float ReturnHintDelaySeconds = 1.5f;
 
         public static MultiplayerSession Current { get; private set; }
 
@@ -69,6 +72,9 @@ namespace New_Scripts.Multiplayer
         /// <summary>Yarış süresi: yalnız yarış sürerken ve kopma beklemesi yokken sayılır; kayda girer.</summary>
         public float ElapsedSeconds => _elapsed;
         public bool IsWaitingForReconnect => _watch.IsWaitingForReconnect;
+        /// <summary>Yerel oyuncu bitirdi ve A / Enter ile lobiye dönebilir.</summary>
+        public bool CanReturnToLobby => Session != null && Session.LocalFinished && _finishedAt >= 0f &&
+                                        Time.unscaledTime - _finishedAt >= ReturnHintDelaySeconds;
         public int ReconnectSecondsLeft => _watch.SecondsLeft(Now);
 
         /// <summary>Oturum lobiye dönerek bittiyse nedeni; lobi bir kez gösterir ve temizler.</summary>
@@ -147,6 +153,25 @@ namespace New_Scripts.Multiplayer
             Flow?.Tick(Now);
             UpdateGhost();
             TickRace();
+            if (CanReturnToLobby && ReturnPressed()) ReturnToLobby();
+        }
+
+        private static bool ReturnPressed()
+        {
+            var pad = UnityEngine.InputSystem.Gamepad.current;
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            return (pad != null && pad.buttonSouth.wasPressedThisFrame) ||
+                   (keyboard != null && keyboard.enterKey.wasPressedThisFrame);
+        }
+
+        private void ReturnToLobby()
+        {
+            Debug.Log("[MP] Yarış bitti; lobiye dönülüyor");
+            LastExitReason = RaceHudText.Result(Session.Mode, true, _elapsed, Session.OpponentFinished,
+                Session.OpponentElapsedSeconds, false).Replace("\n", " · ");
+            Shutdown();
+            SceneManager.LoadScene(LobbySceneName);
+            Destroy(gameObject);
         }
 
         // ---------------- Süre, kayıt, kopma ----------------
@@ -162,12 +187,13 @@ namespace New_Scripts.Multiplayer
 
             if (Flow.Phase == LobbyPhase.Racing)
             {
-                _elapsed += Time.unscaledDeltaTime;
-                if (Transport != null && Transport.State == TransportState.Connected && _watch.IsSilent(Now))
+                if (!Session.LocalFinished) _elapsed += Time.unscaledDeltaTime;
+                if (Transport != null && Transport.State == TransportState.Connected && _watch.IsSilent(Now) && !EitherFinished)
                     BeginReconnectWait("Rakipten 3 sn paket gelmedi");
             }
 
-            if ((Flow.Phase == LobbyPhase.Countdown || Flow.Phase == LobbyPhase.Racing) && !_pendingResumePlacement) SaveIfChanged();
+            if ((Flow.Phase == LobbyPhase.Countdown || Flow.Phase == LobbyPhase.Racing) && !_pendingResumePlacement &&
+                !Session.LocalFinished) SaveIfChanged();
         }
 
         private void SaveIfChanged()
@@ -178,9 +204,12 @@ namespace New_Scripts.Multiplayer
             WriteSave();
         }
 
+        /// <summary>Biri bitirdiyse kopma beklenmez: bitiren zaten donuk, kalan tek başına sürer.</summary>
+        private bool EitherFinished => Session != null && (Session.LocalFinished || Session.OpponentFinished);
+
         private void WriteSave()
         {
-            if (Session == null || Flow == null || Flow.RaceId == Guid.Empty) return;
+            if (Session == null || Flow == null || Flow.RaceId == Guid.Empty || Session.LocalFinished) return;
             try
             {
                 Store.Write(RaceSaveData.From(Session, Flow.RaceId, Flow.OpponentName, _elapsed));
@@ -257,7 +286,8 @@ namespace New_Scripts.Multiplayer
             else if (reason != DisconnectReason.LocalRequest && Flow != null && Flow.Phase != LobbyPhase.Failed)
             {
                 // El sıkışma bittiyse (sahne yükleniyor ya da yarış sürüyor) beklenir; bitmediyse lobi hatayı gösterir.
-                if (Flow.Phase >= LobbyPhase.Loading) BeginReconnectWait(DescribeDisconnect(reason));
+                if (EitherFinished) Debug.Log("[MP] Bitişten sonra bağlantı kapandı; beklenmiyor");
+                else if (Flow.Phase >= LobbyPhase.Loading) BeginReconnectWait(DescribeDisconnect(reason));
                 else Flow.Fail(DescribeDisconnect(reason));
             }
             Disconnected?.Invoke(reason);
@@ -366,6 +396,7 @@ namespace New_Scripts.Multiplayer
             Session.PenaltyReceived += _penalty.Enqueue;
 
             SetUpFlags();
+            SetUpFinish();
 
             _hud = RaceHud.Create(this);
 
@@ -408,6 +439,28 @@ namespace New_Scripts.Multiplayer
                 _flags.Add(RaceFlag.Create(point, settings, captured, OnLocalFlagReached));
             }
             Debug.Log($"[MP] {_flags.Count} bayrak kuruldu");
+        }
+
+        private void SetUpFinish()
+        {
+            var point = FindFirstObjectByType<RaceFinishPoint>(FindObjectsInactive.Include);
+            if (point == null)
+            {
+                Debug.LogWarning("[MP] Sahnede RaceFinishPoint yok; yarış bitirilemez");
+                return;
+            }
+            _finishLine = RaceFinishLine.Create(point, RaceFlagSettingsSO.Load(), OnLocalFinish);
+        }
+
+        private void OnLocalFinish()
+        {
+            if (Session == null || Session.LocalFinished) return;
+            var messages = Session.OnLocalFinished(_elapsed);
+            Debug.Log($"[MP] Bitirdin: {RaceHudText.FormatTime(_elapsed)}");
+            Send(messages);
+            Freeze();
+            _finishedAt = Time.unscaledTime;
+            try { Store.Delete(); } catch (Exception e) { Debug.LogWarning($"[MP] Kayıt silinemedi: {e.Message}"); }
         }
 
         private void OnLocalFlagReached(int roomId)
@@ -474,6 +527,8 @@ namespace New_Scripts.Multiplayer
             DestroyOwned(_ghost);
             DestroyOwned(_broadcaster);
             DestroyOwned(_hud);
+            DestroyOwned(_finishLine);
+            _finishLine = null;
             foreach (var flag in _flags) DestroyOwned(flag);
             _flags.Clear();
             _penalty = null;

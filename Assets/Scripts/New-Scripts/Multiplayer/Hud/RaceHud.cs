@@ -21,12 +21,16 @@ namespace New_Scripts.Multiplayer.Hud
         private TextMeshProUGUI _opponent;
         private TextMeshProUGUI _status;
         private TextMeshProUGUI _countdown;
+        private TextMeshProUGUI _timer;
+        private TextMeshProUGUI _result;
         private MultiplayerUISettingsSO _settings;
 
         public string FlagsText => _flags.text;
         public string OpponentText => _opponent.text;
         public string StatusText => _status.text;
         public string CountdownText => _countdown.text;
+        public string ResultText => _result.text;
+        public string TimerText => _timer.text;
 
         public static RaceHud Create(MultiplayerSession session)
         {
@@ -44,8 +48,11 @@ namespace New_Scripts.Multiplayer.Hud
             hud._session = session;
             hud._settings = MultiplayerUISettingsSO.Load();
             float size = hud._settings.InfoFontSize;
-            hud._flags = hud.MakeText("Flags", new Vector2(1f, 1f), new Vector2(-40f, -40f), size, TextAlignmentOptions.TopRight);
-            hud._opponent = hud.MakeText("Opponent", new Vector2(1f, 1f), new Vector2(-40f, -40f - size * 1.3f), size, TextAlignmentOptions.TopRight);
+            hud._timer = hud.MakeText("Timer", new Vector2(1f, 1f), new Vector2(-40f, -40f), size, TextAlignmentOptions.TopRight);
+            hud._flags = hud.MakeText("Flags", new Vector2(1f, 1f), new Vector2(-40f, -40f - size * 1.3f), size, TextAlignmentOptions.TopRight);
+            hud._opponent = hud.MakeText("Opponent", new Vector2(1f, 1f), new Vector2(-40f, -40f - size * 2.6f), size, TextAlignmentOptions.TopRight);
+            hud._result = hud.MakeText("Result", new Vector2(0.5f, 0.5f), Vector2.zero, size * 1.8f, TextAlignmentOptions.Center);
+            ((RectTransform)hud._result.transform).sizeDelta = new Vector2(1600f, size * 1.8f * 4f);
             hud._status = hud.MakeText("Status", new Vector2(0.5f, 1f), new Vector2(0f, -40f), size, TextAlignmentOptions.Top);
             hud._countdown = hud.MakeText("Countdown", new Vector2(0.5f, 0.5f), Vector2.zero, hud._settings.CountdownFontSize, TextAlignmentOptions.Center);
             hud._status.color = hud._settings.WarningColor;
@@ -79,7 +86,7 @@ namespace New_Scripts.Multiplayer.Hud
             var race = flow?.Session;
             if (race == null)
             {
-                _flags.text = _opponent.text = _countdown.text = "";
+                _flags.text = _opponent.text = _countdown.text = _timer.text = _result.text = "";
                 _status.text = "";
                 return;
             }
@@ -89,7 +96,12 @@ namespace New_Scripts.Multiplayer.Hud
             var transport = _session.Transport != null ? _session.Transport.State : TransportState.Disconnected;
             _status.text = _session.IsWaitingForReconnect
                 ? RaceHudText.Reconnecting(_session.ReconnectSecondsLeft)
-                : RaceHudText.Status(flow.Phase, transport, flow.FailureReason);
+                : race.OpponentFinished && !race.LocalFinished
+                    ? RaceHudText.OpponentFinished(race.OpponentElapsedSeconds)
+                    : RaceHudText.Status(flow.Phase, transport, flow.FailureReason);
+            _timer.text = flow.Phase == LobbyPhase.Racing ? RaceHudText.FormatTime(_session.ElapsedSeconds) : "";
+            _result.text = RaceHudText.Result(race.Mode, race.LocalFinished, _session.ElapsedSeconds, race.OpponentFinished,
+                race.OpponentElapsedSeconds, _session.CanReturnToLobby);
 
             if (flow.Phase == LobbyPhase.Countdown)
                 _countdown.text = RaceHudText.Countdown(flow.CountdownRemaining(Time.realtimeSinceStartupAsDouble));

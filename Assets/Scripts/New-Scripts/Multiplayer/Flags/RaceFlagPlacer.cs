@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using New_Scripts.LevelChange;
@@ -88,11 +89,58 @@ namespace New_Scripts.Multiplayer.Flags
             return position;
         }
 
+        /// <summary>
+        /// Bitiş işaretini ana yolun son odasına koyar: bir önceki kimlikten (RoomId − 1) geçişle girilen en büyük kimlikli oda
+        /// (yan odalar elenir). Oda merkezine konur, aşağıda zemin varsa iner. Sahnede zaten varsa hiçbir şey yapmaz, null döner.
+        /// </summary>
+        public static Room PlaceFinishIfMissing(IEnumerable<Room> rooms)
+        {
+            var list = new List<Room>(rooms);
+            foreach (var room in list)
+                if (room != null && room.GetComponentInChildren<RaceFinishPoint>(true) != null) return null;
+
+            Room last = null;
+            foreach (var room in list)
+            {
+                if (room == null || room.RoomId <= 0) continue;
+                bool enteredFromPrevious = room.RoomId == 1 || list.Exists(r =>
+                    r != null && r.RoomId == room.RoomId - 1 &&
+                    Array.Exists(r.GetComponentsInChildren<RoomTransitionTrigger>(true), t => t.TargetRoom == room));
+                if (enteredFromPrevious && (last == null || room.RoomId > last.RoomId)) last = room;
+            }
+            if (last == null) return null;
+
+            Vector2 position = last.RoomBounds != null
+                ? (Vector2)RaceFlagPlacement.WorldBounds(last.RoomBounds).center
+                : (Vector2)last.transform.position;
+            position = SnapToGround(position);
+            var go = new GameObject(RaceFinishPoint.ObjectName);
+            go.transform.SetParent(last.transform, false);
+            go.transform.position = new Vector3(position.x, position.y, last.transform.position.z);
+            go.AddComponent<RaceFinishPoint>();
+            return last;
+        }
+
 #if UNITY_EDITOR
+        [UnityEditor.MenuItem("Rock The Game/Multiplayer/Bitiş çizgisini yerleştir")]
+        private static void PlaceFinishInOpenScenes()
+        {
+            var room = PlaceFinishIfMissing(UnityEngine.Object.FindObjectsByType<Room>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+            if (room == null)
+            {
+                Debug.Log("[MP] Bitiş işareti zaten var (ya da ana yol bulunamadı)");
+                return;
+            }
+            var point = room.GetComponentInChildren<RaceFinishPoint>(true);
+            UnityEditor.Undo.RegisterCreatedObjectUndo(point.gameObject, "Bitiş çizgisini yerleştir");
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(room.gameObject.scene);
+            Debug.Log($"[MP] Bitiş işareti oda {room.RoomId} ({room.name}) merkezine kondu; elle taşı");
+        }
+
         [UnityEditor.MenuItem("Rock The Game/Multiplayer/Bayrak işaretlerini yerleştir")]
         private static void PlaceMissingInOpenScenes()
         {
-            var rooms = Object.FindObjectsByType<Room>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var rooms = UnityEngine.Object.FindObjectsByType<Room>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             var report = PlaceMissing(rooms);
             foreach (var p in report.Created)
             {

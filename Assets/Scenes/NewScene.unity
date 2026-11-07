@@ -2005,6 +2005,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8469804efcc3c8f44a4736f0343eb405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFlagPoint
+--- !u!1 &611794093
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 611794094}
+  - component: {fileID: 611794095}
+  m_Layer: 0
+  m_Name: RaceFinishPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &611794094
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 611794093}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.8451538, y: 14.355835, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2094685716645012202}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &611794095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 611794093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0319393591c15dc47861752d3c90da93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Flags.RaceFinishPoint
 --- !u!114 &617745101 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7666808314225701190, guid: 43dba26f2a17bdc49a782670373b46a0, type: 3}
@@ -63738,6 +63782,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6521018056213060359, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
       insertIndex: -1
       addedObject: {fileID: 109243790}
+    - targetCorrespondingSourceObject: {fileID: 6521018056213060359, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 611794094}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3469631683581066345, guid: fb9b7b8f06fcf2d439e7b1bbdff92fde, type: 3}
       insertIndex: -1

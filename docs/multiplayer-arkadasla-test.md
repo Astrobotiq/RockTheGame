@@ -1,30 +1,28 @@
 # Arkadaşla multiplayer testi (Steam ya da IP)
 
-*6–7 Kasım 2026. Steam ile davet (§3a) ve IP ile bağlanma (§2, §3) ikisi de var.*
+*6–7 Kasım 2026 (7 Kasım: `.bat`'lar yerine ana menü). Steam ile davet (§3a) ve IP ile bağlanma (§2, §3) ikisi de var.*
 
 ## 1. Build al
 
 Editörde **Rock The Game → Build → Windows (multiplayer testi)**. Çıktı `Builds/Windows/` klasörüne yazılır (git dışında):
 
-- `RockTheGame.exe`: tek kişilik oyun (normal açılış).
-- `Multiplayer.bat`: oyunu doğrudan lobiden açar.
-- `Host.bat`: lobiden açar ve kendiliğinden host olur.
+- `RockTheGame.exe`: oyun. Ana menüden **Tek kişilik** ya da **Çok oyunculu** seçilir.
 - `OKU-BENI.txt`: bu sayfanın kısası.
 
 Arkadaşına klasörü zipleyip gönder. `RockTheGame_BurstDebugInformation_DoNotShip` klasörünü zipe koyma. **İkiniz de aynı build'i kullanmalısınız**; protokol sürümü farklıysa bağlantı reddedilir.
 
 ## 2. Aynı ağdaysanız
 
-1. Host `Host.bat`'ı açar. Windows Güvenlik Duvarı sorarsa **İzin ver** der.
+1. Host oyunu açar, **Çok oyunculu**'yu seçer (Steam açıksa önce "Bağlantı: IP"ye çevirir) ve **Host ol** der. Windows Güvenlik Duvarı sorarsa **İzin ver** der.
 2. Host IP'sini öğrenir: `cmd` → `ipconfig` → "IPv4 Address" (192.168.x.x).
-3. Arkadaşın `Multiplayer.bat`'ı açar, adres alanına o IP'yi yazar ve **Katıl** der.
+3. Arkadaşın oyunu açıp **Çok oyunculu**'yu seçer, adres alanına o IP'yi yazar ve **Katıl** der.
 
 ## 3a. Steam ile (en kolay, henüz denenmedi)
 
 1. İkinizde de Steam açık ve giriş yapılmış olsun.
-2. İkiniz de `Multiplayer.bat`'ı açın. Lobide "Bağlantı: Steam" yazmalı; yazmıyorsa Steam başlatılamamıştır (Player.log'da `[MP] Steam`), IP yoluna geçin.
+2. İkiniz de oyunu açıp **Çok oyunculu**'yu seçin. Lobide "Bağlantı: Steam" yazmalı; yazmıyorsa Steam başlatılamamıştır (Player.log'da `[MP] Steam`), IP yoluna geçin.
 3. Host **Host ol** der; Steam'in davet arayüzü açılır (açılmazsa Shift+Tab). Arkadaşını davet eder.
-4. Arkadaşın daveti kabul eder; oyun kendiliğinden katılır (oyun kapalıysa Steam açar). Steam'de oyun "Spacewar" olarak görünür: kendi AppID'miz yok, Steam'in test uygulamasını kullanıyoruz.
+4. Arkadaşın daveti kabul eder; oyun kendiliğinden katılır (ana menüdeyse lobiye geçer, oyun kapalıysa Steam açar). Steam'de oyun "Spacewar" olarak görünür: kendi AppID'miz yok, Steam'in test uygulamasını kullanıyoruz.
 5. Modem ve güvenlik duvarı ayarı gerekmez (Steam relay).
 
 ## 3. Farklı evlerdeyseniz (IP ile): Tailscale
@@ -34,8 +32,8 @@ Bağlantı doğrudan IP üzerinden kuruluyor (UDP 7777); relay sunucusu yok. Tai
 1. İkiniz de <https://tailscale.com/download> adresinden kurup giriş yapın.
 2. Host, Tailscale yönetim panelinden arkadaşını kendi ağına davet eder (Users → Invite users), ya da kendi bilgisayarını onunla paylaşır (Machines → bilgisayarın → Share).
 3. Host'un Tailscale IP'si tepsi simgesinde görünür (100.x.x.x).
-4. Host `Host.bat`'ı açar, güvenlik duvarı sorarsa izin verir.
-5. Arkadaşın `Multiplayer.bat` ile girer, 100.x.x.x adresini yazar ve **Katıl** der. Kısayol da olur: `RockTheGame.exe -mp-join 100.x.x.x`.
+4. Host Çok oyunculu → Bağlantı: IP → **Host ol** der, güvenlik duvarı sorarsa izin verir.
+5. Arkadaşın Çok oyunculu → Bağlantı: IP ile girer, 100.x.x.x adresini yazar ve **Katıl** der. Kısayol da olur: `RockTheGame.exe -mp-join 100.x.x.x`.
 
 Alternatifler:
 - **Radmin VPN** (ücretsiz, aynı mantık).

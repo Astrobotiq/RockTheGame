@@ -78,6 +78,8 @@ namespace New_Scripts.Multiplayer.Steam
 
         public void CloseInvites() => LeaveLobby();
 
+        public bool HasPendingJoin => _pendingJoin != null;
+
         public string TakePendingJoin()
         {
             string join = _pendingJoin;

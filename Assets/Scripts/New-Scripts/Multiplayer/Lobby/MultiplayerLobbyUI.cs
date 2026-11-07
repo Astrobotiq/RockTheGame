@@ -6,6 +6,7 @@ using New_Scripts.Multiplayer.Transport;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace New_Scripts.Multiplayer.Lobby
@@ -31,6 +32,7 @@ namespace New_Scripts.Multiplayer.Lobby
         [SerializeField] private TMP_Text resumeLabel;
         [SerializeField] private Button connectionButton;
         [SerializeField] private TMP_Text connectionLabel;
+        [SerializeField] private Button mainMenuButton;
 
         private RaceMode _mode = RaceMode.Race;
         private MultiplayerSession _session;
@@ -63,6 +65,8 @@ namespace New_Scripts.Multiplayer.Lobby
             connectionLabel = label;
         }
 
+        public void WireMainMenu(Button mainMenu) => mainMenuButton = mainMenu;
+
         private void Awake()
         {
             modeButton.onClick.AddListener(ToggleMode);
@@ -90,6 +94,7 @@ namespace New_Scripts.Multiplayer.Lobby
                 connectionButton.onClick.AddListener(ToggleConnection);
             }
             if (_invites != null) _invites.JoinRequested += OnInviteAccepted;
+            if (mainMenuButton != null) mainMenuButton.onClick.AddListener(BackToMainMenu);
             Refresh();
         }
 
@@ -113,7 +118,7 @@ namespace New_Scripts.Multiplayer.Lobby
             Refresh();
         }
 
-        // Build'de Host.bat / -mp-join ile kendiliğinden başla (yalnız ilk açılışta; lobiye dönülünce tekrar etmez).
+        // Build'de -mp-host / -mp-join ile kendiliğinden başla (yalnız ilk açılışta; lobiye dönülünce tekrar etmez).
         private static bool _autoStartUsed;
 
         private void Start()
@@ -188,6 +193,12 @@ namespace New_Scripts.Multiplayer.Lobby
             _invites?.CloseInvites();
             Refresh();
             EventSystem.current?.SetSelectedGameObject(hostButton.gameObject);
+        }
+
+        private void BackToMainMenu()
+        {
+            Cancel();
+            SceneManager.LoadScene(MainMenuUI.SceneName);
         }
 
         private void Update() => Refresh();

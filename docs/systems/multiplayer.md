@@ -1,6 +1,6 @@
 # Çok oyunculu
 
-*GDD §9. Durum: **tasarım onaylandı; MP 1–8 kodda** (mesajlar, `RaceSession` kuralları, bellek içi ve Unity Transport taşıyıcıları, editör başlatıcısı, rakip hayaleti, bayrak işaretleri ve bayraklar, ceza, lobi, geri sayım, HUD, yarış kaydı, devam etme ve kopma). Steam (MP 9) ve yarış bitişi yok. Son kod doğrulaması: 2026-11-06.*
+*GDD §9. Durum: **tasarım onaylandı; MP 1–9 kodda** (mesajlar, `RaceSession` kuralları, Unity Transport ve Steam taşıyıcıları, lobi ve Steam daveti, rakip hayaleti, bayraklar, ceza, geri sayım, HUD, kayıt, devam etme, kopma, bitiş ve sonuç). **Steam bağlantısı iki bilgisayarda henüz denenmedi** (MP 0). Son kod doğrulaması: 2026-11-06.*
 
 ## Tasarım niyeti
 
@@ -52,7 +52,7 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 | `IRaceTransport` | Host ol / katıl / ayrıl, `Send(mesaj, güvenilir)`, bağlandı / koptu / mesaj geldi olayları | Yok |
 | `InMemoryTransport` | İki ucu aynı süreçte bağlar | EditMode testleri |
 | `UnityTransportAdapter` | Localhost, yerel ağ, doğrudan IP; `ReliableSequenced` ve `UnreliableSequenced` pipeline; `disconnectTimeoutMS: 5000`, `heartbeatTimeoutMS: 500`; gönderimden sonra `ScheduleFlushSend`; `NetworkSendQueueFull` gelirse kuyruk | `com.unity.transport` 2.6 (Relay yok) |
-| `SteamTransport` | Arkadaş daveti, Steam P2P (SteamNetworkingSockets); gönderimler `Reliable\|NoNagle` / `Unreliable\|NoNagle`; `SteamClient.Shutdown` yalnız uygulama kapanırken | Facepunch.Steamworks 2.5.2 (ayrı asmdef, Win64) |
+| `SteamTransport` | Steam relay bağlantısı (SteamNetworkingSockets `CreateRelaySocket` / `ConnectRelay`, adres SteamID); gönderimler `Reliable\|NoNagle` / `Unreliable\|NoNagle`; `SteamClient.Shutdown` yalnız uygulama kapanırken. Davet: `SteamInviteService` (iki kişilik, yalnız arkadaşlara açık Steam lobisi + davet arayüzü; kabul edilince lobi sahibinin SteamID'sine bağlanılır, bağlanınca lobiden çıkılır; oyun kapalıyken davet `+connect_lobby` ile açar) | Facepunch.Steamworks 2.5.2 (`Assets/Plugins/Facepunch`, yalnız Win64, `isExplicitlyReferenced`; `RockTheGame.Multiplayer.Steam` asmdef) |
 | `RaceMessages` | Mesajları byte'a yazar / okur | Yok |
 | `RaceSession` | Kurallar: mod, bayrak kaydı, 3'te ceza, rakibin odası, bitiş | Saf C# |
 | `MultiplayerSession` | Kök nesne, `DontDestroyOnLoad`; taşıyıcıyı ve `RaceSession`'ı tutar, sahne yüklenince aşağıdakileri ekler | — |
@@ -77,6 +77,8 @@ Kod `Assets/Scripts/New-Scripts/Multiplayer/` altında. Taşıyıcılar ayrı as
 - `Multiplayer/Session/RaceLobbyFlow.cs` — saf: `Hello` (sürüm uyuşmazsa `Failed`, modu host belirler, istemcinin `RaceSession`'ı host'un Hello'sundan) → `ProgressSync` + sahne yükle → `Ready` → iki taraf hazırsa 3 sn geri sayım → `Racing`. Devam (`resume`) ve yarış içinde yeniden bağlanma (`existingSession`): `Hello.Resume` iki tarafta aynı ve kimlikler eşit olmalı, yoksa iki taraf da açık mesajla `Failed`. Yeni yarışta istemci `Guid.Empty` yollar, host'un kimliğini alır
 - `Multiplayer/Hud/` — `RaceHud` (`[MP HUD]`, overlay canvas, sortingOrder 100: sağ üstte "Bayrak N/3" ve "Rakip: Oda X · Bayrak N/3", üst ortada bağlantı uyarısı, ortada 3-2-1 / BAŞLA!), `RaceHudText` (saf), `MultiplayerUISettingsSO` (`Resources/Multiplayer/MultiplayerUISettings`, Tiny5 font)
 - `Multiplayer/Lobby/` — `MultiplayerLobbyUI` (Mod Yarış↔Birlikte, Host ol, adres `127.0.0.1`, Katıl, Vazgeç, durum satırı; gamepad seçimi kapanan düğmeden kurtarılır), `MultiplayerLobbyBuilder` (menü **Rock The Game → Multiplayer → Lobi sahnesini kur**; `Assets/Scenes/MultiplayerLobby.unity`, build listesinde NewScene'den sonra)
+- `Multiplayer/Steam/` — `SteamTransport`, `SteamInviteService`, `SteamBootstrap` (açılışta `SteamClient.Init(480)`; başarısızsa IP'ye düşer; editörde menü **Rock The Game → Multiplayer → Steam (editör)** ile açılır, varsayılan kapalı). `Multiplayer/Transport/IInviteService.cs` + `InviteServices`: Multiplayer çekirdeği Steam'i bilmez, Steam assembly'si kendini kaydeder. Lobide Steam açıksa "Bağlantı: Steam / IP" düğmesi
+- `Multiplayer/Flags/RaceFinishPoint.cs`, `RaceFinishLine.cs` — bitiş: menü **Bitiş çizgisini yerleştir** ana yolun son odasına (bir öncekinden girilen en büyük kimlik; 21) işaret koyar. Dokunan bitirir (iki modda): süre durur, oyuncu donar, kayıt silinir, `Finished` gider. İki taraf da bitirince HUD'da Kazandın / Kaybettin / Berabere / Birlikte bitirdiniz; A ya da Enter ile lobiye dönülür. Biri bitirdikten sonra kopma beklenmez
 - `Multiplayer/Lobby/MultiplayerEntry.cs`, `MultiplayerBuild.cs` — build'de `-multiplayer` (ya da `-mp-host`, `-mp-join <ip>`) ile ilk sahne yerine lobi açılır, lobi `-mp-host`/`-mp-join`'de kendiliğinden başlar. Menü **Rock The Game → Build → Windows (multiplayer testi)** `Builds/Windows/`'a exe + `Multiplayer.bat` + `Host.bat` + `OKU-BENI.txt` yazar. Arkadaşla deneme: [`../multiplayer-arkadasla-test.md`](../multiplayer-arkadasla-test.md). 6 Kasım: build ilk kez alındı (0 hata, 114 MB); build host, editör istemci olarak yarış başladı
 - `Multiplayer/Dev/MultiplayerDevSettings.cs`, `MultiplayerDevLauncher.cs` — yalnız editör (`#if UNITY_EDITOR`); `NewScene`'de doğrudan Play'e basınca `MultiplayerSession`'ı "sahne yüklü" kipinde kurar. Lobiden girildiyse devreye girmez
 - `Multiplayer/Ghost/` — `GhostTiming` (20 Hz, 0.1 sn gecikme; ışınlanma eşiği hızla ölçekli: 100 b/sn × geçen süre + 1, en hızlı hareket sapan 65 b/sn; sıra numarası gönderenin gerçek saatinden), `SnapshotBuilder`, `GhostInterpolator`, `GhostVisibility` (saf C#); `GhostView` (görseli çalışırken oyuncunun `Animation` sprite/animator'ından, ipinden ve gözlerinden kurar; prefab yok, sahne kökünde `[MP Ghost]`; bütün sprite'lar 10 sıra geride, kendi içindeki sıra korunur), `GhostEyes` (yön çevirme, `EyePosition`'a göre dikey kayma, hıza göre göz bebeği; göz kırpma yok), `GhostArms` (kol yalnız o taraf tutunmuşken görünür ve kancaya bakar, ip elin ucundan çıkar; oyuncunun kolu girdi yönüne bakar, rakibin girdisi ağdan gelmez), `GhostDashFx` (dash'te `PlayerVFXManager` ayarlarıyla solan kopyalar, salınırken ve dash'te iz; ışınlanma ve yeniden belirmede iz temizlenir). Runtime'a ekleme: `PlayerVFXManager`'a dört okuma özelliği, `LocalPlayerBroadcaster` (`[MP Broadcaster]`, oda girişlerini `Room.OnRoomEntered`'dan alır)
@@ -177,7 +179,7 @@ Ceza, oyuncu oda geçişinin ya da respawn'ın ortasındaysa o bitene kadar bekl
 
 Her biri tek akşamlık (Cuma, `#code`), sırayla:
 
-0. **Steam duman testi** (yarım akşam, en riskli parça önce): Facepunch.Steamworks 2.5.2 ayrı asmdef'te, `SteamClient.Init(480)`, iki bilgisayar arasında relay bağlantısı. İki bilgisayar ve iki Steam hesabı gerekir.
+0. **Steam'i iki bilgisayarda dene** (MP 9'un kodu 7 Kasım'da yazıldı, bu testi bekliyor): iki bilgisayar, iki Steam hesabı, ikisinde de Steam açık; build lobisinde "Bağlantı: Steam", host Host ol → davet, diğeri daveti kabul eder. Bkz. [`../multiplayer-arkadasla-test.md`](../multiplayer-arkadasla-test.md).
 1. Multiplayer assembly'leri, `IRaceTransport`, `InMemoryTransport`, `RaceMessages` ve testleri
 2. `RaceSession` kuralları ve testleri
 3. `UnityTransportAdapter` ve iki kopyanın bağlanması
@@ -186,7 +188,7 @@ Her biri tek akşamlık (Cuma, `#code`), sırayla:
 6. Ceza akışı ve PlayMode testi
 7. Lobi sahnesi ve multiplayer HUD
 8. Yarış kaydı, devam etme, kopma yönetimi (`RaceSession`'a kayıttan yerel durumu geri yükleme eklenir; ilk bağlantı dahil her bağlantıda `ProgressSync` yollanır, yoksa rakip ilk odada "bilinmiyor" görünür)
-9. `SteamTransport` (AppID 480) ve iki bilgisayarlı test
+9. `SteamTransport` (AppID 480), Steam daveti; yarış bitişi ve sonuç ekranı (7 Kasım)
 
 ## Kapsam dışı
 

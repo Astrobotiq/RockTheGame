@@ -6,9 +6,8 @@
 
 ## Active
 
-- [ ] **MP 0: Steam duman testi** #test - Facepunch.Steamworks 2.5.2 ayrı asmdef'te, `SteamClient.Init(480)`, iki bilgisayar arasında bağlantı; iki PC ve iki Steam hesabı gerekir (docs/systems/multiplayer.md §Aşamalar), due 2026-11-09
-- [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle (sarı bayrak gizmo'su); oda 21 ve 22'ninkiler oda ortasında havada, mutlaka taşı, due 2026-12-07
-- [ ] **MP 9: Steam taşıyıcısı** #code - Facepunch.Steamworks, AppID 480, iki bilgisayar ve iki hesapla test, due 2027-01-01
+- [ ] **MP 0: Steam'i iki bilgisayarda dene** #test - MP 9 kodda; build al, ikisinde Steam açık, lobide "Bağlantı: Steam", host Host ol → davet, diğeri kabul eder; yarış, bayrak, ceza, bitiş (docs/multiplayer-arkadasla-test.md §3a), due 2026-11-09
+- [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle (sarı bayrak gizmo'su); oda 21 ve 22'ninkiler oda ortasında havada, mutlaka taşı; oda 21'deki bitiş işaretini (dama bayrağı gizmo'su, `RaceFinishPoint`) de bitiş yerine taşı, due 2026-12-07
 
 ## Waiting On
 
@@ -48,6 +47,7 @@
 
 ## Done
 
+- [x] ~~**MP 9: Steam taşıyıcısı** #code~~ (2026-11-07) - Facepunch.Steamworks 2.5.2 ayrı assembly'de, Steam relay taşıyıcısı, lobide Steam daveti; Steam yoksa IP'ye düşüyor (build'de doğrulandı). Ayrıca yarış bitişi ve sonuç ekranı (iki pencerede doğrulandı). Steam bağlantısı iki bilgisayarda denenmedi (MP 0). EditMode 189/189, PlayMode 41/41
 - [x] ~~**MP 8: Yarış kaydı, devam etme, kopma** #code~~ (2026-11-06) - yedi hafta erken; `multiplayer-race.json`, lobide Devam et (`Hello.Resume`, protokol v3), kopunca donma + 30 sn yeniden bağlanma + 3-2-1, dönülmezse kayıt ve lobi. İki pencerede kopma → bekleme → lobi → Devam et ile kendi odalarından sürdürme doğrulandı; 30 sn içinde geri dönüş elle denenemedi (Player 2'nin Play'e girişi uzun sürdü). EditMode 178/178, PlayMode 41/41
 - [x] ~~**MP 7: Lobi sahnesi ve multiplayer HUD** #code~~ (2026-11-06) - altı hafta erken; `MultiplayerLobby.unity` (build index 1), host/katıl, modu host seçer, 3-2-1 geri sayım (`Ready`, protokol v2), HUD; `MultiplayerSession` başlatıcının yerine geçti. İki pencerede lobiden yarışa ve istemcinin 3 bayrağıyla host'a ceza ağ üzerinden doğrulandı (MP 5–6'nın iki pencere kontrolü de); başlama farkı editörde 0.4 sn. EditMode 164/164, PlayMode 41/41
 - [x] ~~**MP 6: Ceza akışı** #code~~ (2026-11-06) - beş hafta erken; `PenaltyHandler` respawn dizisiyle önceki odanın checkpoint'ine götürüyor, kamera ve oda geçiyor, sonraki ölüm orada doğuyor; oda 22 → 11; respawn/geçiş/ölüm sırasında bekliyor. EditMode 151/151, PlayMode 41/41 (5 yeni ceza testi); Play'de tek pencerede doğrulandı, iki pencerede ağ üzerinden denenmedi

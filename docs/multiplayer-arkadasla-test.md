@@ -1,6 +1,6 @@
-# Arkadaşla multiplayer testi (Unity Transport, Steam öncesi)
+# Arkadaşla multiplayer testi (Steam ya da IP)
 
-*6 Kasım 2026. Steam (MP 9) gelince bu yol kalkar; davetle girilir.*
+*6–7 Kasım 2026. Steam ile davet (§3a) ve IP ile bağlanma (§2, §3) ikisi de var.*
 
 ## 1. Build al
 
@@ -19,7 +19,15 @@ Arkadaşına klasörü zipleyip gönder. `RockTheGame_BurstDebugInformation_DoNo
 2. Host IP'sini öğrenir: `cmd` → `ipconfig` → "IPv4 Address" (192.168.x.x).
 3. Arkadaşın `Multiplayer.bat`'ı açar, adres alanına o IP'yi yazar ve **Katıl** der.
 
-## 3. Farklı evlerdeyseniz: Tailscale (önerilen)
+## 3a. Steam ile (en kolay, henüz denenmedi)
+
+1. İkinizde de Steam açık ve giriş yapılmış olsun.
+2. İkiniz de `Multiplayer.bat`'ı açın. Lobide "Bağlantı: Steam" yazmalı; yazmıyorsa Steam başlatılamamıştır (Player.log'da `[MP] Steam`), IP yoluna geçin.
+3. Host **Host ol** der; Steam'in davet arayüzü açılır (açılmazsa Shift+Tab). Arkadaşını davet eder.
+4. Arkadaşın daveti kabul eder; oyun kendiliğinden katılır (oyun kapalıysa Steam açar). Steam'de oyun "Spacewar" olarak görünür: kendi AppID'miz yok, Steam'in test uygulamasını kullanıyoruz.
+5. Modem ve güvenlik duvarı ayarı gerekmez (Steam relay).
+
+## 3. Farklı evlerdeyseniz (IP ile): Tailscale
 
 Bağlantı doğrudan IP üzerinden kuruluyor (UDP 7777); relay sunucusu yok. Tailscale ikinizi aynı sanal ağa koyar, modem ayarı gerekmez.
 
@@ -45,7 +53,7 @@ Alternatifler:
 
 ## 5. Bilinen eksikler
 
-- Yarışın bitişi yok (son odada bir şey olmaz). Kayıt silinmez; yeni yarış için Devam et'i kapatın.
-- Lobi açılırken logda iki DOTween uyarısı çıkıyor ("Tween startup failed"); oyunu etkilemiyor.
+- Son odada (21) bitiş kupası var; dokunan bitirir, iki taraf bitirince sonuç çıkar, A ile lobiye dönülür. Bitiş ve oda 21'in bayrağı şimdilik oda ortasında üst üste; geliştirici taşıyacak.
+- Lobi açılırken logda birkaç DOTween uyarısı çıkıyor ("Tween startup failed"); büyük ihtimalle `NewScene` lobiye geçilmeden bir an yüklenip nesneleri animasyon başlatıyor. Oyunu etkilemiyor.
 - Gerçek internette (Tailscale) hiç denenmedi. Editör ile build arasında aynı bilgisayarda doğrulandı.
 - Oyuncu logu: `%USERPROFILE%\AppData\LocalLow\Astrobotiq\RockTheGame\Player.log`. Sorun olursa `[MP]` satırları buradadır.

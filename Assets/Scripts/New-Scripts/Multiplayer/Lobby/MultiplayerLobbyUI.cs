@@ -13,6 +13,8 @@ namespace New_Scripts.Multiplayer.Lobby
     /// <summary>
     /// MultiplayerLobby sahnesinin ekranı (gamepad ile gezilir): mod (Yarış / Birlikte), Host ol, adres + Katıl, Vazgeç.
     /// Bağlantı kurulunca MultiplayerSession oyun sahnesini kendisi yükler. Modu host seçer; katılan host'un modunu alır.
+    /// Steam açıksa (InviteServices) "Bağlantı: Steam" seçilebilir: Host ol Steam davet arayüzünü açar, davet kabul edilince
+    /// kendiliğinden katılınır; adres alanı ve Katıl gizlenir.
     /// </summary>
     public sealed class MultiplayerLobbyUI : MonoBehaviour
     {
@@ -27,12 +29,16 @@ namespace New_Scripts.Multiplayer.Lobby
         [SerializeField] private TMP_Text statusText;
         [SerializeField] private Button resumeButton;
         [SerializeField] private TMP_Text resumeLabel;
+        [SerializeField] private Button connectionButton;
+        [SerializeField] private TMP_Text connectionLabel;
 
         private RaceMode _mode = RaceMode.Race;
         private MultiplayerSession _session;
         private RaceSaveData _save;
         private bool _resumeOn;
         private string _exitReason;
+        private bool _useInvite;
+        private IInviteService _invites;
 
         public void Wire(Button mode, TMP_Text modeText, Button host, TMP_InputField address, Button join, Button cancel, TMP_Text status)
         {
@@ -49,6 +55,12 @@ namespace New_Scripts.Multiplayer.Lobby
         {
             resumeButton = resume;
             resumeLabel = label;
+        }
+
+        public void WireConnection(Button connection, TMP_Text label)
+        {
+            connectionButton = connection;
+            connectionLabel = label;
         }
 
         private void Awake()
@@ -69,6 +81,35 @@ namespace New_Scripts.Multiplayer.Lobby
                 _resumeOn = hasSave; // kopup lobiye dönüldüyse devam en olası seçim
             }
             if (string.IsNullOrWhiteSpace(addressField.text)) addressField.text = DefaultAddress;
+
+            _invites = InviteServices.Available ? InviteServices.Current : null;
+            _useInvite = _invites != null;
+            if (connectionButton != null)
+            {
+                connectionButton.gameObject.SetActive(_invites != null);
+                connectionButton.onClick.AddListener(ToggleConnection);
+            }
+            if (_invites != null) _invites.JoinRequested += OnInviteAccepted;
+            Refresh();
+        }
+
+        private void OnDestroy()
+        {
+            if (_invites != null) _invites.JoinRequested -= OnInviteAccepted;
+        }
+
+        private void ToggleConnection()
+        {
+            _useInvite = !_useInvite && _invites != null;
+            Refresh();
+        }
+
+        /// <summary>Steam daveti kabul edildi: host'a (SteamID) kendiliğinden katıl.</summary>
+        private void OnInviteAccepted(string hostAddress)
+        {
+            if (_session != null && _session.Flow != null && _session.Flow.Phase != LobbyPhase.Failed) return;
+            _useInvite = true;
+            BeginSession().Join(hostAddress, Resume);
             Refresh();
         }
 
@@ -77,6 +118,12 @@ namespace New_Scripts.Multiplayer.Lobby
 
         private void Start()
         {
+            string pendingInvite = _invites?.TakePendingJoin();
+            if (pendingInvite != null)
+            {
+                OnInviteAccepted(pendingInvite);
+                return;
+            }
             if (_autoStartUsed || Application.isEditor) return;
             _autoStartUsed = true;
             var args = System.Environment.GetCommandLineArgs();
@@ -84,6 +131,7 @@ namespace New_Scripts.Multiplayer.Lobby
             if (MultiplayerEntry.HasHostArgument(args)) StartHost();
             else if (join != null)
             {
+                _useInvite = false; // -mp-join her zaman IP
                 addressField.text = join;
                 StartJoin();
             }
@@ -106,6 +154,7 @@ namespace New_Scripts.Multiplayer.Lobby
         private void StartHost()
         {
             BeginSession().Host(_mode, Resume);
+            if (_useInvite) _invites.InviteFriends();
             Refresh();
         }
 
@@ -120,8 +169,11 @@ namespace New_Scripts.Multiplayer.Lobby
         {
             // İki pencere ya da iki bilgisayar: odakta olmayan oyun durursa bağlantı 5 sn'de kopar.
             Application.runInBackground = true;
-            _session = MultiplayerSession.Create(new UnityTransportAdapter(UnityTransportSettings.Default),
-                gameSceneAlreadyLoaded: false, System.Environment.UserName);
+            IRaceTransport transport = _useInvite
+                ? _invites.CreateTransport()
+                : new UnityTransportAdapter(UnityTransportSettings.Default);
+            string name = _useInvite ? _invites.LocalPlayerName : System.Environment.UserName;
+            _session = MultiplayerSession.Create(transport, gameSceneAlreadyLoaded: false, name);
             return _session;
         }
 
@@ -133,6 +185,7 @@ namespace New_Scripts.Multiplayer.Lobby
                 Destroy(_session.gameObject);
             }
             _session = null;
+            _invites?.CloseInvites();
             Refresh();
             EventSystem.current?.SetSelectedGameObject(hostButton.gameObject);
         }
@@ -154,6 +207,14 @@ namespace New_Scripts.Multiplayer.Lobby
             joinButton.interactable = !active;
             addressField.interactable = !active;
             cancelButton.interactable = active;
+            if (connectionButton != null && _invites != null)
+            {
+                connectionButton.interactable = !active;
+                connectionLabel.text = _useInvite ? $"Bağlantı: {_invites.DisplayName}" : "Bağlantı: IP";
+            }
+            // Davetle bağlanırken katılma davetten gelir: adres ve Katıl gizli.
+            if (addressField.gameObject.activeSelf == _useInvite) addressField.gameObject.SetActive(!_useInvite);
+            if (joinButton.gameObject.activeSelf == _useInvite) joinButton.gameObject.SetActive(!_useInvite);
 
             var flow = _session != null ? _session.Flow : null;
             if (flow == null && !string.IsNullOrEmpty(_exitReason))
@@ -162,8 +223,12 @@ namespace New_Scripts.Multiplayer.Lobby
                 return;
             }
             if (flow != null) _exitReason = null;
-            statusText.text = RaceHudText.LobbyStatus(flow?.Phase, flow != null && flow.IsHost, flow?.FailureReason,
-                UnityTransportSettings.Default.Port);
+            statusText.text = _useInvite && flow == null
+                ? RaceHudText.InviteIdle(_invites.DisplayName)
+                : _useInvite && flow.IsHost && (flow.Phase == LobbyPhase.Idle || flow.Phase == LobbyPhase.Handshake)
+                    ? RaceHudText.InviteWaiting(_invites.DisplayName)
+                    : RaceHudText.LobbyStatus(flow?.Phase, flow != null && flow.IsHost, flow?.FailureReason,
+                        UnityTransportSettings.Default.Port);
 
             // Düğme kapanınca gamepad seçimi boşa düşmesin.
             var es = EventSystem.current;

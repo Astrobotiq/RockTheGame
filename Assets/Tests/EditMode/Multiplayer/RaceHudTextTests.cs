@@ -61,6 +61,7 @@ namespace RockTheGame.Tests.Multiplayer
             Assert.IsTrue(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(new[] { "x", "-mp-host" }));
             Assert.AreEqual("100.64.0.7", New_Scripts.Multiplayer.Lobby.MultiplayerEntry.JoinAddress(new[] { "x", "-mp-join", "100.64.0.7" }));
             Assert.IsNull(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.JoinAddress(new[] { "x", "-mp-join" }));
+            Assert.IsTrue(New_Scripts.Multiplayer.Lobby.MultiplayerEntry.HasArgument(new[] { "x", "+connect_lobby", "109775241234" }), "Steam davetiyle açılış lobiye gider");
         }
 
         [Test]

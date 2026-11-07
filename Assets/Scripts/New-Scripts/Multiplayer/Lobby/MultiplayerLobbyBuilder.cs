@@ -85,6 +85,9 @@ namespace New_Scripts.Multiplayer.Lobby
             var ui = canvasGo.AddComponent<MultiplayerLobbyUI>();
             ui.Wire(mode, modeLabel, host, address, join, cancel, status);
             ui.WireResume(resume, resumeLabel);
+            var connection = Button(panel.transform, "ConnectionButton", "Bağlantı: Steam", font, out var connectionLabel);
+            connection.transform.SetSiblingIndex(mode.transform.GetSiblingIndex() + 1);
+            ui.WireConnection(connection, connectionLabel);
             eventSystem.firstSelectedGameObject = host.gameObject;
         }
 
@@ -106,6 +109,33 @@ namespace New_Scripts.Multiplayer.Lobby
                 var resume = Button(modeButton.transform.parent, "ResumeButton", "Devam et: Kapalı", font, out var label);
                 resume.transform.SetSiblingIndex(modeButton.transform.GetSiblingIndex());
                 ui.WireResume(resume, label);
+                EditorUtility.SetDirty(ui);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                result = "eklendi";
+            }
+            if (!string.IsNullOrEmpty(previous) && previous != ScenePath) EditorSceneManager.OpenScene(previous);
+            return result;
+        }
+
+        /// <summary>Var olan lobi sahnesine "Bağlantı: Steam / IP" düğmesini ekler (Mod düğmesinin altına).</summary>
+        [MenuItem("Rock The Game/Multiplayer/Lobiye Bağlantı düğmesini ekle")]
+        public static string AddConnectionButton()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return "iptal";
+            string previous = SceneManager.GetActiveScene().path;
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            var ui = Object.FindFirstObjectByType<MultiplayerLobbyUI>();
+            var modeButton = GameObject.Find("ModeButton");
+            string result;
+            if (ui == null || modeButton == null) result = "lobi sahnesi beklenen düzende değil";
+            else if (GameObject.Find("ConnectionButton") != null) result = "zaten var";
+            else
+            {
+                var font = MultiplayerUISettingsSO.Load().Font;
+                var connection = Button(modeButton.transform.parent, "ConnectionButton", "Bağlantı: Steam", font, out var label);
+                connection.transform.SetSiblingIndex(modeButton.transform.GetSiblingIndex() + 1);
+                ui.WireConnection(connection, label);
                 EditorUtility.SetDirty(ui);
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);

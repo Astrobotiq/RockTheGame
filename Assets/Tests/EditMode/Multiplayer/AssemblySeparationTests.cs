@@ -17,6 +17,16 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Steamworks_OnlyInSteamAssembly()
+        {
+            // Steam yalnız RockTheGame.Multiplayer.Steam'de; tek kişilik kod ve multiplayer çekirdeği ona bağlanmaz.
+            var runtime = typeof(New_Scripts.Player.PlayerController).Assembly.GetReferencedAssemblies();
+            var multiplayer = typeof(New_Scripts.Multiplayer.RaceProtocol).Assembly.GetReferencedAssemblies();
+            Assert.IsFalse(runtime.Any(r => r.Name.StartsWith("Facepunch")));
+            Assert.IsFalse(multiplayer.Any(r => r.Name.StartsWith("Facepunch") || r.Name == "RockTheGame.Multiplayer.Steam"));
+        }
+
+        [Test]
         public void Multiplayer_LivesInItsOwnAssembly()
         {
             Assert.AreEqual("RockTheGame.Multiplayer",

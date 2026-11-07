@@ -16,6 +16,8 @@ namespace New_Scripts.Multiplayer.Lobby
         public const string HostArgument = "-mp-host";
         /// <summary>Lobide kendiliğinden verilen adrese katıl: "-mp-join 100.64.0.1".</summary>
         public const string JoinArgument = "-mp-join";
+        /// <summary>Steam, oyunu bir davetle başlatınca bu argümanı (ardından lobi kimliği) verir.</summary>
+        public const string SteamConnectLobbyArgument = "+connect_lobby";
 
         /// <summary>"-mp-join adres" verildiyse adres; yoksa null.</summary>
         public static string JoinAddress(string[] args)
@@ -38,7 +40,8 @@ namespace New_Scripts.Multiplayer.Lobby
 
         /// <summary>Lobiye girilecek mi: -multiplayer, -mp-host ya da -mp-join verildiyse.</summary>
         public static bool HasArgument(string[] args) =>
-            Contains(args, Argument) || HasHostArgument(args) || JoinAddress(args) != null;
+            Contains(args, Argument) || HasHostArgument(args) || JoinAddress(args) != null ||
+            Contains(args, SteamConnectLobbyArgument);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void LoadLobbyIfRequested()

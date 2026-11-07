@@ -67,6 +67,10 @@ namespace New_Scripts.Multiplayer.Hud
         public static string ResumeLabel(bool on, int roomId, int flagCount) =>
             on ? $"Devam et: Açık (Oda {roomId}, Bayrak {flagCount}/{RaceRules.FlagsPerPenalty})" : "Devam et: Kapalı";
 
+        public static string InviteIdle(string service) => $"Host ol ve {service} arkadaşını davet et, ya da davet bekle";
+
+        public static string InviteWaiting(string service) => $"Rakip bekleniyor… {service} davetini gönder (Shift+Tab)";
+
         public static string Status(LobbyPhase phase, TransportState transport, string failureReason)
         {
             if (phase == LobbyPhase.Failed) return failureReason ?? "Bağlantı kurulamadı";

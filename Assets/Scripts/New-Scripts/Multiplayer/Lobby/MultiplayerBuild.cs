@@ -41,6 +41,8 @@ namespace New_Scripts.Multiplayer.Lobby
         {
             File.WriteAllText(Path.Combine(OutputDirectory, "Multiplayer.bat"),
                 "@echo off\r\nstart \"\" \"%~dp0" + ExeName + "\" " + MultiplayerEntry.Argument + "\r\n");
+            // Steam (AppID 480, Spacewar): exe'nin yanındaki dosya Steam'e hangi uygulama olduğunu söyler.
+            File.WriteAllText(Path.Combine(OutputDirectory, "steam_appid.txt"), "480");
             File.WriteAllText(Path.Combine(OutputDirectory, "Host.bat"),
                 "@echo off\r\nstart \"\" \"%~dp0" + ExeName + "\" " + MultiplayerEntry.HostArgument + "\r\n");
             File.WriteAllText(Path.Combine(OutputDirectory, "OKU-BENI.txt"),
@@ -52,7 +54,10 @@ namespace New_Scripts.Multiplayer.Lobby
                 "Biri 'Host ol' der, diğeri host'un IP adresini yazıp 'Katıl' der.\r\n" +
                 "Aynı evde: host'un yerel IP'si (192.168.x.x). Farklı evlerde: ikiniz de Tailscale kurun,\r\n" +
                 "host'un Tailscale IP'sini (100.x.x.x) yazın. Host'ta Windows Güvenlik Duvarı sorarsa izin verin.\r\n" +
-                "Port: UDP 7777. İkinizin de aynı build'i kullanması gerekir.\r\n");
+                "Port: UDP 7777. İkinizin de aynı build'i kullanması gerekir.\r\n\r\n" +
+                "Steam ile: ikinizde de Steam açık olsun. Lobide 'Bağlantı: Steam' iken host 'Host ol' der,\r\n" +
+                "açılan Steam arayüzünden arkadaşını davet eder; arkadaşın daveti kabul edince oyun kendiliğinden katılır.\r\n" +
+                "(Steam'in test uygulaması Spacewar olarak görünür.)\r\n");
         }
     }
 }

@@ -4,6 +4,8 @@
     "references": [
         "RockTheGame.Runtime",
         "RockTheGame.Multiplayer",
+        "Unity.TextMeshPro",
+        "Unity.ugui",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

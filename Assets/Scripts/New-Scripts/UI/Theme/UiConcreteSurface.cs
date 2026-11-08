@@ -43,6 +43,17 @@ namespace New_Scripts.UI.Theme
         public UiScreen Screen { get => screen; set { screen = value; Apply(); } }
         public Material Instance => _instance;
 
+        /// <summary>
+        /// Sahne kurarken (Editor, Play dışı) ayarlar; materyal örneği oluşturmaz, çünkü kayıtlı sahneye girmemeli.
+        /// Yüzey Play'de <c>OnEnable</c>'da uygulanır.
+        /// </summary>
+        public void Configure(UiScreen forScreen, ConcreteTone forTone, bool asPaint)
+        {
+            screen = forScreen;
+            tone = forTone;
+            paint = asPaint;
+        }
+
         private void OnEnable() => Apply();
 
         private void OnDestroy() => ReleaseInstance();

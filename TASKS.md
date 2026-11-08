@@ -7,7 +7,6 @@
 ## Active
 
 - [ ] **MP 0: Steam'i iki bilgisayarda dene** #test - MP 9 kodda; build al, ikisinde Steam açık, lobide "Bağlantı: Steam", host Host ol → davet, diğeri kabul eder; yarış, bayrak, ceza, bitiş (docs/multiplayer-arkadasla-test.md §3a), due 2026-11-09
-- [ ] **Ana menüyü yeniden kur** #code - sade liste (play/multiplayer/options/quit), halka odak imleci, duvardaki delik (mavi boyalı halka); mevcut `MainMenuBuilder`'ı genişlet (mockup: docs/ui-research/mashup-ui.html), due 2026-11-11
 - [ ] **Ana menüyü gamepad ile dene** #test - odak, geri, hızlı gezinme, okunabilirlik; denge 55 uygun mu notla, due 2026-11-11
 - [ ] **HUD ikon seti** #art - ananas, anahtar, dash küpü, sling silindiri (boyalı ve kullanılmış/boyasız hâlleri); SVG ya da Figma/Inkscape'te çiz, Unity'ye 2x PNG olarak aktar (SVG içe aktarıcı 6.3'te sorunlu olabilir, bkz. UUM-133203), due 2026-11-11
 - [ ] **Radyal pause: dilim seçimi** #code - sol stick açısı (`atan2`) dilimi seçer, D-pad ile döner, dört dilim (Resume/Options/Quit/Retry; Options ve Retry'ın ne yapacağını bu task'ta karara bağla), due 2026-11-11
@@ -60,6 +59,7 @@
 
 ## Done
 
+- [x] ~~**Ana menüyü yeniden kur** #code~~ (2026-11-09) - iki gün erken; mockup'taki menü: eğik ekstrüde başlık, liste, sarı levha + halka imleci, mavi boyalı halkalı delik (`MainMenuBuilder`, `UiExtrudedText`, `UiSelectionVisual`). `options` etkileşimsiz (ayar ekranı yok), gezinmede atlanıyor. Play Mode'da görüldü, gerçek gamepad denenmedi (docs/ui-research/main-menu.md). EditMode 215/215
 - [x] ~~**Overlay canvas CRT dışında mı doğrula** #test~~ (2026-11-08) - iki gün erken; Overlay CRT dışında (test paneli tam `#FC1E00`, 1 renk), Coin UI (Camera canvas) ve StaminaCanvas (World Space) CRT içinde. Ana menü düz ama sahnede `Volume` yok, tek başına kanıt değil. Lobi ve RaceHud yakalanmadı (docs/ui-research/crt-check.md, görüntüler crt-check/). Çıkarım: sayaç ve stamina task'larında Camera/World Space'ten Overlay'e taşıma kararı verilecek
 - [x] ~~**Beton yüzey shader'ı ya da dokusu** #art~~ (2026-11-08) - iki gün erken; seçilen: (a) kodla üretilen uGUI shader'ı (`RockTheGame/UI/Concrete` + `UiConcreteSurface`; benek, kalıp çizgisi, tie-hole denge eşikleriyle; uGUI Canvas hedefi doğrulandı: UV'siz `UiArc`'ta da çalışıyor). (b) CC0 doku denenmedi, kullanıcı indirmeyi istemedi; (a) ölçülerek değil gerekçeyle seçildi (docs/ui-research/concrete-surface.md). 1080p'de gözle bakılmadı, hiçbir ekran henüz kullanmıyor. EditMode 213/213
 - [x] ~~**UI fontlarını hazırla** #art~~ (2026-11-08) - iki gün erken; Jost 800 (başlık) ve Space Mono Regular/Bold (mono), ikisi de OFL 1.1, TMP SDF statik atlas (205 karakter, Türkçe dahil), `UiThemeSO`'ya atandı; Tiny5'e dokunulmadı (docs/ui-research/fonts.md). Play Mode'da Türkçe harfler çizildi, küçük metin 1080p'de gözle bakılmadı. OFL metinleri `Assets/UI/Fonts/Licenses/`; yayın öncesi krediye eklenmeli. EditMode 210/210

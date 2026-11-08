@@ -76,6 +76,8 @@ Similarly, most systems keep their tunable/data payloads in ScriptableObjects ra
 
 Per-mechanic docs live in `docs/systems/` (see its `README.md`). Read the relevant one before changing a mechanic, and update it (plus its "Son kod doğrulaması" date) when behaviour changes.
 
+**UI work:** before building or changing any UI screen read `docs/systems/ui-motion.md` and run its checklist. UI is never static: selection moves (springs, fixed poses, sliding cursor), screens have an entrance, and `UiSpring`/`UiMenuMotion` are reused instead of writing new tweens. Motion feel is the human's call (rule 4): state starting values and ask for a gamepad test.
+
 ### Async
 
 `Cysharp.Threading.Tasks` (UniTask) is a project dependency — prefer `UniTask`/`UniTaskVoid` over coroutines for new async sequencing code (transitions, respawns, etc.) to match existing usage (see `RoomTransitionCoordinator`, `PlayerController` imports).
@@ -91,15 +93,15 @@ Görevler repo kökündeki `TASKS.md`'de (`Active` / `Waiting On` / `Someday` / 
 
 ### Planlama kuralları
 
-Geliştirici tam zamanlı çalışıyor ve oyuna **haftada iki akşam** bakıyor: Pazartesi ve Cuma 20:00. Hafta içine task yığma.
+Geliştirici artık başka bir işte çalışmıyor ve projeye **her gün 5–6 saat** bakıyor (hafta sonu dahil). Önceki "haftada iki akşam, Pazartesi ve Cuma 20:00" düzeni 2026-11-08'de kalktı.
 
-- **Due tarihi yalnızca Pazartesi veya Cuma** olabilir.
-- **Pazartesi:** `#art` ve `#test` task'ları, ek olarak en fazla 2 `#level`.
-- **Cuma:** `#code` ve `#level` task'ları.
-- **Bir akşama en fazla 3 task.** Her task tek akşamda (1–1.5 saat) bitebilecek büyüklükte olmalı; değilse parçalara böl.
-- Sığmayan task'ı bir sonraki uygun güne kaydır ya da `Someday`'e koy — **kaydırınca kullanıcıya söyle.**
+- **Due tarihi herhangi bir gün** olabilir; Pazartesi/Cuma kısıtı ve kategori–gün eşlemesi yok.
+- **Bir güne en fazla 4 task** (yaklaşık 5–6 saat). Her task 1–1.5 saatte bitebilecek büyüklükte olmalı; değilse parçalara böl.
+- Bir `#code` task'ının `#test` doğrulamasını aynı güne ya da ertesi güne koy.
+- Her hafta en az bir günü tampon bırakmayı öner (taşan işler için); kullanıcı istemezse üstelemez.
+- Sığmayan task'ı bir sonraki güne kaydır ya da `Someday`'e koy — **kaydırınca kullanıcıya söyle.**
 - Tartışılan fikirlerden task çıkar, ama `TASKS.md`'ye **eklemeden önce kullanıcıya sor.**
-- Bir oturumda bitmeyen task'ı sonraki uygun güne taşımayı öner.
+- Bir gün içinde bitmeyen task'ı ertesi güne taşımayı öner.
 
 ### Bilgi yapısı
 
@@ -112,4 +114,4 @@ Oyun tasarımı `docs/GDD.md`'de; mekanik detayları `docs/systems/` altında, *
 
 ### Takvim senkronizasyonu
 
-Bir Pazartesi veya Cuma'nın task'larını eklediğinde, değiştirdiğinde veya kaydırdığında, o tarihteki "RockTheGame" takvim etkinliğinin açıklamasını o akşamın güncel task listesiyle güncelle — **sadece o tarihteki tekrarı, serinin tamamını değil.** Tek bir tekrar düzenlenemiyorsa, o tarihe task listesini içeren ayrı bir etkinlik aç. Her durumda güncellediğini kullanıcıya söyle.
+Bir günün task'larını eklediğinde, değiştirdiğinde veya kaydırdığında, o tarihte "RockTheGame" takvim etkinliği varsa açıklamasını o günün güncel task listesiyle güncelle — **sadece o tarihteki tekrarı, serinin tamamını değil.** Etkinlik yoksa ya da tek bir tekrar düzenlenemiyorsa, ayrı etkinlik açmadan önce kullanıcıya sor (saat aralığı onun kararı). Her durumda ne yaptığını kullanıcıya söyle. Not: mevcut seriler Pazartesi/Cuma 20:00–22:00; günlük çalışma düzenine göre yeniden kurulması kullanıcıdadır.

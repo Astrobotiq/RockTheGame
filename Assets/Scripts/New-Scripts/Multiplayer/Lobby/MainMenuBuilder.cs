@@ -89,38 +89,48 @@ namespace New_Scripts.Multiplayer.Lobby
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
+            var group = canvasGo.AddComponent<CanvasGroup>(); // açılışta gezinmeyi kilitler (UiMenuMotion)
             Transform root = canvasGo.transform;
 
             // Duvar: tam ekran beton.
             var wall = Rect("Wall", root, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             AddImage(wall, theme.ConcreteWall).gameObject.AddComponent<UiConcreteSurface>().Configure(Screen, ConcreteTone.Wall, false);
 
-            BuildHole(root, theme, border);
+            var hole = BuildHole(root, theme, border, out var bands);
 
             // Siyah kirişler (mockup: yatay 0..250 x 30..36, dikey x 28..34).
-            AddImage(Rect("BeamH", root, TopLeft, TopLeft, TopLeft, new Vector2(0f, -30f * Px), new Vector2(250f * Px, 6f * Px)), theme.Ink);
+            var beamH = Rect("BeamH", root, TopLeft, TopLeft, TopLeft, new Vector2(0f, -30f * Px), new Vector2(250f * Px, 6f * Px));
+            AddImage(beamH, theme.Ink);
             var beamV = Rect("BeamV", root, new Vector2(0f, 0f), new Vector2(0f, 1f), TopLeft, new Vector2(28f * Px, 0f), new Vector2(6f * Px, 0f));
             AddImage(beamV, theme.Ink);
 
             // Başlık: eğik, kırmızı, ekstrüde "rock"; altında "the game".
-            var rock = Text(root, "TitleRock", "rock", theme.TitleFont, 64f * 0.95f * Px, theme.Red, new Vector2(0f, 0.5f), new Vector2(46f * Px, -76f * Px), new Vector2(900f, 260f));
+            // Başlık grubu: hareket (UiMenuMotion) ekstrüzyon kopyalarıyla birlikte dönsün diye ortak üst nesne; merkezi başlığın ortası.
+            var titleCenter = new Vector2(300f, -380f);
+            var title = Rect("Title", root, TopLeft, TopLeft, new Vector2(0.5f, 0.5f), titleCenter, Vector2.zero);
+            var rock = Text(title, "TitleRock", "rock", theme.TitleFont, 64f * 0.95f * Px, theme.Red, new Vector2(0f, 0.5f), new Vector2(46f * Px, -76f * Px) - titleCenter, new Vector2(900f, 260f));
             rock.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Rad2Deg * 0.05f);
             rock.gameObject.AddComponent<UiExtrudedText>().Screen = Screen;
-            var game = Text(root, "TitleGame", "the game", theme.TitleFont, 22f * 0.95f * Px, theme.Ink, new Vector2(0f, 0.5f), new Vector2(50f * Px, -118f * Px), new Vector2(700f, 110f));
+            var game = Text(title, "TitleGame", "the game", theme.TitleFont, 22f * 0.95f * Px, theme.Ink, new Vector2(0f, 0.5f), new Vector2(50f * Px, -118f * Px) - titleCenter, new Vector2(700f, 110f));
             game.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Rad2Deg * 0.04f);
 
+            // Seçim imleci (tek, satırlar arasında kayar); etiketlerin arkasında kalsın diye önce eklenir.
+            var cursor = BuildCursor(root, theme, border, shadow, out var cursorShadow, out var cursorRing);
+
             // Liste.
-            var single = MenuItem(root, theme, "SinglePlayerButton", "play", 0, border, shadow, true);
-            var multi = MenuItem(root, theme, "MultiplayerButton", "multiplayer", 1, border, shadow, true);
-            MenuItem(root, theme, "OptionsButton", "options", 2, border, shadow, false);
-            var quit = MenuItem(root, theme, "QuitButton", "quit", 3, border, shadow, true);
+            var single = MenuItem(root, theme, "SinglePlayerButton", "play", 0, true, out var l0);
+            var multi = MenuItem(root, theme, "MultiplayerButton", "multiplayer", 1, true, out var l1);
+            var options = MenuItem(root, theme, "OptionsButton", "options", 2, false, out var l2);
+            var quit = MenuItem(root, theme, "QuitButton", "quit", 3, true, out var l3);
 
             canvasGo.AddComponent<MainMenuUI>().Wire(single, multi, quit);
+            canvasGo.AddComponent<UiMenuMotion>().Wire(new Selectable[] { single, multi, options, quit }, new TMP_Text[] { l0, l1, l2, l3 },
+                hole, bands, title, beamH, beamV, cursor, cursorShadow, cursorRing, group);
             eventSystem.firstSelectedGameObject = single.gameObject;
         }
 
         /// <summary>Duvardaki delik: gökyüzü diski, kanca halkası, ink çerçeve, mavi boyalı halka.</summary>
-        private static void BuildHole(Transform root, UiThemeSO theme, float border)
+        private static RectTransform BuildHole(Transform root, UiThemeSO theme, float border, out RectTransform[] bands)
         {
             // Mockup: merkez (364,122), halka 68..88 sanat pikseli. Sağ kenara göre konumlanır (farklı en-boy oranında kaymasın).
             float outer = 88f * Px;
@@ -130,15 +140,39 @@ namespace New_Scripts.Multiplayer.Lobby
 
             Arc(holeRoot, "Sky", inner, 0f, theme.Sky, false);
             float hook = 50f * Px;
+            bands = new RectTransform[HookBands.Length];
             for (int i = 0; i < HookBands.Length; i++)
-                Arc(holeRoot, $"Hook{i}", hook * (1f - i / (float)HookBands.Length), 0f, HookBands[i], false);
+                bands[i] = Arc(holeRoot, $"Hook{i}", hook * (1f - i / (float)HookBands.Length), 0f, HookBands[i], false).rectTransform;
 
             // Çerçeve: ink halka halkanın iki kenarına yarım çizgi taşar, mavi boyalı halka içinde kalır.
             Arc(holeRoot, "RingInk", outer + border * 0.5f, inner - border * 0.5f, theme.Ink, false);
             Arc(holeRoot, "RingPaint", outer - border * 0.5f, inner + border * 0.5f, theme.Blue, true);
+            return holeRoot;
         }
 
-        private static Button MenuItem(Transform root, UiThemeSO theme, string name, string text, int index, float border, float shadow, bool interactable)
+        /// <summary>Sarı levha, ink çerçeve ve gölge, açık halka imleci; ilk satırda başlar, UiMenuMotion kaydırır.</summary>
+        private static RectTransform BuildCursor(Transform root, UiThemeSO theme, float border, float shadow, out RectTransform shadowRect, out RectTransform ringHolder)
+        {
+            var size = new Vector2(192f * Px, 26f * Px);
+            var cursor = Rect("Cursor", root, TopLeft, TopLeft, new Vector2(0f, 0.5f), new Vector2(44f * Px, -160f * Px), size);
+            var stretch0 = new Vector2(0f, 0f);
+            var stretch1 = new Vector2(1f, 1f);
+            var middle = new Vector2(0.5f, 0.5f);
+            Vector2 half = new Vector2(border * 0.5f, border * 0.5f);
+            shadowRect = Rect("Shadow", cursor, stretch0, stretch1, middle, new Vector2(shadow, -shadow), half * 2f);
+            AddImage(shadowRect, theme.Ink).enabled = shadow > 0f;
+            AddImage(Rect("Border", cursor, stretch0, stretch1, middle, Vector2.zero, half * 2f), theme.Ink);
+            var slab = Rect("Slab", cursor, stretch0, stretch1, middle, Vector2.zero, -half * 2f);
+            var slabImage = AddImage(slab, theme.Yellow);
+            slabImage.gameObject.AddComponent<UiConcreteSurface>().Configure(Screen, ConcreteTone.Wall, true);
+            slabImage.color = theme.Yellow; // bileşen eklenirken OnValidate rengi beton tonuna çeker; boyayı sonra ver
+            ringHolder = Rect("RingCursor", cursor, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), middle, new Vector2(14f * Px, 0f), Vector2.zero);
+            var ring = Arc(ringHolder, "Ring", 7f * Px, 3.5f * Px, theme.Ink, false);
+            ring.FillAmount = 0.78f; // açık halka: dönünce görünür
+            return cursor;
+        }
+
+        private static Button MenuItem(Transform root, UiThemeSO theme, string name, string text, int index, bool interactable, out TMP_Text label)
         {
             // Mockup: satır merkezi y = 160 + 26*i, levha x 44..236 (yükseklik 26).
             var size = new Vector2(192f * Px, 26f * Px);
@@ -150,25 +184,10 @@ namespace New_Scripts.Multiplayer.Lobby
             control.transition = Selectable.Transition.None;
             control.interactable = interactable;
 
-            // Seçili görünüm: sert gölge, çerçeve, sarı levha, halka imleci. Etiketin arkasında kalsın diye önce eklenir.
-            var selected = Rect("Selected", button, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
-            Vector2 half = new Vector2(border * 0.5f, border * 0.5f);
-            var shadowRect = Rect("Shadow", selected, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), new Vector2(shadow, -shadow), half * 2f);
-            AddImage(shadowRect, theme.Ink).enabled = shadow > 0f;
-            AddImage(Rect("Border", selected, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero, half * 2f), theme.Ink);
-            var slab = Rect("Slab", selected, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero, -half * 2f);
-            var slabImage = AddImage(slab, theme.Yellow);
-            slabImage.gameObject.AddComponent<UiConcreteSurface>().Configure(Screen, ConcreteTone.Wall, true);
-            slabImage.color = theme.Yellow; // bileşen eklenirken OnValidate rengi beton tonuna çeker; boyayı sonra ver
-            var ringHolder = Rect("RingCursor", selected, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(14f * Px, 0f), Vector2.zero);
-            Arc(ringHolder, "Ring", 7f * Px, 3.5f * Px, theme.Ink, false);
-            selected.gameObject.SetActive(false);
-
-            var label = Text(button, "Label", text, theme.TitleFont, 17f * 0.95f * Px, interactable ? theme.Ink : theme.Muted,
+            var text_ = Text(button, "Label", text, theme.TitleFont, 17f * 0.95f * Px, interactable ? theme.Ink : theme.Muted,
                 new Vector2(0f, 0.5f), new Vector2(32f * Px, 0f), new Vector2(600f, size.y));
-            label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0f, 0.5f);
-
-            button.gameObject.AddComponent<UiSelectionVisual>().Wire(selected.gameObject);
+            text_.rectTransform.anchorMin = text_.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+            label = text_;
             return control;
         }
 

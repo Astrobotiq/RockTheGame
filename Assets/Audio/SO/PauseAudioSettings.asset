@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f8590519e3b674988f20c8a94f5608, type: 3}
+  m_Name: PauseAudioSettings
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Pause.PauseAudioSettingsSO
+  mixer: {fileID: 24100000, guid: dca8de71f1c68814da53e15277f5b61d, type: 2}
+  cutoffParam: MusicLowpassCutoff
+  reverbRoomParam: MusicReverbRoom
+  dryLevelParam: MusicDryLevel
+  pausedCutoffHz: 1000
+  pausedReverbRoomMb: -1800
+  pausedDryLevelMb: -600
+  fadeSeconds: 0.3

@@ -3104,6 +3104,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8995010432763234338, guid: ac2005653f6a34e4db1d9d67d8062fc4, type: 3}
   m_PrefabInstance: {fileID: 976697628}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1077673329
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1077673330}
+  - component: {fileID: 1077673331}
+  m_Layer: 0
+  m_Name: PauseManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1077673330
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1077673329}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5318321690662900627}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1077673331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1077673329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd6cf1d0c88a64a4d87e1828f2dee13d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Pause.PauseManager
+  pauseAction: {fileID: -8338598726356848359, guid: afb096d8620e4f04b94b9066826443ba, type: 3}
+  player: {fileID: 7522863500996187709}
+  audioSettings: {fileID: 11400000, guid: 218229ef9c5af7f4eb4ba9f0fe747215, type: 2}
 --- !u!114 &1101872862 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8616679551960261514, guid: 4c014b44c4949b4438ebc0afec807a00, type: 3}
@@ -100422,9 +100469,17 @@ PrefabInstance:
       objectReference: {fileID: 7522863500996187712}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 5216712418114653651, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1077673330}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
+--- !u!4 &5318321690662900627 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5216712418114653651, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
+  m_PrefabInstance: {fileID: 5318321690662900626}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5420602742644437616
 PrefabInstance:
   m_ObjectHideFlags: 0

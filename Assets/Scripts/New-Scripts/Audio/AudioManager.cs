@@ -153,6 +153,10 @@ namespace New_Scripts.Audio
             _musicSourceB = musicObjB.AddComponent<AudioSource>();
             _musicSourceB.playOnAwake = false;
 
+            // Müzik pause'ta (AudioListener.pause) çalmaya devam eder; efekti PauseManager mixer'dan verir.
+            _musicSourceA.ignoreListenerPause = true;
+            _musicSourceB.ignoreListenerPause = true;
+
             // Ambient Sources
             GameObject ambientObjA = new GameObject("Ambient_Source_A");
             ambientObjA.transform.SetParent(transform);

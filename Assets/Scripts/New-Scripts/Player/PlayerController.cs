@@ -142,7 +142,7 @@ namespace New_Scripts.Player
 
         private void Update()
         {
-            if (_isPaused) return;
+            if (_isPaused || New_Scripts.Pause.PauseManager.BlocksGameplay) return;
 
             if (Input.IsJumpPressed)
                 JumpBufferTimer = Stats.JumpBufferDuration;

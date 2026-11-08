@@ -105,6 +105,8 @@ namespace New_Scripts.Multiplayer
             transport.Disconnected += session.OnDisconnected;
             transport.MessageReceived += session.OnMessage;
             Current = session;
+            // Yarışta dünya durmaz (rakip hayalet akıyor); pause kapalı.
+            New_Scripts.Pause.PauseManager.Block(session);
             return session;
         }
 
@@ -539,6 +541,7 @@ namespace New_Scripts.Multiplayer
             if (_playerFrozen && _player != null) _player.OnEndRespawn();
             _playerFrozen = false;
             if (Current == this) Current = null;
+            New_Scripts.Pause.PauseManager.Unblock(this);
         }
 
         private static void DestroyOwned(Component component)

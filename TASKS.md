@@ -2,11 +2,24 @@
 
 > **Format:** `- [ ] **Başlık** #kategori - kısa bağlam, due YYYY-MM-DD`
 > **Kategoriler:** `#art` `#test` `#level` `#code`
-> **Due yalnızca Pazartesi veya Cuma olabilir.** Planlama kuralları: `CLAUDE.md` → "Proje yönetimi ve planlama".
+> **Her gün 5–6 saat, bir güne en fazla 4 task.** Planlama kuralları: `CLAUDE.md` → "Proje yönetimi ve planlama".
 
 ## Active
 
 - [ ] **MP 0: Steam'i iki bilgisayarda dene** #test - MP 9 kodda; build al, ikisinde Steam açık, lobide "Bağlantı: Steam", host Host ol → davet, diğeri kabul eder; yarış, bayrak, ceza, bitiş (docs/multiplayer-arkadasla-test.md §3a), due 2026-11-09
+- [ ] **Ana menüyü yeniden kur** #code - sade liste (play/multiplayer/options/quit), halka odak imleci, duvardaki delik (mavi boyalı halka); mevcut `MainMenuBuilder`'ı genişlet (mockup: docs/ui-research/mashup-ui.html), due 2026-11-11
+- [ ] **Ana menüyü gamepad ile dene** #test - odak, geri, hızlı gezinme, okunabilirlik; denge 55 uygun mu notla, due 2026-11-11
+- [ ] **HUD ikon seti** #art - ananas, anahtar, dash küpü, sling silindiri (boyalı ve kullanılmış/boyasız hâlleri); SVG ya da Figma/Inkscape'te çiz, Unity'ye 2x PNG olarak aktar (SVG içe aktarıcı 6.3'te sorunlu olabilir, bkz. UUM-133203), due 2026-11-11
+- [ ] **Radyal pause: dilim seçimi** #code - sol stick açısı (`atan2`) dilimi seçer, D-pad ile döner, dört dilim (Resume/Options/Quit/Retry; Options ve Retry'ın ne yapacağını bu task'ta karara bağla), due 2026-11-11
+- [ ] **Pause arka planı** #code - dither karartma, iki boyalı daire ve kesişim rengi, sarı üçgen, due 2026-11-12
+- [ ] **Pause'u gamepad ile dene** #test - seçim hissi, çıkış, süre durması (oyuncu/hazard/ses), okunabilirlik notu, due 2026-11-12
+- [ ] **HUD: çeyrek daire sayaç** #code - ananas + anahtar sayacı, `CollectibleUIController`'a bağla; kalıcı mı olay güdümlü mü kararını ver, due 2026-11-12
+- [ ] **Kırılan stamina halkası** #code - karakter etrafında 6 beton parça, enerji azalınca kopar; mevcut `StaminaCanvas`'ın yerine ya da üstüne; Someday'deki "Dayanıklılık uyarısı ekle" ile aynı iş, due 2026-11-12
+- [ ] **HUD'ı gamepad ile dene** #test - hızlı bir odada sayaç ve halka fark ediliyor mu, dikkat dağıtıyor mu, due 2026-11-13
+- [ ] **Oda başlık kartı** #code - çapraz levha, ekstrüde oda numarası, sarı kiriş; ~1 sn, oyunu durdurmaz (DOTween), due 2026-11-13
+- [ ] **Çok oyunculu sonuç ekranını yeniden çiz** #code - silindir (1. oyuncu) ve küp (2. oyuncu), yükseklik sıralama; mevcut ekranı bozmadan (docs/systems/multiplayer.md), due 2026-11-13
+- [ ] **Oda kartı ile iris geçişi çakışmasını dene** #test - `RoomTransitionCoordinator`, iris geçiş ve kart aynı anda; sıra ve süre ayarı, due 2026-11-13
+- [ ] **Tüm UI ekranlarını gamepad ile dene, dengeyi ayarla** #test - beş ekranın denge değeri 55 uygun mu, ekran başına değiştir (`UiThemeSO`), due 2026-11-14
 - [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle (sarı bayrak gizmo'su); oda 21 ve 22'ninkiler oda ortasında havada, mutlaka taşı; oda 21'deki bitiş işaretini (dama bayrağı gizmo'su, `RaceFinishPoint`) de bitiş yerine taşı, due 2026-12-07
 
 ## Waiting On
@@ -47,6 +60,13 @@
 
 ## Done
 
+- [x] ~~**Overlay canvas CRT dışında mı doğrula** #test~~ (2026-11-08) - iki gün erken; Overlay CRT dışında (test paneli tam `#FC1E00`, 1 renk), Coin UI (Camera canvas) ve StaminaCanvas (World Space) CRT içinde. Ana menü düz ama sahnede `Volume` yok, tek başına kanıt değil. Lobi ve RaceHud yakalanmadı (docs/ui-research/crt-check.md, görüntüler crt-check/). Çıkarım: sayaç ve stamina task'larında Camera/World Space'ten Overlay'e taşıma kararı verilecek
+- [x] ~~**Beton yüzey shader'ı ya da dokusu** #art~~ (2026-11-08) - iki gün erken; seçilen: (a) kodla üretilen uGUI shader'ı (`RockTheGame/UI/Concrete` + `UiConcreteSurface`; benek, kalıp çizgisi, tie-hole denge eşikleriyle; uGUI Canvas hedefi doğrulandı: UV'siz `UiArc`'ta da çalışıyor). (b) CC0 doku denenmedi, kullanıcı indirmeyi istemedi; (a) ölçülerek değil gerekçeyle seçildi (docs/ui-research/concrete-surface.md). 1080p'de gözle bakılmadı, hiçbir ekran henüz kullanmıyor. EditMode 213/213
+- [x] ~~**UI fontlarını hazırla** #art~~ (2026-11-08) - iki gün erken; Jost 800 (başlık) ve Space Mono Regular/Bold (mono), ikisi de OFL 1.1, TMP SDF statik atlas (205 karakter, Türkçe dahil), `UiThemeSO`'ya atandı; Tiny5'e dokunulmadı (docs/ui-research/fonts.md). Play Mode'da Türkçe harfler çizildi, küçük metin 1080p'de gözle bakılmadı. OFL metinleri `Assets/UI/Fonts/Licenses/`; yayın öncesi krediye eklenmeli. EditMode 210/210
+- [x] ~~**UiThemeSO** #code~~ (2026-11-08) - iki gün erken; palet, beton tonları, fontlar, çerçeve, gölge, ekstrüzyon ve denge (0.55, ekran başına override) `Resources/UI/UiTheme.asset`'te, mockup formülleri `UiBalance`'ta (docs/ui-research/palette.md "Kodda"). Fontlar boş (font task'ı atayacak), henüz hiçbir ekran okumuyor. EditMode 209/209
+- [x] ~~**UI paletini kaynak PNG'lerden örnekle** #art~~ (2026-11-08) - bir gün erken; kâğıt `#F1E6C7`, kırmızı `#FC1E00`, sarı `#FCAE04`, mavi `#597DCE`, ink `#140C1C` kaynak piksellerden (boru `#433646` hiçbir sprite'ta yok, `#442434`/`#4E4A4E`), docs/ui-research/palette.md. Beton tonları kaynakta yok: karar sende (mockup'unki / türetilmiş / soğuk taş). Mockup güncellenmedi
+- [x] ~~**UI şekil çizim yöntemini seç** #code~~ (2026-11-08) - bir gün erken; karar: statik şekiller PNG 2x, dinamik halka/dilim/çokgen için kendi `UiArc` mesh bileşeni (hazır paketlerin hiçbiri Unity 6'da doğrulanmadı, lisans/atıf yükü yok), docs/ui-research/shape-method.md. Play Mode'da şekiller çizildi; kenar yumuşatma 1080p'de gözle doğrulanmadı, UV yok (beton shader task'ı için not). EditMode 201/201
+- [x] ~~**Pause sistemini yaz** #code~~ (2026-11-08) - bir gün erken; Start duraklatır/devam ettirir (`PauseManager`, `timeScale 0`, ses ve titreşim kesilir), çok oyunculu yarışta kapalı, müzik çalmaya devam ediyor ve boğuk/uzak bir efekt alıyor (Lowpass + Reverb, `PauseAudioSettings.asset`) (docs/systems/pause.md). Sanal gamepad ile Play Mode'da doğrulandı; gerçek gamepad, his ve efektin kulakla ayarı denenmedi (Pause'u gamepad ile dene task'ı). EditMode 194/194, PlayMode 41/41
 - [x] ~~**MP 9: Steam taşıyıcısı** #code~~ (2026-11-07) - Facepunch.Steamworks 2.5.2 ayrı assembly'de, Steam relay taşıyıcısı, lobide Steam daveti; Steam yoksa IP'ye düşüyor (build'de doğrulandı). Ayrıca yarış bitişi ve sonuç ekranı (iki pencerede doğrulandı). Steam bağlantısı iki bilgisayarda denenmedi (MP 0). EditMode 189/189, PlayMode 41/41
 - [x] ~~**MP 8: Yarış kaydı, devam etme, kopma** #code~~ (2026-11-06) - yedi hafta erken; `multiplayer-race.json`, lobide Devam et (`Hello.Resume`, protokol v3), kopunca donma + 30 sn yeniden bağlanma + 3-2-1, dönülmezse kayıt ve lobi. İki pencerede kopma → bekleme → lobi → Devam et ile kendi odalarından sürdürme doğrulandı; 30 sn içinde geri dönüş elle denenemedi (Player 2'nin Play'e girişi uzun sürdü). EditMode 178/178, PlayMode 41/41
 - [x] ~~**MP 7: Lobi sahnesi ve multiplayer HUD** #code~~ (2026-11-06) - altı hafta erken; `MultiplayerLobby.unity` (build index 1), host/katıl, modu host seçer, 3-2-1 geri sayım (`Ready`, protokol v2), HUD; `MultiplayerSession` başlatıcının yerine geçti. İki pencerede lobiden yarışa ve istemcinin 3 bayrağıyla host'a ceza ağ üzerinden doğrulandı (MP 5–6'nın iki pencere kontrolü de); başlama farkı editörde 0.4 sn. EditMode 164/164, PlayMode 41/41

@@ -54,4 +54,48 @@ namespace RockTheGame.Tests
             Assert.AreEqual(UiConcreteSurface.SurfaceColor(theme, ConcreteTone.Wall, theme.BalanceFor(UiScreen.Pause)), image.color);
         }
     }
+
+    public class UiHazardStripesTests
+    {
+        private GameObject _go;
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (_go != null) Object.DestroyImmediate(_go);
+        }
+
+        [Test]
+        public void StripesVisible_FromBalance030()
+        {
+            Assert.IsFalse(UiHazardStripes.StripesVisible(0.29f));
+            Assert.IsTrue(UiHazardStripes.StripesVisible(0.3f));
+            Assert.IsTrue(UiHazardStripes.StripesVisible(1f));
+        }
+
+        [Test]
+        public void ThemeAsset_HasHazardMaterialWithShader()
+        {
+            var theme = Resources.Load<UiThemeSO>(UiThemeSO.ResourcePath);
+            Assert.IsNotNull(theme.HazardMaterial, "UiTheme'de HazardMaterial yok");
+            Assert.AreEqual("RockTheGame/UI/Hazard", theme.HazardMaterial.shader.name);
+            Assert.IsTrue(theme.HazardMaterial.shader.isSupported);
+        }
+
+        [Test]
+        public void Apply_SetsYellowAndStripesFromBalance()
+        {
+            _go = new GameObject("band", typeof(RectTransform), typeof(Image));
+            var stripes = _go.AddComponent<UiHazardStripes>();
+            stripes.Screen = UiScreen.RoomCard; // Apply'i tetikler
+            var theme = UiThemeSO.Load();
+            var image = _go.GetComponent<Image>();
+
+            Assert.IsNotNull(stripes.Instance, "materyal örneği oluşmadı");
+            Assert.AreSame(stripes.Instance, image.material);
+            Assert.AreEqual(theme.Yellow, image.color);
+            float expected = UiHazardStripes.StripesVisible(theme.BalanceFor(UiScreen.RoomCard)) ? 1f : 0f;
+            Assert.AreEqual(expected, stripes.Instance.GetFloat("_Stripes"));
+        }
+    }
 }

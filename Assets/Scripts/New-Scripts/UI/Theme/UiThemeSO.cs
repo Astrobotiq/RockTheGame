@@ -39,6 +39,8 @@ namespace New_Scripts.UI.Theme
         public Color Blue = new Color32(0x59, 0x7D, 0xCE, 255);
         public Color BlueDark = new Color32(0x30, 0x34, 0x6D, 255);
         public Color Sky = new Color32(0x71, 0xBA, 0xEA, 255);
+        [Tooltip("Boyalı iki dairenin kesişim rengi (Candy/Run.png koyu pembe-mor, kaynak pikselinden).")]
+        public Color Purple = new Color32(0x97, 0x33, 0x8A, 255);
         [Tooltip("Sönük metin / ikincil gri.")]
         public Color Muted = new Color32(0x4E, 0x4A, 0x4E, 255);
 
@@ -55,6 +57,10 @@ namespace New_Scripts.UI.Theme
 
         [Header("Beton materyali (RockTheGame/UI/Concrete; build'e girsin diye burada tutulur)")]
         public Material ConcreteMaterial;
+        [Tooltip("Pause karartması (RockTheGame/UI/Dither); build'e girsin diye burada tutulur.")]
+        public Material DitherMaterial;
+        [Tooltip("Tehlike şeridi (RockTheGame/UI/Hazard); build'e girsin diye burada tutulur.")]
+        public Material HazardMaterial;
 
         [Header("Yüzey (sanat pikseli, 480x270 ızgara)")]
         [Min(0f)] public float FrameThickness = 3f;

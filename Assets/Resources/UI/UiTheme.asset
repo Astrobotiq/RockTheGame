@@ -19,6 +19,7 @@ MonoBehaviour:
   Blue: {r: 0.34901962, g: 0.49019608, b: 0.80784315, a: 1}
   BlueDark: {r: 0.1882353, g: 0.20392157, b: 0.42745098, a: 1}
   Sky: {r: 0.44313726, g: 0.7294118, b: 0.91764706, a: 1}
+  Purple: {r: 0.5921569, g: 0.2, b: 0.5411765, a: 1}
   Muted: {r: 0.30588236, g: 0.2901961, b: 0.30588236, a: 1}
   ConcreteWall: {r: 0.7882353, g: 0.7764706, b: 0.7490196, a: 1}
   ConcreteSlab: {r: 0.8862745, g: 0.8745098, b: 0.84705883, a: 1}
@@ -27,6 +28,8 @@ MonoBehaviour:
   MonoFont: {fileID: 11400000, guid: bc814e6733db5a64bac48d01e662274b, type: 2}
   MonoBoldFont: {fileID: 11400000, guid: a27bf7e41c8ce0b4bbecbe68203381b1, type: 2}
   ConcreteMaterial: {fileID: 2100000, guid: 95e04f2db123d5b4da5670ba22968844, type: 2}
+  DitherMaterial: {fileID: 2100000, guid: 88daebcabeef4654680dc88d1dd06a0a, type: 2}
+  HazardMaterial: {fileID: 2100000, guid: 2959a9b5ef3da244cab1224a84ce19ea, type: 2}
   FrameThickness: 3
   ShadowOffset: 4
   ExtrusionDepth: 8

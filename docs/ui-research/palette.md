@@ -71,4 +71,5 @@ Palet, fontlar, çerçeve kalınlığı, gölge ofseti ve denge `Assets/Resource
 - **Denge:** `Balance` = 0,55 (0 Bauhaus, 1 brutalist); `ScreenOverrides` ile ekran başına (`MainMenu`, `Pause`, `Hud`, `RoomCard`, `MultiplayerResult`). `BalanceFor(screen)`, `BorderWidthFor`, `ShadowOffsetFor`, `ExtrusionDepthFor`, `ConcreteSurfaceFor`.
 - **Formüller** `UiBalance`'ta, mockup'tan (`bwOf`, `shOf`, `mass`): çerçeve `taban*(0,35+0,65*v)` (v < 0,06'da yok), gölge `round(taban*v*1,6)`, ekstrüzyon `round(taban*v*1,5)`, beton karışımı `min(1, v*1,6)`. Doku v > 0,12, tehlike çizgileri v ≥ 0,3, kalıp çizgileri v > 0,4, tie-hole v > 0,6. Birim sanat pikseli (480x270); 4x ekran çevirmesi çağıranda. Testler: `UiThemeTests`.
 - **Fontlar atanmış:** `TitleFont` (Jost 800), `MonoFont` / `MonoBoldFont` (Space Mono), bkz. `fonts.md`.
+- **Mor (2026-11-09):** `Purple` `#97338A` (`Candy/Run.png` koyu pembe-mor, kaynak pikselinden) pause arka planındaki iki boyalı dairenin kesişimi için eklendi; mockup'ın `#6B2F7A`'sı hiçbir sprite'ta yok.
 - **Henüz kimse okumuyor:** Ana menü, HUD ve pause hâlâ eski sabitleri kullanıyor; `UiThemeSO`'ya bağlamak ilgili task'larda.

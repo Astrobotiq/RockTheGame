@@ -31,6 +31,20 @@ Kullanma: aşırı eğim/kolaj (Persona'nın punk dili, bizimki geometrik), su/a
 | `UiConcreteSurface` | Beton/boya yüzey. |
 | `UiThemeSO` | Palet, font, denge, çerçeve/gölge. Renk/font elle yazılmaz. |
 
+## Önce shader'ı düşün
+
+Yüzey etkisi (desen, örtü, şerit, kayan doku, benek) **shader'da** yapılır; doku üretip `uvRect` oynatmak ya da çok kopya nesneyle taklit etmek değil. Gerekçe: shader mesh'i ve canvas'ı kirletmez (CPU her kare en çok bir malzeme vektörü yazar), ekran çözünürlüğünden bağımsız çizer, doku/nesne yükü yok. Kalıp: UI shader'ı `Assets/Shader/`, konumu mesh köşesinden alır (kök canvas uzayı, `_ArtPixel`), malzeme `UiThemeSO`'da tutulur (build'e girsin diye), bileşen malzemenin örneğini alıp özelliklerini yazar. Örnekler: `UiConcrete` (beton benek/kalıp), `UiDither` (pause karartma). Shader olmayan işler: konum/ölçek/dönüş animasyonu (`UiSpring` + transform), yerleşim. Aday listesi ve durum: aşağıda "Shader adayları".
+
+## Shader adayları (2026-11-09 denetimi)
+
+| Aday | Şu an | Neden shader | Durum |
+|---|---|---|---|
+| Pause karartma/dither | `UiDither` shader | Doku + `uvRect` her adımda canvas'ı kirletiyordu | Yapıldı |
+| Tehlike şeridi (oda kartı, MP sonuç bandı) | `UiHazard` shader + `UiHazardStripes` bileşeni | 45° çapraz sarı/ink şerit (16 pikselde 8), piksel basamaklı, her uzunlukta dikişsiz, doku yok; denge < 0,3'te düz sarı. Hiçbir `Graphic`'e eklenebilir (Image, `UiPolygon`) | Yapıldı; henüz hiçbir ekran kullanmıyor. Oda başlık kartı / MP sonuç task'ında `UiHazardStripes` ekle (malzeme `UiThemeSO.HazardMaterial`) |
+| Dilim/daire/çokgen: dolgu + çerçeve + sert gölge | Her şekil için 2-3 `UiArc`/`UiPolygon` (pause'da ~26 grafik) | SDF shader'ı tek dörtgende dolgu+çerçeve+gölge çizer, kenar yumuşatma her ölçekte, çerçeve/gölge malzeme parametresi | Öneri, yapılmadı |
+| Dilim/etiket renk geçişi (gri→sarı) | `Graphic.color` her karede değişiyor, mesh/TMP köşe rengi yeniden üretiliyor | Renk malzeme parametresi olursa mesh değişmez | SDF shader işiyle birlikte |
+| Ekstrüde yazı | `UiExtrudedText`: derinlik kadar (7) TMP kopyası | Özel TMP SDF shader'ı çok örnekli ekstrüzyonu tek nesnede yapar | Öneri, yapılmadı (menü statik, maliyet küçük) |
+
 ## Uygulama kuralları ve tuzaklar
 
 - **Unscaled zaman:** menü ve pause hareketi `Time.unscaledDeltaTime` kullanır (`timeScale = 0` iken çalışmalı). DOTween kullanılırsa `SetUpdate(true)` + her yeniden başlatmada `DOKill`. Yay bu sorunların ikisini de yaşatmaz; tercih yay.
@@ -55,7 +69,7 @@ Hareket gözle ve gamepad ile değerlendirilir; ajan yalnızca değerleri (hedef
 | Ekran | Hareket |
 |---|---|
 | Ana menü | Tamam (poz, imleç, etiket, delik, giriş). Tık sesi ve titreşim yok. |
-| Pause (radyal) | Yapılacak: seçili dilim dışarı çıkar + gölge çakılır, dilimler arası geçiş, açılış/kapanış. |
+| Pause (radyal) | Dilimler: seçili dilim sarıya boyanır, dışarı çıkar, gölge çakılır; açılış (sıralı) ve kapanış (solma) var (`PauseMenuPanel`, bkz. `pause.md`). Arka plan (`PauseBackdrop`): daireler/üçgen dilime göre sabit pozda, boşta sürüklenir, girişte kayarak gelir. Eksik: merkez disk, tık sesi/titreşim, dilimlerin kendi boşta hareketi. |
 | HUD sayaç / stamina halkası | Yapılacak: değer değişince kısa tepki; stamina parçası kopunca fırlar. |
 | Oda başlık kartı | Yapılacak: levha eğik girer, oda numarası çakılır. |
 | Çok oyunculu sonuç | Yapılacak: sütunlar yükselir, sıra vurgusu. |

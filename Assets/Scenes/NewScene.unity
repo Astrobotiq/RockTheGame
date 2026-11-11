@@ -1559,6 +1559,10 @@ MonoBehaviour:
   labelSize: 17
   entranceLock: 0.4
   enterStagger: 0.06
+  enterDistance: 20
+  enterScale: 0.7
+  enterTwist: 14
+  paintDelay: 0.28
   stickDeadzone: 0.5
 --- !u!1 &443744809
 GameObject:
@@ -1576,7 +1580,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &443744810
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4268,6 +4272,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb233f1ab8f49f2ab42f443dc1016e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.LevelChange.Room
+--- !u!1 &1689001707
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1689001708}
+  - component: {fileID: 1689001709}
+  m_Layer: 0
+  m_Name: HudCounter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1689001708
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689001707}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5318321690662900627}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1689001709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689001707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb4149c84d2f1e148948447711af53da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.UI.Hud.HudCounterPanel
+  inventory: {fileID: 11400000, guid: bc8ba2a516137434c8f09b92c9a80d3d, type: 2}
+  pineappleIcon: {fileID: 21300000, guid: 8366d3cf13fe0f443b3cc9fe76fdf777, type: 3}
+  keyIcon: {fileID: 21300000, guid: e803d05883a6ca74d981a4469197fd22, type: 3}
+  keyMissingIcon: {fileID: 21300000, guid: 225d883689783354f8450dbf8e862f05, type: 3}
+  keyEnterStagger: 0.06
 --- !u!1 &1709683605
 GameObject:
   m_ObjectHideFlags: 0
@@ -100530,6 +100583,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5216712418114653651, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
       insertIndex: -1
       addedObject: {fileID: 412607741}
+    - targetCorrespondingSourceObject: {fileID: 5216712418114653651, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1689001708}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
 --- !u!4 &5318321690662900627 stripped

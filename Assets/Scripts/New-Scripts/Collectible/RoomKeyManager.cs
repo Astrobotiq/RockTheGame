@@ -29,6 +29,9 @@ namespace New_Scripts.Collectible
         [Tooltip("Anahtarlar toplandığında kapıya uygulanacak eylem.")]
         [SerializeField] private KeyActionType actionType = KeyActionType.Open;
 
+        /// <summary>Bu kapıyı etkileyen anahtarlar (HUD sayacı okur).</summary>
+        public IReadOnlyList<Collectible> Keys => keys;
+
         private PlayerHealth playerHealth;
         private bool wasActionExecuted = false;
         private bool doorStateBeforeAction = false;

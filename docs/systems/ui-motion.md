@@ -70,6 +70,7 @@ Hareket gözle ve gamepad ile değerlendirilir; ajan yalnızca değerleri (hedef
 |---|---|
 | Ana menü | Tamam (poz, imleç, etiket, delik, giriş). Tık sesi ve titreşim yok. |
 | Pause (radyal) | Dilimler: seçili dilim sarıya boyanır, dışarı çıkar, gölge çakılır; açılış (sıralı) ve kapanış (solma) var (`PauseMenuPanel`, bkz. `pause.md`). Arka plan (`PauseBackdrop`): daireler/üçgen dilime göre sabit pozda, boşta sürüklenir, girişte kayarak gelir. Eksik: merkez disk, tık sesi/titreşim, dilimlerin kendi boşta hareketi. |
-| HUD sayaç / stamina halkası | Yapılacak: değer değişince kısa tepki; stamina parçası kopunca fırlar. |
+| HUD sayaç | `HudCounterPanel`: yalnızca toplayınca köşeden büyüyerek gelir, 2,5 sn sonra çekilir; ananas/anahtar değişince sıçrar, anahtar çakılır. Boşta hareket bilerek yok. Eksik: tık sesi/titreşim. |
+| HUD stamina halkası | Yapılacak: parça kopunca fırlar; `UiPixelScale` ile tam sayı ölçek. |
 | Oda başlık kartı | Yapılacak: levha eğik girer, oda numarası çakılır. |
 | Çok oyunculu sonuç | Yapılacak: sütunlar yükselir, sıra vurgusu. |

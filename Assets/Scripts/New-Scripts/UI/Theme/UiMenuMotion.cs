@@ -359,7 +359,7 @@ namespace New_Scripts.UI.Theme
 
                 Color c = _labelBase[i];
                 bool live = items[i] != null && items[i].interactable;
-                float alpha = live ? Mathf.Lerp(labelDim, 1f, Mathf.Clamp01(s)) : 1f;
+                float alpha = live ? Mathf.Lerp(labelDim, 1f, Mathf.Clamp01(s)) : labelDim * 0.5f; // pasif: seçili olmayan etkin satırdan açıkça soluk
                 c.a = _labelBase[i].a * alpha * (1f - Mathf.Clamp01(e));
                 if (labels[i].color != c) labels[i].color = c;
             }

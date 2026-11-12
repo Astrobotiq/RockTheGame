@@ -1,11 +1,11 @@
 #Requires -Version 5.1
 # SessionStart hook: TASKS.md'nin Active bolumunu okur ve oturum acilisinda
-# o aksamin (ya da sonraki Pazartesi/Cuma oturumunun) task'larini ozetler.
+# bugunun ve yarinin task'larini ozetler.
 #
-# - Bugun Pazartesi/Cuma ise: "Bu aksamin isleri" = due tarihi bugun olanlar.
-# - Diger gunlerde: sonraki Pazartesi/Cuma tarihi + o gunun task'lari.
-# - Her durumda: due tarihi gecmis task'lar "Gecikenler" basligiyla ayrica listelenir.
-# - Due tarihi Pazartesi/Cuma olmayan task'lar "Kural disi due tarihi" altinda uyarilir.
+# - Calisma duzeni: her gun 5-6 saat (2026-11-08'den beri); due tarihi herhangi bir gun olabilir.
+# - "Bugunun isleri" = due tarihi bugun olanlar, "Yarin" = due tarihi yarin olanlar.
+# - Due tarihi gecmis task'lar "Gecikenler" basligiyla ayrica listelenir.
+# - Bir gune 4'ten fazla task atanmissa "Asiri yuklu gunler" altinda uyarilir.
 # - TASKS.md yoksa hata vermeden cikar.
 #
 # Not: string literalleri bilerek ASCII; PowerShell 5.1 BOM'suz .ps1 dosyalarini
@@ -14,6 +14,8 @@
 
 $ErrorActionPreference = 'Stop'
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
+
+$maxPerDay = 4
 
 $root = if ($env:CLAUDE_PROJECT_DIR) { $env:CLAUDE_PROJECT_DIR } else { Split-Path (Split-Path $PSScriptRoot) }
 $tasksPath = Join-Path $root 'TASKS.md'
@@ -52,13 +54,9 @@ $trDays = @{
     'Monday' = 'Pazartesi'; 'Tuesday' = 'Sali'; 'Wednesday' = 'Carsamba'
     'Thursday' = 'Persembe'; 'Friday' = 'Cuma'; 'Saturday' = 'Cumartesi'; 'Sunday' = 'Pazar'
 }
-$sessionFocus = @{ 'Monday' = 'Art & Test'; 'Friday' = 'Code & Level' }
 
 $today = (Get-Date).Date
-$isSessionDay = $sessionFocus.ContainsKey([string]$today.DayOfWeek)
-
-$nextSession = $today
-do { $nextSession = $nextSession.AddDays(1) } until ($sessionFocus.ContainsKey([string]$nextSession.DayOfWeek))
+$tomorrow = $today.AddDays(1)
 
 function Format-Line($t) {
     $cat = if ($t.Cat) { " $($t.Cat)" } else { '' }
@@ -67,23 +65,17 @@ function Format-Line($t) {
 
 # --- Cikti ---
 $out = New-Object System.Collections.Generic.List[string]
-$todayLabel = "$($today.ToString('yyyy-MM-dd')) $($trDays[[string]$today.DayOfWeek])"
-$out.Add("== RockTheGame planlama == ($todayLabel)")
+$out.Add("== RockTheGame planlama == ($($today.ToString('yyyy-MM-dd')) $($trDays[[string]$today.DayOfWeek]))")
 
-if ($isSessionDay) {
-    $focus = $sessionFocus[[string]$today.DayOfWeek]
-    $out.Add("Bu aksamin isleri -- $($trDays[[string]$today.DayOfWeek]) 20:00, $focus" + ':')
-    $todays = @($tasks | Where-Object { $_.Due -eq $today })
-    if ($todays.Count -eq 0) { $out.Add('  (bu tarihe atanmis task yok)') }
-    else { foreach ($t in $todays) { $out.Add((Format-Line $t)) } }
-}
-else {
-    $focus = $sessionFocus[[string]$nextSession.DayOfWeek]
-    $out.Add("Sonraki oturum: $($nextSession.ToString('yyyy-MM-dd')) $($trDays[[string]$nextSession.DayOfWeek]) 20:00, $focus" + ':')
-    $upcoming = @($tasks | Where-Object { $_.Due -eq $nextSession })
-    if ($upcoming.Count -eq 0) { $out.Add('  (bu tarihe atanmis task yok)') }
-    else { foreach ($t in $upcoming) { $out.Add((Format-Line $t)) } }
-}
+$out.Add('Bugunun isleri (gunluk 5-6 saat):')
+$todays = @($tasks | Where-Object { $_.Due -eq $today })
+if ($todays.Count -eq 0) { $out.Add('  (bugune atanmis task yok)') }
+else { foreach ($t in $todays) { $out.Add((Format-Line $t)) } }
+
+$out.Add("Yarin: $($tomorrow.ToString('yyyy-MM-dd')) $($trDays[[string]$tomorrow.DayOfWeek])")
+$next = @($tasks | Where-Object { $_.Due -eq $tomorrow })
+if ($next.Count -eq 0) { $out.Add('  (yarina atanmis task yok)') }
+else { foreach ($t in $next) { $out.Add((Format-Line $t)) } }
 
 $overdue = @($tasks | Where-Object { $_.Due -ne $null -and $_.Due -lt $today } | Sort-Object Due)
 if ($overdue.Count -gt 0) {
@@ -94,12 +86,10 @@ if ($overdue.Count -gt 0) {
     }
 }
 
-$offSchedule = @($tasks | Where-Object { $_.Due -ne $null -and -not $sessionFocus.ContainsKey([string]$_.Due.DayOfWeek) } | Sort-Object Due)
-if ($offSchedule.Count -gt 0) {
-    $out.Add('Kural disi due tarihi (yalnizca Pazartesi/Cuma olmali):')
-    foreach ($t in $offSchedule) {
-        $out.Add((Format-Line $t) + " (due $($t.Due.ToString('yyyy-MM-dd')) $($trDays[[string]$t.Due.DayOfWeek]))")
-    }
+$heavy = @($tasks | Where-Object { $_.Due -ne $null -and $_.Due -ge $today } | Group-Object { $_.Due.ToString('yyyy-MM-dd') } | Where-Object { $_.Count -gt $maxPerDay } | Sort-Object Name)
+if ($heavy.Count -gt 0) {
+    $out.Add("Asiri yuklu gunler (en fazla $maxPerDay task):")
+    foreach ($g in $heavy) { $out.Add("  - $($g.Name): $($g.Count) task") }
 }
 
 $out -join "`n"

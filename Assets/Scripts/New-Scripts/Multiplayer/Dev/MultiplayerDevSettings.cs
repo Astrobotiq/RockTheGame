@@ -23,6 +23,19 @@ namespace New_Scripts.Multiplayer.Dev
         private const string AddressKey = "RockTheGame.Multiplayer.DevLauncher.Address";
         private const string ModeKey = "RockTheGame.Multiplayer.DevLauncher.Mode";
         private const string MenuPath = "Rock The Game/Multiplayer/Geliştirici başlatıcısı";
+        private const string SaveKey = "RockTheGame.Multiplayer.SaveEnabled";
+        private const string SaveMenuPath = "Rock The Game/Multiplayer/Yarış kaydını yaz (editör)";
+
+        /// <summary>
+        /// Editörde yarış kaydı yazılsın mı (varsayılan açık). Test amaçlı deneme kaydı bırakıp lobide "Devam et"i açmasın diye
+        /// kapatılabilir; kapalıyken yalnız varsayılan yola yazma atlanır (<see cref="Save.RaceSaveStore"/>), okuma ve silme aynen çalışır.
+        /// Build'de bu ayar yok, kayıt hep yazılır.
+        /// </summary>
+        public static bool SaveEnabled
+        {
+            get => EditorPrefs.GetBool(SaveKey, true);
+            set => EditorPrefs.SetBool(SaveKey, value);
+        }
 
         public static bool Enabled
         {
@@ -50,6 +63,16 @@ namespace New_Scripts.Multiplayer.Dev
 
         [MenuItem(MenuPath)]
         private static void ToggleEnabled() => Enabled = !Enabled;
+
+        [MenuItem(SaveMenuPath)]
+        private static void ToggleSave() => SaveEnabled = !SaveEnabled;
+
+        [MenuItem(SaveMenuPath, true)]
+        private static bool ToggleSaveValidate()
+        {
+            Menu.SetChecked(SaveMenuPath, SaveEnabled);
+            return true;
+        }
 
         [MenuItem(MenuPath, true)]
         private static bool ToggleEnabledValidate()

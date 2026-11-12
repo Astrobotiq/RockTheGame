@@ -39,11 +39,14 @@ namespace New_Scripts.UI.Shapes
             useLegacyMeshGeneration = false;
         }
 
+#if UNITY_EDITOR
+        // Graphic.Reset yalnızca Editor'da var; player build'de override derlenmez.
         protected override void Reset()
         {
             base.Reset();
             raycastTarget = false; // dekor; seçimi Selectable yönetir
         }
+#endif
 
         private void Set<T>(ref T field, T value)
         {

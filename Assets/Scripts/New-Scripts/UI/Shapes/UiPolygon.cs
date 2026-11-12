@@ -24,11 +24,14 @@ namespace New_Scripts.UI.Shapes
             useLegacyMeshGeneration = false;
         }
 
+#if UNITY_EDITOR
+        // Graphic.Reset yalnızca Editor'da var; player build'de override derlenmez.
         protected override void Reset()
         {
             base.Reset();
             raycastTarget = false;
         }
+#endif
 
         public void SetPoints(IList<Vector2> value)
         {

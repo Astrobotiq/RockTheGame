@@ -84,6 +84,23 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Store_EditorSaveOff_DoesNotAffectExplicitPath()
+        {
+            bool before = New_Scripts.Multiplayer.Dev.MultiplayerDevSettings.SaveEnabled;
+            New_Scripts.Multiplayer.Dev.MultiplayerDevSettings.SaveEnabled = false;
+            try
+            {
+                var store = new RaceSaveStore(_path);
+                store.Write(RaceSaveData.From(SessionAtRoom7(), RaceId, "Rakip", 50f));
+                Assert.IsTrue(store.Exists, "özel yola yazma menü ayarından etkilenmez (testler buna güvenir)");
+            }
+            finally
+            {
+                New_Scripts.Multiplayer.Dev.MultiplayerDevSettings.SaveEnabled = before;
+            }
+        }
+
+        [Test]
         public void Store_MissingOrCorrupt_ReadsFalse_DeleteRemoves()
         {
             var store = new RaceSaveStore(_path);

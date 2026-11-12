@@ -1,6 +1,6 @@
 # Toplanabilirler, anahtarlar ve kapılar
 
-*GDD §5.3, §6.2 "Toplanabilirler" ve "Diğer", §12 madde 4. Son kod doğrulaması: 2026-10-05.*
+*GDD §5.3, §6.2 "Toplanabilirler" ve "Diğer", §12 madde 4. Son kod doğrulaması: 2026-11-09 (HUD sayacı).*
 
 ## Tasarım niyeti
 
@@ -30,7 +30,12 @@ Prefab'lar: `Assets/Prefab/New/Collectable/`.
 
 - `totalCoins` (kalıcı) + `sessionCoins` (son checkpoint'ten beri). Gösterilen sayı ikisinin toplamı.
 - `CollectibleInventoryManager` checkpoint kanalında `Commit()`, ölümde `Revert()` çağırır. Sahne açılışında envanteri sıfırlar; **kalıcı kayıt (save) yok**, oyun her açılışta 0'dan başlar.
-- `CollectibleUIController`, `OnCoinsChanged` olayıyla sayacı günceller.
+- **HUD sayacı (2026-11-09): `HudCounterPanel`** (`UI/Hud/`, NewScene `Managers/HudCounter`). Sol-üst köşede mavi çeyrek daire: ananas ikonu + sayı (`OnCoinsChanged`), altında bulunulan odanın anahtarları. Overlay canvas'ta (CRT dışında, keskin) ve `UiPixelScale` ile tam sayı sanat pikseline sabit (1080p'de 4, 1440p'de 5, 720p'de 2).
+  - **Karar: yalnızca bir şey toplanınca görünür** (ilk sürümde kalıcıydı; köşeyi sürekli kapattığı için değişti). Sayaç köşeden büyüyerek gelir, `showSeconds` (2,5 sn, unscaled) sonra çekilir. Ananas `OnCoinsChanged`'den; anahtar `Collectible.OnCollected`'dan ve oda girişinden (`Room.OnRoomEntered`, görünmeden). Ölünce toplananlar olay vermeden geri döndüğü için `PlayerHealth.OnDeath`'ten bir kare sonra yenilenir (görünmeden).
+  - **Takip eden parçalar ve anahtar:** karakterin etrafında dönen parçalar yalnızca `AirborneCoinShardManager`'ın ananas parçaları (oda 14, 15, 17); onlar zaten ekranda görünür. Anahtarlar toplanınca görselleri kaybolur (`hideVisual`), takip etmezler; "kaç anahtar kaldı" bilgisi bu yüzden HUD'da. Anahtarlar da karakteri takip edecekse anahtar satırı kaldırılabilir (açık karar).
+  - **Anahtar:** silüet ikon; toplanan boyalı (`hud_key`), eksik çıplak beton (`hud_key_used`). Odadaki tüm `RoomKeyManager`'ların anahtarları toplanır (oda 11'de iki yönetici var); en çok 3 gösterilir, fazlası uyarı verir. Anahtarsız odada yuvalar boş kalır.
+  - **Hareket:** tüm sayaç köşeden büyüyüp küçülür (yay, unscaled); ananas/anahtar değişince ikon ve yazı sıçrar, toplanan anahtar çakılır; odaya girince anahtarlar sırayla gelir (görünmeden hazırlanır). Boşta hareket bilerek yok (hızlı oyunda okunurluk).
+  - Eski `CollectibleUIController` ve `Coin UI` nesnesi (eski `Canvas`, Camera, CRT içinde) kapatıldı, silinmedi; script durur ama kullanılmıyor. `Canvas` içindeki `IrisTransition` ve `DialogueBubbleUI` olduğu gibi çalışıyor.
 
 ## "Tek nefeste" ananas: `AirborneCoinShardManager`
 

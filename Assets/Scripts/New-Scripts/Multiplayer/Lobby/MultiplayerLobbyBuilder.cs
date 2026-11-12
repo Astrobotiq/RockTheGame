@@ -20,7 +20,7 @@ namespace New_Scripts.Multiplayer.Lobby
     public static class MultiplayerLobbyBuilder
     {
         public const string ScenePath = "Assets/Scenes/MultiplayerLobby.unity";
-        private static readonly Color Background = new Color(0.36f, 0.66f, 0.85f);
+        internal static readonly Color Background = new Color(0.36f, 0.66f, 0.85f);
         private static readonly Color ButtonColor = new Color(0.95f, 0.45f, 0.62f);
 
         [MenuItem("Rock The Game/Multiplayer/Lobi sahnesini kur")]
@@ -88,6 +88,7 @@ namespace New_Scripts.Multiplayer.Lobby
             var connection = Button(panel.transform, "ConnectionButton", "Bağlantı: Steam", font, out var connectionLabel);
             connection.transform.SetSiblingIndex(mode.transform.GetSiblingIndex() + 1);
             ui.WireConnection(connection, connectionLabel);
+            ui.WireMainMenu(Button(panel.transform, "MainMenuButton", "Ana menü", font, out _));
             eventSystem.firstSelectedGameObject = host.gameObject;
         }
 
@@ -145,7 +146,32 @@ namespace New_Scripts.Multiplayer.Lobby
             return result;
         }
 
-        private static TMP_Text Label(Transform parent, string name, string text, float size, TMP_FontAsset font, float height)
+        /// <summary>Var olan lobi sahnesine "Ana menü" düğmesini ekler (en alta).</summary>
+        [MenuItem("Rock The Game/Multiplayer/Lobiye Ana menü düğmesini ekle")]
+        public static string AddMainMenuButton()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return "iptal";
+            string previous = SceneManager.GetActiveScene().path;
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            var ui = Object.FindFirstObjectByType<MultiplayerLobbyUI>();
+            var cancel = GameObject.Find("CancelButton");
+            string result;
+            if (ui == null || cancel == null) result = "lobi sahnesi beklenen düzende değil";
+            else if (GameObject.Find("MainMenuButton") != null) result = "zaten var";
+            else
+            {
+                var font = MultiplayerUISettingsSO.Load().Font;
+                ui.WireMainMenu(Button(cancel.transform.parent, "MainMenuButton", "Ana menü", font, out _));
+                EditorUtility.SetDirty(ui);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                result = "eklendi";
+            }
+            if (!string.IsNullOrEmpty(previous) && previous != ScenePath) EditorSceneManager.OpenScene(previous);
+            return result;
+        }
+
+        internal static TMP_Text Label(Transform parent, string name, string text, float size, TMP_FontAsset font, float height)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(LayoutElement)) { layer = parent.gameObject.layer };
             go.transform.SetParent(parent, false);
@@ -159,7 +185,7 @@ namespace New_Scripts.Multiplayer.Lobby
             return label;
         }
 
-        private static Button Button(Transform parent, string name, string text, TMP_FontAsset font, out TMP_Text label)
+        internal static Button Button(Transform parent, string name, string text, TMP_FontAsset font, out TMP_Text label)
         {
             var go = TMP_DefaultControls.CreateButton(new TMP_DefaultControls.Resources());
             go.name = name;

@@ -8,8 +8,8 @@ using UnityEngine;
 namespace New_Scripts.Multiplayer.Lobby
 {
     /// <summary>
-    /// Arkadaşla denemek için Windows build'i: Builds/Windows/RockTheGame.exe, yanına lobiden açan Multiplayer.bat ve kısa
-    /// bir OKU-BENI.txt. Build listesindeki sahneler kullanılır (NewScene ilk, lobi ikinci).
+    /// Arkadaşla denemek için Windows build'i: Builds/Windows/RockTheGame.exe, steam_appid.txt ve kısa bir OKU-BENI.txt.
+    /// Build listesindeki sahneler kullanılır (MainMenu ilk, sonra NewScene ve lobi).
     /// </summary>
     public static class MultiplayerBuild
     {
@@ -39,25 +39,24 @@ namespace New_Scripts.Multiplayer.Lobby
 
         private static void WriteExtras()
         {
-            File.WriteAllText(Path.Combine(OutputDirectory, "Multiplayer.bat"),
-                "@echo off\r\nstart \"\" \"%~dp0" + ExeName + "\" " + MultiplayerEntry.Argument + "\r\n");
+            // Eski build'lerin .bat'ları: oyun artık ana menüyle açılıyor.
+            foreach (var bat in new[] { "Multiplayer.bat", "Host.bat" })
+            {
+                string path = Path.Combine(OutputDirectory, bat);
+                if (File.Exists(path)) File.Delete(path);
+            }
             // Steam (AppID 480, Spacewar): exe'nin yanındaki dosya Steam'e hangi uygulama olduğunu söyler.
             File.WriteAllText(Path.Combine(OutputDirectory, "steam_appid.txt"), "480");
-            File.WriteAllText(Path.Combine(OutputDirectory, "Host.bat"),
-                "@echo off\r\nstart \"\" \"%~dp0" + ExeName + "\" " + MultiplayerEntry.HostArgument + "\r\n");
             File.WriteAllText(Path.Combine(OutputDirectory, "OKU-BENI.txt"),
                 "Rock The Game - multiplayer testi\r\n\r\n" +
-                "Tek kişilik: RockTheGame.exe\r\n" +
-                "Çok oyunculu: Multiplayer.bat (oyunu lobiden açar)\r\n" +
-                "Hızlı yol: host Host.bat'ı açar (kendiliğinden host olur); katılan Multiplayer.bat ile girip\r\n" +
-                "adresi yazar ya da kısayola şunu koyar: RockTheGame.exe -mp-join <host-ip>\r\n\r\n" +
-                "Biri 'Host ol' der, diğeri host'un IP adresini yazıp 'Katıl' der.\r\n" +
+                "RockTheGame.exe'yi açın; ana menüden Tek kişilik ya da Çok oyunculu seçin.\r\n\r\n" +
+                "Steam ile: ikinizde de Steam açık olsun. Çok oyunculu ekranında 'Bağlantı: Steam' iken host\r\n" +
+                "'Host ol' der, açılan Steam arayüzünden arkadaşını davet eder; arkadaşın daveti kabul edince oyun\r\n" +
+                "kendiliğinden katılır (oyun kapalıysa Steam açar). Steam'in test uygulaması Spacewar olarak görünür.\r\n\r\n" +
+                "IP ile: 'Bağlantı: IP' seçin. Biri 'Host ol' der, diğeri host'un IP adresini yazıp 'Katıl' der.\r\n" +
                 "Aynı evde: host'un yerel IP'si (192.168.x.x). Farklı evlerde: ikiniz de Tailscale kurun,\r\n" +
                 "host'un Tailscale IP'sini (100.x.x.x) yazın. Host'ta Windows Güvenlik Duvarı sorarsa izin verin.\r\n" +
-                "Port: UDP 7777. İkinizin de aynı build'i kullanması gerekir.\r\n\r\n" +
-                "Steam ile: ikinizde de Steam açık olsun. Lobide 'Bağlantı: Steam' iken host 'Host ol' der,\r\n" +
-                "açılan Steam arayüzünden arkadaşını davet eder; arkadaşın daveti kabul edince oyun kendiliğinden katılır.\r\n" +
-                "(Steam'in test uygulaması Spacewar olarak görünür.)\r\n");
+                "Port: UDP 7777. İkinizin de aynı build'i kullanması gerekir.\r\n");
         }
     }
 }

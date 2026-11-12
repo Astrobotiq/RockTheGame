@@ -1,0 +1,287 @@
+<title>RTG Options</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Same sheet as lobby-v1.html: concrete wall, painted blocks, hard shadows; grid of 16:9 canvases with vote chips; notes box. In-game UiTheme palette. */
+:root{
+  --wall:#c9c6bf; --slab:#e2dfd8; --mid:#9a9791; --paper:#f1e6c7; --k:#140c1c; --red:#fc1e00; --yellow:#fcae04; --blue:#597dce; --muted:#4e4a4e;
+  --display:'Jost','Futura',system-ui,sans-serif; --mono:'Space Mono','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wall);color:var(--k);font-family:var(--mono);font-size:15px;line-height:1.55;
+  padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto}
+button:focus-visible,textarea:focus-visible{outline:4px solid var(--blue);outline-offset:2px}
+header{margin-top:28px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:end;border-bottom:6px solid var(--k);padding-bottom:28px}
+.kick{display:inline-block;background:var(--k);color:var(--paper);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(46px,10vw,112px);line-height:.86;letter-spacing:-.035em;margin:0;text-transform:lowercase}
+h1 span{display:block}h1 .r{color:var(--red)}
+.lede{max-width:58ch;margin:18px 0 0;font-size:16px;font-weight:700}
+.comp{position:relative;aspect-ratio:1/1;width:100%;max-width:340px;justify-self:end;min-width:0}
+.comp i{position:absolute;display:block;border:3px solid var(--k);box-shadow:7px 7px 0 var(--k)}
+.c1{width:44%;height:44%;left:0;top:10%;border-radius:50%;background:var(--red)}
+.c2{width:36%;height:36%;right:6%;top:4%;background:var(--blue)}
+.c3{width:46%;height:42%;left:28%;bottom:0;background:var(--yellow);border:0!important;box-shadow:none!important;clip-path:polygon(50% 0,100% 100%,0 100%)}
+section.s{padding:34px 0;border-bottom:4px solid var(--k)}
+section.s>h2{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,40px);line-height:1;margin:0 0 8px;text-transform:lowercase;letter-spacing:-.02em}
+section.s>h2 small{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.1em;background:var(--red);color:var(--paper);padding:2px 8px;margin-right:10px;vertical-align:middle;text-transform:none}
+.intro{max-width:78ch;margin:10px 0 22px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:34px 24px}
+.shot{display:flex;flex-direction:column;gap:10px;min-width:0}
+.shot .cv{position:relative;aspect-ratio:16/9;border:4px solid var(--k);box-shadow:8px 8px 0 var(--k);background:var(--mid);overflow:hidden}
+.shot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tag{position:absolute;left:8px;top:8px;z-index:2;font:700 12px var(--mono);background:var(--k);color:var(--yellow);padding:1px 8px}
+.cap{font-family:var(--display);font-weight:800;font-size:22px;text-transform:lowercase}
+.shot p{margin:0;font-size:14px}
+.shot ul{margin:0;padding-left:1.1em;font-size:13.5px}.shot ul li{margin-bottom:4px}
+.vote{display:flex;flex-wrap:wrap;gap:6px}
+.vote button{font:700 12px var(--mono);background:var(--slab);border:2px solid var(--k);padding:4px 10px;cursor:pointer;color:var(--k)}
+.vote button[aria-pressed="true"][data-v="+"]{background:var(--blue);color:var(--paper)}
+.vote button[aria-pressed="true"][data-v="~"]{background:var(--yellow)}
+.vote button[aria-pressed="true"][data-v="-"]{background:var(--red);color:var(--paper)}
+.tw{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;background:var(--slab);border:3px solid var(--k);font-size:14px}
+th,td{border:2px solid var(--k);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--k);color:var(--paper);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+td.y{border-left:8px solid var(--blue)}td.n{border-left:8px solid var(--red)}td.q{border-left:8px solid var(--yellow)}
+.note{background:var(--yellow);border:3px solid var(--k);box-shadow:5px 5px 0 var(--k);padding:12px 14px;font-size:14px;max-width:80ch;margin-top:16px}
+.note+.note{background:var(--slab)}
+textarea{width:100%;max-width:80ch;min-height:150px;font:14px var(--mono);background:var(--slab);border:3px solid var(--k);padding:10px;color:var(--k);resize:vertical}
+.copy{font:700 14px var(--mono);background:var(--k);color:var(--yellow);border:0;padding:9px 16px;cursor:pointer;margin-top:10px;box-shadow:4px 4px 0 var(--red)}
+@media (max-width:760px){header{grid-template-columns:minmax(0,1fr)}.comp{justify-self:start;max-width:220px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <span class="kick">Rock The Game · UI, altıncı tur (ek)</span>
+      <h1><span>options</span><span class="r">menüsü.</span></h1>
+      <p class="lede">Ana menüden ve pause'daki options diliminden açılan ayar ekranı. Üç sekme: ses, titreşim, görüntü. Bauhaus'un üç şekli sekmelerin simgesi: daire ses, kare titreşim, üçgen görüntü.</p>
+    </div>
+    <div class="comp" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i></div>
+  </header>
+
+  <section class="s">
+    <h2><small>01</small>ne ayarlanabilir</h2>
+    <p class="intro">Yalnızca bugün kodda karşılığı olan ya da küçük bir eklemeyle olacak ayarları koydum. Karar verilmemiş işler (yardım modu, dil) ekranda yok.</p>
+    <div class="tw"><table>
+      <tr><th>Sekme</th><th>Ayar</th><th>Kodda durum</th></tr>
+      <tr><td>ses (daire)</td><td>master, music, sfx, ambient (0–100)</td><td class="y">Hazır: <code>AudioManager.SetMasterVolume</code> vb., <code>MainMixer</code>'da exposed parametreler, PlayerPrefs'e kaydediyor.</td></tr>
+      <tr><td>titreşim (kare)</td><td>açık / kapalı, güç (0–100)</td><td class="q">Küçük ekleme: <code>HapticManager</code>'da genel bir çarpan yok; <code>SetMotorSpeeds</code> çağrısına çarpan + PlayerPrefs.</td></tr>
+      <tr><td>görüntü (üçgen)</td><td>pencere modu, çözünürlük, CRT efekti açık/kapalı, CRT gücü</td><td class="q">Pencere/çözünürlük Unity <code>Screen</code> API'si. CRT: <code>CrtFilterVolume</code> (Volume bileşeni) ağırlığı/yoğunluğu; ayrı bir ayar okuyucusu gerekir.</td></tr>
+      <tr><td>yok</td><td>yardım modu, dil, tuş atama</td><td class="n">Karar yok (GDD §12, UR-12). Oyun yalnızca gamepad; tuş atama yapılmayacak.</td></tr>
+    </table></div>
+  </section>
+
+  <section class="s">
+    <h2><small>02</small>iki düzen</h2>
+    <p class="intro"><b>A</b> ana menünün devamı: aynı çerçeve, liste ve sarı levha imleci, ayarlar yatay çubuk. <b>B</b> mikser masası: her ayar bir döner düğme (UiArc halkası), daha Bauhaus, daha az satır. Her düzenin bir kartı da pause'dan açılınca nasıl göründüğünü gösteriyor.</p>
+    <div class="shots" id="shots"></div>
+  </section>
+
+  <section class="s">
+    <h2><small>03</small>notların</h2>
+    <textarea id="notes" aria-label="Notlar"></textarea><br>
+    <button class="copy" id="copy" type="button">Notları kopyala</button>
+    <div class="note"><b>Girdi.</b> LB/RB sekme, yukarı/aşağı satır (B'de sol/sağ düğme), sol/sağ ya da stick değer değiştirir (basılı tutunca hızlanır), B geri ve kaydeder. Değer değişince ses sekmesinde o kanaldan kısa bir örnek ses çalar, titreşim sekmesinde o güçte kısa bir titreşim gelir.</div>
+    <div class="note"><b>Doğrulanmayanlar.</b> Durağan çizimler; hareket yazıyla anlatıldı. Pause'dan açılınca süre durduğu için tüm hareket unscaled zamanla olmalı. Çözünürlük değişince UI ölçeği UR-3 kararına bağlı.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+var W=480,H=270,G={v:.55};
+var K='#140C1C',PAPER='#F1E6C7';
+var C={light:{base:'#C9C6BF',lt:'#D6D3CD',dk:'#B5B2AB',conc:1},slab:{base:'#E2DFD8',lt:'#ECEAE4',dk:'#CFCCC5',conc:1},mid:{base:'#9A9791',lt:'#ADAAA4',dk:'#85827D',conc:1},dark:{base:'#4E4A4E',lt:'#5E5A5E',dk:'#3F3B3F',conc:1}};
+var RED={base:'#FC1E00',lt:'#FD5A40',dk:'#D01800'},YEL={base:'#FCAE04',lt:'#FDC544',dk:'#D99403'},BLU={base:'#597DCE',lt:'#7A97DA',dk:'#4566B0'},INK={base:K,lt:'#2a2030',dk:'#0a0610'};
+var P={sky:'#71BAEA',orange:'#FDAA66',pink:'#FF51DE'};
+
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h)}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function PP(pts){return function(c){c.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath()}}
+function CIR(x,y,r){return function(c){c.moveTo(x+r,y);c.arc(x,y,r,0,Math.PI*2)}}
+function hx(h){return[parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)]}
+function mix(a,b,t){var A=hx(a),B=hx(b);return'rgb('+Math.round(A[0]+(B[0]-A[0])*t)+','+Math.round(A[1]+(B[1]-A[1])*t)+','+Math.round(A[2]+(B[2]-A[2])*t)+')'}
+function bwOf(w){return w*(.35+.65*G.v)}
+function shOf(s){return Math.round(s*G.v*1.6)}
+function strokeIf(c,w,col){if(w>0){c.lineWidth=w;c.strokeStyle=col||K;c.stroke()}}
+function txt(c,s,x,y,size,col,align,kind,rot){
+  c.save();c.font=kind==='m'?'700 '+Math.round(size*0.95)+'px "Space Mono", "Courier New", monospace':'800 '+Math.round(size*0.95)+'px Jost, Futura, sans-serif';
+  c.textBaseline='middle';c.textAlign=align||'center';c.fillStyle=col;c.translate(x,y);if(rot)c.rotate(rot);
+  c.fillText(kind==='m'?s:s.toLowerCase(),0,0);c.restore();
+}
+function ext(c,s,x,y,size,front,side,depth,align,kind,rot){var d0=Math.round(depth*G.v*1.5);for(var d=d0;d>=1;d--)txt(c,s,x+d*.8,y+d*.7,size,side,align,kind,rot);txt(c,s,x,y,size,front,align,kind,rot)}
+function mass(c,path,bb,t,sh,bw){
+  var s=shOf(sh||0);
+  if(s>0){c.save();c.translate(s,s);c.beginPath();path(c);c.fillStyle=K;c.fill('evenodd');c.restore()}
+  var base=t.conc?mix(t.base,PAPER,1-Math.min(1,G.v*1.6)):t.base;
+  c.beginPath();path(c);c.fillStyle=base;c.fill('evenodd');
+  if(t.conc){c.save();c.beginPath();path(c);c.clip('evenodd');
+    var x=bb[0],y=bb[1],w=bb[2],h=bb[3],r=rng(Math.floor(x*31+y*17+w*7+h)),n=Math.floor(w*h/40*G.v);
+    for(var i=0;i<n;i++)rect(c,x+Math.floor(r()*w),y+Math.floor(r()*h),r()<.15?2:1,1,r()<.5?t.lt:t.dk);
+    for(var yy=y+30;yy<y+h;yy+=30){rect(c,x,yy,w,1,t.dk);rect(c,x,yy+1,w,1,t.lt)}c.restore()}
+  if(bw!==0){c.beginPath();path(c);strokeIf(c,bwOf(bw||3))}
+}
+function btn(c,x,y,letter,label,col){disc(c,x,y,8,PAPER);c.beginPath();c.arc(x,y,8,0,Math.PI*2);strokeIf(c,1.5);txt(c,letter,x,y+.5,letter.length>1?7:9,K,'center','m');if(label)txt(c,label,x+13,y,8,col||K,'left','m')}
+
+/* world for pause cards */
+var BANDS=['#EE7284','#289AA4','#F1E6C7','#888C03','#FCAE04','#FF5104','#FFE55A'];
+function ringPix(x,cx,cy,r){for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){var d=Math.sqrt(i*i+j*j);if(d>r)continue;rect(x,cx+i,cy+j,1,1,BANDS[Math.min(6,Math.floor((1-d/r)*7))])}}
+function worldGame(x){rect(x,0,0,W,H,P.sky);rect(x,0,222,W,48,P.orange);rect(x,0,222,W,3,P.pink);rect(x,0,0,24,H,P.orange);rect(x,W-24,0,24,H,P.orange);rect(x,0,0,W,20,P.orange);rect(x,140,150,110,10,P.orange);rect(x,140,150,110,3,P.pink);ringPix(x,300,66,16);x.fillStyle='rgba(20,12,28,.6)';x.fillRect(0,0,W,H)}
+
+/* ---- shared ---- */
+function wallBg(c){mass(c,PP([[0,0],[W,0],[W,H],[0,H]]),[0,0,W,H],C.light,0,0)}
+function menuFrame(c){rect(c,0,30,250,6,K);rect(c,28,0,6,H,K)}
+var TABS=[{n:'sound',s:'o',col:RED},{n:'rumble',s:'s',col:BLU},{n:'display',s:'t',col:YEL}];
+function shape(c,kind,x,y,r,t,sh){
+  if(kind==='o')mass(c,CIR(x,y,r),[x-r,y-r,r*2,r*2],t,sh,2);
+  else if(kind==='s')mass(c,PP([[x-r,y-r],[x+r,y-r],[x+r,y+r],[x-r,y+r]]),[x-r,y-r,r*2,r*2],t,sh,2);
+  else mass(c,PP([[x,y-r-1],[x+r+2,y+r],[x-r-2,y+r]]),[x-r-2,y-r-1,r*2+4,r*2+1],t,sh,2);
+}
+function tabs(c,x0,y,sel,step){
+  TABS.forEach(function(t,i){var x=x0+i*(step||52),s=i===sel;
+    shape(c,t.s,x,y,s?11:9,s?t.col:C.mid,s?4:2);
+    txt(c,t.n,x,y+20,s?11:10,s?K:'rgba(20,12,28,.55)','center','d');
+  });
+}
+function slider(c,x,y,w,v,sel,col){
+  mass(c,PP([[x,y-4],[x+w,y-4],[x+w,y+4],[x,y+4]]),[x,y-4,w,8],C.mid,0,2);
+  var f=Math.round(w*v/100);
+  if(f>0)mass(c,PP([[x,y-4],[x+f,y-4],[x+f,y+4],[x,y+4]]),[x,y-4,f,8],col||BLU,0,2);
+  for(var t=1;t<10;t++)rect(c,x+Math.round(w*t/10),y+5,1,2,K);
+  var kx=x+f;mass(c,PP([[kx-5,y-9],[kx+5,y-9],[kx+5,y+9],[kx-5,y+9]]),[kx-5,y-9,10,18],sel?YEL:C.slab,sel?4:2,2);
+}
+function rows(c,items,sel,x0,y0,step,w){
+  w=w||300;
+  items.forEach(function(it,i){var y=y0+i*step,s=i===sel;
+    if(s){mass(c,PP([[x0-28,y-12],[x0+w+16,y-12],[x0+w+16,y+12],[x0-28,y+12]]),[x0-28,y-12,w+44,24],{base:'#E9C35C',lt:'#EFCF75',dk:'#D9AF43'},4,3);c.beginPath();c.moveTo(x0-20,y-6);c.lineTo(x0-20,y+6);c.lineTo(x0-10,y);c.closePath();c.fillStyle=K;c.fill()}
+    txt(c,it.t,x0,y,14,s?K:'rgba(20,12,28,.65)','left','d');
+    if(it.v!=null&&typeof it.v==='number'){slider(c,x0+110,y,w-150,it.v,s,it.col);txt(c,String(it.v),x0+w,y,10,K,'right','m')}
+    else if(it.v){txt(c,'\u2039 '+it.v+' \u203a',x0+w,y,10,s?K:'rgba(20,12,28,.65)','right','m')}
+  });
+}
+
+/* ---- A: list + sliders ---- */
+function optA_sound(c){
+  wallBg(c);menuFrame(c);
+  ext(c,'options',46,64,44,RED.base,K,6,'left','d',-0.05);
+  tabs(c,300,52,0);
+  rows(c,[{t:'master',v:80,col:INK},{t:'music',v:65},{t:'sfx',v:90,col:RED},{t:'ambient',v:40,col:YEL}],1,72,124,28);
+  /* sound rings: the hole from the main menu, rings follow the selected channel */
+  mass(c,CIR(436,188,46),[390,142,92,92],C.slab,5,3);
+  [40,30,20].forEach(function(r,i){c.beginPath();c.arc(436,188,r,0,Math.PI*2);strokeIf(c,i===0?4:2.5,i===1?BLU.base:K)});
+  disc(c,436,188,9,BLU.base);c.beginPath();c.arc(436,188,9,0,Math.PI*2);strokeIf(c,2);
+  btn(c,60,252,'LB','',K);btn(c,82,252,'RB','TAB',K);btn(c,154,252,'<>','CHANGE',K);btn(c,250,252,'B','BACK',K);
+}
+function optA_display(c){
+  wallBg(c);menuFrame(c);
+  ext(c,'options',46,64,44,RED.base,K,6,'left','d',-0.05);
+  tabs(c,300,52,2);
+  rows(c,[{t:'window',v:'fullscreen'},{t:'resolution',v:'1920\u00d71080'},{t:'crt effect',v:'on'},{t:'crt strength',v:70,col:YEL}],2,72,124,28,262);
+  /* preview screen: left half with CRT, right half without (split follows the toggle) */
+  var x=372,y=150,w=92,h=58;
+  mass(c,PP([[x-6,y-6],[x+w+6,y-6],[x+w+6,y+h+6],[x-6,y+h+6]]),[x-6,y-6,w+12,h+12],C.dark,5,3);
+  rect(c,x,y,w,h,P.sky);rect(c,x,y+h-12,w,12,P.orange);rect(c,x,y+h-12,w,1.5,P.pink);
+  rect(c,x+40,y+h-20,5,8,P.pink);
+  c.save();c.beginPath();c.rect(x,y,w/2,h);c.clip();for(var yy=y;yy<y+h;yy+=2)rect(c,x,yy,w/2,0.8,'rgba(20,12,28,.35)');c.restore();
+  rect(c,x+w/2-1,y,2,h,K);
+  txt(c,'CRT',x+w/4,y-14,8,K,'center','m');txt(c,'OFF',x+w*3/4,y-14,8,K,'center','m');
+  btn(c,60,252,'LB','',K);btn(c,82,252,'RB','TAB',K);btn(c,154,252,'<>','CHANGE',K);btn(c,250,252,'B','BACK',K);
+}
+function optA_pause(c){
+  /* from pause: concrete slab slides over the dimmed game, pause ring stays small on the left */
+  smallRing(c,70,135,.42);
+  mass(c,PP([[150,14],[480,14],[480,256],[124,256]]),[124,14,356,242],C.light,8,4);
+  txt(c,'options',172,40,26,RED.base,'left','d');
+  tabs(c,370,40,0,40);
+  c.save();c.translate(108,0);rows(c,[{t:'master',v:80,col:INK},{t:'music',v:65},{t:'sfx',v:90,col:RED},{t:'ambient',v:40,col:YEL}],0,72,104,30,256);c.restore();
+  btn(c,190,236,'LB','',K);btn(c,212,236,'RB','TAB',K);btn(c,284,236,'<>','CHANGE',K);btn(c,380,236,'B','BACK',K);
+}
+function smallRing(c,cx,cy,s){
+  var q=Math.PI/2,g=.07,R0=54*s,R1=106*s;
+  [0,1,2,3].forEach(function(i){var a=-q+i*q,sel=i===1;
+    mass(c,function(c){c.arc(cx,cy,R1,a-q/2+g,a+q/2-g);c.arc(cx,cy,R0,a+q/2-g,a-q/2+g,true);c.closePath()},[cx-R1,cy-R1,R1*2,R1*2],sel?YEL:C.dark,sel?4:2,2);
+  });
+}
+
+/* ---- B: mixer knobs ---- */
+function knob(c,x,y,r,v,label,col,sel){
+  var a0=Math.PI*.75,a1=Math.PI*2.25,av=a0+(a1-a0)*v/100;
+  mass(c,CIR(x,y,r),[x-r,y-r,r*2,r*2],sel?C.slab:C.light,sel?9:4,3);
+  /* track + painted arc (UiArc) */
+  c.beginPath();c.arc(x,y,r-7,a0,a1);c.lineWidth=8;c.strokeStyle='rgba(20,12,28,.18)';c.stroke();
+  c.beginPath();c.arc(x,y,r-7,a0,av);c.lineWidth=8;c.strokeStyle=col.base;c.stroke();
+  c.beginPath();c.arc(x,y,r-7,a0,av);c.lineWidth=1;c.strokeStyle=K;c.stroke();
+  /* pointer */
+  var px=x+Math.cos(av)*(r-7),py=y+Math.sin(av)*(r-7);
+  mass(c,CIR(px,py,5),[px-5,py-5,10,10],sel?YEL:C.slab,sel?2:0,2);
+  ext(c,String(v),x,y-2,sel?26:22,K,col.base,sel?4:2,'center','d');
+  txt(c,label,x,y+r+14,sel?12:11,sel?K:'rgba(20,12,28,.6)','center','d');
+}
+function topTab(c,x,label){mass(c,PP([[x-70,0],[x+70,0],[x+58,26],[x-58,26]]),[x-70,0,140,26],YEL,5,3);txt(c,'\u2039 '+label+' \u203a',x,12,15,K,'center','d')}
+function optB_sound(c){
+  wallBg(c);
+  txt(c,'options',20,48,18,RED.base,'left','d');
+  topTab(c,240,'sound');
+  [[80,'master',INK,80],[180,'music',BLU,65],[290,'sfx',RED,90],[395,'ambient',YEL,40]].forEach(function(k,i){knob(c,k[0],124,i===1?46:38,k[3],k[1],k[2],i===1)});
+  mass(c,PP([[0,236],[W,236],[W,270],[0,270]]),[0,236,W,34],C.slab,0,3);
+  btn(c,18,253,'LB','',K);btn(c,40,253,'RB','TAB',K);btn(c,110,253,'<>','KNOB',K);btn(c,196,253,'LS','TURN',K);btn(c,410,253,'B','BACK',K);
+}
+function optB_rumble(c){
+  wallBg(c);
+  txt(c,'options',20,48,18,RED.base,'left','d');
+  topTab(c,240,'rumble');
+  /* on/off as a square block switch */
+  mass(c,PP([[96,92],[196,92],[196,156],[96,156]]),[96,92,100,64],C.mid,4,3);
+  mass(c,PP([[146,96],[192,96],[192,152],[146,152]]),[146,96,46,56],BLU,6,3);
+  txt(c,'off',121,124,12,'rgba(20,12,28,.55)','center','d');txt(c,'on',169,124,14,PAPER,'center','d');
+  txt(c,'rumble',146,176,12,K,'center','d');
+  knob(c,330,124,46,75,'strength',BLU,true);
+  /* shake lines show the current strength */
+  [0,1,2].forEach(function(i){c.beginPath();c.moveTo(390+i*8,104);c.lineTo(396+i*8,124);c.lineTo(390+i*8,144);strokeIf(c,2)});
+  mass(c,PP([[0,236],[W,236],[W,270],[0,270]]),[0,236,W,34],C.slab,0,3);
+  btn(c,18,253,'LB','',K);btn(c,40,253,'RB','TAB',K);btn(c,110,253,'<>','SELECT',K);btn(c,196,253,'LS','TURN',K);btn(c,410,253,'B','BACK',K);
+}
+function optB_pause(c){
+  /* from pause: the options slice grows into a concrete disc, knobs on it */
+  smallRing(c,64,135,.4);
+  mass(c,CIR(282,128,128),[154,0,256,256],C.light,8,4);
+  topTab(c,282,'sound');
+  [[220,92,'master',INK,80,false],[344,92,'music',BLU,65,true],[220,184,'sfx',RED,90,false],[344,184,'ambient',YEL,40,false]].forEach(function(k){knob(c,k[0],k[1],k[5]?30:27,k[4],k[2],k[3],k[5])});
+  btn(c,420,236,'B','BACK',PAPER);
+}
+
+var SHOTS=[
+ {id:'a-sound',tag:'A1',t:'A · liste + çubuk · ses',u:optA_sound,d:'<b>Ana menünün devamı.</b> Aynı çerçeve ve başlık stili; sekmeler sağ üstte üç şekil. Seçili satır sarı levha, değer çubuğunun tutamağı sarı blok.',m:['Sekme değişince seçili şekil boyanıp büyür, satırlar soldan kayarak yeniden gelir (ana menü girişi gibi).','Sağdaki halkalar seçili kanalın sesine göre atar (müzikte müzikle, sfx\'te örnek seste).','Çubuk değeri yay ile gider; tutamak her 10\'da hafif tık (titreşim yok, ses var).']},
+ {id:'a-display',tag:'A2',t:'A · görüntü sekmesi',u:optA_display,d:'<b>Önizleme ekranı.</b> CRT açık/kapalı yan yana; ayar değişince bölme çizgisi kayar. Çoklu seçenekler ‹ › ile döner.',m:['Çözünürlük değişikliği hemen uygulanmaz: B ile çıkarken ya da 10 sn onay sorusuyla (geri alma).','Çoklu seçenek değişince yazı yana kayarak değişir (kayan imleç kuralı).']},
+ {id:'a-pause',tag:'A3',t:'A · pause\'dan açılınca',u:optA_pause,d:'<b>Eğik beton levha.</b> Pause halkası sola küçülür, options dilimi sarı kalır; levha sağdan kayarak gelir.',m:['B: levha sağa çekilir, halka yerine büyür (geri dönüş açık olsun diye).','Ana menüden açılınca aynı levha, menü listesinin yerine geçer.']},
+ {id:'b-sound',tag:'B1',t:'B · mikser · ses',u:optB_sound,d:'<b>Dört döner düğme.</b> Her kanal bir beton disk; değer boyalı yay (UiArc) ve ekstrüde sayı. Seçili düğme büyür, levhası açılır, gölgesi uzar.',m:['Sol/sağ düğme seçer (stick yönüyle de), yukarı/aşağı ya da stick döndürür; yay ve sayı yayla gider.','Bauhaus\'a en yakın: sekmeler daire/kare/üçgen yerine üstte sarı sekme; şekil dili düğmelerde.']},
+ {id:'b-rumble',tag:'B2',t:'B · titreşim sekmesi',u:optB_rumble,d:'<b>Kare anahtar + güç düğmesi.</b> Kapalıyken güç düğmesi solar ve atlanır.',m:['Anahtar blok sağa sola kayar ve çakılır; açılınca kısa bir titreşim gelir.','Güç değişince o güçte 0,15 sn titreşim (HapticManager\'a çarpan gerekir).']},
+ {id:'b-pause',tag:'B3',t:'B · pause\'dan açılınca',u:optB_pause,d:'<b>Options dilimi diske dönüşür.</b> Halka sola küçülür, sarı dilimden büyük bir beton disk açılır; düğmeler 2×2 diskin üstünde.',m:['Dilimden diske dönüşüm: dilim büyüyerek daireye tamamlanır, sonra düğmeler sırayla belirir.','Pause B (beton levha) seçilirse en tutarlı eşleşme bu.']}
+];
+var votes={},holder=document.getElementById('shots');
+SHOTS.forEach(function(s){
+  var f=document.createElement('div');f.className='shot';
+  f.innerHTML='<div class="cv"><span class="tag"></span><canvas class="w" width="480" height="270"></canvas><canvas class="u"></canvas></div><div class="cap"></div><p></p><ul></ul><div class="vote" role="group"><button type="button" data-v="+" aria-pressed="false">beğendim</button><button type="button" data-v="~" aria-pressed="false">karışık</button><button type="button" data-v="-" aria-pressed="false">beğenmedim</button></div>';
+  f.querySelector('.tag').textContent=s.tag;f.querySelector('.cap').textContent=s.t;f.querySelector('p').innerHTML=s.d;
+  var ul=f.querySelector('ul');s.m.forEach(function(m){var li=document.createElement('li');li.textContent=m;ul.appendChild(li)});
+  holder.appendChild(f);s.el=f;
+  f.querySelector('.vote').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var on=b.getAttribute('aria-pressed')==='true';[].forEach.call(b.parentNode.children,function(n){n.setAttribute('aria-pressed','false')});if(!on){b.setAttribute('aria-pressed','true');votes[s.id]=b.dataset.v}else delete votes[s.id];summary()});
+});
+var notes=document.getElementById('notes');
+function summary(){var map={'+':'beğendim','~':'karışık','-':'beğenmedim'},lines=['Options menüsü, altıncı tur'];SHOTS.forEach(function(s){lines.push(s.tag+' '+s.t+': '+(votes[s.id]?map[votes[s.id]]:'işaretlenmedi'))});var tag='Notlarım:\n',i=notes.value.indexOf(tag),keep=i>=0?notes.value.slice(i+tag.length):'';notes.value=lines.join('\n')+'\n\n'+tag+keep}
+summary();
+document.getElementById('copy').addEventListener('click',function(){var done=function(){document.getElementById('copy').textContent='Kopyalandı'};try{navigator.clipboard.writeText(notes.value).then(done,function(){notes.select();notes.focus()})}catch(e){notes.select();notes.focus()}});
+function draw(s){
+  var w=s.el.querySelector('canvas.w'),x=w.getContext('2d');x.imageSmoothingEnabled=false;
+  if(/pause/.test(s.id))worldGame(x);else x.clearRect(0,0,W,H);
+  var u=s.el.querySelector('canvas.u');u.width=W*3;u.height=H*3;var c=u.getContext('2d');c.clearRect(0,0,u.width,u.height);c.scale(3,3);s.u(c);
+}
+function drawAll(){SHOTS.forEach(draw)}
+drawAll();var go=function(){drawAll()};
+try{document.fonts.load('800 16px Jost').then(go,go);document.fonts.load('700 16px "Space Mono"').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+})();
+</script>

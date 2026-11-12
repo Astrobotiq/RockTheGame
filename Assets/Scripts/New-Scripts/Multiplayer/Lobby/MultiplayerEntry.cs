@@ -5,14 +5,14 @@ using UnityEngine.SceneManagement;
 namespace New_Scripts.Multiplayer.Lobby
 {
     /// <summary>
-    /// Build'de multiplayer'a giriş: oyun "-multiplayer" argümanıyla açılırsa (build klasöründeki Multiplayer.bat) ilk sahne
-    /// yerine lobi yüklenir. Argümansız açılış tek kişilik oyundur. Ana menü gelince oraya bir düğme konup bu kalkabilir.
-    /// Editörde devre dışı (orada lobi sahnesi elle açılır).
+    /// Komut satırından multiplayer'a giriş: "-multiplayer", "-mp-host", "-mp-join adres" ya da Steam'in "+connect_lobby"
+    /// argümanıyla açılırsa ana menü atlanıp lobi yüklenir. Normal açılış ana menüdür (MainMenuUI). Steam davetle oyunu
+    /// başlatınca "+connect_lobby" verdiği için bu yol kalır. Editörde devre dışı (orada sahne elle açılır).
     /// </summary>
     public static class MultiplayerEntry
     {
         public const string Argument = "-multiplayer";
-        /// <summary>Lobide kendiliğinden Host ol (Host.bat).</summary>
+        /// <summary>Lobide kendiliğinden Host ol.</summary>
         public const string HostArgument = "-mp-host";
         /// <summary>Lobide kendiliğinden verilen adrese katıl: "-mp-join 100.64.0.1".</summary>
         public const string JoinArgument = "-mp-join";

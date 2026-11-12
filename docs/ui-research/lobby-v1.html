@@ -1,0 +1,354 @@
+<title>RTG Lobi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Same sheet as mashup-ui.html: concrete wall, painted blocks, hard shadows. One section of 16:9 canvases (lobby) with vote chips, then a notes box. Colors are the in-game UiTheme palette. */
+:root{
+  --wall:#c9c6bf; --slab:#e2dfd8; --mid:#9a9791; --paper:#f1e6c7; --k:#140c1c; --red:#fc1e00; --yellow:#fcae04; --blue:#597dce; --muted:#4e4a4e;
+  --display:'Jost','Futura',system-ui,sans-serif; --mono:'Space Mono','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wall);color:var(--k);font-family:var(--mono);font-size:15px;line-height:1.55;
+  padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto}
+a{color:var(--k);text-decoration-thickness:3px;text-underline-offset:3px}
+button:focus-visible,textarea:focus-visible{outline:4px solid var(--blue);outline-offset:2px}
+header{margin-top:28px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:end;border-bottom:6px solid var(--k);padding-bottom:28px}
+.kick{display:inline-block;background:var(--k);color:var(--paper);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(46px,10vw,112px);line-height:.86;letter-spacing:-.035em;margin:0;text-transform:lowercase}
+h1 span{display:block}h1 .r{color:var(--red)}
+.lede{max-width:56ch;margin:18px 0 0;font-size:16px;font-weight:700}
+.comp{position:relative;aspect-ratio:1/1;width:100%;max-width:360px;justify-self:end;min-width:0}
+.comp i{position:absolute;display:block;border:3px solid var(--k);box-shadow:7px 7px 0 var(--k)}
+.c1{width:70%;height:70%;left:8%;top:8%;border-radius:50%;background:var(--muted)}
+.c2{width:36%;height:36%;left:25%;top:25%;border-radius:50%;background:var(--slab)}
+.c3{width:34%;height:30%;right:0;bottom:0;background:var(--yellow);border:0!important;box-shadow:none!important;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.c4{width:26%;height:26%;left:0;bottom:0;border-radius:50%;background:var(--red)}
+section.s{padding:34px 0;border-bottom:4px solid var(--k)}
+section.s>h2{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,40px);line-height:1;margin:0 0 8px;text-transform:lowercase;letter-spacing:-.02em}
+section.s>h2 small{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.1em;background:var(--red);color:var(--paper);padding:2px 8px;margin-right:10px;vertical-align:middle;text-transform:none}
+.intro{max-width:76ch;margin:10px 0 22px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:34px 24px}
+.shot{display:flex;flex-direction:column;gap:10px;min-width:0}
+.shot .cv{position:relative;aspect-ratio:16/9;border:4px solid var(--k);box-shadow:8px 8px 0 var(--k);background:var(--mid);overflow:hidden}
+.shot canvas,.shot img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.tag{position:absolute;left:8px;top:8px;z-index:2;font:700 12px var(--mono);background:var(--k);color:var(--yellow);padding:1px 8px}
+.cap{font-family:var(--display);font-weight:800;font-size:22px;text-transform:lowercase}
+.shot p{margin:0;font-size:14px}
+.shot ul{margin:0;padding-left:1.1em;font-size:13.5px}
+.shot ul li{margin-bottom:4px}
+.vote{display:flex;flex-wrap:wrap;gap:6px}
+.vote button{font:700 12px var(--mono);background:var(--slab);border:2px solid var(--k);padding:4px 10px;cursor:pointer;color:var(--k)}
+.vote button[aria-pressed="true"][data-v="+"]{background:var(--blue);color:var(--paper)}
+.vote button[aria-pressed="true"][data-v="~"]{background:var(--yellow)}
+.vote button[aria-pressed="true"][data-v="-"]{background:var(--red);color:var(--paper)}
+.note{background:var(--yellow);border:3px solid var(--k);box-shadow:5px 5px 0 var(--k);padding:12px 14px;font-size:14px;max-width:80ch;margin-top:16px}
+.note+.note{background:var(--slab)}
+textarea{width:100%;max-width:80ch;min-height:170px;font:14px var(--mono);background:var(--slab);border:3px solid var(--k);padding:10px;color:var(--k);resize:vertical}
+.copy{font:700 14px var(--mono);background:var(--k);color:var(--yellow);border:0;padding:9px 16px;cursor:pointer;margin-top:10px;box-shadow:4px 4px 0 var(--red)}
+ul.l{margin:0 0 14px;padding-left:1.1em;max-width:78ch}ul.l li{margin-bottom:8px}
+@media (max-width:760px){header{grid-template-columns:minmax(0,1fr)}.comp{justify-self:start;max-width:240px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <span class="kick">Rock The Game · UI, altıncı tur</span>
+      <h1><span>çok oyunculu</span><span class="r">lobi.</span></h1>
+      <p class="lede">Çok oyunculu lobi için iki düzen, her biri üç durumda. Oyundaki palette (UiTheme), denge 55, ana menüyle aynı dil: beton, boyalı şekiller, sert gölge. (Pause tasarımı çıkarıldı: bugünkü pause kalıyor.)</p>
+    </div>
+    <div class="comp" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i></div>
+  </header>
+
+  <section class="s">
+    <h2><small>01</small>çok oyunculu lobi</h2>
+    <p class="intro">Bugünkü lobi düz Unity düğmeleri (Mod, Host ol, Katıl, Bağlantı, Devam et, Ana menü, durum yazısı). İki düzen öneriyorum, her biri üç durumda: boşta, rakip bekleniyor, geri sayım. Oyuncu kimliği sonuç ekranındaki gibi: P1 mavi silindir, P2 kırmızı küp. Mod LB/RB ile değişir; yarışta aradaki bayrak, birlikte modunda iki şekli bağlayan kiriş görünür.</p>
+    <div class="shots" id="lobby"></div>
+  </section>
+
+  <section class="s">
+    <h2><small>02</small>notların</h2>
+    <p class="intro">Kartlardaki düğmelerle işaretlediklerin burada özetlenir. Altına serbest not yazıp kopyalayıp bana yapıştırabilirsin.</p>
+    <textarea id="notes" aria-label="Notlar"></textarea><br>
+    <button class="copy" id="copy" type="button">Notları kopyala</button>
+    <div class="note"><b>Karar bekleyenler.</b> (1) Dil: menü ve pause İngilizce, bugünkü lobi Türkçe; tasarımlarda İngilizce küçük harf kullandım (UR-12). (2) Ölçek: tüm ekranlar tam sayı piksel mi (UR-3)?</div>
+    <div class="note"><b>Doğrulanmayanlar.</b> Bunlar durağan çizimler: hareket yazıyla anlatıldı, oyunda denenmedi. Gamepad mesafesinde okunurluk, 1280×800'de sığma ve CRT altındaki görünüm Sonnet'in uygulamasından sonra test task'larında bakılacak.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+var W=480,H=270,G={v:.55};
+var K='#140C1C',PAPER='#F1E6C7';
+var C={light:{base:'#C9C6BF',lt:'#D6D3CD',dk:'#B5B2AB',conc:1},slab:{base:'#E2DFD8',lt:'#ECEAE4',dk:'#CFCCC5',conc:1},mid:{base:'#9A9791',lt:'#ADAAA4',dk:'#85827D',conc:1},dark:{base:'#4E4A4E',lt:'#5E5A5E',dk:'#3F3B3F',conc:1}};
+var RED={base:'#FC1E00',lt:'#FD5A40',dk:'#D01800'},YEL={base:'#FCAE04',lt:'#FDC544',dk:'#D99403'},BLU={base:'#597DCE',lt:'#7A97DA',dk:'#4566B0'},PUR={base:'#97338A',lt:'#A94B9C',dk:'#7E2A73'},INK={base:K,lt:'#2a2030',dk:'#0a0610'};
+var P={sky:'#71BAEA',orange:'#FDAA66',pink:'#FF51DE',ink:'#433646'};
+
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h)}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function PP(pts){return function(c){c.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath()}}
+function CIR(x,y,r){return function(c){c.moveTo(x+r,y);c.arc(x,y,r,0,Math.PI*2)}}
+function hx(h){return[parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)]}
+function mix(a,b,t){var A=hx(a),B=hx(b);return'rgb('+Math.round(A[0]+(B[0]-A[0])*t)+','+Math.round(A[1]+(B[1]-A[1])*t)+','+Math.round(A[2]+(B[2]-A[2])*t)+')'}
+function bwOf(w){return w*(.35+.65*G.v)}
+function shOf(s){return Math.round(s*G.v*1.6)}
+function strokeIf(c,w,col){if(w>0){c.lineWidth=w;c.strokeStyle=col||K;c.stroke()}}
+function txt(c,s,x,y,size,col,align,kind,rot){
+  c.save();
+  c.font=kind==='m'?'700 '+Math.round(size*0.95)+'px "Space Mono", "Courier New", monospace':'800 '+Math.round(size*0.95)+'px Jost, Futura, sans-serif';
+  c.textBaseline='middle';c.textAlign=align||'center';c.fillStyle=col;
+  c.translate(x,y);if(rot)c.rotate(rot);
+  c.fillText(kind==='m'?s:s.toLowerCase(),0,0);c.restore();
+}
+function ext(c,s,x,y,size,front,side,depth,align,kind,rot){
+  var d0=Math.round(depth*G.v*1.5);
+  for(var d=d0;d>=1;d--)txt(c,s,x+d*.8,y+d*.7,size,side,align,kind,rot);
+  txt(c,s,x,y,size,front,align,kind,rot);
+}
+function mass(c,path,bb,t,sh,bw){
+  var s=shOf(sh||0);
+  if(s>0){c.save();c.translate(s,s);c.beginPath();path(c);c.fillStyle=K;c.fill('evenodd');c.restore()}
+  var base=t.conc?mix(t.base,PAPER,1-Math.min(1,G.v*1.6)):t.base;
+  c.beginPath();path(c);c.fillStyle=base;c.fill('evenodd');
+  if(t.conc){
+    c.save();c.beginPath();path(c);c.clip('evenodd');
+    var x=bb[0],y=bb[1],w=bb[2],h=bb[3],r=rng(Math.floor(x*31+y*17+w*7+h)),n=Math.floor(w*h/40*G.v);
+    for(var i=0;i<n;i++)rect(c,x+Math.floor(r()*w),y+Math.floor(r()*h),r()<.15?2:1,1,r()<.5?t.lt:t.dk);
+    for(var yy=y+30;yy<y+h;yy+=30){rect(c,x,yy,w,1,t.dk);rect(c,x,yy+1,w,1,t.lt)}
+    c.restore();
+  }
+  if(bw!==0){c.beginPath();path(c);strokeIf(c,bwOf(bw||3))}
+}
+function dashed(c,path,w){c.save();c.setLineDash([6,5]);c.beginPath();path(c);c.lineWidth=w||2;c.strokeStyle=K;c.stroke();c.restore()}
+function hazardPath(c,path,bb){
+  c.save();c.beginPath();path(c);c.clip();rect(c,bb[0],bb[1],bb[2],bb[3],YEL.base);
+  for(var i=-bb[3];i<bb[2];i+=16){c.fillStyle=K;c.beginPath();c.moveTo(bb[0]+i,bb[1]+bb[3]);c.lineTo(bb[0]+i+8,bb[1]+bb[3]);c.lineTo(bb[0]+i+8+bb[3],bb[1]);c.lineTo(bb[0]+i+bb[3],bb[1]);c.closePath();c.fill()}
+  c.restore();c.beginPath();path(c);strokeIf(c,2);
+}
+function isoBox(c,x,y,w,h,d0,tf,tt,ts,sh){
+  var d=Math.max(4,Math.round(d0*(.4+.6*G.v))),dy=Math.round(d*.5);
+  mass(c,PP([[x+w,y],[x+w+d,y-dy],[x+w+d,y+h-dy],[x+w,y+h]]),[x+w,y-dy,d,h],ts,0,2);
+  mass(c,PP([[x,y],[x+d,y-dy],[x+w+d,y-dy],[x+w,y]]),[x,y-dy,w+d,dy],tt,0,2);
+  mass(c,PP([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]),[x,y,w,h],tf,sh,2);
+}
+function isoBoxGhost(c,x,y,w,h,d0){
+  var d=Math.max(4,Math.round(d0*(.4+.6*G.v))),dy=Math.round(d*.5);
+  dashed(c,PP([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]));
+  dashed(c,PP([[x,y],[x+d,y-dy],[x+w+d,y-dy],[x+w,y]]));
+  dashed(c,PP([[x+w,y],[x+w+d,y-dy],[x+w+d,y+h-dy],[x+w,y+h]]));
+}
+function cylPath(cx,top,bot,rx,ry){return function(c){c.moveTo(cx-rx,top);c.lineTo(cx-rx,bot);c.ellipse(cx,bot,rx,ry,0,Math.PI,0,true);c.lineTo(cx+rx,top);c.ellipse(cx,top,rx,ry,0,0,Math.PI,true);c.closePath()}}
+function cyl(c,cx,top,bot,rx,ry,tb,tt,sh){
+  mass(c,cylPath(cx,top,bot,rx,ry),[cx-rx,top-ry,rx*2,bot-top+ry*2],tb,sh,2);
+  mass(c,function(c){c.ellipse(cx,top,rx,ry,0,0,Math.PI*2)},[cx-rx,top-ry,rx*2,ry*2],tt,0,2);
+}
+function btn(c,x,y,letter,label,col){disc(c,x,y,8,PAPER);c.beginPath();c.arc(x,y,8,0,Math.PI*2);strokeIf(c,1.5);txt(c,letter,x,y+.5,9,K,'center','m');if(label)txt(c,label,x+13,y,8,col||PAPER,'left','m')}
+function flag(c,x,y,h){rect(c,x,y-h,2,h,K);mass(c,PP([[x+2,y-h],[x+22,y-h+6],[x+2,y-h+12]]),[x+2,y-h,20,12],YEL,2,2)}
+
+/* ---- world ---- */
+var BANDS=['#EE7284','#289AA4','#F1E6C7','#888C03','#FCAE04','#FF5104','#FFE55A'];
+function ringPix(x,cx,cy,r){for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){var d=Math.sqrt(i*i+j*j);if(d>r)continue;rect(x,cx+i,cy+j,1,1,BANDS[Math.min(6,Math.floor((1-d/r)*7))])}}
+function worldGame(x){
+  rect(x,0,0,W,H,P.sky);rect(x,0,222,W,48,P.orange);rect(x,0,222,W,3,P.pink);
+  rect(x,0,0,24,H,P.orange);rect(x,W-24,0,24,H,P.orange);rect(x,0,0,W,20,P.orange);
+  rect(x,140,150,110,10,P.orange);rect(x,140,150,110,3,P.pink);
+  rect(x,300,170,60,52,P.orange);rect(x,300,170,60,3,P.pink);
+  ringPix(x,300,66,16);
+  rect(x,192,206,9,12,P.pink);rect(x,193,202,7,4,YEL.base);rect(x,194,209,2,2,'#fff');rect(x,197,209,2,2,'#fff');
+}
+function dimFlat(x,a){x.fillStyle='rgba(20,12,28,'+a+')';x.fillRect(0,0,W,H)}
+function dimSparse(x,a){dimFlat(x,a);x.fillStyle='rgba(20,12,28,.9)';for(var y=0;y<H;y+=4)for(var xx=(y/4)%2?0:2;xx<W;xx+=4)x.fillRect(xx,y,1,1)}
+
+/* ---- shared pause parts ---- */
+function ring(c,cx,cy,sel,opt){
+  opt=opt||{};var R0=opt.r0||54,R1=opt.r1||106,RS=opt.rs||118,g=.07,q=Math.PI/2;
+  var items=[['resume',-q],['options',0],['quit',q],['retry',Math.PI]];
+  items.forEach(function(it,i){
+    var a=it[1],s=i===sel,dis=i===1,r1=s?RS:R1,ox=s?Math.cos(a)*6:0,oy=s?Math.sin(a)*6:0,x0=cx+ox,y0=cy+oy;
+    mass(c,function(c){c.arc(x0,y0,r1,a-q/2+g,a+q/2-g);c.arc(x0,y0,R0,a+q/2-g,a-q/2+g,true);c.closePath()},[x0-r1,y0-r1,r1*2,r1*2],s?YEL:C.dark,s?9:5,3);
+    var lr=(R0+r1)/2,lx=x0+Math.cos(a)*lr,ly=y0+Math.sin(a)*lr,rot=a===0?q:(a===Math.PI?-q:0);
+    txt(c,it[0],lx,ly,opt.ls||17,s?K:(dis?'rgba(226,223,216,.35)':'#E2DFD8'),null,'d',rot);
+  });
+}
+function hub(c,cx,cy,r){
+  mass(c,CIR(cx,cy,r),[cx-r,cy-r,r*2,r*2],C.slab,4,3);
+  txt(c,'ROOM',cx,cy-r*.6,8,K,'center','m');
+  ext(c,'12',cx,cy-1,r*.8,RED.base,K,4,'center','d');
+  txt(c,'DEATHS 07',cx,cy+r*.6,8,K,'center','m');
+}
+function hints(c,x,y,col){btn(c,x,y,'A','SELECT',col);btn(c,x+72,y,'B','RESUME',col)}
+
+/* ---- pause variants ---- */
+function pauseA(c){ /* corner pair, sparse dim */
+  c.save();c.beginPath();c.rect(0,0,W,H);c.clip();
+  mass(c,CIR(30,238,70),[-40,168,140,140],RED,0,3);
+  mass(c,CIR(98,266,70),[28,196,140,140],BLU,0,3);
+  c.save();c.beginPath();c.arc(30,238,70,0,Math.PI*2);c.clip();mass(c,CIR(98,266,70),[28,196,140,140],PUR,0,3);c.restore();
+  mass(c,PP([[392,0],[480,0],[480,88]]),[392,0,88,88],YEL,4,3);
+  c.restore();
+  ring(c,240,135,0);hub(c,240,135,44);
+  hints(c,350,252);
+}
+function pauseB(c){ /* concrete slab behind ring */
+  mass(c,CIR(108,58,64),[44,-6,128,128],RED,0,3);
+  mass(c,CIR(376,214,64),[312,150,128,128],BLU,0,3);
+  mass(c,PP([[0,270],[0,186],[84,270]]),[0,186,84,84],YEL,0,3);
+  mass(c,CIR(240,135,128),[112,7,256,256],C.light,8,4);
+  ring(c,240,135,0,{r0:52,r1:102,rs:112,ls:16});hub(c,240,135,42);
+  hints(c,330,252);
+}
+function pauseC(c){ /* yellow triangle carries the room */
+  mass(c,PP([[0,18],[214,270],[0,270]]),[0,18,214,252],YEL,8,3);
+  txt(c,'ROOM',16,120,9,K,'left','m');
+  ext(c,'12',12,170,86,RED.base,K,9,'left','d');
+  txt(c,'swing & slingshot',16,214,13,K,'left','d');
+  txt(c,'DEATHS 07   12:48',16,236,9,K,'left','m');
+  mass(c,CIR(446,34,30),[416,4,60,60],RED,4,3);
+  mass(c,CIR(476,96,22),[454,74,44,44],BLU,3,3);
+  ring(c,300,135,0,{r0:48,r1:100,rs:110,ls:16});
+  mass(c,CIR(300,135,40),[260,95,80,80],C.slab,4,3);txt(c,'PAUSED',300,135,9,K,'center','m');
+  hints(c,350,252);
+}
+
+/* ---- lobby parts ---- */
+function wallBg(c){mass(c,PP([[0,0],[W,0],[W,H],[0,H]]),[0,0,W,H],C.light,0,0)}
+function menuFrame(c){rect(c,0,30,250,6,K);rect(c,28,0,6,H,K)}
+function list(c,items,sel,y0,step,fade){
+  c.save();if(fade)c.globalAlpha=.35;
+  items.forEach(function(it,i){var y=y0+i*step,s=i===sel,dis=it.dis;
+    if(s){mass(c,PP([[44,y-11],[236,y-11],[236,y+11],[44,y+11]]),[44,y-11,192,22],YEL,4,3);c.beginPath();c.moveTo(52,y-6);c.lineTo(52,y+6);c.lineTo(62,y);c.closePath();c.fillStyle=K;c.fill()}
+    txt(c,it.t,72,y,15,dis?'rgba(78,74,78,.35)':(s?K:'rgba(20,12,28,.62)'),'left','d');
+    if(it.v){txt(c,'\u2039 '+it.v+' \u203a',230,y,9,s?K:'rgba(20,12,28,.62)','right','m')}
+  });c.restore();
+}
+function stage(c,state,mode){
+  /* floor slab + beam */
+  mass(c,PP([[262,214],[480,186],[480,270],[262,270]]),[262,186,218,84],C.mid,0,3);
+  mass(c,PP([[262,206],[480,178],[480,188],[262,216]]),[262,178,218,38],INK,0,0);
+  cyl(c,318,128,200,30,10,BLU,BLU,6);
+  txt(c,'P1',318,160,26,PAPER,'center','d');txt(c,'YOU',318,184,8,PAPER,'center','m');
+  if(state==='wait'){
+    isoBoxGhost(c,384,140,56,56,20);txt(c,'?',412,168,34,K,'center','d');
+    hazardPath(c,PP([[262,236],[480,208],[480,220],[262,248]]),[262,208,218,40]);
+    txt(c,'WAITING FOR P2',372,104,9,K,'center','m');
+  }else{
+    isoBox(c,384,140,56,56,20,RED,RED,RED,6);txt(c,'P2',412,168,26,PAPER,'center','d');txt(c,'RIVAL',412,188,8,PAPER,'center','m');
+  }
+  if(mode==='race')flag(c,360,196,38);else{mass(c,PP([[346,150],[386,156],[386,162],[346,156]]),[346,150,40,12],YEL,2,2)}
+}
+function lobbyA(state){return function(c){
+  wallBg(c);menuFrame(c);
+  ext(c,'race',46,70,52,RED.base,K,7,'left','d',-0.05);
+  txt(c,'multiplayer',50,106,18,K,'left','d',-0.04);
+  var items=[{t:'mode',v:'race'},{t:state==='wait'?'cancel':'host'},{t:'join',dis:state==='wait'},{t:'connection',v:'steam'},{t:'continue',dis:true},{t:'back'}];
+  list(c,items,state==='wait'?1:1,134,22,state==='count');
+  stage(c,state==='wait'?'wait':'full','race');
+  txt(c,state==='wait'?'STEAM \u00b7 INVITE SENT':(state==='count'?'CONNECTED \u00b7 STEAM':'STEAM \u00b7 READY'),372,24,9,K,'center','m');
+  if(state==='count'){
+    c.save();c.fillStyle='rgba(20,12,28,.18)';c.fillRect(0,0,W,H);c.restore();
+    mass(c,CIR(240,128,58),[182,70,116,116],YEL,8,3);
+    ext(c,'3',240,124,92,RED.base,K,9,'center','d');
+  }
+  if(state!=='count')btn(c,290,252,'LB','',K),btn(c,312,252,'RB','MODE',K),btn(c,400,252,'B',state==='wait'?'CANCEL':'BACK',K);
+}}
+function lobbyB(state){return function(c){
+  var full=state!=='wait';
+  /* left: host (blue) */
+  mass(c,PP([[0,0],[296,0],[196,270],[0,270]]),[0,0,296,270],BLU,0,0);
+  /* right: join (red or waiting concrete) */
+  if(state==='wait'){
+    mass(c,PP([[296,0],[480,0],[480,270],[196,270]]),[196,0,284,270],C.light,0,0);
+    c.save();c.beginPath();PP([[296,0],[480,0],[480,270],[196,270]])(c);c.clip();
+    for(var i=-300;i<480;i+=46){c.fillStyle='rgba(252,174,4,.35)';c.beginPath();c.moveTo(i,270);c.lineTo(i+18,270);c.lineTo(i+18+270,0);c.lineTo(i+270,0);c.closePath();c.fill()}
+    c.restore();
+  }else mass(c,PP([[296,0],[480,0],[480,270],[196,270]]),[196,0,284,270],state==='idle'?{base:mix(RED.base,'#C9C6BF',.55),lt:RED.lt,dk:RED.dk}:RED,0,0);
+  /* beam on the diagonal */
+  mass(c,PP([[290,0],[304,0],[204,270],[190,270]]),[190,0,114,270],INK,0,0);
+  /* mode tab */
+  mass(c,PP([[176,0],[304,0],[292,26],[188,26]]),[176,0,128,26],YEL,5,3);
+  txt(c,'\u2039 race \u203a',240,12,15,K,'center','d');
+  /* host side */
+  ext(c,'host',30,52,40,state==='idle'?YEL.base:PAPER,K,6,'left','d');
+  txt(c,state==='wait'?'INVITE SENT':'START A ROOM',32,82,9,PAPER,'left','m');
+  cyl(c,110,130,206,34,11,BLU,{base:BLU.lt,lt:BLU.lt,dk:BLU.base},7);
+  txt(c,'P1',110,166,28,PAPER,'center','d');
+  /* join side */
+  if(state==='wait'){
+    isoBoxGhost(c,352,138,64,64,22);txt(c,'?',384,170,38,K,'center','d');
+    txt(c,'WAITING FOR P2',388,102,9,K,'center','m');
+  }else{
+    ext(c,'join',446,52,40,PAPER,K,6,'right','d');
+    txt(c,state==='idle'?'ENTER A ROOM':'RIVAL',446,82,9,PAPER,'right','m');
+    isoBox(c,352,138,64,64,22,RED,RED,RED,7);txt(c,'P2',384,170,28,PAPER,'center','d');
+  }
+  if(state==='idle'){c.save();c.beginPath();c.moveTo(24,30);c.lineTo(24,74);c.lineWidth=5;c.strokeStyle=K;c.stroke();c.restore()}
+  /* bottom strip */
+  mass(c,PP([[0,236],[W,236],[W,270],[0,270]]),[0,236,W,34],C.slab,0,3);
+  btn(c,18,253,'Y','STEAM',K);btn(c,104,253,'X','CONTINUE',K);
+  if(state!=='wait')btn(c,330,253,'A','CONFIRM',K);btn(c,410,253,'B',state==='wait'?'CANCEL':'BACK',K);
+  if(state==='count'){
+    mass(c,CIR(246,124,52),[194,72,104,104],YEL,8,3);
+    ext(c,'2',246,120,84,RED.base,K,9,'center','d');
+  }
+}}
+
+var PAUSE=[];
+var LOBBY=[
+ {id:'lobby-a-idle',t:'A · liste + sahne · boşta',tag:'A1',u:lobbyA('idle'),d:'<b>Ana menünün devamı.</b> Aynı çerçeve, aynı sarı levha imleci. Başlık seçili modun adı (race / co-op); sağda oyuncuların sahnesi.',m:['Mod LB/RB: başlık kelimesi yay ile çevrilir, sahnede bayrak ↔ kiriş değişir.','Liste ana menüdeki UiMenuMotion ile aynı (kayan imleç, giriş).','continue soluk: kayıtlı yarış yok (UR-5 düzeltmesiyle aynı soluk ton).']},
+ {id:'lobby-a-wait',t:'A · rakip bekleniyor',tag:'A2',u:lobbyA('wait'),d:'<b>P2 kesik çizgi.</b> Host olunca "host" satırı "cancel" olur, join soluklaşır; P2 küpü kesik çizgiyle ve soru işaretiyle bekler, altında uyarı bandı.',m:['Boşta hareket: kesik çizgiler yavaşça döner (shader kayması, UiHazard gibi).','P2 bağlanınca küp yukarıdan düşer ve çakılır (gölge kick), bant kaybolur.']},
+ {id:'lobby-a-count',t:'A · geri sayım',tag:'A3',u:lobbyA('count'),d:'<b>3-2-1 sarı disk üstünde.</b> Liste soluklaşır ve girdi kapanır; sayılar ekstrüde, her saniye disk tepilir.',m:['Her sayı büyükten küçülerek oturur (UiSpring), son "go" sahnenin yerine geçer.','Bugünkü RaceHud geri sayımının yerine değil: lobide bekleme anı için.']},
+ {id:'lobby-b-idle',t:'B · iki yarı · boşta',tag:'B1',u:lobbyB('idle'),d:'<b>Dövüş oyunu seçim ekranı gibi.</b> Ekran çapraz kirişle ikiye bölünür: solda host (mavi, silindir), sağda join (kırmızı, küp). Stick sol/sağ seçer; seçilmeyen yarı betona doğru soluklaşır.',m:['Seçim değişince kiriş hafifçe seçilmeyen tarafa kayar, seçili yazı sarıya boyanır.','Mod üstteki sarı sekmede, LB/RB. Bağlantı ve devam alttaki şeritte, Y ve X.','Liste yok: daha az satır, daha büyük hedef; ana menüden daha farklı.']},
+ {id:'lobby-b-wait',t:'B · rakip bekleniyor',tag:'B2',u:lobbyB('wait'),d:'<b>Sağ yarı boş beton.</b> Soluk sarı çapraz bantlar, kesik çizgili küp, "waiting for P2".',m:['Bantlar yavaşça kayar (shader). P2 gelince sağ yarı kırmızıya boyanır (soldan sağa boya süpürmesi).']},
+ {id:'lobby-b-count',t:'B · geri sayım',tag:'B3',u:lobbyB('count'),d:'<b>Sayı kirişin üstünde.</b> İki yarı da boyalı; sayı tam bölünme çizgisinde.',m:['Son saniyede iki yarı kirişe doğru kapanır ve oyuna geçilir (iris ile aynı anda olmamalı; oda kartı ile iris çakışma testine benzer).']}
+];
+
+var votes={};
+function card(holder,s){
+  var f=document.createElement('div');f.className='shot';
+  var media=s.img?'<img alt="Bugünkü pause ekranı" src="'+s.img+'">':'<canvas class="w" width="480" height="270"></canvas><canvas class="u"></canvas>';
+  f.innerHTML='<div class="cv"><span class="tag"></span>'+media+'</div><div class="cap"></div><p></p><ul></ul>'+(s.img?'':'<div class="vote" role="group"><button type="button" data-v="+" aria-pressed="false">beğendim</button><button type="button" data-v="~" aria-pressed="false">karışık</button><button type="button" data-v="-" aria-pressed="false">beğenmedim</button></div>');
+  f.querySelector('.tag').textContent=s.tag;f.querySelector('.cap').textContent=s.t;f.querySelector('p').innerHTML=s.d;
+  var ul=f.querySelector('ul');(s.m||[]).forEach(function(m){var li=document.createElement('li');li.textContent=m;ul.appendChild(li)});if(!s.m)ul.remove();
+  holder.appendChild(f);s.el=f;
+  var v=f.querySelector('.vote');
+  if(v)v.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    var on=b.getAttribute('aria-pressed')==='true';
+    [].forEach.call(b.parentNode.children,function(n){n.setAttribute('aria-pressed','false')});
+    if(!on){b.setAttribute('aria-pressed','true');votes[s.id]=b.dataset.v}else delete votes[s.id];
+    summary();
+  });
+}
+var ph=document.getElementById('pause'),lh=document.getElementById('lobby');
+PAUSE.forEach(function(s){card(ph,s)});LOBBY.forEach(function(s){card(lh,s)});
+
+var notes=document.getElementById('notes');
+function summary(){
+  var map={'+':'beğendim','~':'karışık','-':'beğenmedim'},lines=['Lobi, altıncı tur'];
+  PAUSE.concat(LOBBY).forEach(function(s){if(!s.img)lines.push(s.tag+' '+s.t+': '+(votes[s.id]?map[votes[s.id]]:'işaretlenmedi'))});
+  var tag='Notlarım:\n',i=notes.value.indexOf(tag),keep=i>=0?notes.value.slice(i+tag.length):'';
+  notes.value=lines.join('\n')+'\n\n'+tag+keep;
+}
+summary();
+document.getElementById('copy').addEventListener('click',function(){
+  var done=function(){document.getElementById('copy').textContent='Kopyalandı'};
+  try{navigator.clipboard.writeText(notes.value).then(done,function(){notes.select();notes.focus()})}catch(e){notes.select();notes.focus()}
+});
+
+function draw(s){
+  if(s.img)return;
+  var w=s.el.querySelector('canvas.w'),x=w.getContext('2d');x.imageSmoothingEnabled=false;
+  if(s.w){worldGame(x);if(s.w==='dimSparse')dimSparse(x,.62);else if(s.w==='dimFlat2')dimFlat(x,.45);else dimFlat(x,.55)}
+  else x.clearRect(0,0,W,H);
+  var u=s.el.querySelector('canvas.u');u.width=W*3;u.height=H*3;
+  var c=u.getContext('2d');c.clearRect(0,0,u.width,u.height);c.scale(3,3);c.imageSmoothingEnabled=true;s.u(c);
+}
+function drawAll(){PAUSE.concat(LOBBY).forEach(draw)}
+drawAll();
+var go=function(){drawAll()};
+try{document.fonts.load('800 16px Jost').then(go,go);document.fonts.load('700 16px "Space Mono"').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+})();
+</script>

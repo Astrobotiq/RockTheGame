@@ -24,6 +24,10 @@ namespace New_Scripts.Multiplayer.Hud
         private TextMeshProUGUI _timer;
         private TextMeshProUGUI _result;
         private MultiplayerUISettingsSO _settings;
+        private RaceResultScreen _resultScreen;
+
+        /// <summary>Bitiş ekranı (silindir/küp sütunları). Eski metin (<see cref="ResultText"/>) veri olarak durur, ekranda gösterilmez.</summary>
+        public RaceResultScreen ResultScreen => _resultScreen;
 
         public string FlagsText => _flags.text;
         public string OpponentText => _opponent.text;
@@ -56,8 +60,15 @@ namespace New_Scripts.Multiplayer.Hud
             hud._status = hud.MakeText("Status", new Vector2(0.5f, 1f), new Vector2(0f, -40f), size, TextAlignmentOptions.Top);
             hud._countdown = hud.MakeText("Countdown", new Vector2(0.5f, 0.5f), Vector2.zero, hud._settings.CountdownFontSize, TextAlignmentOptions.Center);
             hud._status.color = hud._settings.WarningColor;
+            hud._result.enabled = false;
+            hud._resultScreen = RaceResultScreen.Create();
             hud.Refresh();
             return hud;
+        }
+
+        private void OnDestroy()
+        {
+            if (_resultScreen != null) Destroy(_resultScreen.gameObject);
         }
 
         private TextMeshProUGUI MakeText(string name, Vector2 anchor, Vector2 position, float fontSize, TextAlignmentOptions alignment)
@@ -102,6 +113,7 @@ namespace New_Scripts.Multiplayer.Hud
             _timer.text = flow.Phase == LobbyPhase.Racing ? RaceHudText.FormatTime(_session.ElapsedSeconds) : "";
             _result.text = RaceHudText.Result(race.Mode, race.LocalFinished, _session.ElapsedSeconds, race.OpponentFinished,
                 race.OpponentElapsedSeconds, _session.CanReturnToLobby);
+            RefreshResultScreen(race, flow.IsHost);
 
             if (flow.Phase == LobbyPhase.Countdown)
                 _countdown.text = RaceHudText.Countdown(flow.CountdownRemaining(Time.realtimeSinceStartupAsDouble));
@@ -109,6 +121,24 @@ namespace New_Scripts.Multiplayer.Hud
                 _countdown.text = RaceHudText.Countdown(0f);
             else
                 _countdown.text = "";
+        }
+
+        private void RefreshResultScreen(RaceSession race, bool localIsFirst)
+        {
+            if (_resultScreen == null) return;
+            if (!race.LocalFinished)
+            {
+                _resultScreen.Hide();
+                return;
+            }
+
+            float local = _session.ElapsedSeconds;
+            float opponent = race.OpponentElapsedSeconds;
+            var kind = RaceResultMath.KindOf(race.Mode, race.OpponentFinished, local, opponent);
+            RaceResultMath.Columns(race.Mode, localIsFirst, true, local, race.OpponentFinished, opponent, out var first, out var second);
+            _resultScreen.Present(kind, first, second, _session.CanReturnToLobby);
+            // Süre ve bayrak yazıları ekranın altında kalır; sonuç ekranı opak olduğundan ayrıca gizlenir.
+            _timer.text = _flags.text = _opponent.text = "";
         }
     }
 }

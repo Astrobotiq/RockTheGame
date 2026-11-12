@@ -26,6 +26,9 @@ namespace New_Scripts.Multiplayer.Transport
 
         /// <summary>Lobi açılmadan önce gelen davet (oyun davetle başlatıldıysa); bir kez döner.</summary>
         string TakePendingJoin();
+
+        /// <summary>Bekleyen bir davet var mı (TakePendingJoin'i tüketmeden). Ana menü bunu görünce lobiye geçer.</summary>
+        bool HasPendingJoin { get; }
     }
 
     public static class InviteServices

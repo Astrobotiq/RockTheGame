@@ -6,6 +6,7 @@ using New_Scripts.Multiplayer.Transport;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace New_Scripts.Multiplayer.Lobby
@@ -31,6 +32,7 @@ namespace New_Scripts.Multiplayer.Lobby
         [SerializeField] private TMP_Text resumeLabel;
         [SerializeField] private Button connectionButton;
         [SerializeField] private TMP_Text connectionLabel;
+        [SerializeField] private Button mainMenuButton;
 
         private RaceMode _mode = RaceMode.Race;
         private MultiplayerSession _session;
@@ -63,6 +65,37 @@ namespace New_Scripts.Multiplayer.Lobby
             connectionLabel = label;
         }
 
+        public void WireMainMenu(Button mainMenu) => mainMenuButton = mainMenu;
+
+        // ---- görünüm için salt okunur durum (LobbyScreen, düzen B) ----
+
+        private RaceLobbyFlow Flow => _session != null ? _session.Flow : null;
+
+        /// <summary>Bağlanıyor ya da bağlı (host dinliyor, katılıyor, yükleniyor, geri sayım).</summary>
+        public bool Active => Flow != null && Flow.Phase != LobbyPhase.Failed;
+        public bool IsHost => Active && Flow.IsHost;
+
+        /// <summary>El sıkışma bitti: rakip var (yükleme, bekleme, geri sayım, yarış).</summary>
+        public bool OpponentPresent => Active && Flow.Phase >= LobbyPhase.Loading;
+
+        /// <summary>Devam edilen yarış varsa modu kayıttan gelir.</summary>
+        public RaceMode ShownMode => Resume != null ? Resume.RaceMode : _mode;
+        public bool CanChangeMode => !Active && Resume == null;
+        public bool ResumeAvailable => _save != null;
+        public bool ResumeOn => _resumeOn;
+        public int ResumeRoomId => _save != null ? _save.RoomId : 0;
+        public int ResumeFlagCount => _save != null ? _save.FlagCount : 0;
+        public bool InviteAvailable => _invites != null;
+        public bool UseInvite => _useInvite;
+        public string InviteName => _invites?.DisplayName;
+        public string AddressText => addressField != null ? addressField.text : DefaultAddress;
+
+        /// <summary>Kopma ya da başarısız bağlantı nedeni (boşsa gösterilecek bir şey yok).</summary>
+        public string ErrorLine => Flow == null ? _exitReason ?? string.Empty
+            : Flow.Phase == LobbyPhase.Failed ? Flow.FailureReason ?? string.Empty : string.Empty;
+
+        private LobbyScreen _screen;
+
         private void Awake()
         {
             modeButton.onClick.AddListener(ToggleMode);
@@ -90,15 +123,22 @@ namespace New_Scripts.Multiplayer.Lobby
                 connectionButton.onClick.AddListener(ToggleConnection);
             }
             if (_invites != null) _invites.JoinRequested += OnInviteAccepted;
+            if (mainMenuButton != null) mainMenuButton.onClick.AddListener(BackToMainMenu);
             Refresh();
+
+            // Görünüm: iki yarılı ekran (docs/systems/multiplayer.md "Lobi ekranı"). Eski düğmeler mantığı taşımaya devam eder,
+            // yalnız çizilmez ve seçilmez: kapları kapatılır (UnityEvent/Button kapalı nesnede de çalışır).
+            _screen = LobbyScreen.Create(this);
+            hostButton.transform.parent.gameObject.SetActive(false);
         }
 
         private void OnDestroy()
         {
             if (_invites != null) _invites.JoinRequested -= OnInviteAccepted;
+            if (_screen != null) Destroy(_screen.gameObject);
         }
 
-        private void ToggleConnection()
+        public void ToggleConnection()
         {
             _useInvite = !_useInvite && _invites != null;
             Refresh();
@@ -113,7 +153,7 @@ namespace New_Scripts.Multiplayer.Lobby
             Refresh();
         }
 
-        // Build'de Host.bat / -mp-join ile kendiliğinden başla (yalnız ilk açılışta; lobiye dönülünce tekrar etmez).
+        // Build'de -mp-host / -mp-join ile kendiliğinden başla (yalnız ilk açılışta; lobiye dönülünce tekrar etmez).
         private static bool _autoStartUsed;
 
         private void Start()
@@ -137,13 +177,13 @@ namespace New_Scripts.Multiplayer.Lobby
             }
         }
 
-        private void ToggleMode()
+        public void ToggleMode()
         {
             _mode = _mode == RaceMode.Race ? RaceMode.Coop : RaceMode.Race;
             Refresh();
         }
 
-        private void ToggleResume()
+        public void ToggleResume()
         {
             _resumeOn = !_resumeOn && _save != null;
             Refresh();
@@ -151,14 +191,14 @@ namespace New_Scripts.Multiplayer.Lobby
 
         private RaceSaveData Resume => _resumeOn ? _save : null;
 
-        private void StartHost()
+        public void StartHost()
         {
             BeginSession().Host(_mode, Resume);
             if (_useInvite) _invites.InviteFriends();
             Refresh();
         }
 
-        private void StartJoin()
+        public void StartJoin()
         {
             string address = string.IsNullOrWhiteSpace(addressField.text) ? DefaultAddress : addressField.text.Trim();
             BeginSession().Join(address, Resume);
@@ -177,7 +217,7 @@ namespace New_Scripts.Multiplayer.Lobby
             return _session;
         }
 
-        private void Cancel()
+        public void Cancel()
         {
             if (_session != null)
             {
@@ -188,6 +228,12 @@ namespace New_Scripts.Multiplayer.Lobby
             _invites?.CloseInvites();
             Refresh();
             EventSystem.current?.SetSelectedGameObject(hostButton.gameObject);
+        }
+
+        public void BackToMainMenu()
+        {
+            Cancel();
+            SceneManager.LoadScene(MainMenuUI.SceneName);
         }
 
         private void Update() => Refresh();

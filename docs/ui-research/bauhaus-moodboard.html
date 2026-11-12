@@ -1,0 +1,301 @@
+<title>Bauhaus Moodboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiny5&family=Jost:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: asymmetric Bauhaus sheet. Paper ground, ink rules, three primaries used only as flat blocks. Hero = shape composition + stacked lowercase title; sections hang off a 12-col grid with a heavy left rule. */
+:root{
+  --paper:#f2ebd3; --ink:#241f2b; --red:#e8432b; --yellow:#f6be1f; --blue:#2d5fa8;
+  --sky:#84d2f6; --orange:#fdaa66; --pink:#ee3fa8; --muted:#5d5566;
+  --display:'Jost','Futura',system-ui,sans-serif; --pixel:'Tiny5','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--display);font-size:17px;line-height:1.5;
+  padding-block:0 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+a{color:var(--ink);text-decoration-thickness:2px;text-underline-offset:3px}
+a:hover{background:var(--yellow)}
+a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:end;padding-top:32px;border-bottom:6px solid var(--ink);padding-bottom:28px}
+.hero h1{font-weight:800;font-size:clamp(52px,11vw,132px);line-height:.86;letter-spacing:-.03em;margin:0;text-transform:lowercase}
+.hero h1 span{display:block}
+.hero h1 .r{color:var(--red)}
+.hero p{font-size:19px;max-width:42ch;margin:20px 0 0;font-weight:500}
+.kicker{font-family:var(--pixel);font-size:16px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 14px}
+.comp{position:relative;aspect-ratio:1/1;width:100%;max-width:460px;justify-self:end;min-width:0}
+.comp i{position:absolute;display:block}
+.c-circle{border-radius:50%;background:var(--blue);width:64%;height:64%;left:0;top:6%}
+.c-square{background:var(--red);width:46%;height:46%;right:2%;bottom:4%}
+.c-tri{background:var(--yellow);width:40%;height:36%;left:34%;bottom:2%;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.c-bar{background:var(--ink);height:5%;width:78%;right:0;top:0}
+.c-ring{width:30%;height:30%;right:10%;top:12%;border-radius:50%;
+  background:radial-gradient(circle,#ffe55a 0 9%,#ff4300 9% 24%,#ffb11a 24% 38%,#8a8a1a 38% 52%,#f5efcb 52% 68%,#259ea0 68% 84%,#e58a8a 84% 100%)}
+.c-dot{width:7%;height:7%;border-radius:50%;background:var(--ink);left:8%;bottom:10%}
+
+/* sections */
+section.s{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:20px 32px;padding:36px 0;border-bottom:3px solid var(--ink)}
+section.s>h2{font-weight:800;font-size:28px;line-height:1.05;margin:0;text-transform:lowercase;letter-spacing:-.01em}
+section.s>h2 small{display:block;font-family:var(--pixel);font-weight:400;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.body>p{max-width:64ch;margin:0 0 14px}
+.body>p:last-child{margin-bottom:0}
+
+/* palette */
+.sw{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0;border:3px solid var(--ink)}
+.sw div{padding:12px 12px 10px;min-height:128px;display:flex;flex-direction:column;justify-content:flex-end;font-size:14px;line-height:1.3;min-width:0}
+.sw b{font-family:var(--pixel);font-weight:400;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
+.sw .lt{color:var(--ink)}.sw .dk{color:var(--paper)}
+
+/* grammar */
+.gram{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.g{border:3px solid var(--ink);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.g .sh{height:84px;display:flex;align-items:center}
+.g .sh i{display:block;width:84px;height:84px}
+.g h3{margin:0;font-size:20px;font-weight:700;text-transform:lowercase}
+.g p{margin:0;font-size:15px}
+.t-circle{border-radius:50%;background:var(--blue)}
+.t-sq{background:var(--red)}
+.t-tri{background:var(--yellow);clip-path:polygon(50% 0,100% 100%,0 100%)}
+
+/* stages */
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}
+.shot{display:flex;flex-direction:column;gap:8px;min-width:0}
+.shot canvas{display:block;width:100%;aspect-ratio:16/9;image-rendering:pixelated;border:3px solid var(--ink);background:var(--paper)}
+.cap{font-family:var(--pixel);font-size:15px;letter-spacing:.05em;text-transform:uppercase}
+.shot p{margin:0;font-size:15px;color:var(--muted)}
+.rings{display:block;width:100%;max-width:420px;aspect-ratio:1/1;image-rendering:pixelated;border:3px solid var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:24px;align-items:start}
+
+/* type */
+.type{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.ty{border:3px solid var(--ink);padding:16px;min-width:0}
+.ty .spec{font-size:clamp(34px,6vw,60px);line-height:1;margin:6px 0 12px;word-break:break-word}
+.ty .px{font-family:var(--pixel);text-transform:uppercase;letter-spacing:.03em}
+.ty .jo{font-family:var(--display);font-weight:800;text-transform:lowercase;letter-spacing:-.02em}
+.ty p{margin:0;font-size:15px}
+
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0;border:3px solid var(--ink)}
+.rules div{padding:16px;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);margin:0 -3px -3px 0;min-width:0}
+.rules h3{margin:0 0 8px;font-size:19px;font-weight:800;text-transform:lowercase}
+.rules ul{margin:0;padding-left:1.1em;font-size:15px}
+.rules li{margin-bottom:4px}
+.do h3::before{content:"";display:inline-block;width:.7em;height:.7em;border-radius:50%;background:var(--blue);margin-right:.4em}
+.dont h3::before{content:"";display:inline-block;width:.7em;height:.7em;background:var(--red);margin-right:.4em}
+
+/* refs */
+.refs{columns:2 280px;column-gap:32px;margin:0;padding:0;list-style:none}
+.refs li{break-inside:avoid;margin-bottom:12px;font-size:16px}
+.refs span{display:block;font-size:14px;color:var(--muted)}
+.note{background:var(--yellow);border:3px solid var(--ink);padding:14px 16px;margin-top:18px;font-size:15px;max-width:72ch}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .comp{justify-self:start;max-width:340px}
+  section.s{grid-template-columns:minmax(0,1fr)}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <p class="kicker">Rock The Game · UI moodboard</p>
+      <h1><span>form</span><span>follows</span><span class="r">the grip.</span></h1>
+      <p>Oyunun gökkuşağı halkaları zaten Kandinsky'nin eş merkezli daireleri gibi. Bauhaus yönü, bu dili UI'ın tamamına yaymak: düz renk blokları, daire, kare, üçgen ve görünür bir ızgara.</p>
+    </div>
+    <div class="comp" aria-hidden="true">
+      <i class="c-bar"></i><i class="c-circle"></i><i class="c-ring"></i><i class="c-square"></i><i class="c-tri"></i><i class="c-dot"></i>
+    </div>
+  </header>
+
+  <section class="s">
+    <h2><small>01</small>palet</h2>
+    <div class="body">
+      <p>UI yalnızca üç ana renk, mürekkep ve kâğıt kullanır. Dünya (mavi gökyüzü, turuncu zemin, pembe şerit) olduğu gibi kalır, böylece UI dünyadan keskin biçimde ayrılır. Kırmızı oyundaki halka kırmızısıyla aynı aileden.</p>
+      <div class="sw">
+        <div class="lt" style="background:#f2ebd3"><b>kâğıt</b>#F2EBD3<br>panel zemini</div>
+        <div class="dk" style="background:#241f2b"><b>mürekkep</b>#241F2B<br>metin, çizgi, gölge yok</div>
+        <div class="dk" style="background:#e8432b"><b>kırmızı</b>#E8432B<br>kare, tehlike, dash</div>
+        <div class="lt" style="background:#f6be1f"><b>sarı</b>#F6BE1F<br>üçgen, odak, ödül</div>
+        <div class="dk" style="background:#2d5fa8"><b>mavi</b>#2D5FA8<br>daire, kanca, slingshot</div>
+      </div>
+      <div class="note">Hex değerleri taslak. Oyun renkleriyle (halka kırmızısı <code>#FF4300</code>, boru rengi <code>#433646</code>) birebir eşleşmesi için kaynak PNG'lerden örneklenmeli.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>02</small>şekil dili</h2>
+    <div class="body">
+      <p>Kandinsky Bauhaus'ta üç temel şekli üç renge bağlamıştı: mavi daire, sarı üçgen, kırmızı kare. Aynı eşleşmeyi oyunun anlamlarına bağlamak, ikonları ve butonları ezber haline getirir.</p>
+      <div class="gram">
+        <div class="g"><div class="sh"><i class="t-circle"></i></div><h3>daire · kanca</h3><p>Node, odak imleci, slingshot göstergesi, seçili öğe. Oyunun kalbi, halkalar zaten daire.</p></div>
+        <div class="g"><div class="sh"><i class="t-tri"></i></div><h3>üçgen · yön</h3><p>Menü işaretçisi, ileri/geri, uyarı. Asit ve dönen testere gibi tehlikeler de üçgenle konuşabilir.</p></div>
+        <div class="g"><div class="sh"><i class="t-sq"></i></div><h3>kare · yapı</h3><p>Butonlar, paneller, dash hakkı, anahtar parçaları. Her şeyin taşıyıcı bloğu.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>03</small>halkalar × kandinsky</h2>
+    <div class="body two">
+      <canvas class="rings" id="rings" width="160" height="160"></canvas>
+      <div>
+        <p>Soldaki kompozisyon, oyunun halka paletiyle çizilmiş kareler içinde eş merkezli daireler (Kandinsky'nin 1913 tarihli bu türden bir çalışması var). Moodboard'daki halkalar zaten bunun oyunlaştırılmış hali.</p>
+        <p>Pratik sonuç: halka, UI'ın imza öğesi olarak kalabilir. Odak imleci, yükleme göstergesi ve ana menü arka planı aynı şekille konuşur.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>04</small>ekran taslakları</h2>
+    <div class="body">
+      <p>Aynı ilkeler oyun içi üç ekrana uygulanmış hâli. Hepsi 480x270 piksel gridinde, kodla çizilmiş hızlı taslaklar. Düz bloklar, gölge ve degrade yok, ızgara görünür.</p>
+      <div class="shots">
+        <div class="shot"><canvas id="m1" width="480" height="270"></canvas><div class="cap">ana menü</div><p>Asimetrik başlık, sağda büyük daire. Seçili satır sarı blok ve siyah üçgen işaretçi.</p></div>
+        <div class="shot"><canvas id="m2" width="480" height="270"></canvas><div class="cap">oyun içi HUD</div><p>Sayaç tek siyah çubukta. Dash kare, slingshot daire: dolu hazır, içi boş kullanıldı.</p></div>
+        <div class="shot"><canvas id="m3" width="480" height="270"></canvas><div class="cap">pause</div><p>Alpha yerine 2x2 dither karartma. Başlık 90° dönük, seçenekler bloklar.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>05</small>tipografi</h2>
+    <div class="body">
+      <p>Oyun içinde Tiny5 kalır: büyük harf, piksel, 8 piksel katlarında. Bauhaus havası yazı tipinden değil yerleşimden gelir: sola yaslı, dikey dönük başlık, kalın çizgiler, başlıkta küçük harf. Geometrik bir font (Futura benzeri) yalnızca logo, Steam sayfası ve afiş için.</p>
+      <div class="type">
+        <div class="ty"><div class="cap">oyun içi · tiny5</div><div class="spec px">play 03</div><p>Menü, HUD, öğretici yazılar. Boyutlar 32 / 64 / 96 / 128.</p></div>
+        <div class="ty"><div class="cap">logo, afiş · jost 800</div><div class="spec jo">rock the game</div><p>Bayer'in küçük harf fikri gibi: tek alfabe, geometrik, çıplak. Sadece oyun dışı malzemede.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>06</small>kurallar</h2>
+    <div class="body">
+      <div class="rules">
+        <div class="do"><h3>yap</h3><ul>
+          <li>Düz renk blokları, keskin kenarlar</li>
+          <li>Asimetri ve 45° çapraz çizgiler</li>
+          <li>Kalın siyah çizgilerle görünür ızgara</li>
+          <li>Odak imleci olarak halka veya üçgen</li>
+          <li>HUD'ı olay güdümlü ve küçük tut</li>
+          <li>Kontrastı yüksek tut: kâğıt üstüne mürekkep</li>
+        </ul></div>
+        <div class="dont"><h3>yapma</h3><ul>
+          <li>Degrade, gölge, parlama</li>
+          <li>Süslü çerçeve, ince çizgi, yarı saydam panel</li>
+          <li>Dört rengi aynı bloğa doldurma</li>
+          <li>Pembe/turuncuyu UI'a taşıma, onlar dünyanın rengi</li>
+          <li>Ölüm anında UI ile akışı kesme</li>
+          <li>Çok oyunculuda renk kodunu yalnızca renge bırakma: şekil de taşısın</li>
+        </ul></div>
+      </div>
+      <p style="margin-top:18px">Teknik not: Bauhaus UI keskin kenar ister. Önceki araştırmada CRT'nin hücre gridi 480x360 çıkmıştı, kare değil. UI'ın Overlay canvas'ta, CRT dışında kalması bu yönde neredeyse zorunlu.</p>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>07</small>referanslar</h2>
+    <div class="body">
+      <p>Telif nedeniyle gerçek eserleri sayfaya gömmedim. Aşağıdaki aramalar görselleri doğrudan gösterir. Pinterest, Are.na veya PureRef'te bir pano açıp 15-20 görsel toplamanı öneririm.</p>
+      <ul class="refs">
+        <li><a href="https://www.google.com/search?tbm=isch&q=Joost+Schmidt+1923+Bauhaus+exhibition+poster" target="_blank" rel="noopener">Joost Schmidt, 1923 Weimar sergi afişi</a><span>Düz blok ve harf kompozisyonu, afiş/menü yerleşimi için</span></li>
+        <li><a href="https://www.google.com/search?tbm=isch&q=Kandinsky+Squares+with+Concentric+Circles" target="_blank" rel="noopener">Kandinsky, Squares with Concentric Circles</a><span>Oyunun halkalarıyla doğrudan akraba</span></li>
+        <li><a href="https://www.google.com/search?tbm=isch&q=Herbert+Bayer+Universal+typeface" target="_blank" rel="noopener">Herbert Bayer, Universal alfabesi</a><span>Tek alfabe, küçük harf, geometrik</span></li>
+        <li><a href="https://www.google.com/search?tbm=isch&q=Josef+Albers+Homage+to+the+Square" target="_blank" rel="noopener">Josef Albers, Homage to the Square</a><span>İç içe karelerle odak/seçim fikri</span></li>
+        <li><a href="https://www.google.com/search?tbm=isch&q=Oskar+Schlemmer+Triadic+Ballet" target="_blank" rel="noopener">Oskar Schlemmer, Triadic Ballet</a><span>Geometrik karakter silüetleri, NPC fikri</span></li>
+        <li><a href="https://www.google.com/search?tbm=isch&q=Moholy-Nagy+constructivist+composition" target="_blank" rel="noopener">László Moholy-Nagy kompozisyonları</a><span>Çapraz çizgi, şeffaf kesişen şekiller</span></li>
+        <li><a href="https://rawg.io/games/shape-hunter" target="_blank" rel="noopener">Shape Hunter (oyun)</a><span>Bauhaus öğrenci projesi platformer, daire/üçgen/kare toplanabilirler</span></li>
+        <li><a href="https://trends.daisyui.com/trend/bauhaus/" target="_blank" rel="noopener">daisyUI, Bauhaus tasarım özeti</a><span>Kırmızı-sarı-mavi ve görünür yapı ilkeleri</span></li>
+        <li><a href="https://www.creativebloq.com/design/easy-guide-design-movements-bauhaus-8134146" target="_blank" rel="noopener">Creative Bloq, Bauhaus rehberi</a><span>Hareketin kısa tarihi</span></li>
+        <li><a href="https://phrbmr.itch.io/geometric-ui" target="_blank" rel="noopener">Geometric UI Pack (itch.io)</a><span>Geometrik pixel UI örneği, kullanmadan önce lisansı oku</span></li>
+      </ul>
+      <div class="note">Arama sonuçlarının çoğu ikincil kaynak (blog, rehber). Ayrıntı için Bauhaus-Archiv ve müze sayfalarına bakmak gerekir. Shape Hunter ve Geometric UI Pack'in lisanslarını ve içeriğini kendim doğrulamadım.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+var W=480,H=270;
+var P={paper:'#F2EBD3',ink:'#241F2B',red:'#E8432B',yellow:'#F6BE1F',blue:'#2D5FA8',sky:'#84D2F6',orange:'#FDAA66',pink:'#EE3FA8'};
+function R(x,a,b,w,h,c){x.fillStyle=c;x.fillRect(a,b,w,h)}
+function T(x,s,a,b,size,col,al,rot){
+  x.save();x.font=size+'px Tiny5, "Courier New", monospace';x.textBaseline='top';x.textAlign=al||'left';x.fillStyle=col;
+  if(rot){x.translate(a,b);x.rotate(rot);x.fillText(s,0,0)}else x.fillText(s,a,b);x.restore()
+}
+function disc(x,cx,cy,r,c){x.fillStyle=c;for(var j=-r;j<=r;j++){var w=Math.floor(Math.sqrt(r*r-j*j));x.fillRect(cx-w,cy+j,w*2+1,1)}}
+function circ(x,cx,cy,r,t,c){for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){var d=Math.sqrt(i*i+j*j);if(d<=r&&d>r-t)R(x,cx+i,cy+j,1,1,c)}}
+function tri(x,a,b,w,h,c){x.fillStyle=c;for(var j=0;j<h;j++){var ww=Math.round(w*(j+1)/h);x.fillRect(a+Math.round((w-ww)/2),b+j,ww,1)}}
+function triR(x,a,b,h,c){x.fillStyle=c;for(var i=0;i<h;i++){var hh=Math.max(1,Math.round((h-i)*2*(h/ h)));x.fillRect(a+i,b+Math.floor(i*0)-Math.round((h-i)),1,(h-i)*2)}}
+var BANDS=['#E58A8A','#259EA0','#F5EFCB','#8A8A1A','#FFB11A','#FF4300','#FFE55A'];
+function ring(x,cx,cy,r){for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){var d=Math.sqrt(i*i+j*j);if(d>r)continue;R(x,cx+i,cy+j,1,1,BANDS[Math.min(6,Math.floor((1-d/r)*7))])}}
+function pine(x,a,b){R(x,a+2,b,2,2,'#5FBF3A');R(x,a,b+2,6,8,P.orange);R(x,a+1,b+4,1,1,P.red);R(x,a+4,b+6,1,1,P.red)}
+function line(x,x0,y0,x1,y1,c){var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(var t=0;t<=n;t++)R(x,Math.round(x0+(x1-x0)*t/n),Math.round(y0+(y1-y0)*t/n),1,1,c)}
+function world(x){
+  R(x,0,0,W,H,P.sky);R(x,0,222,W,48,P.orange);R(x,0,222,W,3,P.pink);
+  R(x,0,0,24,H,P.orange);R(x,W-24,0,24,H,P.orange);R(x,0,0,W,20,P.orange);
+  R(x,140,150,110,10,P.orange);R(x,140,150,110,3,P.pink);
+  R(x,300,170,60,52,P.orange);R(x,300,170,60,3,P.pink);
+  ring(x,300,66,16);line(x,196,128,300,66,P.ink);
+  R(x,192,128,9,12,'#3A6EA5');R(x,192,124,9,5,P.red);R(x,194,132,2,2,'#F5EFCB');R(x,197,132,2,2,'#F5EFCB');R(x,193,140,3,10,'#3A6EA5');R(x,198,140,3,10,'#3A6EA5');
+  pine(x,330,150);
+}
+
+function draw(){
+  /* concentric squares */
+  var c0=document.getElementById('rings').getContext('2d');c0.imageSmoothingEnabled=false;
+  var bg=['#F6BE1F','#2D5FA8','#E8432B','#F2EBD3'];
+  [0,1,2,3].forEach(function(n){
+    var ox=(n%2)*80,oy=Math.floor(n/2)*80;R(c0,ox,oy,80,80,bg[n]);
+    var cols=n===1?['#F2EBD3','#E8432B','#F6BE1F','#241F2B']:n===3?['#2D5FA8','#F6BE1F','#E8432B','#241F2B']:['#241F2B','#F2EBD3','#2D5FA8','#E8432B'];
+    for(var k=0;k<4;k++)disc(c0,ox+40,oy+40,34-k*8,cols[k]);
+  });
+  R(c0,79,0,2,160,P.ink);R(c0,0,79,160,2,P.ink);
+
+  /* menu */
+  var a=document.getElementById('m1').getContext('2d');a.imageSmoothingEnabled=false;
+  R(a,0,0,W,H,P.paper);
+  disc(a,360,120,92,P.blue);R(a,330,150,110,90,P.red);tri(a,270,170,70,66,P.yellow);ring(a,360,110,30);
+  R(a,0,28,W,6,P.ink);R(a,40,0,6,H,P.ink);
+  T(a,'ROCK',64,44,32,P.red);T(a,'THE GAME',64,76,16,P.ink);
+  ['PLAY','MULTIPLAYER','OPTIONS','QUIT'].forEach(function(s,i){var y=128+i*26;
+    if(i===0){R(a,60,y-4,168,24,P.yellow);
+      a.fillStyle=P.ink;
+      (function(){var px=68,py=y+2;for(var j=0;j<10;j++){var hh=j<5?j*2+1:(9-j)*2+1;a.fillRect(px+j,py+5-Math.floor(hh/2),1,hh)}})();
+      T(a,s,88,y,16,P.ink)}
+    else T(a,s,88,y,16,P.ink);
+  });
+  R(a,60,242,60,4,P.ink);T(a,'A SELECT',64,250,8,P.ink);
+
+  /* hud */
+  var b=document.getElementById('m2').getContext('2d');b.imageSmoothingEnabled=false;
+  world(b);
+  R(b,30,26,24,24,P.yellow);pine(b,39,33);R(b,54,26,48,24,P.ink);T(b,'X03',60,29,16,P.paper);
+  R(b,30,52,72,4,P.red);
+  R(b,396,226,18,18,P.red);
+  circ(b,440,235,10,3,P.blue);
+  T(b,'DASH',405,212,8,P.ink,'center');T(b,'SLING',440,212,8,P.ink,'center');
+
+  /* pause */
+  var c=document.getElementById('m3').getContext('2d');c.imageSmoothingEnabled=false;
+  world(c);
+  for(var y=0;y<H;y+=2)for(var xx=(y/2)%2?0:2;xx<W;xx+=4)R(c,xx,y,2,2,P.ink);
+  R(c,0,0,W,H,'rgba(36,31,43,.35)');
+  disc(c,150,110,70,P.blue);R(c,150,60,230,160,P.paper);R(c,150,60,230,6,P.ink);
+  T(c,'PAUSED',112,206,32,P.paper,'left',-Math.PI/2);
+  [['RESUME',1],['OPTIONS',0],['QUIT',0]].forEach(function(r,i){var y=84+i*40;
+    R(c,170,y,190,30,r[1]?P.yellow:P.ink);
+    T(c,r[0],200,y+7,16,r[1]?P.ink:P.paper);
+    if(r[1]){(function(){var px,py=y+10;for(var j=0;j<10;j++){var hh=j<5?j*2+1:(9-j)*2+1;c.fillStyle=P.ink;c.fillRect(178+j,py+5-Math.floor(hh/2),1,hh)}})()}
+  });
+  R(c,170,208,190,4,P.red);
+}
+draw();
+var go=function(){draw()};
+try{document.fonts.load('16px Tiny5').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+})();
+</script>

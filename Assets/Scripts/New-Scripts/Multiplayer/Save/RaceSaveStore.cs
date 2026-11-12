@@ -14,8 +14,11 @@ namespace New_Scripts.Multiplayer.Save
 
         public string Path { get; }
 
+        private readonly bool _isDefaultPath;
+
         public RaceSaveStore(string path = null)
         {
+            _isDefaultPath = path == null;
             Path = path ?? System.IO.Path.Combine(Application.persistentDataPath, DefaultFileName());
         }
 
@@ -41,6 +44,10 @@ namespace New_Scripts.Multiplayer.Save
 
         public void Write(RaceSaveData data)
         {
+#if UNITY_EDITOR
+            // Editörde deneme kaydı bırakmamak için menüden kapatılabilir; testlerin verdiği özel yola etki etmez.
+            if (_isDefaultPath && !New_Scripts.Multiplayer.Dev.MultiplayerDevSettings.SaveEnabled) return;
+#endif
             string temp = Path + ".tmp";
             File.WriteAllText(temp, JsonUtility.ToJson(data, prettyPrint: true));
             if (File.Exists(Path)) File.Delete(Path);

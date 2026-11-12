@@ -1,0 +1,241 @@
+<title>RTG UI Yönleri</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiny5&family=Figtree:wght@400;600;700&display=swap">
+<style>
+/* Layout: sticky control bar, then a 2-column grid of direction cards; each card = menu stage + HUD stage (16:9) */
+:root{
+  --bg:#1c1823; --panel:#2a2433; --line:#4a4057; --fg:#f5efcb; --muted:#b9aebf;
+  --accent:#f25cb4; --sky:#84d2f6; --ink:#433646; --good:#5fbf3a;
+  --display:'Tiny5','Courier New',monospace; --body:'Figtree',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,44px);margin:0 0 6px;letter-spacing:.02em;text-wrap:balance}
+.lede{max-width:68ch;color:var(--muted);margin:0 0 20px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.bar span{font-size:13px;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:600 13px var(--body);color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:7px 12px;cursor:pointer;border-radius:4px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#2a1020;border-color:var(--accent)}
+.seg button:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:28px 24px;margin-top:24px}
+.card{background:var(--panel);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.pick{border-color:var(--accent)}
+.card h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.tag{font:600 12px var(--body);background:var(--accent);color:#2a1020;padding:2px 8px;border-radius:3px}
+.card p{margin:0;color:var(--muted);max-width:62ch}
+.stage{position:relative;aspect-ratio:16/9;width:100%;overflow:hidden;background:var(--sky)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
+.stage .scene{filter:none}
+.scan{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(rgba(20,10,40,.26) 40%,transparent 40%);background-size:100% calc(100% / 135);
+  box-shadow:inset 0 0 70px rgba(30,10,50,.55);mix-blend-mode:multiply}
+.stage .ui{z-index:3}.stage .scene{z-index:1}.stage .scan{z-index:2}
+body[data-crt="inside"] .stage .scan{z-index:4}
+body[data-crt="inside"] .stage{filter:blur(.5px) saturate(1.15)}
+body[data-crt="off"] .scan{display:none}
+.lbl{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:-6px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;border-top:1px solid var(--line);padding-top:10px}
+.facts b{color:var(--fg)}
+.note{margin-top:28px;padding:14px 16px;border:1px dashed var(--line);color:var(--muted);max-width:78ch}
+.note b{color:var(--fg)}
+@media (prefers-reduced-motion:no-preference){.seg button{transition:background .12s}}
+</style>
+
+<div class="wrap">
+  <h1>RTG UI Yönleri</h1>
+  <p class="lede">Dört ajanın önerdiği yönler ve supervisor'ın hibriti, aynı sahne üzerinde yan yana. Her kartta ana menü ve oyun içi HUD var. Üstteki düğmeyle CRT filtresinin UI'a nasıl etki ettiğini deneyebilirsin.</p>
+
+  <div class="bar" role="group" aria-label="CRT modu">
+    <span>CRT filtresi:</span>
+    <div class="seg" id="crtSeg">
+      <button type="button" data-v="overlay" aria-pressed="true">UI keskin (Overlay)</button>
+      <button type="button" data-v="inside" aria-pressed="false">UI CRT içinde</button>
+      <button type="button" data-v="off" aria-pressed="false">CRT kapalı</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="note">
+    <b>Bunlar kodla çizilmiş hızlı taslaklar.</b> Gerçek sprite değiller; yazılar tarayıcıda hafif yumuşak çıkıyor, renkler moodboard'daki CRT'li ekran görüntülerinden gözle alındı. Amaç yönlerin hissini ve yerleşimini karşılaştırmak. Gerçek CRT'nin hücre gridi 480x360 olduğu için "UI CRT içinde" modunda pikseller bozulur, taslakta bunu yalnızca yaklaşık gösteriyorum.
+  </div>
+</div>
+
+<script>
+(function(){
+var W=480,H=270;
+var C={sky:'#84D2F6',orange:'#FDAA66',pink:'#EE3FA8',ink:'#433646',inkD:'#2B2238',cream:'#F5EFCB',red:'#FF4300',teal:'#259EA0',yellow:'#FFC21A',green:'#5FBF3A',card:'#F2A465',cardD:'#A85A2E',olive:'#8A8A1A',soft:'#E58A8A'};
+
+function R(x,a,b,w,h,c){x.fillStyle=c;x.fillRect(a,b,w,h)}
+function T(x,s,a,b,size,col,al,sh){
+  x.font=size+'px Tiny5, "Courier New", monospace';x.textBaseline='top';x.textAlign=al||'left';
+  if(sh){x.fillStyle=sh;x.fillText(s,a+1,b+1)}
+  x.fillStyle=col;x.fillText(s,a,b)
+}
+function ring(x,cx,cy,r){
+  var bands=[C.soft,C.teal,C.cream,C.olive,'#FFB11A',C.red,'#FFE55A'];
+  for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){
+    var d=Math.sqrt(i*i+j*j);if(d>r)continue;
+    var k=Math.min(6,Math.floor((1-d/r)*7));
+    R(x,cx+i,cy+j,1,1,bands[k]);
+  }
+}
+function line(x,x0,y0,x1,y1,c){
+  var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
+  for(var t=0;t<=n;t++)R(x,Math.round(x0+(x1-x0)*t/n),Math.round(y0+(y1-y0)*t/n),1,1,c);
+}
+function pine(x,a,b){R(x,a+2,b,2,2,C.green);R(x,a,b+2,6,8,C.orange);R(x,a+1,b+4,1,1,C.red);R(x,a+4,b+6,1,1,C.red);R(x,a,b+9,6,1,'#C0702A')}
+function drip(x,a,b,w,c){R(x,a,b,w,3,c);for(var i=a;i<a+w;i+=6)R(x,i,b+3,3,2,c)}
+
+function world(x,mode){
+  R(x,0,0,W,H,C.sky);
+  R(x,0,222,W,48,C.orange);drip(x,0,222,W,C.pink);
+  R(x,0,0,24,H,C.orange);R(x,W-24,0,24,H,C.orange);R(x,0,0,W,20,C.orange);
+  R(x,24,9,W-48,2,C.ink);R(x,24,252,W-48,2,C.ink);R(x,40,6,3,8,C.ink);R(x,W-60,6,3,8,C.ink);
+  if(mode==='menu'){ring(x,100,110,44);ring(x,380,110,44)}
+  else{
+    R(x,140,150,110,10,C.orange);drip(x,140,150,110,C.pink);
+    R(x,300,170,60,52,C.orange);drip(x,300,170,60,C.pink);
+    ring(x,300,66,16);
+    line(x,196,128,300,66,C.ink);
+    R(x,192,128,9,12,'#3A6EA5');R(x,192,124,9,5,C.red);R(x,194,132,2,2,C.cream);R(x,197,132,2,2,C.cream);R(x,193,140,3,10,'#3A6EA5');R(x,198,140,3,10,'#3A6EA5');
+    pine(x,330,150);
+    R(x,420,178,18,44,C.inkD);
+  }
+}
+
+/* ---- MENUS (UI layer only) ---- */
+var ITEMS=['PLAY','MULTIPLAYER','OPTIONS','QUIT'];
+function menuA(x){
+  T(x,'ROCK THE GAME',240,28,16,C.orange,'center',C.inkD);
+  R(x,150,60,180,150,C.cream);R(x,152,62,176,146,C.inkD);drip(x,152,62,176,C.pink);
+  ITEMS.forEach(function(s,i){var y=84+i*28;
+    if(i===0){R(x,160,y-3,160,22,C.orange);T(x,s,190,y,16,C.inkD)}else T(x,s,190,y,16,C.cream);
+  });
+  ring(x,174,92,6);
+  T(x,'A: SELECT',240,196,8,C.cream,'center');
+}
+function menuB(x){
+  R(x,24,150,126,3,C.ink);R(x,330,150,126,3,C.ink);R(x,24,150,3,40,C.ink);R(x,453,150,3,40,C.ink);
+  R(x,150,24,180,26,C.cardD);R(x,152,26,176,22,C.ink);T(x,'ROCK THE GAME',240,30,16,C.cream,'center');
+  R(x,150,58,180,152,C.cardD);R(x,153,61,174,146,C.card);drip(x,153,61,174,C.pink);
+  ITEMS.forEach(function(s,i){var y=76+i*30;
+    R(x,164,y,152,24,i===0?C.cream:C.ink);R(x,166,y+2,148,20,C.ink);
+    T(x,s,196,y+4,16,i===0?C.yellow:C.cream);
+  });
+  ring(x,178,88,6);
+}
+function menuC(x){
+  T(x,'ROCK THE GAME',240,46,16,C.cream,'center',C.inkD);
+  ITEMS.forEach(function(s,i){var y=112+i*24;
+    T(x,s,240,y,16,C.cream,'center',C.inkD);
+  });
+  ring(x,168,120,6);
+  T(x,'A',240,222,8,C.cream,'center',C.inkD);
+}
+function menuD(x){
+  R(x,120,22,240,214,C.ink);R(x,122,24,236,210,C.cream);
+  R(x,122,24,236,18,C.red);T(x,'LIVE TOUR 2026',240,29,8,C.cream,'center');
+  T(x,'ROCK',240,48,16,C.red,'center');T(x,'THE GAME',240,66,16,C.ink,'center');
+  ['01 SOLO','02 DUET','03 OPTIONS','04 EXIT'].forEach(function(s,i){var y=104+i*24;
+    if(i===0)R(x,170,y-3,150,20,C.yellow);
+    T(x,s,184,y,16,C.ink);
+  });
+  ring(x,156,112,6);
+  ring(x,320,206,16);R(x,319,205,3,3,C.ink);
+  T(x,'A: PLAY',140,214,8,C.ink);
+}
+function menuH(x){
+  R(x,160,34,160,26,C.cardD);R(x,162,36,156,22,C.ink);T(x,'ROCK THE GAME',240,40,16,C.cream,'center');
+  ITEMS.forEach(function(s,i){var y=102+i*26;T(x,s,240,y,16,C.cream,'center',C.inkD)});
+  ring(x,168,110,6);
+  R(x,200,218,80,18,C.cardD);R(x,202,220,76,14,C.card);T(x,'A: SELECT',240,223,8,C.ink,'center');
+}
+
+/* ---- HUDS ---- */
+function hudA(x){
+  R(x,30,26,96,30,C.cream);R(x,32,28,92,26,C.inkD);
+  pine(x,40,34);T(x,'X03',60,34,16,C.cream);
+  [0,1,2].forEach(function(i){R(x,40+i*12,48,8,4,i<2?C.teal:'#2a5b66')});
+  ring(x,432,234,9);R(x,404,226,12,12,C.green);
+  T(x,'DASH',410,214,8,C.cream,'center',C.inkD);T(x,'SLING',432,214,8,C.cream,'center',C.inkD);
+}
+function hudB(x){
+  R(x,170,24,140,30,C.cardD);R(x,172,26,136,26,C.card);drip(x,172,26,136,C.pink);
+  R(x,178,34,60,14,C.ink);T(x,'ROOM 12',208,35,8,C.cream,'center');
+  pine(x,248,34);T(x,'X3',262,34,16,C.ink);
+}
+function hudC(x){
+  pine(x,222,28);T(x,'X3',234,28,16,C.cream,'left',C.inkD);
+  [0,1,2].forEach(function(i){R(x,421+i*5,168,4,4,i<2?C.yellow:C.cream)});
+  T(x,'(1.5 s, sonra kaybolur)',240,252,8,C.cream,'center',C.inkD);
+}
+function hudD(x){
+  R(x,30,26,112,24,C.ink);R(x,32,28,108,20,C.cream);R(x,36,32,40,12,C.red);T(x,'TRK 12',56,34,8,C.cream,'center');
+  pine(x,92,32);T(x,'X3',104,32,16,C.ink);
+  T(x,'<< REW',450,26,8,C.cream,'right',C.red);
+}
+function hudH(x){hudC(x);R(x,30,26,76,18,C.cardD);R(x,32,28,72,14,C.ink);T(x,'ROOM 12',68,31,8,C.cream,'center')}
+
+var DIRS=[
+ {k:'H',t:'Öneri: C + B paneli',tag:'supervisor önerisi',pick:1,m:menuH,h:hudH,
+  d:'C\'nin neredeyse görünmez, olay güdümlü HUD\'ı ve düz metin menüsü. B\'den yalnızca tek hero panel: turuncu çerçeve, pembe damla, mürekkep yuva. Tüm UI Overlay canvas\'ta.',
+  f:[['Puan','—'],['İş yükü','8-11 akşam'],['MVP','3 akşam']]},
+ {k:'C',t:'C · Minimal',tag:'21 / 25',m:menuC,h:hudC,
+  d:'UI oyundaki tutorial yazısı gibi davranır. Buton kutusu yok, halka imleç, HUD yalnızca olay olunca görünür. Tek geliştirici için en ucuz yol, kimliği en zayıf.',
+  f:[['Puan','21 / 25'],['İş yükü','7-9 akşam'],['MVP','2 akşam']]},
+ {k:'A',t:'A · CRT Arcade',tag:'17 / 25',m:menuA,h:hudA,
+  d:'UI, oyundaki CRT\'nin devamı: koyu paneller, krem metin, tek turuncu vurgu, sürekli görünen HUD. Arcade teması oyun dünyasında yok, Overlay\'de CRT bağı zayıflar.',
+  f:[['Puan','17 / 25'],['İş yükü','12-14 akşam'],['MVP','—']]},
+ {k:'B',t:'B · Dünya Malzemeleri',tag:'16 / 25',m:menuB,h:hudB,
+  d:'Menüler oyun dünyasının kartonundan, boru ve vanalarından yapılmış. Görsel dile en uygun yön, ama 45-55 sprite gerektirir ve level üretimini haftalarca durdurur.',
+  f:[['Puan','16 / 25'],['İş yükü','14-18 akşam'],['MVP','—']]},
+ {k:'D',t:'D · Setlist (Rock Afişi)',tag:'16 / 25',m:menuD,h:hudD,
+  d:'Menü bir gig afişi, odalar parça numarası (TRK 12), ölüm kısa bir geri sarma ikonu. Fikir güçlü ve oyun adıyla uyumlu; logo ve cüce animasyonu belirsiz, menü İngilizce kalır.',
+  f:[['Puan','16 / 25'],['İş yükü','10-12 akşam'],['MVP','—']]}
+];
+
+function stage(label,fn,mode){
+  var s=document.createElement('div');s.className='stage';
+  var a=document.createElement('canvas'),b=document.createElement('canvas'),sc=document.createElement('div');
+  a.className='scene';b.className='ui';sc.className='scan';
+  a.width=b.width=W;a.height=b.height=H;
+  s.appendChild(a);s.appendChild(sc);s.appendChild(b);
+  var xa=a.getContext('2d'),xb=b.getContext('2d');xa.imageSmoothingEnabled=false;xb.imageSmoothingEnabled=false;
+  s._draw=function(){xa.clearRect(0,0,W,H);xb.clearRect(0,0,W,H);world(xa,mode);fn(xb)};
+  return s;
+}
+
+var grid=document.getElementById('grid'),stages=[];
+DIRS.forEach(function(d){
+  var c=document.createElement('section');c.className='card'+(d.pick?' pick':'');
+  var h=document.createElement('h2');h.textContent=d.t;var tg=document.createElement('span');tg.className='tag';tg.textContent=d.tag;h.appendChild(tg);
+  c.appendChild(h);
+  var l1=document.createElement('div');l1.className='lbl';l1.textContent='Ana menü';c.appendChild(l1);
+  var s1=stage('menu',d.m,'menu');c.appendChild(s1);stages.push(s1);
+  var l2=document.createElement('div');l2.className='lbl';l2.textContent='Oyun içi HUD';c.appendChild(l2);
+  var s2=stage('hud',d.h,'hud');c.appendChild(s2);stages.push(s2);
+  var p=document.createElement('p');p.textContent=d.d;c.appendChild(p);
+  var f=document.createElement('div');f.className='facts';
+  d.f.forEach(function(r){var e=document.createElement('span');e.innerHTML='<b></b> ';e.firstChild.textContent=r[0]+':';e.appendChild(document.createTextNode(r[1]));f.appendChild(e)});
+  c.appendChild(f);grid.appendChild(c);
+});
+function drawAll(){stages.forEach(function(s){s._draw()})}
+drawAll();
+var go=function(){drawAll()};
+try{document.fonts.load('16px Tiny5').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+
+var seg=document.getElementById('crtSeg');
+seg.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  document.body.setAttribute('data-crt',b.dataset.v);
+  [].forEach.call(seg.children,function(n){n.setAttribute('aria-pressed',n===b?'true':'false')});
+});
+document.body.setAttribute('data-crt','overlay');
+})();
+</script>

@@ -142,7 +142,7 @@ namespace New_Scripts.Player
 
         private void Update()
         {
-            if (_isPaused) return;
+            if (_isPaused || New_Scripts.Pause.PauseManager.BlocksGameplay) return;
 
             if (Input.IsJumpPressed)
                 JumpBufferTimer = Stats.JumpBufferDuration;
@@ -231,7 +231,7 @@ namespace New_Scripts.Player
                 CanWallClimb = false;
             }
 
-            UIController.UpdateStamina(CurrentWallStamina, Stats.MaxWallStamina);
+            UIController.UpdateStamina(CurrentWallStamina, Stats.MaxWallStamina, Stats.StaminaWarningThreshold);
         }
 
         public void RefillWallStamina()

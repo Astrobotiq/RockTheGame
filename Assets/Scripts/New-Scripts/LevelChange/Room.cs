@@ -9,6 +9,8 @@ namespace New_Scripts.LevelChange
     public class Room : MonoBehaviour, ICameraOverrideProvider
     {
         [SerializeField] private int roomId;
+        [Tooltip("Oda başlık kartında sarı kirişin üstünde yazan kısa ad (ör. \"swing & slingshot\"). Boşsa kirişte yazı olmaz.")]
+        [SerializeField] private string roomTitle;
         [SerializeField] private Collider2D roomBounds;
         [SerializeField] private List<RoomTransitionTrigger> triggers;
         [SerializeField] private Checkpoint initialCheckpoint;
@@ -37,6 +39,7 @@ namespace New_Scripts.LevelChange
         public UnityEvent OnRoomExited;
 
         public int RoomId => roomId;
+        public string RoomTitle => roomTitle;
         public Collider2D RoomBounds => roomBounds;
         
         public Checkpoint InitialCheckpoint => initialCheckpoint;

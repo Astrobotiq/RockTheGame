@@ -1,0 +1,325 @@
+<title>RTG Brutalist Ötesi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Tiny5&display=swap">
+<style>
+/* Layout: raw concrete sheet. Heavy black borders, hard offset shadows, one hot accent. Header slab with a leaning mass, sticky mode switch, idea blocks, five screens, imagination list, build cost, sources. */
+:root{
+  --wall:#c4c1ba; --slab:#dcd9d2; --mid:#9a9791; --dark:#5f5d59; --k:#151515; --acc:#ff4300; --haz:#f6be1f; --muted:#4a4844;
+  --display:'Archivo Black','Arial Black',Impact,sans-serif; --mono:'Space Mono','Courier New',monospace; --pixel:'Tiny5','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wall);color:var(--k);font-family:var(--mono);font-size:15px;line-height:1.55;
+  padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+a{color:var(--k);text-decoration-thickness:3px;text-underline-offset:3px}
+a:hover{background:var(--acc)}
+a:focus-visible,button:focus-visible{outline:4px solid var(--acc);outline-offset:2px}
+header{position:relative;margin-top:28px;min-height:340px;display:grid;align-content:end;gap:14px;padding:26px 22px 26px 26px;color:var(--k);
+  background:var(--slab);clip-path:polygon(0 0,100% 0,100% 62%,78% 100%,0 100%);border-left:6px solid var(--k)}
+header::after{content:"";position:absolute;right:0;top:0;width:34%;height:100%;background:var(--acc);clip-path:polygon(60% 0,100% 0,100% 62%,40% 100%,0 100%);opacity:.95;z-index:0}
+header>*{position:relative;z-index:1}
+.tagbar{display:inline-block;background:var(--k);color:var(--wall);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;justify-self:start}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(44px,10vw,118px);line-height:.86;letter-spacing:-.02em;margin:0;text-transform:uppercase;transform:rotate(-2.5deg);transform-origin:left bottom;text-shadow:4px 4px 0 var(--wall),7px 7px 0 var(--k)}
+.lede{max-width:56ch;margin:6px 0 0;font-size:16px;font-weight:700}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--wall);border-bottom:4px solid var(--k);margin-top:10px;padding:10px 0;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.bar b{font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.seg{display:flex;border:3px solid var(--k);box-shadow:4px 4px 0 var(--k)}
+.seg button{font:700 14px var(--mono);background:var(--slab);color:var(--k);border:0;padding:7px 14px;cursor:pointer}
+.seg button+button{border-left:3px solid var(--k)}
+.seg button[aria-pressed="true"]{background:var(--k);color:var(--acc)}
+section.s{padding:36px 0;border-bottom:4px solid var(--k)}
+section.s>h2{font-family:var(--display);font-weight:400;font-size:clamp(26px,4vw,38px);line-height:1;margin:0 0 6px;text-transform:uppercase}
+section.s>h2 small{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;background:var(--k);color:var(--wall);padding:2px 8px;margin-right:10px;vertical-align:middle;clip-path:polygon(0 0,100% 0,88% 100%,0 100%)}
+.intro{max-width:70ch;margin:10px 0 20px}
+.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:22px}
+.idea{background:var(--slab);border:3px solid var(--k);box-shadow:6px 6px 0 var(--k);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.idea:nth-child(2n){transform:translateY(10px)}
+.idea:nth-child(3n){border-bottom-width:8px}
+.idea h3{font-family:var(--display);font-weight:400;font-size:20px;line-height:1.1;margin:0;text-transform:uppercase}
+.idea p{margin:0;font-size:14px}
+.idea .us{font-weight:700;background:var(--acc);border:2px solid var(--k);padding:4px 8px}
+.idea .src{font-size:12px;color:var(--muted)}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:34px 24px}
+.shot{display:flex;flex-direction:column;gap:10px;min-width:0}
+.shot .cv{position:relative;aspect-ratio:16/9;border:4px solid var(--k);box-shadow:8px 8px 0 var(--k);background:var(--mid);overflow:hidden}
+.shot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+body[data-mode="pixel"] .shot canvas{image-rendering:pixelated}
+.cap{font-family:var(--display);font-size:18px;text-transform:uppercase}
+.shot p{margin:0;font-size:14px}
+ul.l{margin:0 0 14px;padding-left:1.1em;max-width:72ch}
+ul.l li{margin-bottom:8px}
+.note{background:var(--haz);border:3px solid var(--k);box-shadow:5px 5px 0 var(--k);padding:12px 14px;font-size:14px;max-width:76ch;margin-top:16px}
+.refs{columns:2 280px;column-gap:32px;margin:0;padding:0;list-style:none}
+.refs li{break-inside:avoid;margin-bottom:12px}
+.refs span{display:block;font-size:12px;color:var(--muted)}
+@media (max-width:640px){header::after{width:50%}.idea:nth-child(2n){transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tagbar">Rock The Game · UI, dördüncü tur</span>
+    <h1>kırık.<br>eğik.<br>ağır.</h1>
+    <p class="lede">Geçen turda levhalar hâlâ dikdörtgendi. Bu turda kütleyi kırdım: çokgen parçalar, çapraz kesikler, konsol gibi dışarı uzanan katlar, duvara açılmış delik ve hacim.</p>
+  </header>
+
+  <div class="bar" role="group" aria-label="Çizim biçimi">
+    <b>UI çizimi:</b>
+    <div class="seg" id="modeSeg">
+      <button type="button" data-v="vector" aria-pressed="true">Vektör (Archivo + Mono)</button>
+      <button type="button" data-v="pixel" aria-pressed="false">Piksel (Tiny5)</button>
+    </div>
+  </div>
+
+  <section class="s">
+    <h2><small>01</small>dikdörtgenden çıkış</h2>
+    <p class="intro">Brutalizmin kendi içinde dikdörtgeni kıran örnekler var. Önce onlara baktım. Kaynaklar çoğunlukla blog ve rehber; "aşağıdaki fikir bizde ne olur" kısımları benim çıkarımım.</p>
+    <div class="ideas">
+      <div class="idea"><h3>spomenik: parçalı heykel</h3>
+        <p>Yugoslavya'nın 1960-80 arası anıtları soyut, heykelsi. Çoğu birbirinden ayrı duran parçalardan oluşuyor ama uzaktan tek nesne gibi okunuyor. Kosmaj anıtı sivri olarak anılıyor.</p>
+        <p class="us">Bizde: HUD ve menü parçaları dikdörtgen değil, kırık ve sivri çokgenler. Ayrı parçalar, tek kompozisyon.</p>
+        <p class="src">Atlas Obscura, Emerging Europe, Dark Tourism</p></div>
+      <div class="idea"><h3>konsol: gövdeden uzanan kat</h3>
+        <p>Nakagin Capsule Tower'da 140 kapsülün her biri çekirdekten konsol olarak çıkıyor ve bağımsız çıkarılabiliyordu (kule 2022'de yıkıldı).</p>
+        <p class="us">Bizde: pause'da seçili satır, gövdeden dışarı uzayan bir kat. Odak = ağırlığın kayması. Gamepad için net bir geri bildirim.</p>
+        <p class="src">Designing Buildings, Studio Matrx</p></div>
+      <div class="idea"><h3>yığılmış modüller</h3>
+        <p>Habitat 67, 354 prefabrik beton modülün farklı geometrilerle üst üste, kaydırılarak yığılmasıyla kurulu.</p>
+        <p class="us">Bizde: pause kulesi, kaymış ve farklı genişlikte katlar. Sonuç ekranında oyuncu kimliği hacim: silindir ve küp.</p>
+        <p class="src">Designing Buildings (Habitat 67)</p></div>
+      <div class="idea"><h3>kırık ızgara</h3>
+        <p>Brutalist grafik tasarım ızgarayı saklamaz, gösterir; kırık simetri, eksen dışı yerleşim, üst üste binme, dev yazı ve parçalı (extruded) öğeler tipik. Dönük ekstrüde harf için doğrudan örnek bulamadım.</p>
+        <p class="us">Bizde: eğik başlık, ekstrüde dev harfler, kenara taşan yazı ve şekiller.</p>
+        <p class="src">Made Good Designs, Kittl, Freepik</p></div>
+      <div class="idea"><h3>duvara açılmış delik</h3>
+        <p>Benim fikrim, kaynak yok. Ağır bir duvarda yuvarlak bir boşluk, arkasında oyun dünyası.</p>
+        <p class="us">Bizde: ana menü, duvardaki deliğin ardından kanca halkasını gösterir. Menü ve oyun aynı mekânda.</p>
+        <p class="src">—</p></div>
+      <div class="idea"><h3>çürüme ve çatlak</h3>
+        <p>Control'de düzen bozulunca düz çizgiler dalgalanıyor. Petrova Gora anıtı bakımsızlıktan harap bir halde. Brutalizm sertliğini ve çözülmesini birlikte taşıyor.</p>
+        <p class="us">Bizde: stamina bir beton halka, parçaları koparak düşer ve çıplak donatı kalır. Düzenin bozulması = enerjinin bitmesi.</p>
+        <p class="src">Super Jump (Control), Dark Tourism</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>02</small>ekranlar</h2>
+    <p class="intro">Hepsi çokgen, daire ve hacimden kurulu. Beton dokusu her çokgenin içine kırpılıyor. Pause'da halka, oyunun kanca hedefi, beton bir hedefe dönüştü.</p>
+    <div class="shots" id="shots"></div>
+  </section>
+
+  <section class="s">
+    <h2><small>03</small>bir adım ötesi: hayal</h2>
+    <p class="intro">Şekilden sonra davranış. Bunlar henüz taslakta yok, hepsi benim fikrim ve denenmedi:</p>
+    <ul class="l">
+      <li><b>Ağırlık hissi:</b> pause levhası aşağı kayarak iner, çarpınca toz çıkar ve ekran kısa sarsılır. Projede zaten hit-stop ve <code>HapticManager</code> var, çarpma titreşimi aynı SO desenine bağlanabilir.</li>
+      <li><b>Konsol uzaması:</b> odak değişince seçili kat yana uzar, eski kat geri çekilir. Beton sürtme sesi.</li>
+      <li><b>Stamina halkası kırılır:</b> 6 beton parça, enerji azaldıkça kopar. Son parçada ekran kenarlarında hafif bir titreme.</li>
+      <li><b>Oda kartı çapraz çarpar:</b> levha köşeden girer, sayı ekstrüde olarak yerine oturur, 1 saniye sonra yine çapraz çıkar.</li>
+      <li><b>Duvardaki delik:</b> ana menüde delikten görünen halka, seçimle birlikte yavaşça döner.</li>
+    </ul>
+  </section>
+
+  <section class="s">
+    <h2><small>04</small>maliyet</h2>
+    <ul class="l">
+      <li><b>Dikdörtgenler 9-slice ile döşenirdi; çokgenler döşenmez.</b> Her benzersiz şekil ayrı bir sprite ya da özel bir UI mesh'i. Bu taslakta kabaca 15 benzersiz şekil var; bu sayı bir tahmin, ölçmedim.</li>
+      <li><b>İki yol:</b> (a) şekilleri Aseprite'ta elle çizmek, iş yükü yüksek. (b) çokgenleri kodla çizmek (özel UI Graphic) ve beton dokusunu tek tileable doku olarak içine kırpmak, ucuz ama piksel görünümü kodla taklit edilir.</li>
+      <li><b>Önceki dikdörtgen sürümle fark:</b> daha etkileyici, ama bakım maliyeti daha yüksek. Hibrit mümkün: yalnızca pause, oda kartı ve sonuç ekranı çokgen olur, HUD sade kalır.</li>
+      <li><b>Oyunda pause henüz yok</b> ve CRT filtresi Overlay UI'a uygulanmıyor, keskin çokgen kenarlar için bu uygun.</li>
+    </ul>
+    <div class="note">Okunabilirlik riski: çokgenler ve eğik yazı hızlı oyunda dikkat dağıtabilir. HUD'ı bilerek küçük ve yatay tuttum. Kontrolcüyle deneme gerekir.</div>
+  </section>
+
+  <section class="s">
+    <h2><small>05</small>kaynaklar</h2>
+    <ul class="refs">
+      <li><a href="https://assets.atlasobscura.com/articles/spomenik-memorials-yugoslavia-balkans" target="_blank" rel="noopener">Spomenik anıtları (Atlas Obscura)</a><span>Yugoslavya'nın soyut anıtları</span></li>
+      <li><a href="https://emerging-europe.com/spomeniks-ex-yugoslavias-most-misunderstood-memorial-sites/" target="_blank" rel="noopener">Spomeniks (Emerging Europe)</a><span>Anıtların siyasi bağlamı</span></li>
+      <li><a href="https://dark-tourism.com/index.php/1244-petrova-gora" target="_blank" rel="noopener">Petrova Gora (Dark Tourism)</a><span>Bakımsızlık ve harabe</span></li>
+      <li><a href="https://www.designingbuildings.co.uk/wiki/Habitat_67" target="_blank" rel="noopener">Habitat 67 (Designing Buildings)</a><span>354 prefabrik modül</span></li>
+      <li><a href="https://www.designingbuildings.co.uk/wiki/Nakagin_Capsule_Tower" target="_blank" rel="noopener">Nakagin Capsule Tower (Designing Buildings)</a><span>Çekirdekten konsol kapsüller</span></li>
+      <li><a href="https://madegooddesigns.com/brutalist-graphic-design/" target="_blank" rel="noopener">Brutalist Graphic Design (Made Good Designs)</a><span>Görünen ızgara, kırık simetri</span></li>
+      <li><a href="https://www.superjumpmagazine.com/the-architectural-battleground-of-controlcontrols-oldest-house-is-a-haunted-labyrinth-of-brutalist-architecture-but-why-delve-into-a-long-dead-architectural-style-youd-think-a-governmen/" target="_blank" rel="noopener">Control mimarisi (Super Jump)</a><span>Düzen ve bozulma</span></li>
+    </ul>
+    <div class="note">Breuer'in Whitney Müzesi için kaynak bulamadığım için listede yok. Kaynakların çoğu blog ve seyahat sitesi; birincil kaynaklardan teyit gerekir.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+var W=480,H=270;
+var K='#151515',ACC='#FF4300',HAZ='#F6BE1F';
+var T={mid:{base:'#9A9791',lt:'#ADAAA4',dk:'#85827D'},light:{base:'#C4C1BA',lt:'#D3D0C9',dk:'#AEABA4'},dark:{base:'#5F5D59',lt:'#706E6A',dk:'#4D4B48'},acc:{base:'#FF4300',lt:'#FF6A33',dk:'#D93A00'}};
+var P={sky:'#84D2F6',orange:'#FDAA66',pink:'#EE3FA8',ink:'#433646',red:'#E8432B'};
+var mode='vector';
+
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h)}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function PP(pts){return function(c){c.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath()}}
+function txt(c,s,x,y,size,col,align,kind,rot){
+  c.save();var pix=(mode==='pixel');
+  if(pix)c.font=size+'px Tiny5, "Courier New", monospace';
+  else if(kind==='m')c.font='700 '+Math.round(size*0.95)+'px "Space Mono", "Courier New", monospace';
+  else c.font=size+'px "Archivo Black", "Arial Black", Impact, sans-serif';
+  c.textBaseline='middle';c.textAlign=align||'center';c.fillStyle=col;
+  c.translate(x,y);if(rot)c.rotate(rot);
+  c.fillText(pix||kind!=='m'?s.toUpperCase():s,0,0);c.restore();
+}
+function ext(c,s,x,y,size,front,side,depth,align,kind,rot){
+  for(var d=depth;d>=1;d--)txt(c,s,x+d*.8,y+d*.7,size,side,align,kind,rot);
+  txt(c,s,x,y,size,front,align,kind,rot);
+}
+/* concrete mass: any path, texture clipped inside, hard shadow, heavy border */
+function mass(c,path,bb,t,sh,bw){
+  if(sh){c.save();c.translate(sh,sh);c.beginPath();path(c);c.fillStyle=K;c.fill('evenodd');c.restore()}
+  c.beginPath();path(c);c.fillStyle=t.base;c.fill('evenodd');
+  c.save();c.beginPath();path(c);c.clip('evenodd');
+  var x=bb[0],y=bb[1],w=bb[2],h=bb[3],r=rng(Math.floor(x*31+y*17+w*7+h)),n=Math.floor(w*h/40);
+  for(var i=0;i<n;i++)rect(c,x+Math.floor(r()*w),y+Math.floor(r()*h),r()<.15?2:1,1,r()<.5?t.lt:t.dk);
+  for(var yy=y+30;yy<y+h;yy+=30){rect(c,x,yy,w,1,t.dk);rect(c,x,yy+1,w,1,t.lt);for(var xx=x+22;xx<x+w;xx+=50){rect(c,xx,yy-15,3,3,t.dk);rect(c,xx+1,yy-14,2,2,t.lt)}}
+  c.restore();
+  c.beginPath();path(c);c.lineWidth=bw||3;c.lineJoin='miter';c.strokeStyle=K;c.stroke();
+}
+function hazardPath(c,path,bb){
+  c.save();c.beginPath();path(c);c.clip();rect(c,bb[0],bb[1],bb[2],bb[3],HAZ);
+  for(var i=-bb[3];i<bb[2];i+=16){c.fillStyle=K;c.beginPath();c.moveTo(bb[0]+i,bb[1]+bb[3]);c.lineTo(bb[0]+i+8,bb[1]+bb[3]);c.lineTo(bb[0]+i+8+bb[3],bb[1]);c.lineTo(bb[0]+i+bb[3],bb[1]);c.closePath();c.fill()}
+  c.restore();c.beginPath();path(c);c.lineWidth=2;c.strokeStyle=K;c.stroke();
+}
+function isoBox(c,x,y,w,h,d,tf,tt,ts,sh){
+  var dy=Math.round(d*.5);
+  mass(c,PP([[x+w,y],[x+w+d,y-dy],[x+w+d,y+h-dy],[x+w,y+h]]),[x+w,y-dy,d,h],ts,0);
+  mass(c,PP([[x,y],[x+d,y-dy],[x+w+d,y-dy],[x+w,y]]),[x,y-dy,w+d,dy],tt,0);
+  mass(c,PP([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]),[x,y,w,h],tf,sh);
+}
+var BANDS=['#9A9791','#5F5D59','#C4C1BA','#4D4B48','#ADAAA4','#151515',ACC];
+function nodeConcrete(c,cx,cy,r){for(var k=0;k<7;k++){var rr=r*(1-k/7);disc(c,cx,cy,rr,BANDS[k]);c.beginPath();c.arc(cx,cy,rr,0,Math.PI*2);c.lineWidth=2;c.strokeStyle=K;c.stroke()}}
+
+/* world layer (always pixel) */
+var BANDS2=['#E58A8A','#259EA0','#F5EFCB','#8A8A1A','#FFB11A','#FF4300','#FFE55A'];
+function ringPix(x,cx,cy,r){for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){var d=Math.sqrt(i*i+j*j);if(d>r)continue;rect(x,cx+i,cy+j,1,1,BANDS2[Math.min(6,Math.floor((1-d/r)*7))])}}
+function line(x,x0,y0,x1,y1,col){var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(var t=0;t<=n;t++)rect(x,Math.round(x0+(x1-x0)*t/n),Math.round(y0+(y1-y0)*t/n),1,1,col)}
+function worldGame(x,dim){
+  rect(x,0,0,W,H,P.sky);rect(x,0,222,W,48,P.orange);rect(x,0,222,W,3,P.pink);
+  rect(x,0,0,24,H,P.orange);rect(x,W-24,0,24,H,P.orange);rect(x,0,0,W,20,P.orange);
+  rect(x,140,150,110,10,P.orange);rect(x,140,150,110,3,P.pink);
+  rect(x,300,170,60,52,P.orange);rect(x,300,170,60,3,P.pink);
+  ringPix(x,300,66,16);line(x,196,128,300,66,P.ink);
+  rect(x,192,128,9,12,'#3A6EA5');rect(x,192,124,9,5,P.red);rect(x,194,132,2,2,'#F5EFCB');rect(x,197,132,2,2,'#F5EFCB');rect(x,193,140,3,10,'#3A6EA5');rect(x,198,140,3,10,'#3A6EA5');
+  rect(x,330,150,6,10,P.orange);
+  if(dim){x.fillStyle=K;for(var y=0;y<H;y+=2)for(var xx=(y/2)%2?0:2;xx<W;xx+=4)x.fillRect(xx,y,2,2);x.fillStyle='rgba(21,21,21,.5)';x.fillRect(0,0,W,H)}
+}
+function worldOculus(x){rect(x,0,0,W,H,P.sky);ringPix(x,112,76,50);rect(x,0,200,W,70,P.orange);rect(x,0,200,W,3,P.pink)}
+function worldBlank(x){rect(x,0,0,W,H,K)}
+
+/* ---- screens ---- */
+function uiMenu(c){
+  mass(c,function(c){c.rect(0,0,W,H);c.moveTo(112+58,76);c.arc(112,76,58,0,Math.PI*2)},[0,0,W,H],T.dark,0,4);
+  ext(c,'ROCK',18,166,60,T.light.base,K,9,'left','d',-0.07);
+  mass(c,PP([[16,194],[184,184],[184,218],[10,222]]),[10,184,174,38],T.acc,0);
+  txt(c,'THE GAME',24,205,22,K,'left','d',-0.055);
+  txt(c,'A  SELECT',22,250,9,'#C4C1BA','left','m');
+  ['PLAY','MULTIPLAYER','OPTIONS','QUIT'].forEach(function(s,i){
+    var x=300-i*34,y=60+i*46,h=38,sel=i===0;
+    mass(c,PP([[x+16,y],[470,y],[470,y+h],[x,y+h]]),[x,y,470-x,h],sel?T.acc:T.light,5);
+    txt(c,'0'+(i+1),x+26,y+h/2,9,K,'left','m');txt(c,s,x+52,y+h/2,15,K,'left','d');
+  });
+}
+function uiHud(c){
+  mass(c,PP([[0,0],[156,0],[136,30],[152,58],[64,70],[0,56]]),[0,0,156,70],T.mid,4);
+  txt(c,'ANANAS',14,19,10,K,'left','m');txt(c,'03/05',136,19,10,K,'right','m');
+  txt(c,'ANAHTAR',14,43,10,K,'left','m');txt(c,'2/3',134,43,10,K,'right','m');
+  /* broken stamina ring, 4 of 6 left */
+  var px=197,py=138,r0=21,r1=29,g=0.12;
+  for(var i=0;i<6;i++){
+    var a0=-Math.PI/2+i*Math.PI/3+g,a1=-Math.PI/2+(i+1)*Math.PI/3-g;
+    if(i<4){c.beginPath();c.arc(px,py,r1,a0,a1);c.arc(px,py,r0,a1,a0,true);c.closePath();c.fillStyle=T.light.base;c.fill();c.lineWidth=2;c.strokeStyle=K;c.stroke()}
+    else{var am=(a0+a1)/2;c.beginPath();c.moveTo(px+Math.cos(am)*r0,py+Math.sin(am)*r0);c.lineTo(px+Math.cos(am)*(r1-2),py+Math.sin(am)*(r1-2));c.lineWidth=2;c.strokeStyle=K;c.stroke();
+      var dx=px+Math.cos(am)*r1,dy=py+Math.sin(am)*r1+16+(i-4)*6;
+      mass(c,PP([[dx,dy],[dx+7,dy+2],[dx+3,dy+8]]),[dx,dy,7,8],T.light,0,2)}
+  }
+  mass(c,PP([[366,230],[414,230],[434,246],[414,262],[366,262]]),[366,230,68,32],T.acc,4);
+  txt(c,'DASH',376,246,9,K,'left','m');
+  mass(c,function(c){c.moveTo(466,244);c.arc(452,244,14,0,Math.PI*2);c.moveTo(457,244);c.arc(452,244,5,0,Math.PI*2)},[438,230,28,28],T.light,4);
+  txt(c,'SLING',452,266,8,K,'center','m');
+}
+function uiCard(c){
+  mass(c,PP([[0,0],[366,0],[252,270],[0,270]]),[0,0,366,270],T.light,10,4);
+  txt(c,'BLOCK / LEVEL',18,20,10,K,'left','m');
+  ext(c,'12',16,112,152,ACC,K,10,'left','d');
+  c.beginPath();c.moveTo(332,40);c.lineTo(310,64);c.lineTo(322,84);c.lineTo(296,108);c.lineTo(304,128);c.lineTo(282,150);c.lineWidth=2;c.strokeStyle=K;c.stroke();
+  mass(c,PP([[16,200],[268,200],[254,232],[16,232]]),[16,200,252,32],T.acc,0);
+  txt(c,'SWING & SLINGSHOT',26,216,15,K,'left','d');
+  hazardPath(c,PP([[16,242],[248,242],[242,256],[16,256]]),[16,242,232,14]);
+}
+function uiPause(c){
+  nodeConcrete(c,396,146,130);
+  mass(c,PP([[0,270],[0,176],[126,270]]),[0,176,126,94],T.dark,5);
+  ext(c,'PAUSE',20,28,24,T.light.base,K,4,'left','d');
+  var items=['RESUME','OPTIONS','QUIT','RETRY'],xs=[150,84,128,94],ws=[200,190,180,170];
+  for(var i=3;i>=0;i--){
+    var sel=i===0,x=xs[i],y=48+i*50,w=ws[i],h=40;
+    isoBox(c,x,y,w,h,22,sel?T.acc:T.light,sel?T.acc:T.light,T.dark,5);
+    txt(c,'0'+(i+1),x+14,y+h/2,9,K,'left','m');txt(c,items[i],x+42,y+h/2,18,K,'left','d');
+  }
+  txt(c,'X 000 Y 000',W-14,14,8,'#C4C1BA','right','m');
+  txt(c,'A  SELECT     B  BACK',22,H-14,8,'#C4C1BA','left','m');
+}
+function uiResult(c){
+  mass(c,PP([[0,0],[W,0],[W,270],[0,270]]),[0,0,W,H],T.mid,0,4);
+  c.beginPath();c.moveTo(0,238);c.lineTo(W,226);c.lineTo(W,244);c.lineTo(0,256);c.closePath();
+  hazardPath(c,PP([[0,238],[W,226],[W,244],[0,256]]),[0,226,W,30]);
+  rect(c,0,0,0,0,K);c.fillStyle=K;c.beginPath();c.moveTo(0,256);c.lineTo(W,244);c.lineTo(W,270);c.lineTo(0,270);c.closePath();c.fill();
+  /* P1 cylinder */
+  var cx=150,rx=52,ry=16,top=116,bot=230;
+  mass(c,function(c){c.moveTo(cx-rx,top);c.lineTo(cx-rx,bot);c.ellipse(cx,bot,rx,ry,0,Math.PI,0,true);c.lineTo(cx+rx,top);c.ellipse(cx,top,rx,ry,0,0,Math.PI,true);c.closePath()},[cx-rx,top-ry,rx*2,bot-top+ry*2],T.light,6);
+  c.beginPath();c.ellipse(cx,top,rx,ry,0,0,Math.PI*2);c.fillStyle=T.light.lt;c.fill();c.lineWidth=3;c.strokeStyle=K;c.stroke();
+  c.beginPath();c.ellipse(cx,top,12,4,0,0,Math.PI*2);c.fillStyle=ACC;c.fill();c.lineWidth=2;c.stroke();
+  txt(c,'1',cx,top+54,56,K,'center','d');txt(c,'P1  02:14.8',cx,top+98,10,K,'center','m');
+  /* P2 cube */
+  isoBox(c,270,160,84,68,26,T.light,T.light,T.dark,6);
+  txt(c,'2',312,190,44,K,'center','d');txt(c,'P2  02:19.3',312,214,10,K,'center','m');
+  mass(c,PP([[14,14],[240,14],[226,50],[14,50]]),[14,14,226,36],T.acc,0);
+  txt(c,'RACE RESULT',28,32,20,K,'left','d');
+}
+var SCREENS=[
+ {t:'ana menü: duvardaki delik',w:'oculus',u:uiMenu,d:'<b>Delikten dünya görünür.</b> Eğik, ekstrüde başlık; menü, sola doğru uzayan bir merdivenin basamakları. Seçili basamak turuncu.'},
+ {t:'oyun içi HUD: kırılan halka',w:'game',u:uiHud,d:'<b>Stamina bir beton halka.</b> Altı parçadan ikisi kopmuş, geriye çıplak donatı çizgisi ve düşen kırıntı kalmış. Sayaç kırık bir parça, ability\'ler ok ve silindir.'},
+ {t:'oda kartı: çapraz levha',w:'game',u:uiCard,d:'<b>Eğik kesilmiş levha</b> ekranın üçte ikisini kaplar. Ekstrüde dev oda numarası, çatlak, uyarı bandı. Kısa görünüp çapraz çıkar.'},
+ {t:'pause: konsol kule',w:'gameDim',u:uiPause,d:'<b>Kaymış katlar.</b> Seçili kat dışarı uzar (turuncu). Arkada beton bir kanca hedefi, solda rampa. İsometrik hacim her katı levhadan ağırlığa çevirir.'},
+ {t:'çok oyunculu sonuç: silindir ve küp',w:'blank',u:uiResult,d:'<b>Oyuncu kimliği hacim.</b> 1. oyuncu silindir (daire), 2. oyuncu küp (kare). Yükseklik sıralamayı gösterir, zemin eğik uyarı bandı.'}
+];
+var holder=document.getElementById('shots');
+SCREENS.forEach(function(s){
+  var f=document.createElement('div');f.className='shot';
+  f.innerHTML='<div class="cv"><canvas class="w" width="480" height="270"></canvas><canvas class="u"></canvas></div><div class="cap"></div><p></p>';
+  f.querySelector('.cap').textContent=s.t;f.querySelector('p').innerHTML=s.d;holder.appendChild(f);s.el=f;
+});
+function renderUI(canvas,fn){
+  var pix=(mode==='pixel');
+  canvas.width=pix?W:W*3;canvas.height=pix?H:H*3;
+  var c=canvas.getContext('2d',{willReadFrequently:pix});
+  c.clearRect(0,0,canvas.width,canvas.height);
+  if(!pix)c.scale(3,3);
+  c.imageSmoothingEnabled=!pix;
+  fn(c);
+  if(pix){var id=c.getImageData(0,0,W,H),d=id.data;for(var i=3;i<d.length;i+=4)d[i]=d[i]>=128?255:0;c.putImageData(id,0,0)}
+}
+function drawAll(){
+  SCREENS.forEach(function(s){
+    var w=s.el.querySelector('canvas.w'),x=w.getContext('2d');x.imageSmoothingEnabled=false;
+    if(s.w==='blank')worldBlank(x);else if(s.w==='oculus')worldOculus(x);else worldGame(x,s.w==='gameDim');
+    renderUI(s.el.querySelector('canvas.u'),s.u);
+  });
+}
+drawAll();
+var go=function(){drawAll()};
+try{document.fonts.load('16px Tiny5').then(go,go);document.fonts.load('16px "Archivo Black"').then(go,go);document.fonts.load('700 16px "Space Mono"').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+var seg=document.getElementById('modeSeg');
+function setMode(v){mode=v;document.body.setAttribute('data-mode',v);[].forEach.call(seg.children,function(n){n.setAttribute('aria-pressed',n.dataset.v===v?'true':'false')});drawAll()}
+seg.addEventListener('click',function(e){var b=e.target.closest('button');if(b)setMode(b.dataset.v)});
+document.body.setAttribute('data-mode','vector');
+})();
+</script>

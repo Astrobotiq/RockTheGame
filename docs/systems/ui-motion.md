@@ -1,6 +1,6 @@
 # UI hareket kuralları: UI hiçbir zaman donuk olmaz
 
-Son kod doğrulaması: 2026-11-09 (ana menü). Kaynak araştırma: [`../ui-research/menu-juice.md`](../ui-research/menu-juice.md). Görsel yön: [`../ui-research/mashup-ui.html`](../ui-research/mashup-ui.html) (Bauhaus + brutalist beton).
+Son kod doğrulaması: 2026-11-12 (MP sonuç ekranı, oda başlık kartı; ana menü 2026-11-09). Kaynak araştırma: [`../ui-research/menu-juice.md`](../ui-research/menu-juice.md). Görsel yön: [`../ui-research/mashup-ui.html`](../ui-research/mashup-ui.html) (Bauhaus + brutalist beton).
 
 **Kural:** Bu projede yeni ya da değiştirilen her UI ekranı aşağıdaki kontrol listesini geçmeden "bitti" sayılmaz. Statik, yalnızca renk değiştiren bir seçim vurgusu eksik iştir. (Gerekçe: ana menü ilk hâlinde "donuktu", seçimde yalnızca dikdörtgen yer değiştiriyordu.)
 
@@ -40,7 +40,7 @@ Yüzey etkisi (desen, örtü, şerit, kayan doku, benek) **shader'da** yapılır
 | Aday | Şu an | Neden shader | Durum |
 |---|---|---|---|
 | Pause karartma/dither | `UiDither` shader | Doku + `uvRect` her adımda canvas'ı kirletiyordu | Yapıldı |
-| Tehlike şeridi (oda kartı, MP sonuç bandı) | `UiHazard` shader + `UiHazardStripes` bileşeni | 45° çapraz sarı/ink şerit (16 pikselde 8), piksel basamaklı, her uzunlukta dikişsiz, doku yok; denge < 0,3'te düz sarı. Hiçbir `Graphic`'e eklenebilir (Image, `UiPolygon`) | Yapıldı; henüz hiçbir ekran kullanmıyor. Oda başlık kartı / MP sonuç task'ında `UiHazardStripes` ekle (malzeme `UiThemeSO.HazardMaterial`) |
+| Tehlike şeridi (oda kartı, MP sonuç bandı) | `UiHazard` shader + `UiHazardStripes` bileşeni | 45° çapraz sarı/ink şerit (16 pikselde 8), piksel basamaklı, her uzunlukta dikişsiz, doku yok; denge < 0,3'te düz sarı. Hiçbir `Graphic`'e eklenebilir (Image, `UiPolygon`) | Yapıldı; oda başlık kartı kullanıyor (`RoomTitleCard`). MP sonuç task'ında da `UiHazardStripes` ekle (malzeme `UiThemeSO.HazardMaterial`) |
 | Dilim/daire/çokgen: dolgu + çerçeve + sert gölge | Her şekil için 2-3 `UiArc`/`UiPolygon` (pause'da ~26 grafik) | SDF shader'ı tek dörtgende dolgu+çerçeve+gölge çizer, kenar yumuşatma her ölçekte, çerçeve/gölge malzeme parametresi | Öneri, yapılmadı |
 | Dilim/etiket renk geçişi (gri→sarı) | `Graphic.color` her karede değişiyor, mesh/TMP köşe rengi yeniden üretiliyor | Renk malzeme parametresi olursa mesh değişmez | SDF shader işiyle birlikte |
 | Ekstrüde yazı | `UiExtrudedText`: derinlik kadar (7) TMP kopyası | Özel TMP SDF shader'ı çok örnekli ekstrüzyonu tek nesnede yapar | Öneri, yapılmadı (menü statik, maliyet küçük) |
@@ -71,6 +71,6 @@ Hareket gözle ve gamepad ile değerlendirilir; ajan yalnızca değerleri (hedef
 | Ana menü | Tamam (poz, imleç, etiket, delik, giriş). Tık sesi ve titreşim yok. |
 | Pause (radyal) | Dilimler: seçili dilim sarıya boyanır, dışarı çıkar, gölge çakılır; açılış (sıralı) ve kapanış (solma) var (`PauseMenuPanel`, bkz. `pause.md`). Arka plan (`PauseBackdrop`): daireler/üçgen dilime göre sabit pozda, boşta sürüklenir, girişte kayarak gelir. Eksik: merkez disk, tık sesi/titreşim, dilimlerin kendi boşta hareketi. |
 | HUD sayaç | `HudCounterPanel`: yalnızca toplayınca köşeden büyüyerek gelir, 2,5 sn sonra çekilir; ananas/anahtar değişince sıçrar, anahtar çakılır. Boşta hareket bilerek yok. Eksik: tık sesi/titreşim. |
-| HUD stamina halkası | Yapılacak: parça kopunca fırlar; `UiPixelScale` ile tam sayı ölçek. |
-| Oda başlık kartı | Yapılacak: levha eğik girer, oda numarası çakılır. |
-| Çok oyunculu sonuç | Yapılacak: sütunlar yükselir, sıra vurgusu. |
+| HUD stamina halkası | `HudStaminaRing`: tutunmada yaylanarak açılır; parça kopunca dışarı fırlar, döner, düşer, söner; son 1,5 sn kalanlar yanıp söner; dolunca parçalar yaylanıp geri gelir. Overlay + `UiPixelScale`. Eksik: kopma sesi/titreşimi. Bkz. `wall-movement.md`. |
+| Oda başlık kartı | `RoomTitleCard` (oyuna girişte bir kez): levha, kiriş, şerit soldan sırayla yaylanarak gelir, numara büyükten çakılır, ~1 sn sonra çekilir; oyunu durdurmaz. Overlay + `UiPixelScale`. Eksik: boşta hareket (1 sn'lik kart, bilerek yok), tık sesi/titreşim. Bkz. `room-title-card.md`. |
+| Çok oyunculu sonuç | `RaceResultScreen` (12 Kasım): kiriş, zemin+şerit ve levha kenarlardan sırayla yaylanarak gelir; silindir/küp zeminden yükselir (kaybeden önce, kazanan son), oturunca gölge çakılır; boşta galip sütun ~8 birim yüzer (`bobAmount`). Rakip bitirmediyse yalnız "RAKİP …" plakası yükselir. Eksik: tık sesi/titreşim, çıkış animasyonu (lobiye dönünce sahne değişir), gamepad ile değer ayarı. Bkz. `multiplayer.md`. |

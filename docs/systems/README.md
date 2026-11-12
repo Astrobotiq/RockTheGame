@@ -17,6 +17,7 @@ Yeni bir özellik üzerinde çalışmaya başlamadan önce ilgili dosyayı oku; 
 | [`collectibles.md`](collectibles.md) | Ananas, anahtar-kapı, slingshot yenileyici, tek nefeste ananas, envanter | §5.3, §6.2 |
 | [`pause.md`](pause.md) | Start ile duraklat/devam, `timeScale`, ses/titreşim, çok oyunculuda kapalı | §11 |
 | [`ui-motion.md`](ui-motion.md) | UI hareket kuralları ve kontrol listesi: yay, poz, kayan imleç, giriş; UI donuk bırakılmaz | UI |
+| [`room-title-card.md`](room-title-card.md) | Odaya girişte çıkan başlık kartı: levha, kiriş, ekstrüde numara, şerit; tetik, zamanlama, tunable'lar | UI |
 | [`multiplayer.md`](multiplayer.md) | Hayalet rakip, yarış ve birlikte modları, bayrak cezası, taşıyıcılar, yarış kaydı (MP 1 kodda: assembly, taşıyıcı arayüzü, mesajlar) | §9 |
 
 Her dosyada aynı bölümler var: tasarım niyeti, nasıl çalıştığı, tunable'lar (asset'teki gerçek değerler), kod yolları ve **bilinen kenar durumlar / GDD ile farklar**. Son bölüm, kodun GDD'den ayrıldığı yerleri listeler; hangisinin doğru olduğu geliştiricinin kararıdır.

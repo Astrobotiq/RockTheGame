@@ -1,0 +1,314 @@
+<title>RTG Brutalist Ekranlar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Tiny5&display=swap">
+<style>
+/* Layout: raw concrete sheet. Heavy black borders, hard offset shadows, one hot accent. Header slab, sticky mode switch, research blocks, a grid of five screens, type options, comparison, build notes, sources. */
+:root{
+  --wall:#c4c1ba; --slab:#dcd9d2; --mid:#9a9791; --dark:#5f5d59; --k:#151515; --acc:#ff4300; --haz:#f6be1f; --muted:#4a4844;
+  --display:'Archivo Black','Arial Black',Impact,sans-serif; --mono:'Space Mono','Courier New',monospace; --pixel:'Tiny5','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wall);color:var(--k);font-family:var(--mono);font-size:15px;line-height:1.55;
+  padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+a{color:var(--k);text-decoration-thickness:3px;text-underline-offset:3px}
+a:hover{background:var(--acc);color:var(--k)}
+a:focus-visible,button:focus-visible{outline:4px solid var(--acc);outline-offset:2px}
+header{margin-top:28px;border:4px solid var(--k);background:var(--slab);box-shadow:10px 10px 0 var(--k);padding:22px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.tagbar{display:inline-block;background:var(--acc);border:3px solid var(--k);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;justify-self:start}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(46px,11vw,128px);line-height:.88;letter-spacing:-.02em;margin:0;text-transform:uppercase}
+.lede{max-width:62ch;margin:0;font-size:16px}
+.haz{height:22px;border:3px solid var(--k);background:repeating-linear-gradient(-45deg,var(--haz) 0 14px,var(--k) 14px 28px)}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--wall);border-bottom:4px solid var(--k);margin-top:26px;padding:10px 0;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.bar b{font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.seg{display:flex;border:3px solid var(--k);box-shadow:4px 4px 0 var(--k)}
+.seg button{font:700 14px var(--mono);background:var(--slab);color:var(--k);border:0;padding:7px 14px;cursor:pointer}
+.seg button+button{border-left:3px solid var(--k)}
+.seg button[aria-pressed="true"]{background:var(--k);color:var(--acc)}
+
+section.s{padding:36px 0;border-bottom:4px solid var(--k)}
+section.s>h2{font-family:var(--display);font-weight:400;font-size:clamp(26px,4vw,38px);line-height:1;margin:0 0 6px;text-transform:uppercase}
+section.s>h2 small{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;background:var(--k);color:var(--wall);padding:2px 8px;margin-right:10px;vertical-align:middle}
+.intro{max-width:70ch;margin:10px 0 20px}
+
+.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}
+.idea{background:var(--slab);border:3px solid var(--k);box-shadow:6px 6px 0 var(--k);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.idea h3{font-family:var(--display);font-weight:400;font-size:20px;line-height:1.1;margin:0;text-transform:uppercase}
+.idea p{margin:0;font-size:14px}
+.idea .us{font-weight:700;background:var(--acc);border:2px solid var(--k);padding:4px 8px}
+.idea .src{font-size:12px;color:var(--muted)}
+
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:30px 24px}
+.shot{display:flex;flex-direction:column;gap:10px;min-width:0}
+.shot .cv{position:relative;aspect-ratio:16/9;border:4px solid var(--k);box-shadow:8px 8px 0 var(--k);background:var(--mid);overflow:hidden}
+.shot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+body[data-mode="pixel"] .shot canvas{image-rendering:pixelated}
+.cap{font-family:var(--display);font-size:18px;text-transform:uppercase}
+.shot p{margin:0;font-size:14px}
+
+.type{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:20px}
+.ty{background:var(--slab);border:3px solid var(--k);box-shadow:6px 6px 0 var(--k);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ty .spec{font-size:clamp(28px,4.5vw,44px);line-height:1;word-break:break-word}
+.ty p{margin:0;font-size:14px}
+.ty .rec{align-self:flex-start;background:var(--acc);border:2px solid var(--k);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:1px 8px}
+
+table{border-collapse:collapse;width:100%;background:var(--slab);border:3px solid var(--k);font-size:14px}
+th,td{border:2px solid var(--k);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--k);color:var(--wall);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.tw{overflow-x:auto;max-width:100%}
+ul.l{margin:0 0 14px;padding-left:1.1em;max-width:70ch}
+ul.l li{margin-bottom:6px}
+.note{background:var(--haz);border:3px solid var(--k);box-shadow:5px 5px 0 var(--k);padding:12px 14px;font-size:14px;max-width:74ch;margin-top:16px}
+.refs{columns:2 280px;column-gap:32px;margin:0;padding:0;list-style:none}
+.refs li{break-inside:avoid;margin-bottom:12px}
+.refs span{display:block;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.seg button{transition:background .1s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tagbar">Rock The Game · UI, üçüncü tur</span>
+    <h1>ham.<br>ağır.<br>dürüst.</h1>
+    <p class="lede">Aynı çalışmayı brutalizm için yaptım. Bauhaus hafif ve renkliydi; bu yön kütle, beton dokusu, görünen yapı ve sert gölge. Ana menü, HUD, oda kartı, pause ve sonuç ekranı aşağıda.</p>
+    <div class="haz" aria-hidden="true"></div>
+  </header>
+
+  <div class="bar" role="group" aria-label="Çizim biçimi">
+    <b>UI çizimi:</b>
+    <div class="seg" id="modeSeg">
+      <button type="button" data-v="vector" aria-pressed="true">Vektör (Archivo + Mono)</button>
+      <button type="button" data-v="pixel" aria-pressed="false">Piksel (Tiny5)</button>
+    </div>
+  </div>
+
+  <section class="s">
+    <h2><small>01</small>araştırmadan çıkanlar</h2>
+    <p class="intro">Mimari brutalizme, onu kullanan oyunlara ve web'deki neo-brutalist arayüz akımına baktım. Aramalarda brutalist bir oyun HUD'ı ya da pause menüsü örneği çıkmadı; fikirler mimariden ve komşu işlerden, ekran çözümleri benim sentezim.</p>
+    <div class="ideas">
+      <div class="idea"><h3>béton brut: ham yüzey</h3>
+        <p>Brutalizm adını "ham beton"tan alır. Kalıp çıkınca beton cilalanmaz; ahşap kalıbın izi ve dokusu görünür bırakılır.</p>
+        <p class="us">Bizde: paneller düz renk değil, kalıp izi, tie-hole delikleri ve benek dokulu beton levha.</p>
+        <p class="src">Mimari rehberleri (Masterclass, ArchitectureLab ve benzerleri)</p></div>
+      <div class="idea"><h3>monolit ve kaide</h3>
+        <p>Control'ün Oldest House'unda sanat yönetmeni mekânı kilise gibi tasarladıklarını söylüyor: net bir merkez, sunak ya da kaide. Kaynaklar sertliği düzenin işareti sayıyor; düzen bozulunca çizgiler dalgalanıyor.</p>
+        <p class="us">Bizde: pause bir monolit ve kaide. Stamina bitmeye yakın panel kenarları titrer: düzenin bozulması.</p>
+        <p class="src">Super Jump, 80.lv, Game Developer (Control)</p></div>
+      <div class="idea"><h3>görünen yapı</h3>
+        <p>Brutalist binada yapım süreci görünür kalır: çıplak taşıyıcılar, açık yapı.</p>
+        <p class="us">Bizde: HUD bir teknik çizim gibi etiketli ve sayısal: "ANANAS 03/05". Köşelerde koordinat işaretleri.</p>
+        <p class="src">Mimari rehberleri</p></div>
+      <div class="idea"><h3>modül tekrarı</h3>
+        <p>Le Corbusier'nin Unité d'Habitation'ında cephe, birbirini tekrar eden modüllerden oluşan bir ritim. Balkonlar canlı renklerle boyalı.</p>
+        <p class="us">Bizde: stamina altı ayrı beton hücre. Gri yapıda tek sıcak renk: hücreler azalınca turuncu ve uyarı bandı.</p>
+        <p class="src">Mimari rehberleri (Unité d'Habitation)</p></div>
+      <div class="idea"><h3>kalın çerçeve, sert gölge</h3>
+        <p>Neo-brutalist arayüzde 2-4 piksel siyah çerçeve ve bulanıklığı olmayan ofset gölge standart. Yazı ya kullanışlı mono, ya dev ve kalın başlık.</p>
+        <p class="us">Bizde: odak, düğmeyi gölgeye bastırır (gölge ofseti kapanır). Okunaklı geri bildirim, zaten gamepad için iyi.</p>
+        <p class="src">daisyUI, madegooddesigns, svgator</p></div>
+      <div class="idea"><h3>bilinçli ham, bilinçli çirkin</h3>
+        <p>Web brutalizmi cilalı kurallara tepki olarak doğdu; neo-brutalizm yapıyı görünür bırakırken kullanılabilirliği geri kazandı.</p>
+        <p class="us">Bizde: süsleme yok, gradient yok, yuvarlak köşe yok. Ama odak durumu ve kontrast bilerek net.</p>
+        <p class="src">madegooddesigns, daisyUI</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>02</small>ekranlar</h2>
+    <p class="intro">Aynı kompozisyonlar vektör (kalın başlık fontu + mono) ya da 480x270 piksel (Tiny5) olarak çizilebilir; düğmeyle değiştir. Beton dokusu kodla üretilmiş, gerçekte tek bir kare dokudan 9-slice ile gelir.</p>
+    <div class="shots" id="shots"></div>
+  </section>
+
+  <section class="s">
+    <h2><small>03</small>font</h2>
+    <p class="intro">Font sabit değil. Brutalizm iki kutuplu çalışır: dev ve kalın bir başlık fontu, bir de kullanışlı mono.</p>
+    <div class="type">
+      <div class="ty"><span class="rec">önerim</span><div class="spec" style="font-family:var(--display);text-transform:uppercase">block 12</div><p><b>Kalın grotesk (Archivo Black benzeri)</b> başlıklar ve dev numaralar için. UI Overlay'de net çizilir, SDF atlas uygun.</p></div>
+      <div class="ty"><span class="rec">önerim</span><div class="spec" style="font-family:var(--mono);font-weight:700">ANANAS 03/05</div><p><b>Mono (Space Mono benzeri)</b> sayaç, etiket ve koordinat için. Sabit genişlik, teknik çizim hissi.</p></div>
+      <div class="ty"><div class="spec" style="font-family:var(--pixel);text-transform:uppercase">block 12</div><p><b>Tiny5 (piksel)</b> oyun dünyasıyla bütünlük için kalabilir. Dokular da piksel olur, ama kalın ve ham his azalır.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <h2><small>04</small>bauhaus mı, brutalist mi</h2>
+    <div class="tw"><table>
+      <tr><th>Ölçüt</th><th>Bauhaus</th><th>Brutalist</th></tr>
+      <tr><td>Oyunun tonuyla uyum</td><td>Yüksek. Halkalar zaten Kandinsky'ye benziyor, dünya renkli ve neşeli.</td><td>Düşük-orta. Neşeli şeker dünya ile ağır beton kütle çatışır. Bu çatışma bilinçli kontrast olabilir ama ton kaymasını sen karar vermelisin.</td></tr>
+      <tr><td>Hız ve akış sütunu</td><td>Hafif şekiller, akışı bozmaz.</td><td>Ağır levhalar ekranın büyük kısmını kaplar. HUD küçük tutulmalı, ölüm anında hiç UI olmamalı.</td></tr>
+      <tr><td>İş yükü</td><td>Şekiller ve yaylar procedural olabilir.</td><td>Dokuyu bir kez çizersin, 9-slice ile her yere dökersin. Piksel yolu için Bauhaus'tan ucuz olabilir; ölçmedim.</td></tr>
+      <tr><td>Okunabilirlik</td><td>Düz bloklar, yüksek kontrast.</td><td>Beton benek dokusu metnin arkasında gürültü yaratır. Metin hep düz siyah/turuncu yuvada olmalı.</td></tr>
+      <tr><td>En iyi nerede</td><td>Tüm UI</td><td>Pause, oda kartı ve sonuç gibi "ağır" anlar. Menü ve HUD'ı Bauhaus bırakıp yalnızca bunları brutalist yapmak hibrit olur.</td></tr>
+    </table></div>
+  </section>
+
+  <section class="s">
+    <h2><small>05</small>unity'de nasıl</h2>
+    <ul class="l">
+      <li><b>Beton levha:</b> tek bir tileable doku (ör. 64x64) ve 9-slice. Tie-hole ve kalıp çizgileri dokunun içinde.</li>
+      <li><b>Sert gölge:</b> aynı Image'ın ofsetli siyah kopyası. Odak durumunda ofset 6 pikselden 2'ye iner.</li>
+      <li><b>Titreme:</b> düşük stamina için panel kenarlarında kısa DOTween shake. Control'deki düzenin bozulması fikri.</li>
+      <li><b>Pause henüz yok:</b> <code>timeScale</code> kullanılmıyor, pause sistemi sıfırdan yazılacak.</li>
+      <li><b>CRT:</b> Overlay canvas CRT dışında. Brutalist keskin kenarlar için bu uygun.</li>
+    </ul>
+    <div class="note">Bunlar taslak. Beton dokusunun metin altında okunabilirliği ve ağır levhaların hızlı oyunda ekranı kapatıp kapatmadığı kontrolcüyle denemeden bilinemez.</div>
+  </section>
+
+  <section class="s">
+    <h2><small>06</small>kaynaklar</h2>
+    <ul class="refs">
+      <li><a href="https://www.superjumpmagazine.com/the-architectural-battleground-of-controlcontrols-oldest-house-is-a-haunted-labyrinth-of-brutalist-architecture-but-why-delve-into-a-long-dead-architectural-style-youd-think-a-governmen/" target="_blank" rel="noopener">The Architectural Battleground of Control (Super Jump)</a><span>Brutalizm düzen, Hiss kaos</span></li>
+      <li><a href="https://gamedeveloper.com/art/the-real-buildings-that-inspired-i-control-i-s-oldest-house" target="_blank" rel="noopener">Control'ün ilham aldığı gerçek binalar (Game Developer)</a><span>Windowless skyscraper ve diğerleri</span></li>
+      <li><a href="https://80.lv/articles/architecture-critic-discusses-control" target="_blank" rel="noopener">Mimarlık eleştirmeni Control'ü tartışıyor (80.lv)</a><span>Brutalist okumaya karşı görüş de var</span></li>
+      <li><a href="https://trends.daisyui.com/trend/brutalism/" target="_blank" rel="noopener">daisyUI, Brutalism özeti</a><span>Web brutalizmi</span></li>
+      <li><a href="https://trends.daisyui.com/trend/neubrutalism/" target="_blank" rel="noopener">daisyUI, Neubrutalism özeti</a><span>Kalın çerçeve, ofset gölge</span></li>
+      <li><a href="https://madegooddesigns.com/neobrutalism-web-design/" target="_blank" rel="noopener">Neobrutalism in Web Design</a><span>Kullanılabilirliği geri kazanan akım</span></li>
+      <li><a href="https://www.masterclass.com/articles/brutalist-architecture-guide" target="_blank" rel="noopener">Brutalist mimari rehberi (Masterclass)</a><span>Béton brut, kütle, tekrar</span></li>
+      <li><a href="https://www.architecture.com/explore-architecture/brutalism" target="_blank" rel="noopener">RIBA, Brutalism</a><span>Mimarlık kurumu sayfası</span></li>
+    </ul>
+    <div class="note">Kaynakların çoğu blog, rehber ve framework dokümanı. Barbican için ayrıntı bulamadım, o yüzden anılmıyor. Tüm iddiaların birincil kaynaktan teyidi gerekir.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+var W=480,H=270;
+var K='#151515',ACC='#FF4300',HAZ='#F6BE1F';
+var T={mid:{base:'#9A9791',lt:'#ADAAA4',dk:'#85827D'},light:{base:'#C4C1BA',lt:'#D3D0C9',dk:'#AEABA4'},dark:{base:'#5F5D59',lt:'#706E6A',dk:'#4D4B48'}};
+var P={sky:'#84D2F6',orange:'#FDAA66',pink:'#EE3FA8',ink:'#433646',red:'#E8432B'};
+var mode='vector';
+
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h)}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+function poly(c,pts,col){c.fillStyle=col;c.beginPath();c.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath();c.fill()}
+function clipRect(c,x,y,w,h,fn){c.save();c.beginPath();c.rect(x,y,w,h);c.clip();fn();c.restore()}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function txt(c,s,x,y,size,col,align,kind,rot){
+  c.save();
+  var pix=(mode==='pixel');
+  if(pix)c.font=size+'px Tiny5, "Courier New", monospace';
+  else if(kind==='m')c.font='700 '+Math.round(size*0.95)+'px "Space Mono", "Courier New", monospace';
+  else c.font=size+'px "Archivo Black", "Arial Black", Impact, sans-serif';
+  c.textBaseline='middle';c.textAlign=align||'center';c.fillStyle=col;
+  c.translate(x,y);if(rot)c.rotate(rot);
+  c.fillText(pix||kind!=='m'?s.toUpperCase():s,0,0);c.restore();
+}
+function border(c,x,y,w,h,t){rect(c,x,y,w,t,K);rect(c,x,y+h-t,w,t,K);rect(c,x,y,t,h,K);rect(c,x+w-t,y,t,h,K)}
+function slab(c,x,y,w,h,t,sh){
+  if(sh)rect(c,x+sh,y+sh,w,h,K);
+  rect(c,x,y,w,h,t.base);
+  var r=rng(x*31+y*17+w*7+h),n=Math.floor(w*h/40);
+  for(var i=0;i<n;i++){rect(c,x+3+Math.floor(r()*(w-6)),y+3+Math.floor(r()*(h-6)),r()<.15?2:1,1,r()<.5?t.lt:t.dk)}
+  for(var yy=y+30;yy<y+h-4;yy+=30){rect(c,x+3,yy,w-6,1,t.dk);rect(c,x+3,yy+1,w-6,1,t.lt);
+    for(var xx=x+22;xx<x+w-6;xx+=50){rect(c,xx,yy-15,3,3,t.dk);rect(c,xx+1,yy-14,2,2,t.lt)}}
+  border(c,x,y,w,h,3);
+}
+function hazard(c,x,y,w,h){clipRect(c,x,y,w,h,function(){rect(c,x,y,w,h,HAZ);for(var i=-h;i<w;i+=16)poly(c,[[x+i,y+h],[x+i+8,y+h],[x+i+8+h,y],[x+i+h,y]],K)});border(c,x,y,w,h,2)}
+var BANDS=['#E58A8A','#259EA0','#F5EFCB','#8A8A1A','#FFB11A','#FF4300','#FFE55A'];
+function bull(c,x,y,r){for(var k=0;k<7;k++)disc(c,x,y,r*(1-k/7),BANDS[k])}
+
+/* world layer, always pixel */
+function line(x,x0,y0,x1,y1,col){var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(var t=0;t<=n;t++)rect(x,Math.round(x0+(x1-x0)*t/n),Math.round(y0+(y1-y0)*t/n),1,1,col)}
+function worldGame(x,dim){
+  rect(x,0,0,W,H,P.sky);rect(x,0,222,W,48,P.orange);rect(x,0,222,W,3,P.pink);
+  rect(x,0,0,24,H,P.orange);rect(x,W-24,0,24,H,P.orange);rect(x,0,0,W,20,P.orange);
+  rect(x,140,150,110,10,P.orange);rect(x,140,150,110,3,P.pink);
+  rect(x,300,170,60,52,P.orange);rect(x,300,170,60,3,P.pink);
+  bull(x,300,66,16);line(x,196,128,300,66,P.ink);
+  rect(x,192,128,9,12,'#3A6EA5');rect(x,192,124,9,5,P.red);rect(x,194,132,2,2,'#F5EFCB');rect(x,197,132,2,2,'#F5EFCB');rect(x,193,140,3,10,'#3A6EA5');rect(x,198,140,3,10,'#3A6EA5');
+  rect(x,330,150,6,10,P.orange);
+  if(dim){x.fillStyle=K;for(var y=0;y<H;y+=2)for(var xx=(y/2)%2?0:2;xx<W;xx+=4)x.fillRect(xx,y,2,2);x.fillStyle='rgba(21,21,21,.5)';x.fillRect(0,0,W,H)}
+}
+function worldBlank(x){rect(x,0,0,W,H,K)}
+
+/* ui screens */
+function uiMenu(c){
+  slab(c,0,0,W,H,T.light,0);
+  clipRect(c,0,0,W,H,function(){txt(c,'ROCK',-8,86,112,K,'left','d')});
+  rect(c,10,150,236,34,ACC);border(c,10,150,236,34,3);txt(c,'THE GAME',22,167,28,K,'left','d');
+  disc(c,404,72,42,K);bull(c,404,72,36);txt(c,'NODE 01',404,128,10,K,'center','m');
+  ['PLAY','MULTIPLAYER','OPTIONS','QUIT'].forEach(function(s,i){var y=172+i*24;
+    if(i===0){rect(c,266,y-10,206,22,'#5F5D59');rect(c,262,y-14,206,22,K);txt(c,'01',270,y-3,9,ACC,'left','m');txt(c,s,298,y-3,15,ACC,'left','d')}
+    else{rect(c,262,y+8,206,2,T.light.dk);txt(c,'0'+(i+1),270,y-3,9,K,'left','m');txt(c,s,298,y-3,15,K,'left','d')}
+  });
+}
+function uiHud(c){
+  slab(c,14,14,126,44,T.mid,4);
+  txt(c,'ANANAS',22,26,9,K,'left','m');txt(c,'03/05',132,26,9,K,'right','m');
+  txt(c,'ANAHTAR',22,44,9,K,'left','m');txt(c,'2/3',132,44,9,K,'right','m');
+  rect(c,22,34,110,1,T.mid.dk);
+  for(var i=0;i<6;i++){var cx=173+i*8;if(i<4){rect(c,cx,104,6,6,K)}else{rect(c,cx,104,6,6,T.light.base);border(c,cx,104,6,6,1)}}
+  slab(c,364,226,100,32,T.mid,4);
+  txt(c,'DASH',372,236,8,K,'left','m');rect(c,444,232,8,8,ACC);border(c,444,232,8,8,1);
+  txt(c,'SLING',372,250,8,K,'left','m');rect(c,444,246,8,8,T.light.base);border(c,444,246,8,8,1);
+}
+function uiCard(c){
+  slab(c,0,0,330,H,T.light,8);
+  clipRect(c,3,3,324,H-6,function(){txt(c,'12',-10,112,160,K,'left','d')});
+  txt(c,'BLOCK / LEVEL',18,20,10,K,'left','m');
+  rect(c,18,206,296,30,ACC);border(c,18,206,296,30,3);txt(c,'SWING & SLINGSHOT',28,221,16,K,'left','d');
+  hazard(c,18,244,296,12);
+}
+function uiPause(c){
+  slab(c,150,14,180,196,T.mid,8);
+  slab(c,126,206,228,46,T.dark,8);
+  hazard(c,136,222,208,12);
+  txt(c,'PAUSE',241,37,26,T.mid.lt,'center','d');txt(c,'PAUSE',240,36,26,K,'center','d');
+  ['RESUME','OPTIONS','QUIT','RETRY'].forEach(function(s,i){var y=82+i*30;
+    if(i===0){rect(c,158,y-13,164,26,K);txt(c,'01',168,y,9,ACC,'left','m');txt(c,s,194,y,15,ACC,'left','d');bull(c,304,y,8)}
+    else{rect(c,158,y+14,164,2,T.mid.dk);txt(c,'0'+(i+1),168,y,9,K,'left','m');txt(c,s,194,y,15,K,'left','d')}
+  });
+  var mk='#C4C1BA';
+  txt(c,'X 000 Y 000',14,14,8,mk,'left','m');txt(c,'X 480 Y 270',W-14,H-14,8,mk,'right','m');
+  rect(c,0,135,14,2,mk);rect(c,W-14,135,14,2,mk);rect(c,240,0,2,10,mk);
+  txt(c,'A SELECT   B BACK',240,H-14,8,mk,'center','m');
+}
+function uiResult(c){
+  slab(c,0,0,W,H,T.light,0);
+  hazard(c,0,236,W,14);rect(c,0,250,W,20,K);
+  slab(c,100,84,110,152,T.mid,6);slab(c,260,134,110,102,T.mid,6);
+  disc(c,155,56,16,K);rect(c,301,92,28,28,K);
+  txt(c,'1',155,130,60,K,'center','d');txt(c,'2',315,176,48,K,'center','d');
+  txt(c,'P1  02:14.8',155,216,10,K,'center','m');txt(c,'P2  02:19.3',315,222,10,K,'center','m');
+  rect(c,14,14,214,34,ACC);border(c,14,14,214,34,3);txt(c,'RACE RESULT',24,31,20,K,'left','d');
+}
+var SCREENS=[
+ {t:'ana menü',w:'blank',u:uiMenu,d:'<b>Dev, kırpılmış başlık.</b> Menü numaralı bir indeks gibi; seçili satır siyah blok ve sert gölge. Sağ üstte duvara açılmış bir delik, içinde kanca halkası.'},
+ {t:'oyun içi HUD',w:'game',u:uiHud,d:'<b>Teknik etiketler.</b> Sayaç küçük bir beton levhada. Stamina karakterin üstünde altı beton hücre; azalınca turuncuya döner (burada 4/6).'},
+ {t:'oda başlık kartı',w:'game',u:uiCard,d:'<b>Ekranın üçte ikisini kaplayan levha.</b> Dev oda numarası kalıbın içinden basılmış gibi, altında oda adı ve uyarı bandı. Kısa görünüp kayarak çıkar.'},
+ {t:'pause: monolit',w:'gameDim',u:uiPause,d:'<b>Monolit ve kaide.</b> Menü, levhaya oyulmuş satırlar. Odak satırı siyah blok, yanında halka. Köşelerde koordinat işaretleri: görünen yapı.'},
+ {t:'çok oyunculu sonuç',w:'blank',u:uiResult,d:'<b>Podyum bir beton blok.</b> Yükseklik sıralamayı gösterir; daire ve kare oyuncu kimliği olarak kalır.'}
+];
+var holder=document.getElementById('shots');
+SCREENS.forEach(function(s){
+  var f=document.createElement('div');f.className='shot';
+  f.innerHTML='<div class="cv"><canvas class="w" width="480" height="270"></canvas><canvas class="u"></canvas></div><div class="cap"></div><p></p>';
+  f.querySelector('.cap').textContent=s.t;f.querySelector('p').innerHTML=s.d;holder.appendChild(f);s.el=f;
+});
+function renderUI(canvas,fn){
+  var pix=(mode==='pixel');
+  canvas.width=pix?W:W*3;canvas.height=pix?H:H*3;
+  var c=canvas.getContext('2d',{willReadFrequently:pix});
+  c.clearRect(0,0,canvas.width,canvas.height);
+  if(!pix)c.scale(3,3);
+  c.imageSmoothingEnabled=!pix;
+  fn(c);
+  if(pix){var id=c.getImageData(0,0,W,H),d=id.data;for(var i=3;i<d.length;i+=4)d[i]=d[i]>=128?255:0;c.putImageData(id,0,0)}
+}
+function drawAll(){
+  SCREENS.forEach(function(s){
+    var w=s.el.querySelector('canvas.w'),x=w.getContext('2d');x.imageSmoothingEnabled=false;
+    if(s.w==='blank')worldBlank(x);else worldGame(x,s.w==='gameDim');
+    renderUI(s.el.querySelector('canvas.u'),s.u);
+  });
+}
+drawAll();
+var go=function(){drawAll()};
+try{document.fonts.load('16px Tiny5').then(go,go);document.fonts.load('16px "Archivo Black"').then(go,go);document.fonts.load('700 16px "Space Mono"').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+var seg=document.getElementById('modeSeg');
+function setMode(v){mode=v;document.body.setAttribute('data-mode',v);[].forEach.call(seg.children,function(n){n.setAttribute('aria-pressed',n.dataset.v===v?'true':'false')});drawAll()}
+seg.addEventListener('click',function(e){var b=e.target.closest('button');if(b)setMode(b.dataset.v)});
+document.body.setAttribute('data-mode','vector');
+})();
+</script>

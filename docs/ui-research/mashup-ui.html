@@ -1,0 +1,349 @@
+<title>RTG Beton ve Boya</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@500;700;800&family=Space+Mono:wght@400;700&family=Tiny5&display=swap">
+<style>
+/* Layout: concrete sheet with painted primary blocks. Header with overlapping disc, square and wedge; sticky control bar with a Bauhaus-to-brutalist slider; screens grid with per-screen verdict chips; provenance table; notes box. */
+:root{
+  --wall:#c9c6bf; --slab:#e2dfd8; --mid:#9a9791; --paper:#f2ebd3; --k:#151515; --red:#e8432b; --yellow:#f6be1f; --blue:#2d5fa8; --muted:#4a4844;
+  --display:'Jost','Futura',system-ui,sans-serif; --mono:'Space Mono','Courier New',monospace; --pixel:'Tiny5','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wall);color:var(--k);font-family:var(--mono);font-size:15px;line-height:1.55;
+  padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+a{color:var(--k);text-decoration-thickness:3px;text-underline-offset:3px}
+a:hover{background:var(--yellow)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:4px solid var(--blue);outline-offset:2px}
+header{margin-top:28px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:end;border-bottom:6px solid var(--k);padding-bottom:28px}
+.kick{display:inline-block;background:var(--k);color:var(--paper);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(50px,11vw,124px);line-height:.86;letter-spacing:-.035em;margin:0;text-transform:lowercase}
+h1 span{display:block}h1 .r{color:var(--red)}
+.lede{max-width:48ch;margin:18px 0 0;font-size:16px;font-weight:700}
+.comp{position:relative;aspect-ratio:1/1;width:100%;max-width:420px;justify-self:end;min-width:0}
+.comp i{position:absolute;display:block;border:3px solid var(--k);box-shadow:7px 7px 0 var(--k)}
+.c1{width:62%;height:62%;left:0;top:4%;border-radius:50%;background:var(--blue)}
+.c2{width:44%;height:44%;right:2%;bottom:6%;background:var(--red)}
+.c3{width:38%;height:34%;left:30%;bottom:0;background:var(--yellow);border:0!important;box-shadow:none!important;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.c4{width:26%;height:26%;right:8%;top:10%;border-radius:50%;background:radial-gradient(circle,#ffe55a 0 9%,#ff4300 9% 24%,#ffb11a 24% 38%,#8a8a1a 38% 52%,#f5efcb 52% 68%,#259ea0 68% 84%,#e58a8a 84% 100%)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--wall);border-bottom:4px solid var(--k);padding:12px 0;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.grp{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.grp b{font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.seg{display:flex;border:3px solid var(--k);box-shadow:4px 4px 0 var(--k)}
+.seg button{font:700 14px var(--mono);background:var(--slab);color:var(--k);border:0;padding:7px 12px;cursor:pointer}
+.seg button+button{border-left:3px solid var(--k)}
+.seg button[aria-pressed="true"]{background:var(--k);color:var(--yellow)}
+.mixwrap{display:flex;align-items:center;gap:10px;flex:1 1 320px;min-width:0}
+.mixwrap span{font-family:var(--display);font-weight:800;font-size:17px;text-transform:lowercase;white-space:nowrap}
+.mixwrap input{flex:1;min-width:80px;accent-color:var(--red);height:28px}
+.mixwrap output{font-family:var(--pixel);font-size:16px;min-width:3ch;text-align:right}
+section.s{padding:34px 0;border-bottom:4px solid var(--k)}
+section.s>h2{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,40px);line-height:1;margin:0 0 8px;text-transform:lowercase;letter-spacing:-.02em}
+section.s>h2 small{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.1em;background:var(--red);color:var(--paper);padding:2px 8px;margin-right:10px;vertical-align:middle;text-transform:none}
+.intro{max-width:70ch;margin:10px 0 22px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:34px 24px}
+.shot{display:flex;flex-direction:column;gap:10px;min-width:0}
+.shot .cv{position:relative;aspect-ratio:16/9;border:4px solid var(--k);box-shadow:8px 8px 0 var(--k);background:var(--mid);overflow:hidden}
+.shot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+body[data-mode="pixel"] .shot canvas{image-rendering:pixelated}
+.cap{font-family:var(--display);font-weight:800;font-size:22px;text-transform:lowercase}
+.shot p{margin:0;font-size:14px}
+.perv{display:flex;align-items:center;gap:8px;min-width:0}
+.perv span{font-family:var(--display);font-weight:800;font-size:14px;text-transform:lowercase;white-space:nowrap}
+.perv input{flex:1;min-width:60px;accent-color:var(--red);height:24px}
+.perv output{font-family:var(--pixel);font-size:15px;min-width:3ch;text-align:right}
+.vote{display:flex;flex-wrap:wrap;gap:6px}
+.vote button{font:700 12px var(--mono);background:var(--slab);border:2px solid var(--k);padding:4px 10px;cursor:pointer;color:var(--k)}
+.vote button[aria-pressed="true"][data-v="+"]{background:var(--blue);color:var(--paper)}
+.vote button[aria-pressed="true"][data-v="~"]{background:var(--yellow)}
+.vote button[aria-pressed="true"][data-v="-"]{background:var(--red);color:var(--paper)}
+.tw{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;background:var(--slab);border:3px solid var(--k);font-size:14px}
+th,td{border:2px solid var(--k);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--k);color:var(--paper);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+td.b{border-left:8px solid var(--blue)}td.k{border-left:8px solid var(--k)}td.m{border-left:8px solid var(--red)}
+ul.l{margin:0 0 14px;padding-left:1.1em;max-width:72ch}ul.l li{margin-bottom:8px}
+.note{background:var(--yellow);border:3px solid var(--k);box-shadow:5px 5px 0 var(--k);padding:12px 14px;font-size:14px;max-width:76ch;margin-top:16px}
+textarea{width:100%;max-width:76ch;min-height:150px;font:14px var(--mono);background:var(--slab);border:3px solid var(--k);padding:10px;color:var(--k);resize:vertical}
+.copy{font:700 14px var(--mono);background:var(--k);color:var(--yellow);border:0;padding:9px 16px;cursor:pointer;margin-top:10px;box-shadow:4px 4px 0 var(--red)}
+.refs{columns:2 280px;column-gap:32px;margin:0;padding:0;list-style:none}.refs li{break-inside:avoid;margin-bottom:12px}.refs span{display:block;font-size:12px;color:var(--muted)}
+@media (max-width:760px){header{grid-template-columns:minmax(0,1fr)}.comp{justify-self:start;max-width:300px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <span class="kick">Rock The Game · UI, beşinci tur</span>
+      <h1><span>beton</span><span class="r">ve boya.</span></h1>
+      <p class="lede">Bauhaus'un ana renkleri ve şekil dili, brutalizmin ağırlığı ve dokusuyla birleşti: beton yüzeyin üstüne boyanmış daire, kare ve üçgenler.</p>
+    </div>
+    <div class="comp" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i></div>
+  </header>
+
+  <div class="bar" role="group" aria-label="Ayarlar">
+    <div class="mixwrap">
+      <span>bauhaus</span>
+      <input id="mix" type="range" min="0" max="100" value="55" aria-label="Bauhaus ile brutalist arasındaki denge">
+      <span>brutalist</span>
+      <output id="mixv" for="mix">55</output>
+    </div>
+    <div class="grp"><b>çizim:</b>
+      <div class="seg" id="modeSeg">
+        <button type="button" data-v="vector" aria-pressed="true">Vektör</button>
+        <button type="button" data-v="pixel" aria-pressed="false">Piksel</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="s">
+    <h2><small>01</small>ekranlar</h2>
+    <p class="intro">Üstteki kaydırıcı hepsini birden, her kartın kendi kaydırıcısı yalnızca o ekranı değiştirir. Soldaki uçta düz, ince çizgili, gölgesiz Bauhaus; sağdaki uçta kalın çerçeve, sert gölge, beton dokusu, ekstrüde yazı ve uyarı bandı. Ortası benim ilk tahminim. Her ekranın altındaki düğmelerle beğendiğini ve beğenmediğini işaretleyebilirsin.</p>
+    <div class="shots" id="shots"></div>
+  </section>
+
+  <section class="s">
+    <h2><small>02</small>neyi nereden aldım</h2>
+    <div class="tw"><table>
+      <tr><th>Öğe</th><th>Kaynak</th><th>Nasıl birleşti</th></tr>
+      <tr><td>Kırmızı, sarı, mavi, daire-kare-üçgen eşleşmesi</td><td class="b">Bauhaus</td><td>Renkler artık düz kâğıt değil, betonun üstüne boyanmış yüzey gibi. Brutalist binalarda da canlı renkli boyalı balkonlar var (Unité d'Habitation, arama özetinden; ayrıca doğrulamadım).</td></tr>
+      <tr><td>Üst üste binen daireler ve kesişim rengi</td><td class="b">Bauhaus</td><td>Pause'un arkasında boyalı iki daire, kesişimde mor.</td></tr>
+      <tr><td>Radyal pause, dönük etiket, köşede çeyrek daire HUD</td><td class="b">Bauhaus</td><td>Dilimler betondan, seçili dilim sarı boyalı ve dışarı çıkıyor.</td></tr>
+      <tr><td>Beton dokusu, sert gölge, kalın kenar</td><td class="k">Brutalist</td><td>Kaydırıcıyla açılıp kapanır. 0'da hiçbiri yok.</td></tr>
+      <tr><td>Ekstrüde yazı, isometrik hacim, silindir ve küp</td><td class="k">Brutalist</td><td>Daire silindire, kare küpe dönüştü. Oyuncu kimliği ve yetenek ikonları hacimli.</td></tr>
+      <tr><td>Kırılan stamina halkası, çatlak, uyarı bandı</td><td class="k">Brutalist</td><td>Halka parçaları sarıyla boyalı, kopanlar çıplak donatı olarak kalır.</td></tr>
+      <tr><td>Duvardaki delik</td><td class="m">Brutalist fikri</td><td>Menüde delik, mavi boyalı bir halkayla çerçeveli.</td></tr>
+      <tr><td>Fontlar</td><td class="m">Karışık</td><td>Başlık: geometrik, küçük harf (Bauhaus). Etiket ve sayaç: mono (brutalist).</td></tr>
+    </table></div>
+  </section>
+
+  <section class="s">
+    <h2><small>03</small>notların</h2>
+    <p class="intro">Yukarıdaki düğmelerle işaretlediklerin burada özetlenir. İstersen altına serbest not yaz ve kopyalayıp bana yapıştır.</p>
+    <textarea id="notes" aria-label="Notlar"></textarea><br>
+    <button class="copy" id="copy" type="button">Notları kopyala</button>
+    <div class="note">Henüz gamepad ile denemedim. Kaydırıcının ortası oyun içinde okunabilirlik açısından denenmeli. Oyunda pause sistemi yok. Çokgenler ve hacimli şekiller için her şeklin ayrı bir sprite ya da özel UI mesh'i gerekir; ölçmedim, tahminim kabaca 15 benzersiz şekil.</div>
+  </section>
+
+  <section class="s">
+    <h2><small>04</small>kaynaklar</h2>
+    <ul class="refs">
+      <li><a href="https://www.masterclass.com/articles/brutalist-architecture-guide" target="_blank" rel="noopener">Brutalist mimari rehberi (Masterclass)</a><span>Béton brut, kütle, tekrar</span></li>
+      <li><a href="https://trends.daisyui.com/trend/bauhaus/" target="_blank" rel="noopener">daisyUI, Bauhaus özeti</a><span>Ana renkler, görünen yapı</span></li>
+      <li><a href="https://trends.daisyui.com/trend/neubrutalism/" target="_blank" rel="noopener">daisyUI, Neubrutalism özeti</a><span>Kalın çerçeve, ofset gölge</span></li>
+      <li>Önceki turlar: <code>bauhaus-ui-v2.html</code>, <code>brutalist-ui-v2.html</code><span>Tüm diğer kaynaklar orada listeli</span></li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function(){
+var W=480,H=270;
+var K='#151515',PAPER='#F2EBD3';
+var C={mid:{base:'#9A9791',lt:'#ADAAA4',dk:'#85827D',conc:1},light:{base:'#C4C1BA',lt:'#D3D0C9',dk:'#AEABA4',conc:1},dark:{base:'#5F5D59',lt:'#706E6A',dk:'#4D4B48',conc:1}};
+var RED={base:'#E8432B',lt:'#EF6A55',dk:'#C93A22'},YEL={base:'#F6BE1F',lt:'#F9D04F',dk:'#D9A310'},BLU={base:'#2D5FA8',lt:'#4A7BC4',dk:'#244D8A'},PUR={base:'#6B2F7A',lt:'#7E4290',dk:'#57256A'};
+var P={sky:'#84D2F6',orange:'#FDAA66',pink:'#EE3FA8',ink:'#433646',red:'#E8432B'};
+var mode='vector',G={v:.55};
+
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h)}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function PP(pts){return function(c){c.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath()}}
+function hx(h){return[parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)]}
+function mix(a,b,t){var A=hx(a),B=hx(b);return'rgb('+Math.round(A[0]+(B[0]-A[0])*t)+','+Math.round(A[1]+(B[1]-A[1])*t)+','+Math.round(A[2]+(B[2]-A[2])*t)+')'}
+function bwOf(w){return G.v<.06?0:w*(.35+.65*G.v)}
+function shOf(s){return Math.round(s*G.v*1.6)}
+function strokeIf(c,w,col){if(w>0){c.lineWidth=w;c.strokeStyle=col||K;c.stroke()}}
+function txt(c,s,x,y,size,col,align,kind,rot){
+  c.save();var pix=(mode==='pixel');
+  if(pix)c.font=size+'px Tiny5, "Courier New", monospace';
+  else if(kind==='m')c.font='700 '+Math.round(size*0.95)+'px "Space Mono", "Courier New", monospace';
+  else c.font='800 '+Math.round(size*0.95)+'px Jost, Futura, sans-serif';
+  c.textBaseline='middle';c.textAlign=align||'center';c.fillStyle=col;
+  c.translate(x,y);if(rot)c.rotate(rot);
+  c.fillText(pix||kind==='m'?(pix?s.toUpperCase():s):s.toLowerCase(),0,0);c.restore();
+}
+function ext(c,s,x,y,size,front,side,depth,align,kind,rot){
+  var d0=Math.round(depth*G.v*1.5);
+  for(var d=d0;d>=1;d--)txt(c,s,x+d*.8,y+d*.7,size,side,align,kind,rot);
+  txt(c,s,x,y,size,front,align,kind,rot);
+}
+/* surface: concrete or paint, any path. texture, shadow, border all scale with the slider */
+function mass(c,path,bb,t,sh,bw){
+  var s=shOf(sh||0);
+  if(s>0){c.save();c.translate(s,s);c.beginPath();path(c);c.fillStyle=K;c.fill('evenodd');c.restore()}
+  var base=t.conc?mix(t.base,PAPER,1-Math.min(1,G.v*1.6)):t.base;
+  c.beginPath();path(c);c.fillStyle=base;c.fill('evenodd');
+  if(G.v>.12){
+    c.save();c.beginPath();path(c);c.clip('evenodd');
+    var x=bb[0],y=bb[1],w=bb[2],h=bb[3],r=rng(Math.floor(x*31+y*17+w*7+h)),n=Math.floor(w*h/40*G.v*(t.conc?1:.5));
+    for(var i=0;i<n;i++)rect(c,x+Math.floor(r()*w),y+Math.floor(r()*h),r()<.15?2:1,1,r()<.5?t.lt:t.dk);
+    if(G.v>.4&&t.conc)for(var yy=y+30;yy<y+h;yy+=30){rect(c,x,yy,w,1,t.dk);rect(c,x,yy+1,w,1,t.lt);if(G.v>.6)for(var xx=x+22;xx<x+w;xx+=50){rect(c,xx,yy-15,3,3,t.dk);rect(c,xx+1,yy-14,2,2,t.lt)}}
+    c.restore();
+  }
+  c.beginPath();path(c);strokeIf(c,bwOf(bw||3));
+}
+function hazardPath(c,path,bb){
+  if(G.v<.3)return;
+  c.save();c.beginPath();path(c);c.clip();rect(c,bb[0],bb[1],bb[2],bb[3],YEL.base);
+  for(var i=-bb[3];i<bb[2];i+=16){c.fillStyle=K;c.beginPath();c.moveTo(bb[0]+i,bb[1]+bb[3]);c.lineTo(bb[0]+i+8,bb[1]+bb[3]);c.lineTo(bb[0]+i+8+bb[3],bb[1]);c.lineTo(bb[0]+i+bb[3],bb[1]);c.closePath();c.fill()}
+  c.restore();c.beginPath();path(c);strokeIf(c,2);
+}
+function isoBox(c,x,y,w,h,d0,tf,tt,ts,sh){
+  var d=Math.max(4,Math.round(d0*(.4+.6*G.v))),dy=Math.round(d*.5);
+  mass(c,PP([[x+w,y],[x+w+d,y-dy],[x+w+d,y+h-dy],[x+w,y+h]]),[x+w,y-dy,d,h],ts,0,2);
+  mass(c,PP([[x,y],[x+d,y-dy],[x+w+d,y-dy],[x+w,y]]),[x,y-dy,w+d,dy],tt,0,2);
+  mass(c,PP([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]),[x,y,w,h],tf,sh,2);
+}
+function cyl(c,cx,top,bot,rx,ry,tb,tt,sh){
+  mass(c,function(c){c.moveTo(cx-rx,top);c.lineTo(cx-rx,bot);c.ellipse(cx,bot,rx,ry,0,Math.PI,0,true);c.lineTo(cx+rx,top);c.ellipse(cx,top,rx,ry,0,0,Math.PI,true);c.closePath()},[cx-rx,top-ry,rx*2,bot-top+ry*2],tb,sh,2);
+  mass(c,function(c){c.ellipse(cx,top,rx,ry,0,0,Math.PI*2)},[cx-rx,top-ry,rx*2,ry*2],tt,0,2);
+}
+function pine(c,x,y){rect(c,x+2,y,2,2,'#5FBF3A');rect(c,x,y+2,6,8,P.orange);rect(c,x+1,y+4,1,1,P.red);rect(c,x+4,y+6,1,1,P.red)}
+
+/* world layer, always pixel */
+var BANDS2=['#E58A8A','#259EA0','#F5EFCB','#8A8A1A','#FFB11A','#FF4300','#FFE55A'];
+function ringPix(x,cx,cy,r){for(var j=-r;j<=r;j++)for(var i=-r;i<=r;i++){var d=Math.sqrt(i*i+j*j);if(d>r)continue;rect(x,cx+i,cy+j,1,1,BANDS2[Math.min(6,Math.floor((1-d/r)*7))])}}
+function line(x,x0,y0,x1,y1,col){var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(var t=0;t<=n;t++)rect(x,Math.round(x0+(x1-x0)*t/n),Math.round(y0+(y1-y0)*t/n),1,1,col)}
+function worldGame(x,dim){
+  rect(x,0,0,W,H,P.sky);rect(x,0,222,W,48,P.orange);rect(x,0,222,W,3,P.pink);
+  rect(x,0,0,24,H,P.orange);rect(x,W-24,0,24,H,P.orange);rect(x,0,0,W,20,P.orange);
+  rect(x,140,150,110,10,P.orange);rect(x,140,150,110,3,P.pink);
+  rect(x,300,170,60,52,P.orange);rect(x,300,170,60,3,P.pink);
+  ringPix(x,300,66,16);line(x,196,128,300,66,P.ink);
+  rect(x,192,128,9,12,'#3A6EA5');rect(x,192,124,9,5,P.red);rect(x,194,132,2,2,'#F5EFCB');rect(x,197,132,2,2,'#F5EFCB');rect(x,193,140,3,10,'#3A6EA5');rect(x,198,140,3,10,'#3A6EA5');
+  rect(x,330,150,6,10,P.orange);
+  if(dim){x.fillStyle=K;for(var y=0;y<H;y+=2)for(var xx=(y/2)%2?0:2;xx<W;xx+=4)x.fillRect(xx,y,2,2);x.fillStyle='rgba(21,21,21,.5)';x.fillRect(0,0,W,H)}
+}
+function worldOculus(x){rect(x,0,0,W,H,P.sky);ringPix(x,364,122,50);rect(x,0,206,W,64,P.orange);rect(x,0,206,W,3,P.pink)}
+function worldWall(x){rect(x,0,0,W,H,K)}
+
+/* ---- screens ---- */
+function uiMenu(c){
+  mass(c,function(c){c.rect(0,0,W,H);c.moveTo(364+88,122);c.arc(364,122,88,0,Math.PI*2)},[0,0,W,H],C.light,0,4);
+  mass(c,function(c){c.moveTo(364+88,122);c.arc(364,122,88,0,Math.PI*2);c.moveTo(364+68,122);c.arc(364,122,68,0,Math.PI*2)},[276,34,176,176],BLU,0,3);
+  rect(c,0,30,250,6,K);rect(c,28,0,6,H,K);
+  ext(c,'rock',46,76,64,RED.base,K,8,'left','d',-0.05);
+  txt(c,'the game',50,118,22,K,'left','d',-0.04);
+  ['play','multiplayer','options','quit'].forEach(function(s,i){var y=160+i*26;
+    if(i===0){mass(c,PP([[44,y-13],[236,y-13],[236,y+13],[44,y+13]]),[44,y-13,192,26],YEL,4,3);c.beginPath();c.moveTo(52,y-7);c.lineTo(52,y+7);c.lineTo(64,y);c.closePath();c.fillStyle=K;c.fill()}
+    txt(c,s,76,y,17,K,'left','d')});
+}
+function uiHud(c){
+  mass(c,function(c){c.moveTo(0,0);c.arc(0,0,60,0,Math.PI/2);c.closePath()},[0,0,60,60],BLU,4,3);
+  pine(c,12,12);txt(c,'03',34,19,17,PAPER,'left','d');
+  [[14,40],[27,31],[37,20]].forEach(function(p,i){disc(c,p[0]+8,p[1]+12,4,i<2?YEL.base:PAPER)});
+  txt(c,'ANAHTAR 2/3',64,14,8,K,'left','m');
+  var px=197,py=138,r0=21,r1=29,g=0.12;
+  for(var i=0;i<6;i++){
+    var a0=-Math.PI/2+i*Math.PI/3+g,a1=-Math.PI/2+(i+1)*Math.PI/3-g;
+    if(i<4){c.beginPath();c.arc(px,py,r1,a0,a1);c.arc(px,py,r0,a1,a0,true);c.closePath();c.fillStyle=YEL.base;c.fill();strokeIf(c,bwOf(2))}
+    else{var am=(a0+a1)/2;c.beginPath();c.moveTo(px+Math.cos(am)*r0,py+Math.sin(am)*r0);c.lineTo(px+Math.cos(am)*(r1-2),py+Math.sin(am)*(r1-2));strokeIf(c,Math.max(1,bwOf(2)));
+      if(G.v>.3){var dx=px+Math.cos(am)*r1,dy=py+Math.sin(am)*r1+16+(i-4)*6;mass(c,PP([[dx,dy],[dx+7,dy+2],[dx+3,dy+8]]),[dx,dy,7,8],C.light,0,2)}}
+  }
+  txt(c,'DASH',404,214,8,K,'center','m');txt(c,'SLING',446,214,8,K,'center','m');
+  isoBox(c,396,226,18,18,9,RED,RED,RED,3);
+  cyl(c,446,230,246,10,4,C.light,C.light,3);
+}
+function uiCard(c){
+  var slab=PP([[0,0],[372,0],[256,270],[0,270]]);
+  mass(c,slab,[0,0,372,270],C.light,10,4);
+  c.save();c.beginPath();slab(c);c.clip();mass(c,function(c){c.arc(26,208,92,0,Math.PI*2)},[-66,116,184,184],BLU,0,3);c.restore();
+  mass(c,PP([[0,176],[W,92],[W,152],[0,236]]),[0,92,W,144],YEL,6,3);
+  txt(c,'swing & slingshot',196,168,17,K,'center','d',-0.165);
+  ext(c,'12',20,84,112,RED.base,K,10,'left','d');
+  txt(c,'ROOM',22,16,10,K,'left','m');
+  if(G.v>.35){c.beginPath();c.moveTo(340,36);c.lineTo(318,60);c.lineTo(330,80);c.lineTo(304,104);c.lineTo(312,124);strokeIf(c,2)}
+  hazardPath(c,PP([[16,248],[236,248],[230,260],[16,260]]),[16,248,220,12]);
+}
+function uiPause(c){
+  mass(c,function(c){c.arc(104,100,78,0,Math.PI*2)},[26,22,156,156],RED,0,3);
+  mass(c,function(c){c.arc(164,178,78,0,Math.PI*2)},[86,100,156,156],BLU,0,3);
+  c.save();c.beginPath();c.arc(104,100,78,0,Math.PI*2);c.clip();mass(c,function(c){c.arc(164,178,78,0,Math.PI*2)},[86,100,156,156],PUR,0,3);c.restore();
+  mass(c,PP([[330,262],[476,262],[476,84]]),[330,84,146,178],YEL,5,3);
+  var cx=240,cy=135,g=.07,q=Math.PI/2,items=[['resume',-q,1],['options',0,0],['quit',q,0],['retry',Math.PI,0]];
+  items.forEach(function(it){
+    var a=it[1],sel=it[2],r1=sel?118:106,ox=sel?Math.cos(a)*6:0,oy=sel?Math.sin(a)*6:0,x0=cx+ox,y0=cy+oy;
+    mass(c,function(c){c.arc(x0,y0,r1,a-q/2+g,a+q/2-g);c.arc(x0,y0,54,a+q/2-g,a-q/2+g,true);c.closePath()},[x0-r1,y0-r1,r1*2,r1*2],sel?YEL:C.dark,sel?9:5,3);
+    var lx=x0+Math.cos(a)*80,ly=y0+Math.sin(a)*80,rot=a===0?q:(a===Math.PI?-q:0);
+    txt(c,it[0],lx,ly,17,sel?K:'#E6E3DC',null,'d',rot);
+  });
+  mass(c,function(c){c.arc(cx,cy,46,0,Math.PI*2)},[cx-46,cy-46,92,92],C.light,4,3);
+  txt(c,'ROOM',cx,cy-27,8,K,'center','m');txt(c,'12',cx,cy-4,34,RED.base,'center','d');txt(c,'DEATHS 07',cx,cy+27,8,K,'center','m');
+  disc(c,40,238,9,PAPER);txt(c,'A',40,238,9,K,'center','m');txt(c,'SELECT',58,238,8,PAPER,'left','m');
+}
+function uiResult(c){
+  mass(c,PP([[0,0],[W,0],[W,270],[0,270]]),[0,0,W,H],C.light,0,4);
+  mass(c,PP([[0,214],[W,70],[W,88],[0,232]]),[0,70,W,162],{base:K,lt:'#2a2a2a',dk:'#0a0a0a'},0,0);
+  mass(c,PP([[0,244],[W,232],[W,270],[0,270]]),[0,232,W,38],C.dark,0,0);
+  hazardPath(c,PP([[0,238],[W,226],[W,240],[0,252]]),[0,226,W,26]);
+  mass(c,PP([[392,26],[452,26],[422,76]]),[392,26,60,50],YEL,4,3);
+  cyl(c,150,120,226,52,16,BLU,BLU,7);
+  txt(c,'1',150,170,56,PAPER,'center','d');txt(c,'P1  02:14.8',150,210,10,PAPER,'center','m');
+  isoBox(c,272,158,84,68,26,RED,RED,RED,7);
+  txt(c,'2',314,188,44,PAPER,'center','d');txt(c,'P2  02:19.3',314,212,10,PAPER,'center','m');
+  mass(c,PP([[14,14],[236,14],[222,50],[14,50]]),[14,14,222,36],YEL,4,3);
+  txt(c,'race result',28,32,22,K,'left','d');
+}
+var SCREENS=[
+ {id:'menu',t:'ana menü',w:'oculus',u:uiMenu,d:'<b>Sade kalan menü.</b> Soldan başlık ve liste, sağda duvara açılmış delik; delik mavi boyalı bir halkayla çerçeveli, içinden kanca halkası görünür.'},
+ {id:'hud',t:'oyun içi HUD',w:'game',u:uiHud,d:'<b>Köşede mavi çeyrek daire.</b> Stamina beton halka, sarı boyalı parçalar; ikisi kopmuş. Dash kırmızı küp, slingshot silindir (burada kullanılmış, boyasız).'},
+ {id:'card',t:'oda başlık kartı',w:'game',u:uiCard,d:'<b>Eğik beton levha, sarı kiriş.</b> Kiriş levhadan dışarı taşar, yazı kirişin eğimini izler. Ekstrüde kırmızı oda numarası, kırpılmış mavi disk.'},
+ {id:'pause',t:'pause: radyal halka',w:'gameDim',u:uiPause,d:'<b>Beton dilimler.</b> Seçili dilim sarı boyalı, dışarı çıkmış ve gölgesi büyük. Arkada boyalı iki daire ve kesişim rengi, sağda sarı üçgen.'},
+ {id:'result',t:'çok oyunculu sonuç',w:'wall',u:uiResult,d:'<b>Mavi silindir, kırmızı küp.</b> Oyuncu kimliği hem renk hem hacim. Çapraz siyah kiriş ve eğik uyarı bandı.'}
+];
+var holder=document.getElementById('shots'),votes={};
+SCREENS.forEach(function(s){
+  var f=document.createElement('div');f.className='shot';
+  f.innerHTML='<div class="cv"><canvas class="w" width="480" height="270"></canvas><canvas class="u"></canvas></div><div class="cap"></div><p></p><div class="perv"><span>bauhaus</span><input type="range" min="0" max="100" value="55" aria-label="Bu ekran için denge"><span>brutalist</span><output>55</output></div><div class="vote" role="group"><button type="button" data-v="+" aria-pressed="false">beğendim</button><button type="button" data-v="~" aria-pressed="false">karışık</button><button type="button" data-v="-" aria-pressed="false">beğenmedim</button></div>';
+  f.querySelector('.cap').textContent=s.t;f.querySelector('p').innerHTML=s.d;holder.appendChild(f);s.el=f;s.v=55;
+  var pr=f.querySelector('.perv input'),po=f.querySelector('.perv output');s.rng=pr;s.out=po;
+  pr.addEventListener('input',function(){s.v=+pr.value;po.textContent=pr.value;drawAll();summary()});
+  f.querySelector('.vote').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    var on=b.getAttribute('aria-pressed')==='true';
+    [].forEach.call(b.parentNode.children,function(n){n.setAttribute('aria-pressed','false')});
+    if(!on){b.setAttribute('aria-pressed','true');votes[s.id]=b.dataset.v}else delete votes[s.id];
+    summary();
+  });
+});
+var notes=document.getElementById('notes'),userText='';
+function summary(){
+  var map={'+':'beğendim','~':'karışık','-':'beğenmedim'},lines=['Denge ekran başına (0 Bauhaus, 100 brutalist)','Çizim: '+(mode==='pixel'?'piksel':'vektör')];
+  SCREENS.forEach(function(s){lines.push(s.t+': denge '+s.v+', '+(votes[s.id]?map[votes[s.id]]:'işaretlenmedi'))});
+  var tag='Notlarım:\n',i=notes.value.indexOf(tag),keep=i>=0?notes.value.slice(i+tag.length):'';
+  notes.value=lines.join('\n')+'\n\n'+tag+keep;
+}
+summary();
+document.getElementById('copy').addEventListener('click',function(){
+  var done=function(){document.getElementById('copy').textContent='Kopyalandı'};
+  try{navigator.clipboard.writeText(notes.value).then(done,function(){notes.select();notes.focus()})}catch(e){notes.select();notes.focus()}
+});
+function renderUI(canvas,fn){
+  var pix=(mode==='pixel');
+  canvas.width=pix?W:W*3;canvas.height=pix?H:H*3;
+  var c=canvas.getContext('2d',{willReadFrequently:pix});
+  c.clearRect(0,0,canvas.width,canvas.height);
+  if(!pix)c.scale(3,3);
+  c.imageSmoothingEnabled=!pix;
+  fn(c);
+  if(pix){var id=c.getImageData(0,0,W,H),d=id.data;for(var i=3;i<d.length;i+=4)d[i]=d[i]>=128?255:0;c.putImageData(id,0,0)}
+}
+function drawAll(){
+  SCREENS.forEach(function(s){
+    var w=s.el.querySelector('canvas.w'),x=w.getContext('2d');x.imageSmoothingEnabled=false;
+    if(s.w==='wall')worldWall(x);else if(s.w==='oculus')worldOculus(x);else worldGame(x,s.w==='gameDim');
+    G.v=s.v/100;renderUI(s.el.querySelector('canvas.u'),s.u);
+  });
+}
+drawAll();
+var go=function(){drawAll()};
+try{document.fonts.load('16px Tiny5').then(go,go);document.fonts.load('800 16px Jost').then(go,go);document.fonts.load('700 16px "Space Mono"').then(go,go);document.fonts.ready.then(go)}catch(e){}
+setTimeout(go,1200);
+var mixEl=document.getElementById('mix'),mixV=document.getElementById('mixv'),raf=0;
+mixEl.addEventListener('input',function(){mixV.textContent=mixEl.value;SCREENS.forEach(function(s){s.v=+mixEl.value;s.rng.value=mixEl.value;s.out.textContent=mixEl.value});if(!raf)raf=requestAnimationFrame(function(){raf=0;drawAll()});summary()});
+var seg=document.getElementById('modeSeg');
+function setMode(v){mode=v;document.body.setAttribute('data-mode',v);[].forEach.call(seg.children,function(n){n.setAttribute('aria-pressed',n.dataset.v===v?'true':'false')});drawAll();summary()}
+seg.addEventListener('click',function(e){var b=e.target.closest('button');if(b)setMode(b.dataset.v)});
+document.body.setAttribute('data-mode','vector');
+})();
+</script>

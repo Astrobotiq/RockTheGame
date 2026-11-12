@@ -189,4 +189,4 @@ Hiçbiri henüz `TASKS.md`'de değil — oraya eklemeden önce sana sormam gerek
 | Pixel Perfect Camera | `#art` | Pazartesi | PPU'dan sonra |
 | Renk uzayı kararı | `#art` | Pazartesi | 1+ |
 
-Hangilerini `TASKS.md`'ye almak istersen söyle, kurallara uygun biçimde (bir akşama en fazla 3 task, due yalnızca Pazartesi/Cuma) yerleştiririm.
+Hangilerini `TASKS.md`'ye almak istersen söyle, kurallara uygun biçimde (bir güne en fazla 4 task, her gün 5–6 saat; bkz. CLAUDE.md) yerleştiririm.

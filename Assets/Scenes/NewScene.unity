@@ -4282,6 +4282,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1689001708}
   - component: {fileID: 1689001709}
+  - component: {fileID: 1689001710}
   m_Layer: 0
   m_Name: HudCounter
   m_TagString: Untagged
@@ -4320,7 +4321,27 @@ MonoBehaviour:
   pineappleIcon: {fileID: 21300000, guid: 8366d3cf13fe0f443b3cc9fe76fdf777, type: 3}
   keyIcon: {fileID: 21300000, guid: e803d05883a6ca74d981a4469197fd22, type: 3}
   keyMissingIcon: {fileID: 21300000, guid: 225d883689783354f8450dbf8e862f05, type: 3}
+  showSeconds: 2.5
   keyEnterStagger: 0.06
+--- !u!114 &1689001710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689001707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bd073d03ca5ca54393a955c76ad9192, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.UI.Hud.RoomTitleCard
+  startDelay: 0
+  holdSeconds: 0.45
+  beamDelay: 0.08
+  numberDelay: 0.2
+  hazardDelay: 0.26
+  numberSlamScale: 1.7
+  cardScale: 0.5
 --- !u!1 &1709683605
 GameObject:
   m_ObjectHideFlags: 0
@@ -125269,7 +125290,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Player.UI.PlayerUIController
   staminaBarGroup: {fileID: 1630204459}
-  staminaFillImage: {fileID: 2143380385}
 --- !u!114 &7522863500996187711
 MonoBehaviour:
   m_ObjectHideFlags: 0

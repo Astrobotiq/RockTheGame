@@ -231,7 +231,7 @@ namespace New_Scripts.Player
                 CanWallClimb = false;
             }
 
-            UIController.UpdateStamina(CurrentWallStamina, Stats.MaxWallStamina);
+            UIController.UpdateStamina(CurrentWallStamina, Stats.MaxWallStamina, Stats.StaminaWarningThreshold);
         }
 
         public void RefillWallStamina()

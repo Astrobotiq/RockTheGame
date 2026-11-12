@@ -11,7 +11,8 @@ namespace New_Scripts.UI.Theme
         Pause,
         Hud,
         RoomCard,
-        MultiplayerResult
+        MultiplayerResult,
+        MultiplayerLobby
     }
 
     /// <summary>

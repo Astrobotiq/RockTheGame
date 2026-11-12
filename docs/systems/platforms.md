@@ -1,6 +1,6 @@
 # Platformlar
 
-*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-05.*
+*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-12.*
 
 ## Tasarım niyeti
 
@@ -45,10 +45,10 @@ Oyuncu üstüne basana kadar `t = 0`'da bekler, basınca stratejinin **bir tam t
 | Tetik | Collider kutusuyla oyuncu çakışması | Herhangi bir bloğun kutusuyla çakışma |
 | Kırılma | `breakDelay` (0.5 sn) boyunca görsel titrer + sürekli titreşim, sonra **tamamı** birden yok olur | Basılan bloktan başlayıp her iki yana `propagationDelay` (0.08 sn) aralıklarla **dalga** hâlinde. Her blok kendi sprite karelerini oynatır, bitince collider'ı kapanır. Titreme yok. |
 | Yeniden oluşma | `respawnTime` (3 sn), son 0.4 sn'de reform VFX | Aynı |
-| Kullanım | Prefab'ı 7 dosyada | Sahnede **tek** örnek |
+| Kullanım | Hiçbir odada kullanılmıyor (2026-11-12'de bloklu sisteme geçildi; `BreakablePlatform.prefab` boşta) | Yedi oda prefab'ında (3, 4×2, 9, 10, 11×2, 15, 20) + `NewScene`'deki şablon |
 | Editör aracı | — | `SegmentedBreakablePlatformEditor`, blok üretme ve test |
 
-GDD §6.2'deki "basılan yerden başlayarak dalga hâlinde kırılır" tarifi **yalnızca bloklu sistem** için doğru. Odalarda ağırlıklı olarak basit sistem kullanılıyor ve o dalga yapmıyor. CLAUDE.md yeni işler için bloklu sistemi öneriyor.
+GDD §6.2'deki "basılan yerden başlayarak dalga hâlinde kırılır" tarifi **yalnızca bloklu sistem** için doğru. Odalardaki kırılan platformların hepsi artık bloklu sistemde; basit sistem yalnızca kodda ve boşta duran prefab'ında kaldı. CLAUDE.md yeni işler için bloklu sistemi öneriyor.
 
 ### Tek yönlü platform
 

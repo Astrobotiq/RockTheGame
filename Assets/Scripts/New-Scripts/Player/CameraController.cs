@@ -332,12 +332,16 @@ namespace New_Scripts.Player
 
                 cameraFollowTarget.position = Vector2.Lerp(startPosition, clampedTargetPosition, t);
                 virtualCamera.Lens.OrthographicSize = Mathf.Lerp(startSize, actualTargetSize, t);
+                // Eğri zaten yumuşak; Composer'ın damping/lookahead'i üstüne binerse kamera hedefi aşar
+                // ve FinalizeTransition'da tek karede geri zıplar (titreme). Her kare kamerayı hedefe kilitle.
+                virtualCamera.PreviousStateIsValid = false;
 
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
 
             cameraFollowTarget.position = clampedTargetPosition;
             virtualCamera.Lens.OrthographicSize = actualTargetSize;
+            virtualCamera.PreviousStateIsValid = false;
 
             await UniTask.WaitForEndOfFrame(this, token);
         }
@@ -372,7 +376,8 @@ namespace New_Scripts.Player
             isZoomOverridden = isOverridden;
             currentOverrideSize = targetSize;
 
-            cameraFollowTarget.position = targetRigidbody.position;
+            // Takip hedefi pan'in bittiği yerde kalır; oyuncuya LateUpdate'te yumuşakça kayar.
+            // Oyuncuya ışınlamak, pan kapı merkezine gittiği için son karede sıçrama yapıyordu.
             virtualCamera.PreviousStateIsValid = false;
 
             isTransitioning = false;

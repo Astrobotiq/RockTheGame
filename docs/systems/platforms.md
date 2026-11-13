@@ -1,6 +1,6 @@
 # Platformlar
 
-*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-12.*
+*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-13.*
 
 ## Tasarım niyeti
 
@@ -71,6 +71,17 @@ Bir grup `PlatformController`'ı (stratejisiz) `leftBound`'dan `rightBound`'a ta
 ## Ölünce sıfırlama
 
 `PlatformController`, `TriggeredPlatformController`, iki kırılan platform ve `WrappingPlatformManager` `IResettable`. Kayıt `OnEnable`'da, bu yüzden yalnızca o an aktif odalar sıfırlanır. Ayrıntı: [`death-respawn.md`](death-respawn.md).
+
+## Görünüm: "Riso levha"
+
+Hareketli platformlar (`MovingPlatform`, `-Transform`, `OneWay-`, `AccelPlatform`, `RotatingPlatform` prefab'ları) baskı görünümlü; arazi, kırılan platformlar ve launch pad'ler değişmedi. Tasarım: `docs/ui-research/halftone/` (uygulama planı `implementation-plan.md`).
+
+- **`RisoSlab.shader`** (`M_RisoSlab`): SDF levha, `#140C1C` çizgi (collider sınırı), kâğıt, üç mürekkep katmanı (teal 15° / sarı 45° / pembe 75°, multiply), temiz üst şerit (dünya yukarısına göre), gren, h < 0.45 için düz bantlar. Boyutu `lossyScale`'den okur (sprite 1×1 birim; `DisableBatching`). `_DotPitch` materyalde, aşama 2 için `_Influence*`/`_ShiftFront` boş.
+- **`RisoSlabVisual`** (Square objesinde): `SurfaceVelocity`'yi yumuşatıp `_Velocity`'ye verir; `JumpBoostMultiplier > 0` ise `_Accelerating = 1`.
+- **`HalftoneTrailEmitter`** (Square'in `Trail` çocuğu): tek `ParticleSystem`, mürekkep başına gecikmeli (0 / 0.06 / 0.12 sn) doğum, teleport (> 1.5 birim/kare) ve `IResettable`/`OnEnable`'da temizlik. Saf mantık `HalftoneTrailLogic.cs`.
+- **`RisoDot.shader`** (`M_RisoDot`): opak normal karışımlı SDF daire, pembe/teal parçacıklarda kayık "hayalet" çift. Sıralama: Default katmanı, order -5 (platformun arkasında).
+- **Ayarlar:** `Platform/SO/RisoSlabSettings.asset` (`RisoSlabSettingsSO`). His geliştiricinin kararı; değişiklikte eski/yeni değeri not et.
+- **Henüz yok:** `WrappingPlatformManager`'ın sahnede atanmış platformları (prefab'da çocuk yok, sahnelerde elle bağlanmalı). Gamepad testi H7.
 
 ## Titreşim
 

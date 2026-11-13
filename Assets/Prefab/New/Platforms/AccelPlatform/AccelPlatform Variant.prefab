@@ -96,6 +96,10 @@ MonoBehaviour:
   returnDuration: 2
   endDelay: 1
   phaseOffset: 0
+  jumpBoostMultiplier: 1.5
+  playerStats: {fileID: 0}
+  trajectorySteps: 60
+  stepDeltaTime: 0.02
 --- !u!4 &4532749992079652606 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8321933850878524772, guid: c574f2049d21c6240b42499420175487, type: 3}

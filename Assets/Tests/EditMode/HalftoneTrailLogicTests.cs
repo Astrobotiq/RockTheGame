@@ -198,5 +198,28 @@ namespace RockTheGame.Tests
             Assert.That(HalftoneTrailMath.DiameterFor(TrailInk.Teal, 0.3f, p), Is.EqualTo(0f));
             Assert.That(HalftoneTrailMath.DiameterFor(TrailInk.Teal, 1f, p), Is.EqualTo(p * 0.58f).Within(1e-5f));
         }
+
+        // ---- Gecikmeli mürekkep değişimi ----
+
+        [Test]
+        public void History_RecordsShiftFront_DelayedSampleSeesPastFront()
+        {
+            var h = new TrailHistory(0.5f);
+            h.Record(0.00f, Vector2.zero, 0f, 0f, Vector2.zero);
+            h.Record(0.10f, Vector2.zero, 0f, 0.6f, new Vector2(1f, 2f));
+            h.Record(0.20f, Vector2.zero, 0f, 1.2f, new Vector2(1f, 2f));
+            Assert.That(h.TrySample(0.20f, out _, out _, out float teal, out _));
+            Assert.That(h.TrySample(0.20f - 0.12f, out _, out _, out float pink, out Vector2 origin));
+            Assert.That(teal, Is.EqualTo(1.2f).Within(1e-4f));
+            Assert.That(pink, Is.LessThan(teal)); // gecikmeli katman dalgayı geriden görür
+            Assert.That(origin, Is.EqualTo(new Vector2(1f, 2f)));
+        }
+
+        [Test]
+        public void IsInShiftBandAt_UsesDistanceFromOrigin()
+        {
+            Assert.That(HalftoneTrailMath.IsInShiftBandAt(new Vector2(3f, 0f), Vector2.zero, 3.5f, 1.2f), Is.True);
+            Assert.That(HalftoneTrailMath.IsInShiftBandAt(new Vector2(6f, 0f), Vector2.zero, 3.5f, 1.2f), Is.False);
+        }
     }
 }

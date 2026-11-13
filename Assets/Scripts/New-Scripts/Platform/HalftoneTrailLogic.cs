@@ -28,6 +28,12 @@ namespace New_Scripts.Platform
             }
         }
 
+        /// <summary>Nokta, kökenden halka bandının içinde mi (RisoSlabMath.IsInShiftBand'ın konum sürümü).</summary>
+        public static bool IsInShiftBandAt(Vector2 point, Vector2 origin, float front, float band)
+        {
+            return RisoSlabMath.IsInShiftBand(Vector2.Distance(point, origin), front, band);
+        }
+
         /// <summary>Bir karede eşikten fazla yer değiştiren platform ışınlanmış sayılır.</summary>
         public static bool IsTeleport(Vector2 previous, Vector2 current, float threshold)
         {
@@ -125,6 +131,8 @@ namespace New_Scripts.Platform
             public float Time;
             public Vector2 Position;
             public float Rotation;
+            public float Front;
+            public Vector2 Origin;
         }
 
         private readonly List<Sample> _samples = new List<Sample>(64);
@@ -137,9 +145,9 @@ namespace New_Scripts.Platform
             _keepSeconds = keepSeconds;
         }
 
-        public void Record(float time, Vector2 position, float rotationDegrees)
+        public void Record(float time, Vector2 position, float rotationDegrees, float shiftFront = 0f, Vector2 shiftOrigin = default)
         {
-            _samples.Add(new Sample { Time = time, Position = position, Rotation = rotationDegrees });
+            _samples.Add(new Sample { Time = time, Position = position, Rotation = rotationDegrees, Front = shiftFront, Origin = shiftOrigin });
             int drop = 0;
             while (drop < _samples.Count - 2 && _samples[drop + 1].Time < time - _keepSeconds) drop++;
             if (drop > 0) _samples.RemoveRange(0, drop);
@@ -153,14 +161,24 @@ namespace New_Scripts.Platform
         /// <summary>time anındaki konum/dönüş; kayıt aralığı dışındaysa en yakın uç. Boşsa false.</summary>
         public bool TrySample(float time, out Vector2 position, out float rotationDegrees)
         {
+            return TrySample(time, out position, out rotationDegrees, out _, out _);
+        }
+
+        /// <summary>
+        /// Konum/dönüşün yanında o andaki mürekkep değişimi halkası (yarıçap, dünya kökeni) de döner.
+        /// </summary>
+        public bool TrySample(float time, out Vector2 position, out float rotationDegrees,
+            out float shiftFront, out Vector2 shiftOrigin)
+        {
             position = Vector2.zero;
             rotationDegrees = 0f;
+            shiftFront = 0f;
+            shiftOrigin = Vector2.zero;
             if (_samples.Count == 0) return false;
 
             if (time <= _samples[0].Time)
             {
-                position = _samples[0].Position;
-                rotationDegrees = _samples[0].Rotation;
+                Take(_samples[0], out position, out rotationDegrees, out shiftFront, out shiftOrigin);
                 return true;
             }
 
@@ -174,14 +192,23 @@ namespace New_Scripts.Platform
                     float t = span > 1e-6f ? Mathf.Clamp01((time - a.Time) / span) : 1f;
                     position = Vector2.Lerp(a.Position, b.Position, t);
                     rotationDegrees = Mathf.LerpAngle(a.Rotation, b.Rotation, t);
+                    // Halka bir uçta kapalıysa (0) enterpole etme: açılış/kapanış anı keskin kalsın
+                    shiftFront = (a.Front <= 0f || b.Front <= 0f) ? (t < 0.5f ? a.Front : b.Front) : Mathf.Lerp(a.Front, b.Front, t);
+                    shiftOrigin = t < 0.5f ? a.Origin : b.Origin;
                     return true;
                 }
             }
 
-            Sample last = _samples[_samples.Count - 1];
-            position = last.Position;
-            rotationDegrees = last.Rotation;
+            Take(_samples[_samples.Count - 1], out position, out rotationDegrees, out shiftFront, out shiftOrigin);
             return true;
+        }
+
+        private static void Take(Sample s, out Vector2 pos, out float rot, out float front, out Vector2 origin)
+        {
+            pos = s.Position;
+            rot = s.Rotation;
+            front = s.Front;
+            origin = s.Origin;
         }
     }
 

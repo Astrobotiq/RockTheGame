@@ -19,6 +19,26 @@ namespace New_Scripts.Platform
         [Tooltip("Hızdan gelen toplam kaymanın üst sınırı (dünya birimi).")]
         [Min(0f)] public float misregMax = 0.06f;
 
+        [Header("Oyuncu teması (aşama 2)")]
+        [Tooltip("Oyuncu platformun üstündeyken (ya da duvara tutunurken) kalıcı etki miktarı (0-1).")]
+        [Range(0f, 1f)] public float contactStandingAmount = 0.15f;
+
+        [Tooltip("İniş anında 1'e fırlayan etkinin hedefe yaylanma zaman sabiti (sn). Temas bitince sönme süresi de bu.")]
+        [Min(0.001f)] public float contactDecayTime = 0.25f;
+
+        [Tooltip("Etki yarıçapı (dünya birimi). Shader'daki _InfluenceRadius.")]
+        [Min(0.1f)] public float influenceRadius = 2.5f;
+
+        [Header("Mürekkep değişimi dalgası (aşama 2)")]
+        [Tooltip("İniş anında ayaklardan genişleyen halkanın hızı (birim/sn).")]
+        [Min(0.1f)] public float shiftSpeed = 6f;
+
+        [Tooltip("Halka bandının genişliği: bu bandın içindeki sarı mürekkep pembeye döner (birim).")]
+        [Min(0.1f)] public float shiftBandWidth = 1.2f;
+
+        [Tooltip("Halka bu yarıçapı (bant dahil) geçince söner (birim).")]
+        [Min(0.5f)] public float shiftMaxRadius = 8f;
+
         [Header("İz (HalftoneTrailEmitter)")]
         [Tooltip("Nokta aralığı P (dünya birimi). Shader'daki _DotPitch ile aynı olmalı; CRT kararına göre 0.42 ya da 0.5.")]
         [Min(0.05f)] public float dotPitch = 0.42f;

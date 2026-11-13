@@ -18,6 +18,7 @@ namespace New_Scripts.Platform
         [SerializeField] private Transform source;
 
         private ParticleSystem _particleSystem;
+        private RisoSlabVisual _visual;
         private TrailHistory _history;
         private TrailBudget _budget;
         private System.Random _rng;
@@ -29,6 +30,7 @@ namespace New_Scripts.Platform
         {
             if (source == null) source = transform.parent != null ? transform.parent : transform;
             _particleSystem = GetComponent<ParticleSystem>();
+            _visual = source.GetComponent<RisoSlabVisual>();
             _rng = new System.Random(GetInstanceID());
             ConfigureParticleSystem();
             CreateState();
@@ -140,7 +142,7 @@ namespace New_Scripts.Platform
             {
                 _previousPosition = pos;
                 _hasPrevious = true;
-                _history.Record(now, pos, rot);
+                _history.Record(now, pos, rot, ShiftFrontNow(), ShiftOriginNow());
                 return;
             }
 
@@ -149,12 +151,12 @@ namespace New_Scripts.Platform
             {
                 _history.Clear();
                 for (int i = 0; i < _accumulators.Length; i++) _accumulators[i] = 0f;
-                _history.Record(now, pos, rot);
+                _history.Record(now, pos, rot, ShiftFrontNow(), ShiftOriginNow());
                 _previousPosition = pos;
                 return;
             }
 
-            _history.Record(now, pos, rot);
+            _history.Record(now, pos, rot, ShiftFrontNow(), ShiftOriginNow());
 
             Vector2 delta = pos - _previousPosition;
             float distance = delta.magnitude;
@@ -181,9 +183,12 @@ namespace New_Scripts.Platform
             }
         }
 
+        private float ShiftFrontNow() => _visual != null ? _visual.ShiftFront : 0f;
+        private Vector2 ShiftOriginNow() => _visual != null ? _visual.ShiftOriginWorld : Vector2.zero;
+
         private void TryEmit(TrailInk ink, float sampleTime, Vector2 size, Vector2 dirWorld, Vector2 velocity, float now)
         {
-            if (!_history.TrySample(sampleTime, out Vector2 pos, out float rotDeg)) return;
+            if (!_history.TrySample(sampleTime, out Vector2 pos, out float rotDeg, out float shiftFront, out Vector2 shiftOrigin)) return;
 
             // Dünya vektörlerini gecikmeli kopyanın yerel uzayına çevir
             Quaternion inverse = Quaternion.Euler(0f, 0f, -rotDeg);
@@ -212,17 +217,21 @@ namespace New_Scripts.Platform
                 startLifetime = lifetime,
                 startSize = diameter * 1.25f, // shader daireyi quad'ın %80'ine çizer (hayalet payı)
                 randomSeed = (uint)_rng.Next(),
-                startColor = InkColor(ink)
+                startColor = InkColor(ink, spawn, shiftFront, shiftOrigin)
             };
             _particleSystem.Emit(emit, 1);
         }
 
-        private Color32 InkColor(TrailInk ink)
+        private Color32 InkColor(TrailInk ink, Vector2 spawn, float shiftFront, Vector2 shiftOrigin)
         {
             switch (ink)
             {
                 case TrailInk.Teal: return settings.tealInk;
-                case TrailInk.Yellow: return settings.yellowInk;
+                case TrailInk.Yellow:
+                    // Gecikmeli dalga: sarı parçacık, doğduğu andaki halka bandının içindeyse pembe doğar
+                    return HalftoneTrailMath.IsInShiftBandAt(spawn, shiftOrigin, shiftFront, settings.shiftBandWidth)
+                        ? settings.pinkInk
+                        : settings.yellowInk;
                 default: return settings.pinkInk;
             }
         }

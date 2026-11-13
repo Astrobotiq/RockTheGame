@@ -53,11 +53,13 @@ Shader "Sprites/Custom/RisoSlab"
         _MisregMax ("Velocity Shift Max (world)", Float) = 0.06
         _Velocity ("Velocity (world units/sec)", Vector) = (0, 0, 0, 0)
 
-        [Header(Stage 2 placeholders, unused)]
+        [Header(Stage 2 Influence and Ink Shift)]
         _InfluencePos ("Influence Pos", Vector) = (0, 0, 0, 0)
         _InfluenceRadius ("Influence Radius", Float) = 2.5
         _InfluenceAmount ("Influence Amount", Float) = 0
-        _ShiftFront ("Shift Front", Float) = 0
+        _ShiftFront ("Ink Shift Front Radius (0 = off)", Float) = 0
+        _ShiftOrigin ("Ink Shift Origin (world)", Vector) = (0, 0, 0, 0)
+        _ShiftBand ("Ink Shift Band Width (world)", Float) = 1.2
     }
 
     SubShader
@@ -101,6 +103,8 @@ Shader "Sprites/Custom/RisoSlab"
                 float2 size     : TEXCOORD1; // platformun dünya boyutu (lossyScale * 1 birimlik sprite)
                 float2 upLocal  : TEXCOORD2; // dünya yukarısı, localPos uzayında
                 float2 velLocal : TEXCOORD3; // _Velocity, localPos uzayında
+                float2 infLocal : TEXCOORD4; // _InfluencePos, localPos uzayında
+                float2 shiftLocal : TEXCOORD5; // _ShiftOrigin, localPos uzayında
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -134,11 +138,13 @@ Shader "Sprites/Custom/RisoSlab"
             float _MisregK;
             float _MisregMax;
             float4 _Velocity;
-            // Aşama 2 yer tutucuları: şimdilik kullanılmıyor
+            // Aşama 2: oyuncu etkisi ve mürekkep değişimi
             float4 _InfluencePos;
             float _InfluenceRadius;
             float _InfluenceAmount;
             float _ShiftFront;
+            float4 _ShiftOrigin;
+            float _ShiftBand;
 
             static const float PI = 3.14159265;
 
@@ -160,6 +166,8 @@ Shader "Sprites/Custom/RisoSlab"
                 // Dünya vektörü -> yerel uzay: dönüşün tersi (iç çarpım)
                 OUT.upLocal = float2(r0.y, r1.y);
                 OUT.velLocal = float2(dot(_Velocity.xy, r0), dot(_Velocity.xy, r1));
+                OUT.infLocal = mul(unity_WorldToObject, float4(_InfluencePos.xy, 0.0, 1.0)).xy * size;
+                OUT.shiftLocal = mul(unity_WorldToObject, float4(_ShiftOrigin.xy, 0.0, 1.0)).xy * size;
                 OUT.color = IN.color * _Color;
                 return OUT;
             }
@@ -192,22 +200,11 @@ Shader "Sprites/Custom/RisoSlab"
                 return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
             }
 
-            // Tek mürekkep katmanının nokta alfası. Kafes `angle` kadar döner, `shift` kadar kayıktır.
-            // Çap v'ye (0 üst, 1 alt) bağlıdır: P*(a0 + a1*v). v < vMin -> nokta yok.
-            float InkDots(float2 p, float2 up, float support, float stripW, float angle, float2 shift,
-                          float a0, float a1, float vMin, float seed)
+            // Tek hücrenin nokta alfası (kafes hücresi id). Aşama 2: oyuncu etkisi merkezi ayaklara çeker ve büyütür.
+            float DotCell(float2 p, float2 id, float aaDist, float2 up, float support, float stripW, float c, float s,
+                          float2 shift, float a0, float a1, float vMin, float seed, float2 infLocal)
             {
                 float P = max(_DotPitch, 0.05);
-                float c = cos(angle);
-                float s = sin(angle);
-                float2 sp = p - shift;
-                float2 q = float2(c * sp.x + s * sp.y, -s * sp.x + c * sp.y);
-                float2 cell = q / P;
-                float2 id = floor(cell);
-                float2 f = frac(cell) - 0.5;
-                float dist = length(f) * P;
-
-                // Hücre merkezi yerel uzayda (v ve gren hücre başına sabit -> nokta daire kalır)
                 float2 cq = (id + 0.5) * P;
                 float2 centerP = float2(c * cq.x - s * cq.y, s * cq.x + c * cq.y) + shift;
 
@@ -219,6 +216,18 @@ Shader "Sprites/Custom/RisoSlab"
 
                 float diameter = P * (a0 + a1 * v);
                 diameter *= 1.0 + _GrainAmount * (valueNoise(centerP / max(_GrainScale, 0.01) + seed) * 2.0 - 1.0);
+
+                // Aşama 2: yarıçap içindeki hücre merkezi ayaklara doğru çekilir (0.4P), çap +0.2P büyür.
+                float2 center = centerP;
+                float w = 0.0;
+                if (_InfluenceAmount > 0.001)
+                {
+                    float2 toInf = infLocal - centerP;
+                    float dInf = length(toInf);
+                    w = _InfluenceAmount * saturate(1.0 - dInf / max(_InfluenceRadius, 0.01));
+                    center += (toInf / max(dInf, 1e-4)) * (w * 0.4 * P);
+                    diameter += w * 0.2 * P;
+                }
 
                 // dMin: altına inen nokta dMin çapında çizilir, alfa d/dMin (CRT'de titreyen alt-hücre nokta yok)
                 float alphaScale = 1.0;
@@ -232,8 +241,38 @@ Shader "Sprites/Custom/RisoSlab"
                 // Temiz üst şerit: şeride değen nokta hiç çizilmez (yarım yay kalmaz)
                 if (depthC - r < stripW)
                     return 0.0;
-                float aa = max(fwidth(dist), 1e-4);
-                return (1.0 - smoothstep(r - aa, r + aa, dist)) * alphaScale;
+                float dist = length(p - center);
+                return (1.0 - smoothstep(r - aaDist, r + aaDist, dist)) * alphaScale;
+            }
+
+            // Tek mürekkep katmanının nokta alfası. Kafes `angle` kadar döner, `shift` kadar kayıktır.
+            // Çap v'ye (0 üst, 1 alt) bağlıdır: P*(a0 + a1*v). v < vMin -> nokta yok.
+            // Etki varken çekilen noktalar komşu hücre alanına taşabilir: 3x3 komşu değerlendirilir.
+            float InkDots(float2 p, float2 up, float support, float stripW, float angle, float2 shift,
+                          float a0, float a1, float vMin, float seed, float2 infLocal)
+            {
+                float P = max(_DotPitch, 0.05);
+                float c = cos(angle);
+                float s = sin(angle);
+                float2 sp = p - shift;
+                float2 q = float2(c * sp.x + s * sp.y, -s * sp.x + c * sp.y);
+                float2 id0 = floor(q / P);
+                float aaDist = max(length(fwidth(p)), 1e-4);
+
+                float result = DotCell(p, id0, aaDist, up, support, stripW, c, s, shift, a0, a1, vMin, seed, infLocal);
+                if (_InfluenceAmount > 0.001)
+                {
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            if (i == 0 && j == 0) continue;
+                            result = max(result, DotCell(p, id0 + float2(i, j), aaDist, up, support, stripW, c, s,
+                                                          shift, a0, a1, vMin, seed, infLocal));
+                        }
+                    }
+                }
+                return result;
             }
 
             fixed4 frag(v2f IN) : SV_Target
@@ -298,15 +337,25 @@ Shader "Sprites/Custom/RisoSlab"
                     float stripW = max(_CleanTopMin, _CleanTopFactor * h);
 
                     // Katman açıları: teal 15°, sarı 45°, pembe 75° (hiçbiri 0°/90° değil)
-                    teal   = InkDots(p, up, support, stripW, radians(15.0), tealShift,        0.24, 0.34, 0.35, 3.1);
-                    yellow = InkDots(p, up, support, stripW, radians(45.0), float2(0.0, 0.0), 0.50, 0.35, 0.00, 7.7);
-                    pink   = InkDots(p, up, support, stripW, radians(75.0), pinkShift,        0.26, 0.40, 0.20, 5.3);
+                    teal   = InkDots(p, up, support, stripW, radians(15.0), tealShift,        0.24, 0.34, 0.35, 3.1, IN.infLocal);
+                    yellow = InkDots(p, up, support, stripW, radians(45.0), float2(0.0, 0.0), 0.50, 0.35, 0.00, 7.7, IN.infLocal);
+                    pink   = InkDots(p, up, support, stripW, radians(75.0), pinkShift,        0.26, 0.40, 0.20, 5.3, IN.infLocal);
                 }
 
                 // Kâğıt üstünde multiply, çizginin içinde kırpılı
                 float inkMask = (1.0 - fill) * _InkOpacity;
                 rgb *= lerp(1.0, _TealInk.rgb,   teal   * inkMask);
-                rgb *= lerp(1.0, _YellowInk.rgb, yellow * inkMask);
+                // Mürekkep değişimi dalgası: ayaklardan genişleyen halka bandında sarı mürekkep pembeye döner
+                float3 yellowInk = _YellowInk.rgb;
+                if (_ShiftFront > 0.0001)
+                {
+                    float dF = length(p - IN.shiftLocal);
+                    float edge = 0.15; // bant kenar yumuşatması (dünya birimi)
+                    float inFront = 1.0 - smoothstep(_ShiftFront - edge, _ShiftFront, dF);
+                    float behind = smoothstep(_ShiftFront - _ShiftBand - edge, _ShiftFront - _ShiftBand, dF);
+                    yellowInk = lerp(_YellowInk.rgb, _PinkInk.rgb, inFront * behind);
+                }
+                rgb *= lerp(1.0, yellowInk, yellow * inkMask);
                 rgb *= lerp(1.0, _PinkInk.rgb,   pink   * inkMask);
 
                 rgb = lerp(rgb, _LineColor.rgb, fill);

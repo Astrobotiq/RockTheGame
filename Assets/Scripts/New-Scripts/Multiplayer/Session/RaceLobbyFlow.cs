@@ -155,7 +155,7 @@ namespace New_Scripts.Multiplayer.Session
         private string ResumeMismatch(HelloMessage hello)
         {
             if (IsResume && !hello.Resume)
-                return "Rakip yeni bir yarış başlatıyor; kayıtlı yarış için ikiniz de Devam et'i seçin";
+                return "Rakip yeni bir yarış başlatıyor (kaydı olmayabilir); Devam et'i kapatıp yeniden dene ya da ikiniz de Devam et'i seçin";
             if (!IsResume && hello.Resume)
                 return "Rakip kayıtlı bir yarışa devam etmek istiyor; ikiniz de Devam et'i ya da yeni yarışı seçin";
             if (IsResume && hello.RaceId != RaceId)

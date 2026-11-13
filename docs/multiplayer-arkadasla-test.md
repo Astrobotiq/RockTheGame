@@ -20,7 +20,7 @@ Arkadaşına klasörü zipleyip gönder. `RockTheGame_BurstDebugInformation_DoNo
 ## 3a. Steam ile (en kolay, henüz denenmedi)
 
 1. İkinizde de Steam açık ve giriş yapılmış olsun.
-2. İkiniz de oyunu açıp **Çok oyunculu**'yu seçin. Lobide "Bağlantı: Steam" yazmalı; yazmıyorsa Steam başlatılamamıştır (Player.log'da `[MP] Steam`), IP yoluna geçin.
+2. İkiniz de oyunu açıp **Çok oyunculu**'yu seçin. Lobide "Bağlantı: Steam" yazmalı; yazmıyorsa Steam başlatılamamıştır (Player.log'da `[MP] Steam`), IP yoluna geçin. **"Devam et: Açık" görünüyorsa ve yeni yarış başlatacaksanız kapatın**: iki taraf da aynı seçimi yapmazsa bağlantı kurulur kurulmaz reddedilir (14 Kasım'daki ilk denemenin nedeni buydu).
 3. Host **Host ol** der; Steam'in davet arayüzü açılır (açılmazsa Shift+Tab). Arkadaşını davet eder.
 4. Arkadaşın daveti kabul eder; oyun kendiliğinden katılır (ana menüdeyse lobiye geçer, oyun kapalıysa Steam açar). Steam'de oyun "Spacewar" olarak görünür: kendi AppID'miz yok, Steam'in test uygulamasını kullanıyoruz.
 5. Modem ve güvenlik duvarı ayarı gerekmez (Steam relay).

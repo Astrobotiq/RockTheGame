@@ -149,6 +149,8 @@ namespace New_Scripts.Multiplayer.Steam
 
         private void Lost(ConnectionInfo info)
         {
+            // DisconnectReason kaba; arkadaşla testte asıl nedeni (relay, zaman aşımı, karşı uç kapattı) Steam'in kodu söyler.
+            UnityEngine.Debug.Log($"[MP] Steam bağlantısı kapandı: {info.State}, neden {info.EndReason} ({(int)info.EndReason})");
             DisconnectReason reason = info.State == ConnectionState.ProblemDetectedLocally
                 ? DisconnectReason.Timeout
                 : _wasConnected ? DisconnectReason.RemoteLeft : DisconnectReason.Rejected;
@@ -168,9 +170,11 @@ namespace New_Scripts.Multiplayer.Steam
         {
             try
             {
-                if (_hasPeer) _peer.Close();
+                // linger: kapanmadan önce bekleyen güvenilir mesajlar gider. El sıkışma reddedilince kapatan tarafın Hello'su
+                // karşıya ulaşsın ki o da nedeni görsün (14 Kasım: host yalnız "Rakip ayrıldı" görüyordu).
+                if (_hasPeer) _peer.Close(linger: true);
                 _socket?.Close();
-                _client?.Close();
+                _client?.Close(linger: true);
             }
             catch (Exception)
             {

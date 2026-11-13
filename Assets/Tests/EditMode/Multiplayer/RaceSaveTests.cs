@@ -67,6 +67,17 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Store_DefaultPathInEditor_IsNotTheBuildsFile()
+        {
+            // Editör ve build aynı persistentDataPath'i paylaşır. 14 Kasım: editör denemesinin kaydı build'de "Devam et"i açtı,
+            // Steam testinde arkadaşın oyunu el sıkışmayı reddetti.
+            string fileName = Path.GetFileName(new RaceSaveStore().Path);
+
+            Assert.AreNotEqual(RaceSaveStore.FileName, fileName);
+            StringAssert.StartsWith("multiplayer-race-", fileName);
+        }
+
+        [Test]
         public void Store_WriteThenRead_RoundTrips()
         {
             var store = new RaceSaveStore(_path);

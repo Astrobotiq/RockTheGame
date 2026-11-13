@@ -23,8 +23,9 @@ namespace New_Scripts.Multiplayer.Save
         }
 
         /// <summary>
-        /// Editörde Multiplayer Play Mode'un sanal oyuncusu (Library/VP/&lt;id&gt;) ana editörle aynı persistentDataPath'i
-        /// paylaşır; kayıtlar birbirinin üzerine yazmasın diye sanal oyuncunun dosya adına kimliği eklenir.
+        /// Editör ve build aynı persistentDataPath'i paylaşır; editör denemesinin kaydı build'de "Devam et"i açmasın diye
+        /// editör kendi dosyasını yazar. Multiplayer Play Mode'un sanal oyuncusu (Library/VP/&lt;id&gt;) da ana editörle aynı
+        /// yolu paylaşır; onun dosya adına kimliği eklenir.
         /// </summary>
         private static string DefaultFileName()
         {
@@ -36,8 +37,10 @@ namespace New_Scripts.Multiplayer.Save
                 string id = dataPath.Substring(vp + "/Library/VP/".Length).Split('/')[0];
                 return $"multiplayer-race-{id}.json";
             }
-#endif
+            return "multiplayer-race-editor.json";
+#else
             return FileName;
+#endif
         }
 
         public bool Exists => File.Exists(Path);

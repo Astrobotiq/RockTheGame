@@ -84,6 +84,8 @@ namespace New_Scripts.Multiplayer.Lobby
             var canvasGo = new GameObject("MainMenuCanvas") { layer = LayerMask.NameToLayer("UI") };
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            // Bilerek UiPixelScale değil (UR-3, 2026-11-14): menü tam ekran kompozisyon; ölçek 2'de (1366x768, 1280x800) tam sayı
+            // ölçek menüyü ekranın ~2/3'üne küçültüp altını boş bırakıyordu. Pause ve HUD UiPixelScale kullanır.
             var scaler = canvasGo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);

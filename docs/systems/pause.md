@@ -1,6 +1,6 @@
 # Pause
 
-*GDD §11 (pause yok denmişti). Son kod doğrulaması: 2026-11-09.*
+*GDD §11 (pause yok denmişti). Son kod doğrulaması: 2026-11-14.*
 
 ## Tasarım niyeti
 
@@ -20,7 +20,7 @@ Saf mantık `Pause/PauseState.cs` ve `PauseRules.cs`'te (EditMode testli: `Pause
 
 ## Radyal menü
 
-`PauseMenuPanel` (NewScene, `Managers/PauseMenu`) `PauseManager.PauseChanged`'e bağlanır, Overlay canvas'ı kodla kurar (1920x1080 referans, sanat pikseli = 4 birim), dört `UiArc` dilimi çizer. Dilim 0 tepede, saat yönünde: **resume** (yukarı), **options** (sağ), **quit** (aşağı), **retry** (sol).
+`PauseMenuPanel` (NewScene, `Managers/PauseMenu`) `PauseManager.PauseChanged`'e bağlanır, Overlay canvas'ı kodla kurar (`UiPixelScale`: tam sayı sanat pikseli ölçeği, 1 sanat pikseli = 4 canvas birimi; UR-3, 2026-11-14), dört `UiArc` dilimi çizer. Dilim 0 tepede, saat yönünde: **resume** (yukarı), **options** (sağ), **quit** (aşağı), **retry** (sol).
 
 | Girdi | Ne yapar |
 |---|---|

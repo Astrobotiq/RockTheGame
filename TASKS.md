@@ -6,48 +6,91 @@
 
 ## Active
 
+### Çok oyunculu
+
 - [ ] **MP 0: Steam'i iki bilgisayarda dene** #test - MP 9 kodda; build al, ikisinde Steam açık, lobide "Bağlantı: Steam", host Host ol → davet, diğeri kabul eder; yarış, bayrak, ceza, bitiş (docs/multiplayer-arkadasla-test.md §3a), due 2026-11-09
-- [ ] **Lobiyi iki pencerede dene** #test - host/katıl/vazgeç/devam et, mod değişimi, bekleme ve geri sayım iki pencerede doğru durumu gösteriyor mu; gamepad ile gezinme, due 2026-11-17. **2026-11-14 durumu:** ana editör + sanal oyuncuyla host/katıl, mod değişimi (istemci host'un modunu alıyor), vazgeç (bekleme sırasında dahil), devam et ve uyuşmazlık mesajı doğrulandı; bulunan iki sorun düzeltildi (varış animasyonu için 1 sn bekleme, hata plakası). Kalan: gamepad ile gezinme, Steam daveti, build'de gerçek yükleme süresi; geri sayım lobide yok (`RaceHud`'da)
-- [ ] **Hareketli duvardan ayrılınca duvarın hızını aktar** #code - level 15'te duvarın arka yüzünde tırmanırken zıplayınca duvar kaçıyor ve tekrar tutunulamıyor; önce wall-movement.md:39 ve platforms.md'deki kuralı güncelle, onay al; sonra taşıyan yüzeyin hızını (`DeltaPosition / fixedDeltaTime`, `SurfaceVelocity` değil) duvar ve zemin çıkışlarına ekle (docs/audit/2026-11-14-player-fsm.md PF-1), due 2026-11-18
-- [ ] **Tırmanırken duvara yapış, temas kaybını kilitleme** #code - `PlayerStatsSO.WallClimbContactTolerance` (0.15), her fizik adımında duvara çekme, 0.2 sn kilit yalnızca bumper bırakılınca; kayma için de aynı (PF-2), due 2026-11-18
-- [ ] **Duvar düzeltmelerini level 15'te gamepad ile dene** #test - hareketli duvarın arka yüzünde tırman, zıpla, bırak-tut; statik duvarda (338.5, 128.6) ve (605.5, 273.6) noktalarından tırman; değişen hissi not et (PF-1, PF-2), due 2026-11-18
-- [ ] **Çift kancadaki çift hareketi düzelt** #code - `DualSwingingState` hem `rb.position` yazıyor hem `Move` çağrılıyor; düzeltince hız yarıya iner, yay değerlerinin eski/yeni hâlini yaz (PF-3), due 2026-11-19
-- [ ] **Duvar zıplamasına jump buffer ekle** #code - tırmanma ve kaymada `JumpBufferTimer` + `ConsumeJumpBuffer` (PF-5), due 2026-11-19
-- [ ] **Dash ve ledge climb zamanlamasını fizik adımına al** #code - dash sayacı `FixedUpdate`'e (mesafe şu an 6.3–7.7), ledge climb konumu `FixedUpdate`'e (PF-6), due 2026-11-19
-- [ ] **Çift kanca, duvar zıplaması ve dash'i gamepad ile dene** #test - çift kanca hızını/yayını yeniden ayarla, erken basılan duvar zıplaması tutuyor mu, dash mesafesi sabit mi (PF-3, PF-5, PF-6), due 2026-11-19
-- [ ] **Havadaki momentum: karar ve uygulama** #code - duvara çarpınca yatay hız sıfırlansın mı, "köşe boost'u" olarak korunsun mu; kararı movement-core.md'ye yaz, sıfırlama seçilirse uygula (PF-4), due 2026-11-20
-- [ ] **Momentum değişikliğini gamepad ile dene** #test - swing'den duvara çarpıp duvar ucundan çıkış, slingshot sonrası duvar teması (PF-4), due 2026-11-20
+
 
 ## Waiting On
 
-- [ ] **Options ekranı: ses sekmesi** #code - seçilen düzen (`options-v1.html` A ya da B), sekme yapısı + ses sekmesi, örnek ses; hareket ui-motion.md listesine göre (options-menu.md), due 2026-11-16
-- [ ] **Options ekranı: titreşim ve görüntü sekmeleri** #code - örnek titreşim, CRT önizleme, çözünürlük 10 sn onay (options-menu.md), due 2026-11-17
+### Options ekranı (karar → veri → sekmeler → bağlama → test)
+
 - [ ] **Lobi ve options tasarımını seç** #art - `docs/ui-research/lobby-v1.html` ve `options-v1.html`'de oy ver, notları yapıştır; dil (UR-12), Retry ölüm saysın mı (UR-9) ve ölçek kuralı (UR-3) kararlarını da ver. Sonraki lobi/options task'ları buna bağlı, due 2026-11-14
 - [ ] **Ayarlar: veri ve kayıt** #code - titreşim çarpanı + açık/kapalı (`HapticManager`), CRT açık/kapalı ve gücü, pencere modu/çözünürlük; PlayerPrefs, açılışta uygula; ses zaten `AudioManager`'da; EditMode testi (docs/ui-research/options-menu.md), due 2026-11-16
+- [ ] **Options ekranı: ses sekmesi** #code - seçilen düzen (`options-v1.html` A ya da B), sekme yapısı + ses sekmesi, örnek ses; hareket ui-motion.md listesine göre (options-menu.md), due 2026-11-16
+- [ ] **Options ekranı: titreşim ve görüntü sekmeleri** #code - örnek titreşim, CRT önizleme, çözünürlük 10 sn onay (options-menu.md), due 2026-11-17
 - [ ] **Options'ı ana menü ve pause'a bağla** #code - ana menüde `options` etkin, pause'da options dilimi `Enabled`; B ile geldiği yere döner; `docs/systems/options.md` yaz, `pause.md`'yi güncelle ve oraya unscaled zaman kuralını ekle (UR-8) (options-menu.md), due 2026-11-17
 - [ ] **Options'ı gamepad ile dene** #test - ana menüden ve pause'dan aç-kapa, sekmeler, basılı tutma hızı, değerler oyunu kapatıp açınca kalıyor mu, okunurluk, due 2026-11-18
+
+### Level
+
 - [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle (sarı bayrak gizmo'su); oda 21 ve 22'ninkiler oda ortasında havada, mutlaka taşı; oda 21'deki bitiş işaretini (dama bayrağı gizmo'su, `RaceFinishPoint`) de bitiş yerine taşı, due 2026-12-07
 
 ## Someday
 
-- [ ] **Hitstop sırasında platformlar da dursun mu** #code - karar: hitstop yalnızca oyuncuyu donduruyor, level 15'te dash atarken duvar 0.8 birim kaçıyor; platformlar `HitStopEvents`'e abone mi olsun, hitstop mu kısalsın (docs/audit/2026-11-14-player-fsm.md PF-7)
+### Oyuncu FSM kararları (PF-7, PF-8, PF-9)
+
+- [ ] **Hitstop sırasında platformlar da dursun mu** #code - karar: hitstop yalnızca oyuncuyu donduruyor, level 15'te dash atarken duvar 0.8 birim kaçıyor; platformlar `HitStopEvents`'e abone mi olsun, hitstop mu kısalsın (docs/audit/2026-11-14-player-fsm.md PF-7). Celeste karşılaştırması: orada 0.05 sn ve bütün dünya donuyor, burada 0.2 sn ve yalnızca oyuncu (docs/precision-platformer-plani.md §3.4 #2)
 - [ ] **Duvara tutunma toleransı** #code - karar: havadan/yerden tutunmak fiilî temas istiyor, `WallSnapRaycastDistance` (2) pratikte işlemiyor; PF-2'deki toleransla tutunma (PF-8)
 - [ ] **Player FSM küçükleri** #code - `SlingshotState` hakkı anchor kontrolünden önce harcıyor; `CurrentWallSlideTime` 2f sabit (PF-9)
+
+### Oyuncu FSM: momentum (PF-4)
+
+- [ ] **Havadaki momentum: karar ve uygulama** #code - duvara çarpınca yatay hız sıfırlansın mı, "köşe boost'u" olarak korunsun mu; kararı movement-core.md'ye yaz, sıfırlama seçilirse uygula (PF-4). Celeste: sıfırlar ama duvar 0.06 sn içinde biterse hızı geri verir (`WallSpeedRetentionTime`, precision-platformer-plani.md satır 46); seçenekler (a) düz sıfırla, (b) köşe boost'u olarak koru, (c) sıfırla + 0.06 sn geri ver (önerilen)
+- [ ] **Momentum değişikliğini gamepad ile dene** #test - swing'den duvara çarpıp duvar ucundan çıkış, slingshot sonrası duvar teması (PF-4); karar task'ından sonra
+
+### Precision toleransları (docs/precision-platformer-plani.md §3.5)
+
+- [ ] **Airborne kilit ve coyote sayaçlarını fizik adımına al** #code - `AirborneState.DecrementTimers` coyote, yatay kilit, kanca kilidi ve duvar tırmanma kilidini `Update`'te `deltaTime` ile sayıyor; `FixedUpdateState`'e taşı, süreler kare hızından bağımsız olsun (PF-6)
+- [ ] **Duvar zıplaması: değmeden mesafe ve yükselirken karar** #code - duvara ~0.35 birim yakınken (temas olmadan) ve yükselirken duvar zıplaması olsun mu; kararı `wall-movement.md`'ye yaz, W5 ile tutarlılığı kontrol et, olacaksa uygula (PF-5, precision-platformer-plani.md §3.4 #5)
+
+- [ ] **Dash mesafesi tutarlılık testi** #test - aynı dash'i farklı kare hızlarında (örn. `Application.targetFrameRate` 30/60/144) tekrar et, mesafe aynı mı; PlayMode kural testi olarak `DashRulesTests`'e eklenebilir; dash süresi task'ından sonra
+- [ ] **Köşe düzeltmesi (tavan + dash)** #code - zıplarken tavan köşesine birkaç piksel değince yana kaydırıp geçir, dash'te köşeye sürtünce dikey kaydır; Celeste değeri 0.5 birim (4 px), mesafe `PlayerStatsSO`'ya yeni alan (§3.4 #4)
+- [ ] **Köşe düzeltmesi testi** #test - tavan köşesine 0.1–0.4 birim değerek zıpla, geçiyor mu; 0.6'da geçmiyor mu; dash için aynısı; köşe düzeltmesinden sonra
+- [ ] **Duvar zıplaması buffer testi** #test - duvara değmeden 1–5 kare önce zıpla, duvar zıplaması çıkıyor mu; `WallRulesTests`'e eklenebilir; buffer task'ından sonra
+- [ ] **Havada sınır üstü hız sönümü** #code - his kararı: `AirborneState.ApplyAirMovement` stick ileriyken 40, boştayken 20 ile söndürüyor; kancadan 25 birim/sn çıkan oyuncu ileri bastıkça daha hızlı yavaşlıyor. Hız sınırın üstünde ve stick aynı yöndeyse daha yavaş sönüm (yeni alan, ör. `AirOverspeedReduce`); yere inişte hızın tek adımda 10'a kesilmesi de aynı soru. Eski/yeni değeri `feel-notlari.md`'ye yaz (§3.4 #3)
+- [ ] **Hava sönümü gamepad testi** #test - kancadan ve slingshot'tan çıkıp stick'i ileri tut / bırak; momentum korunuyor mu, kontrol kaybı var mı; sönüm task'ıyla aynı ya da ertesi gün
+- [ ] **Kancadan tek çıkış kuralı** #code - tek kanca, çift kanca ve slingshot bırakışı şu an üç farklı yerçekimi kuralı; `feel-notlari.md`'deki karar verilince tek kurala indir (§3.4 #7)
+- [ ] **Yer/hava durumlarını birleştirme planı** #code - büyük iş, önce yalnızca plan: `GroundedState` + `AirborneState` tek `NormalState` olursa `SurfaceCarry`, `bypass*Gravity` parametreleri ve coyote aktarımı nasıl sadeleşir; parçalara bölünmüş task listesi çıkar (§3.4 #6)
+
+### CRT
+
 - [ ] **CRT: slot mask prototipi** #code - mevcut shader'a dokunmadan kopya (`CRTFilter` → yeni shader); fiziksel piksel uzayında (`positionCS`) kanal bazlı slot mask (R/G/B dikey çubuklar, pitch ve gap parametre), kalın scanline bandı + aralık, gain telafisi; sanal piksel hücresine hizalı (6×6/8×8 fiziksel piksel); önce `docs/systems/`'te CRT doc'u var mı bak; alternatif: Lottes CRT shader'ını port etmek (lisansı doğrula); sebep: şu an gerçek CRT fosfor görünümü yok, referans: yakın plan fotoğrafta R/G/B çubuklar ve kalın scanline (kullanıcı şimdilik ilgilenmek istemedi)
 - [ ] **CRT prototipini Game view'da karşılaştır** #test - 1x ve 5x ölçekte referans fotoğrafa (slot mask, sprite hücreleri) benziyor mu; sanal çözünürlük kararı (480×360 kalsın mı, 320×180/240×135 mi), moiré/titreşim notu; slot mask prototipinden sonra
+
+### UI
+
 - [ ] **Başlık ekstrüzyonunda tırtıklı kenarlar** #code - `UiExtrudedText` kopyaları çapraz kenarlarda merdiven yapıyor; önce gamepad mesafesinde görünüyor mu bak (docs/ui-research/ui-review-2026-11-12.md UR-6)
+
+### Teknik borç ve build
+
 - [ ] **Player build al ve doğrula** #test - RockTheGame.Runtime'daki EasyTextEffects.Editor importu build'de patlıyor mu (6 Kasım'da multiplayer için ertelendi)
 - [ ] **Fixed Timestep 60 Hz denemesi** #code - 0.02 → 0.01667 dene, bir seviye oyna, beğenmezsen geri al (kalan-isler §1.2) (6 Kasım'da multiplayer için ertelendi)
 - [ ] **DontDestroyOnLoad uyarısını düzelt** #code - Play Mode'da "only works for root GameObjects" çıkıyor; aday AudioManager.cs:72 ya da HapticManager.cs:26, kaynağı doğrula ve düzelt (6 Kasım'da multiplayer için ertelendi)
+- [ ] **PhysicsTest sahneleri ve M_CRTFilter.mat gürültüsü** #code - takipsiz sahneleri commit'le ya da sil; `_CrtTime` izini kes
+
+### Oda 16 ve level düzeltmeleri
+
 - [ ] **Oda 16 kamera uzaklığı** #level - ortho 22'de zemindeki dikenler noktalı çizgi gibi, oyuncu çok küçük; oda kamera ayarını yakınlaştır ya da dikenleri büyüt (docs/systems/hazards.md) (6 Kasım'da multiplayer için ertelendi)
 - [ ] **Ezici bloklar node'ları örtüyor** #level - oda 16'da beyaz `MovingDeath` blokları node'ların önünden geçerken onları tamamen gizliyor; ikisi de Default/0, node'ları öne al (docs/systems/hazards.md) (6 Kasım'da multiplayer için ertelendi)
+
+### Tasarım ve görsel kararlar
+
 - [ ] **PPU standardı kararı** #art - 5 Kasım'da ertelendi; ölçüm kalan-isler §1.4'te (zemin/diken/boru 16, oyuncu 24/32, büyütülmüş meyve/trambolin 5–14)
 - [ ] **Pixel Perfect Camera denemesi** #art - PPU kararından sonra (kalan-isler §1.5)
 - [ ] **GDD §8 "yeşil, pis asit" ile görsel uyumu** #art - metin mi sanat mı güncellenecek
 - [ ] **Beyaz dikdörtgen ve daireler** #art - odalar 2, 9, 12, 16, 19, 22: bunlar tehlikeler (`MovingDeath` ezicileri, `RotatingDeath` daireleri), Unity'nin varsayılan kare/dairesiyle çizilmiş; sanat mı yapılacak, bilerek mi
 - [ ] **GDD §12 karar oturumu** #test - assist modu, hamster topu, multiplayer, toplanabilirlerin amacı, zorluk eğrisi
+
+### Asset ve sanat üretimi
+
 - [ ] **Telifli müzikleri değiştir** #art - örn. "The Skeleton Dance"; yayın öncesi
-- [ ] **PhysicsTest sahneleri ve M_CRTFilter.mat gürültüsü** #code - takipsiz sahneleri commit'le ya da sil; `_CrtTime` izini kes
+- [ ] **Spiral node'lar** #art - mekanik yükü az, shader üretmek gerekiyor
+- [ ] **İleri zıplama animasyonu** #art - şu anki animasyon yerinde zıplama gibi duruyor
+- [ ] **Bounce pad asset'leri** #art - kodda `LaunchPad` olan pedler için görsel üretimi
+
+### Karakterler ve hikâye
+
 - [ ] **Karakter: Egg** #art - yumurta gözlü yeni karakter
 - [ ] **Karakter: Dondurma adam** #art - sarı renkli dondurma; fabrikadaki kırmızımsı yeni dondurmalar gibi olmak istiyor
 - [ ] **Hikâye seviyesi: Dondurma adamla tanışma** #level - birkaç diyalog duyuyoruz; hikâye seviye içinde anlatılır, oyuncuya zorla verilmez
@@ -55,20 +98,33 @@
 - [ ] **Hikâye seviyesi: Missing kağıtları** #level - X-Men Days of Future Past kapağındaki gibi arka planı missing kağıtlarıyla dolu seviye
 - [ ] **Hikâye seviyesi: Dondurma fabrikası** #level - dondurma adam üretildiği fabrikada; yukarıdan yeni dondurmalar kapaklarından tutularak geçer (Monsters Inc. kapı sistemi gibi), onlar gibi olmak istediğini söyler
 - [ ] **Hikâye seviyesi: Yaşanmamış hayatlar** #level - bir iki odada Egg ve dondurma adamın La La Land finalindeki gibi yaşamadıkları hayatlar
-- [ ] **End credits: Dondurma adam ve fotoğraflar** #art - dondurma adam yumurtanın fotoğraflarına kendi şeklini kesiyor
 - [ ] **Hikâye seviyesi: Kayıp kedi Astro** #level - bir karakter kaçan kedisini bulmamızı ister; Astro mahsur kaldığı yerden kurtarılır ya da bulunur, yanında hep arkadaş kediler olur
+- [ ] **End credits: Dondurma adam ve fotoğraflar** #art - dondurma adam yumurtanın fotoğraflarına kendi şeklini kesiyor
+
+### Yeni seviye fikirleri
+
 - [ ] **Seviye: Reels kaydırma** #level - oyuncu reels bitmeden seviyeyi tamamlar, yoksa sayfa kayarken oyuncuyu öldürür
 - [ ] **Seviye: Reklam içeren seviye** #level - ayrıntısı netleşecek
-- [ ] **Spiral node'lar** #art - mekanik yükü az, shader üretmek gerekiyor
+
+### Yeni mekanik ve sistemler
+
 - [ ] **Swing tutorial iyileştirmesi** #code - oyuncu node'a doğru zıplatılır, havada zaman yavaşlar; önce kolu hareket ettirmeyi, sonra ateşlemeyi öğrenir
-- [ ] **İleri zıplama animasyonu** #art - şu anki animasyon yerinde zıplama gibi duruyor
-- [ ] **Bounce pad asset'leri** #art - kodda `LaunchPad` olan pedler için görsel üretimi
 - [ ] **Yalnızca odayı gösterme araştırması** #code - Celeste gibi; bazı seviyelerde yan oda görünmesin, gösterilmek istenmeyen yerler karanlık kalsın (komşu odalar şu an aktif kalıyor)
 - [ ] **Hareketli node'lar** #code - hareketli platform gibi oyuncuyu taşıyan, fırlatan node'lar (anchor'lar şu an sabit `Vector2?`, node'u takip etmesi gerekir)
 - [ ] **Teleport platformlar** #code - DK Bananza'daki gibi; platform parçalarına dokunup onları örneğin alevli kapının üstüne ışınlayarak barikat kurmak
 
 ## Done
 
+- [x] ~~**Çift kancadaki çift hareketi düzelt** #code~~ (2026-11-14) - zamanından erken; `DualSwingingState` artık pozisyonu set etmiyor, yalnızca `Velocity` veriyor (`Move` zaten uyguluyor); yay değerleri değişmedi (`DualSpringStiffness` 25, `DualSpringDamping` 5, `DualSwingForceMultiplier` 15) (PF-3)
+- [x] ~~**Çift kanca, duvar zıplaması ve dash'i gamepad ile dene** #test~~ (2026-11-14) - zamanından erken; çift kanca, duvar buffer'ı ve dash/ledge climb gamepad ile denendi, sorun yok (PF-3, PF-5, PF-6)
+
+- [x] ~~**Dash süresini fizik adımına bağla** #code~~ (2026-11-14) - zamanından erken; `DashState` sayacı ve çıkışı `FixedUpdateState`'te (10 adım, frame hızından bağımsız), `LedgeClimbState` süre ve konum yazımı da fizik adımında; EditMode 362/362, PlayMode 41/41 yeşil, gamepad ile denendi. `AirborneState` kilit/coyote sayaçları hâlâ `Update`'te
+- [x] ~~**Duvar zıplamasını buffer'a bağla** #code~~ (2026-11-14) - zamanından erken; `WallSlidingState` ve `WallClimbingState` `JumpBufferTimer`'ı kullanıyor (0.1 sn), W5 yön kuralları aynı; gamepad ile denendi. "Değmeden mesafe ekle" ve yükselirken duvar zıplaması yapılmadı
+
+- [x] ~~**Duvar düzeltmelerini level 15'te gamepad ile dene** #test~~ (2026-11-14) - zamanından erken; gamepad ile oynandı, duvar yapışma ve hareketli yüzeyden zıplama sorunsuz; zeminden hız aktarımı kaldırıldıktan sonra tekrar denendi (PF-1, PF-2)
+- [x] ~~**Tırmanırken duvara yapış, temas kaybını kilitleme** #code~~ (2026-11-14) - zamanından erken; `WallClimbContactTolerance` (0.15) + `WallClingMath.ClosingSpeed`, `PlayerController.TryMeasureWallGap`; tırmanma ve kayma duvara tolerans içinde yapışır, 0.2 sn kilit yalnızca bumper bırakılınca; EditMode 362/362, PlayMode 41/41 yeşil, gamepad ile denendi (PF-2)
+- [x] ~~**Hareketli duvardan ayrılınca duvarın hızını aktar** #code~~ (2026-11-14) - zamanından erken; `SurfaceCarry` + `KinematicPhysicsHandler.CurrentCarrier`; duvar/zemin çıkışlarında yüzey hızı (`DeltaPosition/dt`) `AirborneState`'e referans çerçevesi olarak taşınır, boost'lu yüzeyde eski formül kalır. Gamepad denemesi ayrı task'
+- [x] ~~**Lobiyi iki pencerede dene** #test~~ (2026-11-14) - üç gün erken; ana editör + sanal oyuncuyla host/katıl, mod değişimi (istemci host'un modunu alıyor), vazgeç (bekleme sırasında dahil), devam et ve uyuşmazlık mesajı doğrulandı. Bulunan iki sorun düzeltildi: varış animasyonu için sahne yüklemesi lobiden gelinirken 1 sn bekliyor, hata plakası iki satıra sarıyor. Geri sayım lobide yok (`RaceHud`'da). **Denenmedi, kullanıcı kararıyla kapatıldı:** gamepad ile gezinme, Steam daveti (MP 0'da), build'de gerçek yükleme süresi'
 - [x] ~~**Çok oyunculu lobi: bekleme ve geri sayım** #code~~ (2026-11-14) - iki gün erken; `LobbyScreen`: bekleyen P2 kesik çizgili "?" küp, sağ yarıda kayan soluk sarı bantlar (`UiHazard` shader'ına `_GapAlpha` ve `_Scroll` eklendi); rakip gelince bantlar solar, sağ yarı soldan sağa boyanır, küp düşüp çakılır. **3-2-1 lobiye konmadı:** rakip bağlanınca oyun sahnesi lobinin yerine yükleniyor, geri sayım `RaceHud`'da (karar 2026-11-14). Play Mode'da bekleme ve varış ekran görüntüsü alındı (docs/ui-research/lobby-play/), yay değerleri örneklendi (düşüş ~0,5 sn, boya ~0,9 sn); varış rakip gelmeden `Flow.Phase` yansıtmayla taklit edildi, gerçek iki pencere denenmedi. EditMode 351/351. Gamepad ve gerçek yükleme süresinde animasyonun yarım kalıp kalmadığı denenmedi
 - [x] ~~**Çok oyunculu lobi: ana ekran** #code~~ (2026-11-14) - düzen B 12 Kasım'da (`4115526`) kodlanmıştı, bugün B kesin kararıyla kapatıldı; iki yarı, mod sekmesi, ipucu şeridi, gamepad gezinme, hareket. Gamepad ve Steam denenmedi
 - [x] ~~**UI'ı farklı çözünürlükte kontrol et** #test~~ (2026-11-14) - bir gün erken; 1440p, 1366×768, 1280×800'de ana menü, oyun HUD'u (ananas sayacı), `RaceHud` (süre, uyarı, 3-2-1) ve pause Play Mode'da çekildi, `ui-review-2026-11-12/res_*.png`. Bulgu: ana menü `ScaleWithScreenSize`'ta eski düzeninde; HUD ve pause 1366×768/1280×800'de ölçek 2'ye düşüp küçülüyor (okunur); `RaceHud` uyarı metni 800p'de küçük ve CRT kenarına yakın. Denenmedi: anahtar halkası (anahtarlı odada), stamina halkası, gerçek yarış verisi (HUD metinleri elle verildi), gamepad mesafesinden okunurluk

@@ -389,6 +389,11 @@ namespace New_Scripts.Player
 
         public void SnapToRoomBounds(Collider2D newBounds, Vector2 targetPosition, float targetSize, bool isOverridden)
         {
+            // Işınlama (ceza, kayıtlı yarışa devam): eski odanın kamera override'ı ve öne bakış kalıntısı yeni odaya taşınmasın.
+            // Normal geçiş aynısını PrepareForTransition'da yapar; yeni odanınki SetAsCurrent'te yeniden kaydolur.
+            activeOverrides.Clear();
+            _currentLookAheadOffset = Vector2.zero;
+
             confiner.BoundingShape2D = newBounds;
             confiner.InvalidateBoundingShapeCache();
             confiner.enabled = true;

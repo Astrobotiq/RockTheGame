@@ -452,14 +452,19 @@ namespace New_Scripts.Multiplayer.Lobby
             _confirmHint.text = "A  CONFIRM";
             _backHint = Hint("BackHint", 410f, TextAlignmentOptions.MidlineLeft, new Vector2(0f, 0.5f), 70f);
 
-            // hata / kopma nedeni: ink plaka üstünde sarı yazı, şeridin hemen üstünde
+            // hata / kopma nedeni: ink plaka üstünde sarı yazı, şeridin hemen üstünde. Mesajlar uzun (Devam et uyuşmazlığı ~115
+            // karakter): iki satıra sarılır, daha uzunsa yazı plakaya sığana kadar küçülür (8 → 5 sanat pikseli).
             _errorPlate = NewRect("ErrorPlate", _frame);
             _errorPlate.anchorMin = _errorPlate.anchorMax = _errorPlate.pivot = new Vector2(0f, 1f);
             _errorPlate.sizeDelta = new Vector2(FrameW, FrameH) * Unit;
             _errorPlate.anchoredPosition = Vector2.zero;
-            AddPolygon(_errorPlate, "ErrorPlate", new[] { new Vector2(60f, 212f), new Vector2(420f, 212f), new Vector2(420f, 230f), new Vector2(60f, 230f) }, _theme.Ink, 0f);
+            AddPolygon(_errorPlate, "ErrorPlate", new[] { new Vector2(60f, 206f), new Vector2(420f, 206f), new Vector2(420f, 232f), new Vector2(60f, 232f) }, _theme.Ink, 0f);
             _errorText = AddText("ErrorText", _errorPlate, monoBold, 8f, _theme.Yellow, TextAlignmentOptions.Center,
-                new Vector2(240f, 221f), new Vector2(350f, 12f), new Vector2(0.5f, 0.5f));
+                new Vector2(240f, 219f), new Vector2(344f, 22f), new Vector2(0.5f, 0.5f));
+            _errorText.textWrappingMode = TextWrappingModes.Normal;
+            _errorText.enableAutoSizing = true;
+            _errorText.fontSizeMax = 8f * Unit;
+            _errorText.fontSizeMin = 5f * Unit;
             _errorPlate.gameObject.SetActive(false);
 
             foreach (var g in _groups) ApplySlide(g);

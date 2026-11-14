@@ -28,6 +28,8 @@ namespace New_Scripts.Multiplayer
         public const string ObjectName = "[MP Session]";
         public const string GameSceneName = "NewScene";
         public const string LobbySceneName = "MultiplayerLobby";
+        /// <summary>Lobideki rakip varış animasyonu (~1 sn) görünsün diye oyun sahnesi yüklemesinin beklemesi (saniye).</summary>
+        public const float LobbyArrivalHoldSeconds = 1f;
 
         private bool _gameSceneLoaded;
         private string _playerName = "Oyuncu";
@@ -355,6 +357,28 @@ namespace New_Scripts.Multiplayer
             if (_sceneLoadInProgress) return;
             _sceneLoadInProgress = true;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            LoadGameSceneAsync().Forget();
+        }
+
+        /// <summary>
+        /// Lobiden gelinirken sahne yüklemesi <see cref="LobbyArrivalHoldSeconds"/> bekler: oyun sahnesi lobinin yerine geçince
+        /// lobi ekranı donup kapanır, rakip varış animasyonu (küp düşmesi, boya) görünmez. Bekleme sırasında vazgeçilirse ya da
+        /// bağlantı düşerse sahne hiç yüklenmez.
+        /// </summary>
+        private async UniTaskVoid LoadGameSceneAsync()
+        {
+            if (SceneManager.GetActiveScene().name == LobbySceneName)
+            {
+                bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(LobbyArrivalHoldSeconds), DelayType.UnscaledDeltaTime,
+                    cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
+                if (cancelled || Transport == null || Flow == null || Flow.Phase == LobbyPhase.Failed)
+                {
+                    SceneManager.sceneLoaded -= OnSceneLoaded;
+                    _sceneLoadInProgress = false;
+                    return;
+                }
+            }
+
             SceneManager.LoadSceneAsync(GameSceneName);
         }
 

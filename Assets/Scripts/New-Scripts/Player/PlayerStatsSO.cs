@@ -56,6 +56,8 @@ namespace New_Scripts.Player
         public float StaminaWarningThreshold = 1.5f;
         public float WallSnapRaycastDistance = 2f;
         public float WallSnapSafetyOffset = 0.02f;
+        [Tooltip("Tirmanirken/kayarken duvar bu mesafeye kadar uzaklasirsa karakter duvara cekilir ve temas kopmus sayilmaz.")]
+        public float WallClimbContactTolerance = 0.15f;
         public float LedgeClimbHoldTime = 0.3f;
         public float LedgeClimbSafetyOffset = 0.05f;
         public float LedgeClimbDuration = 0.25f;

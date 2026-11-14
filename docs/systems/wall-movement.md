@@ -1,6 +1,6 @@
 # Duvar: tırmanma, kenardan çıkma, kayma, duvar zıplaması
 
-*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-14 (duvardan ayrılırken hız aktarımı).*
+*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-14 (duvara yapışma, temas kaybı kilitlemez).*
 
 ## Tasarım niyeti
 
@@ -16,7 +16,7 @@ Celeste kökenli "oyuncu dostu" katman. Duvar bir kurtarma alanı: yakalanırsı
 | Zıplama | **Dikey**: `(0, ClimbVerticalJumpVelocity)` | **Dışarı**: `(−duvarYönü × WallSlideJumpForce.x, WallSlideJumpForce.y)` |
 | Dash | Var | Var |
 | Kanca | **Yok** | Var (iki tetik de, kendi stick'iyle) |
-| Bırakınca | Bumper bırakılırsa hız sıfırlanıp düşer, 0.2 sn tekrar tutunamaz | Stick duvardan çekilirse düşer, 0.2 sn tutunma kilidi + coyote penceresi |
+| Bırakınca | Bumper bırakılırsa hız sıfırlanıp düşer, 0.2 sn tekrar tutunamaz. Bumper basılıyken temas kopması (duvar toleransın dışına çıktı) kilitlemez: düşer ama duvar geri gelirse hemen tutunur | Stick duvardan çekilirse düşer, 0.2 sn tutunma kilidi + coyote penceresi |
 | Titreşim | `WallClimbLeft/Right` (sürekli) | `WallSlideLeft/Right` (sürekli) |
 
 Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
@@ -24,6 +24,7 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 ## Tırmanma ayrıntıları
 
 - **Girişte duvara yapışma:** `WallSnapRaycastDistance` mesafesine kadar duvara doğru ışın atılır ve karakter `WallSnapSafetyOffset` boşlukla duvara oturtulur. Dikey hız sıfırlanır.
+- **Duvara yapışma:** her fizik adımında collider merkezinden duvara `WallClimbContactTolerance` (0.15) payı kadar ışın atılır. Duvar toleransın içindeyse ve `WallSnapSafetyOffset`'ten uzaksa X hızı boşluğu o adımda kapatacak değere ayarlanır (`WallClingMath.ClosingSpeed`); çarpışmayı yine `KinematicPhysicsHandler` çözer, `Rigidbody2D.position` yazılmaz. Hareketli duvarın tek adımlık taşıma kaçağı (0.08) ya da hizasız collider (0.045–0.075) böylece temas kaybı sayılmaz. Tırmanma kopması yalnızca sensör **ve** ışın duvarı bulamazsa olur. Kayma (`WallSlidingState`) aynı toleransı kullanır (stick duvara itiyorsa).
 - **Dayanıklılık** hareket edip etmemekten bağımsız, her saniye 1 azalır (`ConsumeWallStamina(Time.deltaTime)`). Göstergesi **kırılan stamina halkası**dır (`HudStaminaRing`, aşağıya bak); tırmanmaya girince açılır.
 
 ### Kırılan stamina halkası (`HudStaminaRing`)
@@ -63,6 +64,7 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 | `ClimbVerticalJumpVelocity` | 14 | tırmanırken zıplama |
 | `WallJumpForce` | (11, 14) | **hiçbir yerde okunmuyor** |
 | `WallSnapRaycastDistance` / `WallSnapSafetyOffset` | 2 / 0.02 | |
+| `WallClimbContactTolerance` | 0.15 | tırmanırken/kayarken duvara yapışma payı; adım başına 0.08'lik taşıma kaçağını karşılar. Başlangıç değeri, gamepad ile ayarlanır |
 | `LedgeClimbHoldTime` / `Duration` / `SafetyOffset` | 0.1 / 0.2 / 0.05 | |
 | `MaxWallSlideTime` | 2 | `PlayerStatsSanityTests` 1.5–2.5 bandı |
 | `WallSlideMaxSpeed` / `WallSlideFriction` | 3 / 10 | |

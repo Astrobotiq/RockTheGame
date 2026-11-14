@@ -62,6 +62,14 @@ namespace New_Scripts.Player.States
             }
 
             velocity.y = Mathf.MoveTowards(velocity.y, -stats.WallSlideMaxSpeed, stats.WallSlideFriction * Time.fixedDeltaTime);
+
+            // Duvar tolerans icinde uzaklastiysa stick'in itisiyla duvara yapis.
+            velocity.x = 0f;
+            if (context.TryMeasureWallGap(wallDirection, out float gap))
+            {
+                velocity.x = wallDirection * WallClingMath.ClosingSpeed(gap, stats.WallSnapSafetyOffset,
+                    stats.WallClimbContactTolerance, Time.fixedDeltaTime);
+            }
             context.Velocity = velocity;
 
             if (context.IsGrounded)
@@ -208,7 +216,8 @@ namespace New_Scripts.Player.States
 
         private bool IsStillOnWall()
         {
-            return wallDirection == -1 ? context.IsTouchingLeftWall : context.IsTouchingRightWall;
+            bool touching = wallDirection == -1 ? context.IsTouchingLeftWall : context.IsTouchingRightWall;
+            return touching || context.TryMeasureWallGap(wallDirection, out _);
         }
     }
 }

@@ -352,6 +352,34 @@ namespace New_Scripts.Player
         public LedgeDetectionResult LatestLedgeResult { get; set; }
         public float LedgeHoldTimerProgress { get; set; }
 
+        /// <summary>
+        /// wallDirection (-1/1) yonunde, collider kenari ile duvar arasindaki bosluk
+        /// <see cref="PlayerStatsSO.WallClimbContactTolerance"/> icindeyse true doner (tirmanma/kayma yapismasi icin).
+        /// </summary>
+        public bool TryMeasureWallGap(int wallDirection, out float gap)
+        {
+            gap = 0f;
+            if (wallDirection == 0) return false;
+
+            Bounds bounds = PlayerCollider.bounds;
+            float extentsX = bounds.extents.x;
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(groundLayerMask);
+
+            int count = Physics2D.Raycast(bounds.center, new Vector2(wallDirection, 0f), filter, _wallGapHits,
+                extentsX + Stats.WallClimbContactTolerance);
+            for (int i = 0; i < count; i++)
+            {
+                if (_wallGapHits[i].collider == PlayerCollider) continue;
+                gap = _wallGapHits[i].distance - extentsX;
+                return true;
+            }
+
+            return false;
+        }
+
+        private readonly RaycastHit2D[] _wallGapHits = new RaycastHit2D[4];
+
         public LedgeDetectionResult CheckLedge(int wallDirection)
         {
             LedgeDetectionResult result = new LedgeDetectionResult();

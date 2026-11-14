@@ -42,6 +42,7 @@ MonoBehaviour:
   StaminaWarningThreshold: 1.5
   WallSnapRaycastDistance: 2
   WallSnapSafetyOffset: 0.02
+  WallClimbContactTolerance: 0.15
   LedgeClimbHoldTime: 0.1
   LedgeClimbSafetyOffset: 0.05
   LedgeClimbDuration: 0.2

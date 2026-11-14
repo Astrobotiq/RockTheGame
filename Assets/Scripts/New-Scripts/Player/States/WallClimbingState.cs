@@ -106,7 +106,15 @@ namespace New_Scripts.Player.States
             {
                 inputY = 0f; // Lock upward climbing when at a ledge
             }
-            context.Velocity = new Vector2(0f, inputY * stats.ClimbSpeed);
+            // Duvar tolerans icinde uzaklastiysa (hareketli duvar, hizasiz collider) bu adimda duvara yapis.
+            float pullX = 0f;
+            if (context.TryMeasureWallGap(wallDirection, out float gap))
+            {
+                pullX = wallDirection * WallClingMath.ClosingSpeed(gap, stats.WallSnapSafetyOffset,
+                    stats.WallClimbContactTolerance, Time.fixedDeltaTime);
+            }
+
+            context.Velocity = new Vector2(pullX, inputY * stats.ClimbSpeed);
         }
 
         private void CheckInputTransitions()
@@ -149,12 +157,20 @@ namespace New_Scripts.Player.States
                 return;
             }
 
-            bool isHoldingCurrentWall = (wallDirection == -1 && context.Input.IsLeftBumperHeld && context.IsTouchingLeftWall) ||
-                                        (wallDirection == 1 && context.Input.IsRightBumperHeld && context.IsTouchingRightWall);
-
-            if (!isHoldingCurrentWall)
+            bool isBumperHeld = wallDirection == -1 ? context.Input.IsLeftBumperHeld : context.Input.IsRightBumperHeld;
+            if (!isBumperHeld)
             {
+                // Oyuncu bumper'i biraktı: 0.2 sn tekrar tutunma kilidi.
                 context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.2f,
+                    carriedVelocity: CurrentCarrierVelocity()));
+                return;
+            }
+
+            bool isTouching = wallDirection == -1 ? context.IsTouchingLeftWall : context.IsTouchingRightWall;
+            if (!isTouching && !context.TryMeasureWallGap(wallDirection, out _))
+            {
+                // Bumper basili ama duvar tolerans disinda: gercek temas kaybi, kilit yok (duvar donerse hemen tutunulur).
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0f,
                     carriedVelocity: CurrentCarrierVelocity()));
             }
         }

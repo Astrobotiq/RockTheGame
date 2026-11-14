@@ -95,21 +95,21 @@ namespace New_Scripts.Player.States
                 Vector2 jumpVelocityVector = new Vector2(this.context.Velocity.x, this.stats.JumpVelocity);
                 
                 IMovingSurface movingSurface = this.context.PhysicsHandler.CurrentMovingSurface;
-                var bypassJumpGravity = false;
-                if (movingSurface != null && movingSurface.JumpBoostMultiplier > 0f)
-                {
-                    jumpVelocityVector += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
-                    bypassJumpGravity = true;
-                }
-                
-                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true, bypassJumpGravity: bypassJumpGravity, endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f));
+                // Boost'lu yüzeyde eski formül jumpVelocityVector'e eklenir; değilse yüzeyin hızı referans çerçevesi olarak taşınır.
+                Vector2 surfaceAddition = SurfaceCarry.JumpAddition(movingSurface, Time.fixedDeltaTime, out bool bypassJumpGravity);
+                Vector2 carriedVelocity = Vector2.zero;
+                if (bypassJumpGravity) jumpVelocityVector += surfaceAddition;
+                else carriedVelocity = surfaceAddition;
+
+                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true, bypassJumpGravity: bypassJumpGravity, endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f, carriedVelocity: carriedVelocity));
                 
 
                 
             }
             else if (!this.context.IsGrounded)
             {
-                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, isJumping:true,grappleLockout:0f, wallClimbLockout:0f, coyote:this.stats.CoyoteTimeDuration));
+                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, isJumping:true,grappleLockout:0f, wallClimbLockout:0f, coyote:this.stats.CoyoteTimeDuration,
+                    carriedVelocity: SurfaceCarry.Velocity(this.context.PhysicsHandler.LastMovingSurface, Time.fixedDeltaTime)));
             }
         }
 

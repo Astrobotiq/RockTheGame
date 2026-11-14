@@ -21,15 +21,21 @@ namespace New_Scripts.Player.States
         private bool _bypassApexHangGravity;
         private bool _bypassEndEarlyGravity;
         private float _endEarlyGravityMultiplier;
+        // Taşıyan yüzeyden devralınan yatay hız. Hava sürtünmesi/ivmesi yalnızca oyuncunun kendi hızına
+        // işler (yüzeyin referans çerçevesi); aksi halde 0.2 sn içinde sönüp duvar kaçardı.
+        private float _carriedVelocityX;
 
+        /// <param name="carriedVelocity">Taşıyan yüzeyden ayrılırken aktarılan hız (<see cref="SurfaceCarry"/>).
+        /// Y bileşeni normal hıza eklenir (yerçekimi sönümler), X bileşeni referans çerçevesi olarak taşınır.</param>
         public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
-            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f, 
+            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f,
             bool bypassJumpGravity = false, bool bypassApexHangGravity = false, bool bypassEndEarlyGravity = false
-            , float endEarlyGravityMultiplier = 1f)
+            , float endEarlyGravityMultiplier = 1f, Vector2 carriedVelocity = default)
         {
             _context = context;
             _stats = context.Stats;
-            _currentVelocity = inheritedVelocity;
+            _currentVelocity = inheritedVelocity + new Vector2(0f, carriedVelocity.y);
+            _carriedVelocityX = carriedVelocity.x;
             _isJumping = isJumping;
             _grappleLockoutTimer = grappleLockout;
             _wallClimbLockoutTimer = wallClimbLockout;
@@ -48,7 +54,7 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            _context.Velocity = _currentVelocity;
+            _context.Velocity = _currentVelocity + new Vector2(_carriedVelocityX, 0f);
         }
 
         public void UpdateState()
@@ -71,7 +77,7 @@ namespace New_Scripts.Player.States
             ApplyAirMovement();
             HandleVerticalObstructions();
 
-            _context.Velocity = _currentVelocity;
+            _context.Velocity = _currentVelocity + new Vector2(_carriedVelocityX, 0f);
         }
 
         public void ExitState()
@@ -111,6 +117,8 @@ namespace New_Scripts.Player.States
                 IMovingSurface lastSurface = _context.PhysicsHandler.LastMovingSurface;
                 if (lastSurface != null && lastSurface.JumpBoostMultiplier > 0f)
                 {
+                    // Boost taban hızın yerine geçer (platforms.md): devralınan hız tekrar eklenmesin.
+                    _carriedVelocityX = 0f;
                     jumpVelocityVector += lastSurface.SurfaceVelocity * lastSurface.JumpBoostMultiplier;
                     _bypassApexHangGravity = true;
                 }

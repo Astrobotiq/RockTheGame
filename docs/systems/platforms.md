@@ -1,6 +1,6 @@
 # Platformlar
 
-*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-13.*
+*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-14.*
 
 ## Tasarım niyeti
 
@@ -25,7 +25,8 @@ Hareketli her şey iki parçadan oluşur:
 ## Oyuncuyu taşıma (`IMovingSurface`)
 
 - `KinematicPhysicsHandler`, oyuncu bir `IMovingSurface`'in **üstünde** duruyorsa ya da ona **tutunuyorsa** (`ClingingWallDirection`), her adımda yüzeyin `DeltaPosition`'ını oyuncuya ekler. Yalnızca öteleme taşınır; platformun dönüşü oyuncuyu döndürmez.
-- **Zıplama momentumu:** yüzeyin `JumpBoostMultiplier`'ı 0'dan büyükse zıplamaya `SurfaceVelocity × JumpBoostMultiplier` eklenir. Bu yerden, coyote'tan, kayarken ve tırmanırken zıplamada geçerli. Pratikte yalnızca **hızlanan platformlar** bunu yapar. Yerçekimi kuralları: [`movement-core.md`](movement-core.md).
+- **Ayrılırken hız aktarımı:** oyuncu taşıyan yüzeyden (zemin ya da tutunulan duvar) her ayrıldığında (zıplama, yürüyüp düşme, bumper/stick bırakma, süre bitişi) yüzeyin o anki hızı (`DeltaPosition / fixedDeltaTime`) ×1 oyuncunun hızına eklenir. Yüzey durağansa 0'dır. `SurfaceVelocity` bu iş için kullanılmaz (son 3 adımın en büyüğü, boost için tasarlandı).
+- **Zıplama momentumu:** yüzeyin `JumpBoostMultiplier`'ı 0'dan büyükse zıplamada yukarıdaki taban yerine `SurfaceVelocity × JumpBoostMultiplier` eklenir (çarpan toplamı belirler, taban üstüne eklenmez). Bu yerden, coyote'tan, kayarken ve tırmanırken zıplamada geçerli. Pratikte yalnızca **hızlanan platformlar** bunu yapar. Yerçekimi kuralları: [`movement-core.md`](movement-core.md).
 - `SurfaceVelocity` son **3 fizik adımındaki en büyük hız**dır. Hızlanan platform uçta aniden durduğunda oyuncu yaklaşık 0.06 sn geç zıplasa bile tam fırlatmayı alır. Bu, platformun durmasıyla zıplama arasında küçük bir tolerans penceresi demek.
 
 ## Platform türleri

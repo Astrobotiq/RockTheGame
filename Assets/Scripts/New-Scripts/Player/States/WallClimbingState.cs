@@ -64,7 +64,8 @@ namespace New_Scripts.Player.States
 
             if (context.CurrentWallStamina <= 0f)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f,
+                    carriedVelocity: CurrentCarrierVelocity()));
                 return;
             }
 
@@ -129,11 +130,11 @@ namespace New_Scripts.Player.States
                     ? context.PhysicsHandler.CurrentLeftMovingSurface 
                     : context.PhysicsHandler.CurrentRightMovingSurface;
                 
-                bool bypassJumpGravity = movingSurface != null && movingSurface.JumpBoostMultiplier > 0f;
-                if (bypassJumpGravity)
-                {
-                    jumpVelocity += movingSurface.SurfaceVelocity * movingSurface.JumpBoostMultiplier;
-                }
+                // Boost'lu yüzeyde eski formül jumpVelocity'ye eklenir; değilse yüzeyin hızı referans çerçevesi olarak taşınır.
+                Vector2 surfaceAddition = SurfaceCarry.JumpAddition(movingSurface, Time.fixedDeltaTime, out bool bypassJumpGravity);
+                Vector2 carriedVelocity = Vector2.zero;
+                if (bypassJumpGravity) jumpVelocity += surfaceAddition;
+                else carriedVelocity = surfaceAddition;
 
                 context.TransitionToState(new AirborneState(
                     context: context,
@@ -142,7 +143,8 @@ namespace New_Scripts.Player.States
                     grappleLockout: 0f,
                     wallClimbLockout: 0.2f,
                     bypassJumpGravity: bypassJumpGravity,
-                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f
+                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f,
+                    carriedVelocity: carriedVelocity
                 ));
                 return;
             }
@@ -152,8 +154,14 @@ namespace New_Scripts.Player.States
 
             if (!isHoldingCurrentWall)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.2f));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.2f,
+                    carriedVelocity: CurrentCarrierVelocity()));
             }
+        }
+
+        private Vector2 CurrentCarrierVelocity()
+        {
+            return SurfaceCarry.Velocity(context.PhysicsHandler.CurrentCarrier, Time.fixedDeltaTime);
         }
 
         public void ExitState()

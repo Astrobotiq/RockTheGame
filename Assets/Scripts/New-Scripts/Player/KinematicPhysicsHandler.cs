@@ -43,6 +43,20 @@ namespace New_Scripts.Player
         public IMovingSurface CurrentRightMovingSurface => _currentRightMovingSurface;
         public IMovingSurface LastMovingSurface => _lastMovingSurface;
 
+        /// <summary>
+        /// Oyuncuyu şu an taşıyan yüzey (Move'daki öncelik sırası: zemin, sonra tutunulan duvar), yoksa null.
+        /// </summary>
+        public IMovingSurface CurrentCarrier
+        {
+            get
+            {
+                if (IsGrounded && _currentMovingSurface != null) return _currentMovingSurface;
+                if (ClingingWallDirection == -1) return _currentLeftMovingSurface;
+                if (ClingingWallDirection == 1) return _currentRightMovingSurface;
+                return null;
+            }
+        }
+
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();

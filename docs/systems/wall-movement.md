@@ -1,6 +1,6 @@
 # Duvar: tırmanma, kenardan çıkma, kayma, duvar zıplaması
 
-*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-12 (stamina halkası).*
+*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-14 (duvardan ayrılırken hız aktarımı).*
 
 ## Tasarım niyeti
 
@@ -36,7 +36,7 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 - **Dayanıklılık yalnızca şunlarla dolar:** yere inmek, launch pad, respawn. Duvar zıplaması doldurmaz; 6 saniye bir yere değişten diğerine kadar toplam bütçe.
 - **Bitince:** `CanWallClimb = false`, karakter hızı sıfırlanıp düşer ve 0.5 sn tutunamaz. Yere inene kadar tekrar tırmanılamaz, ama kayılabilir.
 - Tırmanmaya girmek kayma süresini yeniler (`ResetWallSlideTime`).
-- **Hareketli duvar:** tutunulan duvar `IMovingSurface` ise karakter onunla taşınır (`KinematicPhysicsHandler.ClingingWallDirection`). Zıplarken `JumpBoostMultiplier > 0` ise duvarın hızı zıplamaya eklenir. Bkz. [`platforms.md`](platforms.md).
+- **Hareketli duvar:** tutunulan duvar `IMovingSurface` ise karakter onunla taşınır (`KinematicPhysicsHandler.ClingingWallDirection`). Duvardan **her ayrılışta** (zıplama, bumper/stick bırakma, dayanıklılık ya da kayma süresi bitişi) duvarın o anki hızı karaktere ×1 aktarılır; karakter duvarla birlikte gitmeye devam eder ve duvar kaçmaz. `JumpBoostMultiplier > 0` olan yüzeylerde zıplamada bunun yerine eski formül (`SurfaceVelocity × JumpBoostMultiplier`) geçerli: çarpan toplam hızı belirler, tabanın üstüne eklenmez. Statik duvarda aktarılan hız 0'dır, yani tırmanırken zıplamak hâlâ düz yukarıdır. Bkz. [`platforms.md`](platforms.md).
 
 ## Kenardan çıkma (`LedgeClimbState`)
 

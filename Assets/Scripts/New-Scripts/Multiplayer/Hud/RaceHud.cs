@@ -1,3 +1,5 @@
+using New_Scripts.LevelChange;
+using New_Scripts.Multiplayer.Flags;
 using New_Scripts.Multiplayer.Messages;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
@@ -25,6 +27,9 @@ namespace New_Scripts.Multiplayer.Hud
         private TextMeshProUGUI _result;
         private MultiplayerUISettingsSO _settings;
         private RaceResultScreen _resultScreen;
+        private RaceTrackView _track;
+        private int _totalRooms;
+        private float _nextTotalSearch;
 
         /// <summary>Bitiş ekranı (silindir/küp sütunları). Eski metin (<see cref="ResultText"/>) veri olarak durur, ekranda gösterilmez.</summary>
         public RaceResultScreen ResultScreen => _resultScreen;
@@ -61,6 +66,10 @@ namespace New_Scripts.Multiplayer.Hud
             hud._countdown = hud.MakeText("Countdown", new Vector2(0.5f, 0.5f), Vector2.zero, hud._settings.CountdownFontSize, TextAlignmentOptions.Center);
             hud._status.color = hud._settings.WarningColor;
             hud._result.enabled = false;
+            // Bayrak ve rakip metni artık pist şeridinde; metin veri olarak kalır, ekranda çizilmez.
+            hud._flags.enabled = false;
+            hud._opponent.enabled = false;
+            hud._track = RaceTrackView.Create();
             hud._resultScreen = RaceResultScreen.Create();
             hud.Refresh();
             return hud;
@@ -69,6 +78,40 @@ namespace New_Scripts.Multiplayer.Hud
         private void OnDestroy()
         {
             if (_resultScreen != null) Destroy(_resultScreen.gameObject);
+            if (_track != null) Destroy(_track.gameObject);
+        }
+
+        /// <summary>Ana yolun son odasının kimliği (bitiş işaretinin odası); sahnede yoksa 0. Bulununca saklanır.</summary>
+        private int ResolveTotalRooms()
+        {
+            if (_totalRooms > 0 || Time.unscaledTime < _nextTotalSearch) return _totalRooms;
+            _nextTotalSearch = Time.unscaledTime + 1f;
+            var point = FindFirstObjectByType<RaceFinishPoint>(FindObjectsInactive.Include);
+            var room = point != null ? point.GetComponentInParent<Room>(true) : null;
+            if (room != null) _totalRooms = room.RoomId;
+            return _totalRooms;
+        }
+
+        private void RefreshTrack(RaceSession race, LobbyPhase phase, bool localIsHost)
+        {
+            if (_track == null) return;
+            if (race.LocalFinished)
+            {
+                _track.Hide();
+                return;
+            }
+
+            _track.Present(new RaceTrackState
+            {
+                TotalRooms = ResolveTotalRooms(),
+                LocalRoom = Mathf.Max(1, race.LocalRoomId),
+                RivalRoom = race.OpponentRoomId,
+                LocalFlags = race.LocalFlagCount,
+                RivalFlags = race.OpponentFlagCount,
+                LocalIsHost = localIsHost,
+                ShowFlags = race.Mode == RaceMode.Race,
+                Racing = phase == LobbyPhase.Racing && !race.OpponentFinished
+            });
         }
 
         private TextMeshProUGUI MakeText(string name, Vector2 anchor, Vector2 position, float fontSize, TextAlignmentOptions alignment)
@@ -99,6 +142,7 @@ namespace New_Scripts.Multiplayer.Hud
             {
                 _flags.text = _opponent.text = _countdown.text = _timer.text = _result.text = "";
                 _status.text = "";
+                if (_track != null) _track.Hide();
                 return;
             }
 
@@ -114,6 +158,7 @@ namespace New_Scripts.Multiplayer.Hud
             _result.text = RaceHudText.Result(race.Mode, race.LocalFinished, _session.ElapsedSeconds, race.OpponentFinished,
                 race.OpponentElapsedSeconds, _session.CanReturnToLobby);
             RefreshResultScreen(race, flow.IsHost);
+            RefreshTrack(race, flow.Phase, flow.IsHost);
 
             if (flow.Phase == LobbyPhase.Countdown)
                 _countdown.text = RaceHudText.Countdown(flow.CountdownRemaining(Time.realtimeSinceStartupAsDouble));

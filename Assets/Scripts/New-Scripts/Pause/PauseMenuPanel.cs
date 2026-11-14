@@ -327,11 +327,9 @@ namespace New_Scripts.Pause
             var canvas = _canvasRoot.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 200;
-            var scaler = _canvasRoot.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
+            // Tam sayı sanat pikseli ölçeği (UR-3): HUD ve diğer ekranlarla aynı kural; ayarları UiPixelScale yapar.
+            _canvasRoot.AddComponent<CanvasScaler>();
+            _canvasRoot.AddComponent<UiPixelScale>();
             _group = _canvasRoot.AddComponent<CanvasGroup>();
             _group.interactable = false;
             _group.blocksRaycasts = false;

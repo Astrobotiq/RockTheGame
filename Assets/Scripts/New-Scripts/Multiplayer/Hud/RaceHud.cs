@@ -3,6 +3,7 @@ using New_Scripts.Multiplayer.Flags;
 using New_Scripts.Multiplayer.Messages;
 using New_Scripts.Multiplayer.Session;
 using New_Scripts.Multiplayer.Transport;
+using New_Scripts.UI.Theme;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -48,10 +49,8 @@ namespace New_Scripts.Multiplayer.Hud
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 100;
-            var scaler = go.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            go.AddComponent<CanvasScaler>(); // ayarları UiPixelScale yapar (UR-3: tam sayı sanat pikseli)
+            go.AddComponent<UiPixelScale>();
 
             var hud = go.AddComponent<RaceHud>();
             hud._session = session;

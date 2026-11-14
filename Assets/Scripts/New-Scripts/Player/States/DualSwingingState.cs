@@ -125,7 +125,8 @@ namespace New_Scripts.Player.States
                 }
             }
 
-            context.PlayerRigidbody.position = nextPosition;
+            // Pozisyonu burada ilerletmiyoruz: PlayerController.FixedUpdate Velocity'yi KinematicPhysicsHandler.Move ile
+            // zaten uyguluyor. Burada da set edersek hareket her adimda iki kez uygulanir.
             context.Velocity = currentVelocity;
         }
 

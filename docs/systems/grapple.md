@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-05.*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-14.*
 
 ## Tasarım niyeti
 
@@ -48,6 +48,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - Tek kancadayken diğer tetiğe basıp diğer stick'le nişan alınca girilir. Havadayken iki tetik aynı karede basılırsa önce sol, sonraki karede sağ işlenir.
 - Fizik farklı: iki ip birer **tek yönlü yay**. Yalnızca gerildiğinde (`mesafe > ip boyu`) `DualSpringStiffness` ve `DualSpringDamping` ile çeker, gevşekken hiçbir şey yapmaz. Yerçekimi `SwingGravity` (25), yani tek kancadan daha hafif.
 - Pompalama iki stick'in X ortalaması × `DualSwingForceMultiplier`. Hız sınırı yok.
+- Durum yalnızca `Velocity`'yi hesaplar; pozisyonu `PlayerController.FixedUpdate` içindeki `KinematicPhysicsHandler.Move` ilerletir. (2026-11-14'e kadar durum pozisyonu da kendisi set ediyordu, hareket adım başına iki kez uygulanıyordu.)
 - Bir tetik bırakılırsa diğer kolla tek kancaya döner (hop yapmadan). İkisi birden bırakılırsa `AirborneState(isJumping: false)`: sabit yerçekimi, değişken zıplama çarpanları yok.
 - Çarpışmada açı kuralı tek kancayla aynı (`MaxWallAngle`), ama arama oyuncu kutusuyla değil `DualSwingCollisionRadius` (0.4) daireyle yapılıyor.
 - Girişte dash hakkı yenilenir ama taç rengi sıfırlanmaz. Tek kancadan geçildiği için pratikte zaten sıfırlanmış olur.

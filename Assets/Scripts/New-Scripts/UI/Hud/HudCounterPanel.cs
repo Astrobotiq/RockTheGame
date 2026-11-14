@@ -19,8 +19,10 @@ namespace New_Scripts.UI.Hud
     /// <item><b>Ananas olay güdümlü:</b> çeyrek daire yalnızca ananas toplanınca köşeden büyüyerek görünür, <c>showSeconds</c> sonra çekilir
     /// (ekranın köşesini sürekli kapatmasın). <c>OnCoinsChanged</c>'den okunur. Ölünce toplananlar sessizce geri döndüğü için
     /// <c>OnDeath</c>'ten bir kare sonra yenilenir (görünmeden).</item>
-    /// <item><b>Anahtar şekli bağımsız:</b> anahtarlı odaya girince (<c>OnRoomEntered</c>) açılır ve odada açık kalır; anahtarsız odada
-    /// gizlidir. Anahtar toplamak ananas sayacını açmaz, yalnızca anahtarı boyar. Yalnız anahtar varken köşede yalnızca halka görünür (ortası boş); anahtarlar köşegen etrafında ortalanır.</item>
+    /// <item><b>Anahtar şekli bağımsız ve o da olay güdümlü:</b> anahtarlı odaya girince (<c>OnRoomEntered</c>) eksik anahtar varsa
+    /// <c>keysIntroSeconds</c> boyunca açılıp "bu odada anahtar toplanacak" der, sonra çekilir; anahtar toplanınca <c>showSeconds</c> boyunca
+    /// yeniden açılır (toplananı boyar, çakılır) ve çekilir (köşeyi ve altındaki ananası kapatmasın). Anahtar toplamak ananas sayacını açmaz.
+    /// Yalnız anahtar varken köşede yalnızca halka görünür (ortası boş); anahtarlar köşegen etrafında ortalanır.</item>
     /// <item>Hareket: yaylar + unscaled zaman; değer değişince ikon ve yazı sıçrar, toplanan anahtar çakılır. Boşta hareket yok (okunabilirlik).</item>
     /// </list>
     /// Değerler başlangıç önerisi: gamepad ile ayarlanır (docs/systems/collectibles.md, ui-motion.md).
@@ -91,6 +93,8 @@ namespace New_Scripts.UI.Hud
         [Header("Görünürlük ve hareket (başlangıç önerisi)")]
         [Tooltip("Bir şey toplandıktan sonra sayacın ekranda kaldığı süre (sn, unscaled).")]
         [SerializeField, Range(0.5f, 6f)] private float showSeconds = 2.5f;
+        [Tooltip("Anahtarlı odaya girince anahtar halkasının açık kaldığı süre (sn, unscaled): oyuncu bu odada anahtar olduğunu okusun.")]
+        [SerializeField, Range(0.5f, 6f)] private float keysIntroSeconds = 3f;
         [SerializeField, Range(0f, 0.15f)] private float keyEnterStagger = 0.06f;
 
         private readonly KeySlot[] _slots = new KeySlot[MaxKeys];
@@ -98,7 +102,7 @@ namespace New_Scripts.UI.Hud
         private readonly Dictionary<Room, UnityAction> _roomListeners = new Dictionary<Room, UnityAction>();
         // Görünürlük: 0 = köşede gizli, 1 = tam; tüm sayaç köşeden büyür/küçülür.
         private readonly UiSpring _circle = new UiSpring(260f, 18f);
-        // Anahtar şekli ayrı: anahtarlı odada açık kalır (0 = köşede gizli, 1 = tam).
+        // Anahtar şekli ayrı: oda girişinde ve anahtar toplanınca açılır, süre sonunda çekilir (0 = köşede gizli, 1 = tam).
         private readonly UiSpring _keysPanel = new UiSpring(260f, 18f);
         private readonly UiSpring _countPop = new UiSpring(320f, 11f);
         private readonly UiSpring _iconPop = new UiSpring(320f, 11f);
@@ -116,6 +120,7 @@ namespace New_Scripts.UI.Hud
         private int _lastCount = -1;
         private int _refreshAtFrame = -1;
         private float _hideAt;
+        private float _keysHideAt;
 
         private void Awake()
         {
@@ -229,7 +234,13 @@ namespace New_Scripts.UI.Hud
 
             foreach (var key in _keys) key.OnCollected += OnKeyCollected;
             RefreshKeys(animateCollected: false, replayEnter: true);
-            _keysPanel.Target = _keys.Count > 0 ? 1f : 0f; // anahtarlı odada açık kalır, diğerlerinde gizli
+
+            // Odada toplanacak anahtar varsa halka bir süre açılıp bunu bildirir; hepsi toplanmışsa ya da anahtar yoksa gizli kalır.
+            bool anyMissing = false;
+            foreach (var key in _keys)
+                if (key != null && !key.IsCollected) anyMissing = true;
+            if (anyMissing) ShowKeys(keysIntroSeconds);
+            else _keysPanel.Target = 0f;
         }
 
         private void UnsubscribeKeys()
@@ -240,8 +251,16 @@ namespace New_Scripts.UI.Hud
 
         private void OnKeyCollected(Collectible.Collectible key)
         {
-            // Anahtar şekli zaten açık; ananas sayacını tetiklemez.
+            // Halkayı açar (zaten açıksa süreyi uzatır); ananas sayacını tetiklemez.
             RefreshKeys(animateCollected: true, replayEnter: false);
+            ShowKeys(showSeconds);
+        }
+
+        /// <summary>Anahtar halkasını açar; kapanış zamanı hiçbir zaman öne çekilmez (giriş bildirimi toplamayla kesilmesin).</summary>
+        private void ShowKeys(float seconds)
+        {
+            _keysHideAt = Mathf.Max(_keysHideAt, Time.unscaledTime + seconds);
+            _keysPanel.Target = 1f;
         }
 
         /// <summary>Sayacı gösterir ve <c>showSeconds</c> sonra çekilecek şekilde zamanlar.</summary>
@@ -302,6 +321,7 @@ namespace New_Scripts.UI.Hud
             _content.gameObject.SetActive(shown > 0.002f || _circle.Target > 0f);
             _content.localScale = Vector3.one * Mathf.Max(0.0001f, shown);
 
+            if (_keysPanel.Target > 0f && Time.unscaledTime >= _keysHideAt) _keysPanel.Target = 0f;
             _keysPanel.Step(dt);
             float keysShown = Mathf.Max(0f, _keysPanel.Value);
             UpdateFade(dt);

@@ -16,6 +16,8 @@ Shader "RockTheGame/UI/Hazard"
         _Period ("Serit periyodu (sanat pikseli)", Float) = 16
         _StripeWidth ("Serit genisligi (sanat pikseli)", Float) = 8
         _RectOrigin ("Sol-alt (yerel xy)", Vector) = (0,0,0,0)
+        _GapAlpha ("Serit disi alfa (1 = dolu zemin)", Range(0,1)) = 1
+        _Scroll ("Serit kaymasi (sanat pikseli, tam sayiya iner)", Float) = 0
 
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -97,6 +99,8 @@ Shader "RockTheGame/UI/Hazard"
             float _Period;
             float _StripeWidth;
             float4 _RectOrigin;
+            float _GapAlpha;
+            float _Scroll;
 
             v2f vert(appdata_t v)
             {
@@ -120,9 +124,11 @@ Shader "RockTheGame/UI/Hazard"
                     // Sol-alt köşeden sanat pikseli hücresi (y yukarı). "/" şeritlerde x - y sabittir.
                     float2 cell = floor((IN.localPos - _RectOrigin.xy) / max(_ArtPixel, 0.0001));
                     float period = max(_Period, 1.0);
-                    float m = cell.x - cell.y;
+                    float m = cell.x - cell.y + floor(_Scroll);
                     m -= period * floor(m / period);
-                    color.rgb = m < _StripeWidth ? _Ink.rgb : color.rgb;
+                    bool onStripe = m < _StripeWidth;
+                    color.rgb = onStripe ? _Ink.rgb : color.rgb;
+                    color.a *= onStripe ? 1.0 : _GapAlpha;
                 }
 
                 #ifdef UNITY_UI_CLIP_RECT

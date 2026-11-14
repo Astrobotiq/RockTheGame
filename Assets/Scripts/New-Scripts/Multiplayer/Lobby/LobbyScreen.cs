@@ -19,8 +19,10 @@ namespace New_Scripts.Multiplayer.Lobby
     /// <item>Hareket (<see cref="UiSpring"/>, unscaled zaman): girişte parçalar sırayla kayarak gelir (gezinme ≤ 0,5 sn kilitli);
     /// seçim değişince kiriş seçilmeyen yana kayar, seçilmeyen yarı betona doğru soluklaşır, seçili yarının şekli yükselir;
     /// boşta şekiller hafifçe yüzer; mod değişince sekme sıçrar.</item>
-    /// <item>Rakip bekleniyor ve geri sayım durumları bu görevde yalın (sağ yarı beton, "?" küp); kesik çizgi, bant ve 3-2-1
-    /// ayrı görevde (TASKS.md "bekleme ve geri sayım").</item>
+    /// <item>Rakip bekleniyor: sağ yarı beton, üstünde yavaşça kayan soluk sarı bantlar (<c>UiHazard</c> shader'ı, saydam aralık),
+    /// P2 kesik çizgili "?" küp. Rakip gelince (<see cref="LobbyScreenMath.RivalArrived"/>) bantlar solar, sağ yarı kırmızıya
+    /// soldan sağa boyanır, küp yukarıdan düşer ve çakılır (gölge büyür). 3-2-1 lobide görünmez: oyun sahnesi rakip bağlanınca
+    /// lobinin yerine yüklenir, geri sayım oyun sahnesindeki <c>RaceHud</c>'dadır.</item>
     /// </list>
     /// Değerler başlangıç önerisi: gamepad ile ayarlanır (docs/systems/ui-motion.md).
     /// </summary>
@@ -34,6 +36,14 @@ namespace New_Scripts.Multiplayer.Lobby
         private const float FrameH = UiPixelScale.ArtHeight;
         private const float LockSeconds = 0.5f;
         private const float Pad = 200f; // çerçeve dışına taşan boya: tam sayı ölçekten artan kenarları örter
+        private const float BoundaryTopX = 296f;    // çapraz sınır: (296,0) → (196,270)
+        private const float BoundaryBottomX = 196f;
+        private const float SweepDone = 0.995f;     // boya süpürmesi bitti sayılır (yay hedefe asimptotik yaklaşır)
+        private const float BandPeriod = 46f;       // bekleme bantları (sanat pikseli, lobby-v1.html B2)
+        private const float BandWidth = 18f;
+        private const float DashLength = 6f;        // kesik çizgili P2 (lobby-v1.html isoBoxGhost: 6 çizgi, 5 boşluk)
+        private const float DashGap = 5f;
+        private static readonly int ScrollId = Shader.PropertyToID("_Scroll");
 
         private sealed class Group
         {
@@ -56,12 +66,25 @@ namespace New_Scripts.Multiplayer.Lobby
         [Tooltip("Boşta şekillerin yüzme genliği (sanat pikseli).")]
         [SerializeField, Range(0f, 4f)] private float bob = 1.5f;
         [SerializeField, Range(0.2f, 3f)] private float bobSpeed = 0.8f;
+        [Header("Bekleme ve varış (başlangıç önerisi)")]
+        [Tooltip("Bekleme bantlarının kayma hızı (sanat pikseli/sn).")]
+        [SerializeField, Range(0f, 30f)] private float bandSpeed = 6f;
+        [Tooltip("Bekleme bantlarının saydamlığı (1 = düz sarı).")]
+        [SerializeField, Range(0f, 1f)] private float bandAlpha = 0.35f;
+        [Tooltip("Rakip gelince küpün düştüğü yükseklik (sanat pikseli).")]
+        [SerializeField, Range(40f, 240f)] private float dropHeight = 160f;
+        [Tooltip("Küp çakılınca gölge ofsetinin ek büyümesi (kat sayı; 0 = çakılma yok).")]
+        [SerializeField, Range(0f, 4f)] private float landKick = 2f;
 
         private readonly List<Group> _groups = new List<Group>();
         private readonly UiSpring _beam = new UiSpring(260f, 20f);
         private readonly UiSpring _hostEmph = new UiSpring(260f, 22f);
         private readonly UiSpring _joinEmph = new UiSpring(260f, 22f);
         private readonly UiSpring _tabPop = new UiSpring(320f, 16f);
+        private readonly UiSpring _waitE = new UiSpring(200f, 24f);
+        private readonly UiSpring _drop = new UiSpring(220f, 22f);
+        private readonly UiSpring _sweep = new UiSpring(60f, 14f);
+        private readonly UiSpring _land = new UiSpring(300f, 14f);
 
         private MultiplayerLobbyUI _ui;
         private UiThemeSO _theme;
@@ -70,10 +93,11 @@ namespace New_Scripts.Multiplayer.Lobby
         private float _bornAt;
         private RectTransform _frame;
         private Group _left, _right, _beamGroup, _tab, _strip;
-        private UiPolygon _leftFill, _rightFill;
-        private RectTransform _p1, _p2;
+        private UiPolygon _leftFill, _rightFill, _rightPaint, _bands;
+        private Material _bandsMaterial;
+        private RectTransform _p1, _p2, _p2Solid, _p2Ghost, _p2Shadow;
         private readonly List<UiPolygon> _p1Faces = new List<UiPolygon>();
-        private readonly List<UiPolygon> _p2Faces = new List<UiPolygon>();
+        private bool _wasWaiting, _arrived, _landed;
         private TMP_Text _hostTitle, _hostCaption, _joinTitle, _joinCaption, _joinAddress, _p1Label, _p2Label;
         private TMP_Text _tabText, _connectionHint, _resumeHint, _confirmHint, _backHint, _errorText;
         private RectTransform _errorPlate;
@@ -111,6 +135,7 @@ namespace New_Scripts.Multiplayer.Lobby
         {
             _stick?.Dispose(); _dpad?.Dispose(); _submit?.Dispose(); _back?.Dispose();
             _previous?.Dispose(); _next?.Dispose(); _connection?.Dispose(); _resume?.Dispose();
+            if (_bandsMaterial != null) Destroy(_bandsMaterial);
         }
 
         private void BuildInputs()
@@ -208,22 +233,69 @@ namespace New_Scripts.Multiplayer.Lobby
             _beam.Step(dt);
             _tabPop.Step(dt);
 
+            bool waiting = LobbyScreenMath.WaitingForRival(active, host, opponent);
+            if (LobbyScreenMath.RivalArrived(_wasWaiting, active, host, opponent)) PlayArrival();
+            if (!active) _arrived = false;
+            _wasWaiting = waiting;
+            _waitE.Target = waiting ? 1f : 0f;
+            _waitE.Step(dt);
+            _drop.Step(dt);
+            _sweep.Step(dt);
+            _land.Step(dt);
+            if (_arrived && !_landed && _drop.Value <= 0f)
+            {
+                _landed = true;
+                _land.Value = 1f;
+                _land.Velocity = 0f;
+            }
+
             _beamGroup.Extra = new Vector2(_beam.Value * Unit, 0f);
             foreach (var g in _groups) ApplySlide(g);
 
-            Refresh(active, host, opponent, now);
+            Refresh(active, host, opponent, waiting, now);
         }
 
-        private void Refresh(bool active, bool host, bool opponent, float now)
+        /// <summary>Rakip geldi: küp yukarıdan düşer, sağ yarı soldan sağa kırmızıya boyanır.</summary>
+        private void PlayArrival()
+        {
+            _arrived = true;
+            _landed = false;
+            _sweep.Value = 0f;
+            _sweep.Velocity = 0f;
+            _sweep.Target = 1f;
+            _drop.Value = dropHeight;
+            _drop.Velocity = 0f;
+            _drop.Target = 0f;
+        }
+
+        private void Refresh(bool active, bool host, bool opponent, bool waiting, float now)
         {
             bool useInvite = _ui.UseInvite;
-            bool waiting = active && host && !opponent;
 
-            // yarılar: seçilmeyen betona doğru soluk; bekleyen sağ yarı düz beton
+            // yarılar: seçilmeyen betona doğru soluk; bekleyen sağ yarı düz beton, rakip gelince boya soldan sağa süpürür
             float hostE = Mathf.Clamp01(_hostEmph.Value);
             float joinE = Mathf.Clamp01(_joinEmph.Value);
             SetColor(_leftFill, Color.Lerp(_theme.Blue, _theme.ConcreteWall, fade * (1f - hostE)));
-            SetColor(_rightFill, waiting ? _theme.ConcreteWall : Color.Lerp(_theme.Red, _theme.ConcreteWall, fade * (1f - joinE)));
+            Color rightPaint = Color.Lerp(_theme.Red, _theme.ConcreteWall, fade * (1f - joinE));
+            bool sweeping = _arrived && _sweep.Value < SweepDone;
+            SetColor(_rightFill, waiting || sweeping ? _theme.ConcreteWall : rightPaint);
+
+            bool paintVisible = sweeping && _sweep.Value > 0.01f;
+            if (_rightPaint.gameObject.activeSelf != paintVisible) _rightPaint.gameObject.SetActive(paintVisible);
+            if (paintVisible)
+            {
+                SetColor(_rightPaint, rightPaint);
+                _rightPaint.SetPoints(ToLocal(LobbyScreenMath.RightSweep(_sweep.Value, FrameW, FrameH, Pad, BoundaryTopX, BoundaryBottomX)));
+            }
+
+            float bandE = Mathf.Clamp01(_waitE.Value);
+            bool bandsVisible = _bandsMaterial != null && bandE > 0.01f;
+            if (_bands.gameObject.activeSelf != bandsVisible) _bands.gameObject.SetActive(bandsVisible);
+            if (bandsVisible)
+            {
+                SetColor(_bands, new Color(1f, 1f, 1f, bandAlpha * bandE));
+                _bandsMaterial.SetFloat(ScrollId, now * bandSpeed);
+            }
 
             SetColor(_hostTitle, Color.Lerp(_theme.Paper, _theme.Yellow, hostE));
             SetColor(_joinTitle, Color.Lerp(_theme.Paper, _theme.Yellow, joinE));
@@ -236,9 +308,9 @@ namespace New_Scripts.Multiplayer.Lobby
             if (_joinAddress.gameObject.activeSelf != showAddress) _joinAddress.gameObject.SetActive(showAddress);
             if (showAddress) SetText(_joinAddress, _ui.AddressText);
 
-            // P2: rakip varsa kırmızı küp, yoksa soluk beton "?"
-            Color cube = waiting ? _theme.ConcreteSlab : _theme.Red;
-            foreach (var face in _p2Faces) SetColor(face, cube);
+            // P2: rakip varsa kırmızı küp, bekleniyorsa kesik çizgili "?" küp
+            if (_p2Solid.gameObject.activeSelf == waiting) _p2Solid.gameObject.SetActive(!waiting);
+            if (_p2Ghost.gameObject.activeSelf != waiting) _p2Ghost.gameObject.SetActive(waiting);
             SetText(_p2Label, waiting ? "?" : "P2");
             SetColor(_p2Label, waiting ? _theme.Ink : _theme.Paper);
 
@@ -262,7 +334,15 @@ namespace New_Scripts.Multiplayer.Lobby
             // şekiller: seçili yarıda yükselir, boşta hafifçe yüzer
             float sway = Mathf.Sin(now * bobSpeed * Mathf.PI * 2f) * bob;
             _p1.anchoredPosition = new Vector2(0f, (lift * hostE + sway) * Unit);
-            _p2.anchoredPosition = new Vector2(0f, (lift * joinE + (waiting ? 0f : -sway)) * Unit);
+            _p2.anchoredPosition = new Vector2(0f, (lift * joinE - sway + _drop.Value) * Unit);
+            _p2Shadow.anchoredPosition = new Vector2(_shadow, -_shadow) * (1f + landKick * Mathf.Max(0f, _land.Value));
+        }
+
+        private static Vector2[] ToLocal(Vector2[] artPoints)
+        {
+            var local = new Vector2[artPoints.Length];
+            for (int i = 0; i < local.Length; i++) local[i] = new Vector2(artPoints[i].x, -artPoints[i].y) * Unit;
+            return local;
         }
 
         private static void SetColor(Graphic g, Color c)
@@ -308,8 +388,13 @@ namespace New_Scripts.Multiplayer.Lobby
                 { new Vector2(-Pad, top), new Vector2(xTop, top), new Vector2(xBottom, bottom), new Vector2(-Pad, bottom) }, _theme.Blue);
 
             _right = NewGroup("Right", new Vector2(1f, 0f), FrameW * 0.7f, 0.06f);
-            _rightFill = AddPaintedFill(_right.Rect, "Right", new[]
-                { new Vector2(xTop, top), new Vector2(FrameW + Pad, top), new Vector2(FrameW + Pad, bottom), new Vector2(xBottom, bottom) }, _theme.Red);
+            var rightPoints = new[]
+                { new Vector2(xTop, top), new Vector2(FrameW + Pad, top), new Vector2(FrameW + Pad, bottom), new Vector2(xBottom, bottom) };
+            _rightFill = AddPaintedFill(_right.Rect, "Right", rightPoints, _theme.Red);
+            BuildBands(rightPoints);
+            // rakip gelince soldan sağa ilerleyen kırmızı boya (çokgen her karede Refresh'te güncellenir, yalnız süpürme sürerken)
+            _rightPaint = AddPaintedFill(_right.Rect, "RightPaint", rightPoints, _theme.Red);
+            _rightPaint.gameObject.SetActive(false);
 
             // kiriş: sınırın üstünde, ink
             _beamGroup = NewGroup("Beam", new Vector2(0f, 1f), FrameH + Pad * 2f, 0f);
@@ -337,7 +422,11 @@ namespace New_Scripts.Multiplayer.Lobby
             _joinAddress = AddText("JoinAddress", _right.Rect, monoBold, 8f, _theme.Paper, TextAlignmentOptions.MidlineRight,
                 new Vector2(446f, 96f), new Vector2(220f, 11f), new Vector2(1f, 0.5f));
             _p2 = NewShape("P2", _right.Rect);
-            BuildCube(_p2, 352f, 138f, 64f, 64f);
+            _p2Solid = NewShape("Solid", _p2);
+            BuildCube(_p2Solid, 352f, 138f, 64f, 64f);
+            _p2Ghost = NewShape("Ghost", _p2);
+            BuildCubeGhost(_p2Ghost, 352f, 138f, 64f, 64f);
+            _p2Ghost.gameObject.SetActive(false);
             _p2Label = AddText("P2Label", _p2, _theme.TitleFont, 28f, _theme.Paper, TextAlignmentOptions.Center,
                 new Vector2(384f, 170f), new Vector2(80f, 34f), new Vector2(0.5f, 0.5f));
             _p2Label.text = "P2";
@@ -376,7 +465,28 @@ namespace New_Scripts.Multiplayer.Lobby
             foreach (var g in _groups) ApplySlide(g);
         }
 
-        private static float Boundary(float y) => 296f - 100f * y / FrameH;
+        private static float Boundary(float y) => BoundaryTopX + (BoundaryBottomX - BoundaryTopX) * y / FrameH;
+
+        /// <summary>Bekleme bantları: sağ yarının kopyası, <c>UiHazard</c> shader'ıyla yalnız sarı şeritler (aralık saydam), kayar.</summary>
+        private void BuildBands(Vector2[] rightPoints)
+        {
+            _bands = AddPolygon(_right.Rect, "Bands", rightPoints, Color.clear, 0f);
+            var hazard = _theme.HazardMaterial;
+            if (hazard != null && UiHazardStripes.StripesVisible(_theme.BalanceFor(Screen)))
+            {
+                _bandsMaterial = new Material(hazard) { name = hazard.name + " (lobby bands)", hideFlags = HideFlags.HideAndDontSave };
+                _bandsMaterial.SetColor("_Color", _theme.Yellow);
+                _bandsMaterial.SetColor("_Ink", _theme.Yellow);
+                _bandsMaterial.SetFloat("_Stripes", 1f);
+                _bandsMaterial.SetFloat("_ArtPixel", Unit);
+                _bandsMaterial.SetFloat("_Period", BandPeriod);
+                _bandsMaterial.SetFloat("_StripeWidth", BandWidth);
+                _bandsMaterial.SetFloat("_GapAlpha", 0f);
+                _bands.material = _bandsMaterial;
+            }
+
+            _bands.gameObject.SetActive(false);
+        }
 
         private TMP_Text Hint(string name, float x, TextAlignmentOptions alignment, Vector2 pivot, float width)
         {
@@ -405,26 +515,59 @@ namespace New_Scripts.Multiplayer.Lobby
             };
             var shadow = AddPolygon(parent, "Cube Shadow", silhouette, _theme.Ink, _border);
             shadow.rectTransform.anchoredPosition = new Vector2(_shadow, -_shadow);
+            _p2Shadow = shadow.rectTransform;
             AddPolygon(parent, "Cube Outline", silhouette, _theme.Ink, _border);
 
-            AddFace(parent, "Side", new[] { new Vector2(x + w, y), new Vector2(x + w + d, y - dy), new Vector2(x + w + d, y + h - dy), new Vector2(x + w, y + h) }, _theme.Red, _p2Faces);
-            AddFace(parent, "Top", new[] { new Vector2(x, y), new Vector2(x + d, y - dy), new Vector2(x + w + d, y - dy), new Vector2(x + w, y) }, _theme.Red, _p2Faces);
-            AddFace(parent, "Front", new[] { new Vector2(x, y), new Vector2(x + w, y), new Vector2(x + w, y + h), new Vector2(x, y + h) }, _theme.Red, _p2Faces);
+            AddFace(parent, "Side", new[] { new Vector2(x + w, y), new Vector2(x + w + d, y - dy), new Vector2(x + w + d, y + h - dy), new Vector2(x + w, y + h) }, _theme.Red);
+            AddFace(parent, "Top", new[] { new Vector2(x, y), new Vector2(x + d, y - dy), new Vector2(x + w + d, y - dy), new Vector2(x + w, y) }, _theme.Red);
+            AddFace(parent, "Front", new[] { new Vector2(x, y), new Vector2(x + w, y), new Vector2(x + w, y + h), new Vector2(x, y + h) }, _theme.Red);
 
             AddEdge(parent, "Edge Top-Front", new Vector2(x, y), new Vector2(x + w, y));
             AddEdge(parent, "Edge Front-Side", new Vector2(x + w, y), new Vector2(x + w, y + h));
             AddEdge(parent, "Edge Top-Side", new Vector2(x + w, y), new Vector2(x + w + d, y - dy));
         }
 
-        /// <summary>Yalnız boyalı dolgu (çerçeve ve gölge çağıran tarafta); renk güncellemesi için listeye girer.</summary>
-        private void AddFace(RectTransform parent, string name, Vector2[] pts, Color color, List<UiPolygon> fills)
+        /// <summary>Yalnız boyalı dolgu (çerçeve ve gölge çağıran tarafta).</summary>
+        private void AddFace(RectTransform parent, string name, Vector2[] pts, Color color)
         {
             var fill = AddPolygon(parent, name + " Fill", pts, color, 0f);
             var paint = fill.gameObject.AddComponent<UiConcreteSurface>();
             paint.Configure(Screen, ConcreteTone.Wall, asPaint: true);
             paint.Apply();
             fill.color = color;
-            fills.Add(fill);
+        }
+
+        /// <summary>
+        /// Bekleyen P2: küpün dokuz kenarı kesik çizgi (ink), dolgu ve gölge yok (lobby-v1.html <c>isoBoxGhost</c>).
+        /// Çizgiler köşelerde biter: her kenarda boşluk sabit, çizgi boyu kenara göre ince ayarlanır.
+        /// </summary>
+        private void BuildCubeGhost(RectTransform parent, float x, float y, float w, float h)
+        {
+            const float d = 20f, dy = 10f;
+            Vector2 frontTl = new Vector2(x, y), frontTr = new Vector2(x + w, y), frontBr = new Vector2(x + w, y + h), frontBl = new Vector2(x, y + h);
+            Vector2 backTl = new Vector2(x + d, y - dy), backTr = new Vector2(x + w + d, y - dy), backBr = new Vector2(x + w + d, y + h - dy);
+            AddDashedEdge(parent, frontTl, frontTr);
+            AddDashedEdge(parent, frontTr, frontBr);
+            AddDashedEdge(parent, frontBr, frontBl);
+            AddDashedEdge(parent, frontBl, frontTl);
+            AddDashedEdge(parent, frontTl, backTl);
+            AddDashedEdge(parent, backTl, backTr);
+            AddDashedEdge(parent, backTr, frontTr);
+            AddDashedEdge(parent, backTr, backBr);
+            AddDashedEdge(parent, backBr, frontBr);
+        }
+
+        private void AddDashedEdge(RectTransform parent, Vector2 a, Vector2 b)
+        {
+            float length = Vector2.Distance(a, b);
+            int count = Mathf.Max(1, Mathf.RoundToInt((length + DashGap) / (DashLength + DashGap)));
+            float dash = (length - (count - 1) * DashGap) / count;
+            Vector2 dir = (b - a) / length;
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 from = a + dir * (i * (dash + DashGap));
+                AddEdge(parent, "Dash", from, from + dir * dash);
+            }
         }
 
         /// <summary>İki yüzün arasındaki ink çizgisi: dış çerçeveyle aynı kalınlıkta ince dörtgen (sivri köşe çıkıntısı yok).</summary>

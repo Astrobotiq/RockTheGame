@@ -1,6 +1,6 @@
 # Çok oyunculu
 
-*GDD §9. Durum: **tasarım onaylandı; MP 1–9 kodda** (mesajlar, `RaceSession` kuralları, Unity Transport ve Steam taşıyıcıları, lobi ve Steam daveti, rakip hayaleti, bayraklar, ceza, geri sayım, HUD, kayıt, devam etme, kopma, bitiş ve sonuç). **Steam bağlantısı iki bilgisayarda henüz denenmedi** (MP 0). Son kod doğrulaması: 2026-11-14 (Steam ilk deneme: kayıt ayrımı, linger).*
+*GDD §9. Durum: **tasarım onaylandı; MP 1–9 kodda** (mesajlar, `RaceSession` kuralları, Unity Transport ve Steam taşıyıcıları, lobi ve Steam daveti, rakip hayaleti, bayraklar, ceza, geri sayım, HUD, kayıt, devam etme, kopma, bitiş ve sonuç). **Steam bağlantısı iki bilgisayarda henüz denenmedi** (MP 0). Son kod doğrulaması: 2026-11-14 (Steam ilk deneme: kayıt ayrımı, linger; lobi bekleme ve varış animasyonu).*
 
 ## Tasarım niyeti
 
@@ -132,6 +132,15 @@ Hayalet gelen konumları göndericinin sıra numarasıyla sıralar ve ~100 ms ge
 ## Oyuna bağlanma
 
 **Lobi.** Gamepad ile gezilen ekran: mod (yarış / birlikte), Host / Katıl (Unity Transport'ta IP, Steam'de davet), kayıtlı yarış varsa "Devam et".
+
+**Lobi ekranı.** `LobbyScreen` (düzen B, 14 Kasım'da kesinleşti; mockup `../ui-research/lobby-v1.html`): çapraz kirişle bölünmüş iki yarı, solda host (mavi silindir, P1), sağda join (kırmızı küp, P2). Sol çubuk / d-pad yarıyı seçer, A onaylar, B vazgeçer ya da geri döner, LB/RB mod, Y bağlantı, X devam et. Mantık `MultiplayerLobbyUI`'da kalır, ekran yalnız çizer (kurallar `LobbyScreenMath`, EditMode testli). Overlay canvas, tam sayı sanat pikseli (`UiPixelScale`), unscaled zaman. Durumlar:
+
+- **Boşta:** seçilmeyen yarı betona soluklaşır, kiriş seçilmeyen yana kayar, seçili yarının şekli yükselir, şekiller hafifçe yüzer.
+- **Rakip bekleniyor** (host, `OpponentPresent` yok): sağ yarı düz beton, üstünde soluk sarı çapraz bantlar yavaşça kayar (`UiHazard` shader'ı, `_GapAlpha` ile saydam aralık, `_Scroll` ile kayma), P2 kesik çizgili "?" küp, "WAITING FOR P2".
+- **Rakip geldi** (`LobbyScreenMath.RivalArrived`, yalnız host'ta; istemci kırmızı küple başlar): bantlar solar, sağ yarı soldan sağa kırmızıya boyanır (`RightSweep`), küp yukarıdan düşer ve çakılır (gölge ofseti büyüyüp oturur). Vazgeçmek bu animasyonu tetiklemez.
+- **Geri sayım lobide görünmez.** El sıkışma bitince (`Loading`) oyun sahnesi lobinin yerine yüklenir; 3-2-1 oyun sahnesindeki `RaceHud`'dadır. Mockup'taki sarı disk üstünde ekstrüde sayı (B3) bu yüzden lobiye konmadı (14 Kasım kararı). Lobiyi geri sayıma kadar tutmak oturum ve sahne akışını değiştirir, ayrı karar.
+
+Başlangıç değerleri (gamepad ile ayarlanır, `LobbyScreen` Inspector'ında): bant hızı 6 sanat pikseli/sn, bant saydamlığı 0,35, düşüş yüksekliği 160, çakılma gölge büyümesi ×2; düşüş yayı (220, 22), boya süpürmesi yayı (60, 14). Düşüş ~0,5 sn, boya ~0,9 sn sürer; rakip geldiğinde sahne yüklemesi bundan kısa sürerse animasyon yarım kalır.
 
 **Oda takibi.** `Room.OnRoomEntered` olayı dinlenir. Bu olayın her oda girişinde çağrıldığı uygulamada doğrulanmalı; çağrılmıyorsa `RoomManager`'a ek bir olay konur.
 

@@ -97,6 +97,12 @@ namespace New_Scripts.LevelChange
             foreach (var trigger in triggers)
                 trigger.Disable();
 
+            // Yalnız şu anki oda kamera override'ı taşır; komşuda kalırsa geri dönülen odanın zoom'unu ezer.
+            if (useRoomCameraOverride && New_Scripts.Player.CameraController.Instance != null)
+            {
+                New_Scripts.Player.CameraController.Instance.UnregisterOverride(this);
+            }
+
             if (wasCurrent)
             {
                 OnRoomExited?.Invoke();

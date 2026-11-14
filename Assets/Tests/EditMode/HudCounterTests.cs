@@ -35,16 +35,21 @@ namespace RockTheGame.Tests
     {
         private const float IconSize = 24f; // sanat pikseli, ikon dosyası
 
-        [Test]
-        public void KeyCenters_AreInsideTheQuarterCircle()
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        public void KeyCenters_AreInsideTheOuterRing(int count)
         {
-            for (int i = 0; i < HudCounterPanel.MaxKeys; i++)
+            for (int i = 0; i < count; i++)
             {
-                Vector2 c = HudCounterPanel.KeyCenter(i);
-                // İkonun en uzak köşesi (görünür çizim 18 piksel: gölge ve boşluk hariç) daireyi aşmasın.
-                float far = (c + Vector2.one * (IconSize * 0.375f)).magnitude;
-                Assert.LessOrEqual(far, HudCounterPanel.CircleRadius, $"anahtar {i} daire dışında");
-                Assert.GreaterOrEqual(c.x - IconSize * 0.375f, 0f, $"anahtar {i} ekranın solundan taşıyor");
+                Vector2 c = HudCounterPanel.KeyCenter(i, count); // y aşağı, sol-üst köşeden
+                // Görünür çizim 18 piksel (gölge ve boşluk hariç); köşesi bile halka bandının içinde kalsın.
+                float half = IconSize * 0.375f;
+                float corner = half * Mathf.Sqrt(2f);
+                Assert.GreaterOrEqual(c.magnitude - corner, HudCounterPanel.CircleRadius, $"anahtar {i}/{count} ananas dairesine biniyor");
+                Assert.LessOrEqual(c.magnitude + corner, HudCounterPanel.RingOuterRadius, $"anahtar {i}/{count} halkanın dışında");
+                Assert.GreaterOrEqual(c.x - half, 0f, $"anahtar {i}/{count} ekranın solundan taşıyor");
+                Assert.GreaterOrEqual(c.y - half, 0f, $"anahtar {i}/{count} ekranın üstünden taşıyor");
             }
         }
 
@@ -53,17 +58,54 @@ namespace RockTheGame.Tests
         {
             for (int i = 0; i < HudCounterPanel.MaxKeys - 1; i++)
             {
-                float distance = Vector2.Distance(HudCounterPanel.KeyCenter(i), HudCounterPanel.KeyCenter(i + 1));
+                float distance = Vector2.Distance(
+                    HudCounterPanel.KeyCenter(i, HudCounterPanel.MaxKeys), HudCounterPanel.KeyCenter(i + 1, HudCounterPanel.MaxKeys));
                 Assert.GreaterOrEqual(distance, 18f, $"anahtar {i} ile {i + 1} çakışıyor (görünür ikon 18 piksel)");
             }
         }
 
         [Test]
-        public void KeyCenters_StayBelowTheCounterRow()
+        public void KeyCenters_AreSymmetricAroundTheDiagonal()
         {
-            // Sayaç satırı (ananas + yazı) y ≈ 4..30 sanat pikseli; anahtarlar onun altında başlar.
-            for (int i = 0; i < HudCounterPanel.MaxKeys; i++)
-                Assert.GreaterOrEqual(HudCounterPanel.KeyCenter(i).y - IconSize * 0.375f, 28f, $"anahtar {i} sayaç satırına biniyor");
+            // 45° köşegen etrafında simetrik: her noktanın x'i ile y'si yer değiştirince toplam aynı kalır.
+            for (int count = 1; count <= HudCounterPanel.MaxKeys; count++)
+            {
+                float sum = 0f;
+                for (int i = 0; i < count; i++)
+                {
+                    Vector2 c = HudCounterPanel.KeyCenter(i, count);
+                    sum += c.x - c.y;
+                }
+                Assert.AreEqual(0f, sum, 1e-3f, $"{count} anahtar köşegen etrafında ortalı değil");
+            }
+        }
+
+        // 1080p: sanat ölçeği 4; ekran noktası sol-alt orijinli, köşe sol-üst (0, 1080).
+        [TestCase(237f, 1011f, true, TestName = "oda 11'e düşerken: halkanın bandında")]
+        [TestCase(0f, 1080f, true, TestName = "tam köşe")]
+        [TestCase(553f, 695f, false, TestName = "oda 11 Start: temiz")]
+        [TestCase(960f, 540f, false, TestName = "ekran ortası")]
+        public void IsBehind_RingRadius_At1080p(float x, float y, bool expected)
+        {
+            Assert.AreEqual(expected, HudCounterPanel.IsBehind(new Vector2(x, y), 1080f, 4f, HudCounterPanel.RingOuterRadius));
+        }
+
+        [Test]
+        public void IsBehind_UsesMarginAndArtScale()
+        {
+            // Yarıçap + pay sanat pikseli kadar uzak: ölçek 4'te tam sınır içeride, bir piksel ötesi dışarıda.
+            float reach = (HudCounterPanel.CircleRadius + HudCounterPanel.FadeMargin) * 4f;
+            Assert.IsTrue(HudCounterPanel.IsBehind(new Vector2(reach, 1080f), 1080f, 4f, HudCounterPanel.CircleRadius));
+            Assert.IsFalse(HudCounterPanel.IsBehind(new Vector2(reach + 1f, 1080f), 1080f, 4f, HudCounterPanel.CircleRadius));
+            // Aynı ekran noktası ölçek 2'de (daha küçük HUD) dışarıda kalır.
+            Assert.IsFalse(HudCounterPanel.IsBehind(new Vector2(reach, 1080f), 1080f, 2f, HudCounterPanel.CircleRadius));
+        }
+
+        [Test]
+        public void OuterRing_IsWiderThanTheCounterCircle()
+        {
+            Assert.Greater(HudCounterPanel.RingOuterRadius, HudCounterPanel.CircleRadius + IconSize * 0.75f,
+                "halka bandı 18 piksellik anahtara yetmiyor");
         }
     }
 }

@@ -1,6 +1,6 @@
 # Toplanabilirler, anahtarlar ve kapılar
 
-*GDD §5.3, §6.2 "Toplanabilirler" ve "Diğer", §12 madde 4. Son kod doğrulaması: 2026-11-09 (HUD sayacı).*
+*GDD §5.3, §6.2 "Toplanabilirler" ve "Diğer", §12 madde 4. Son kod doğrulaması: 2026-11-14 (HUD sayacı: anahtar şekli ayrıldı).*
 
 ## Tasarım niyeti
 
@@ -30,11 +30,12 @@ Prefab'lar: `Assets/Prefab/New/Collectable/`.
 
 - `totalCoins` (kalıcı) + `sessionCoins` (son checkpoint'ten beri). Gösterilen sayı ikisinin toplamı.
 - `CollectibleInventoryManager` checkpoint kanalında `Commit()`, ölümde `Revert()` çağırır. Sahne açılışında envanteri sıfırlar; **kalıcı kayıt (save) yok**, oyun her açılışta 0'dan başlar.
-- **HUD sayacı (2026-11-09): `HudCounterPanel`** (`UI/Hud/`, NewScene `Managers/HudCounter`). Sol-üst köşede mavi çeyrek daire: ananas ikonu + sayı (`OnCoinsChanged`), altında bulunulan odanın anahtarları. Overlay canvas'ta (CRT dışında, keskin) ve `UiPixelScale` ile tam sayı sanat pikseline sabit (1080p'de 4, 1440p'de 5, 720p'de 2).
-  - **Karar: yalnızca bir şey toplanınca görünür** (ilk sürümde kalıcıydı; köşeyi sürekli kapattığı için değişti). Sayaç köşeden büyüyerek gelir, `showSeconds` (2,5 sn, unscaled) sonra çekilir. Ananas `OnCoinsChanged`'den; anahtar `Collectible.OnCollected`'dan ve oda girişinden (`Room.OnRoomEntered`, görünmeden). Ölünce toplananlar olay vermeden geri döndüğü için `PlayerHealth.OnDeath`'ten bir kare sonra yenilenir (görünmeden).
+- **HUD sayacı (2026-11-09): `HudCounterPanel`** (`UI/Hud/`, NewScene `Managers/HudCounter`). İç içe iki şekil, ikisi bağımsız görünür (2026-11-14): sol-üst köşede mavi çeyrek daire (yarıçap 52 sanat pikseli, yalnızca ananas ikonu + sayı, `OnCoinsChanged`) ve onu saran koyu mavi dış halka (yarıçap 52–78, bulunulan odanın anahtarları). Overlay canvas'ta (CRT dışında, keskin) ve `UiPixelScale` ile tam sayı sanat pikseline sabit (1080p'de 4, 1440p'de 5, 720p'de 2).
+  - **Karar: ananas sayacı yalnızca ananas toplanınca görünür** (ilk sürümde kalıcıydı; köşeyi sürekli kapattığı için değişti). Çeyrek daire köşeden büyüyerek gelir, `showSeconds` (2,5 sn, unscaled) sonra çekilir. **Anahtar şekli bağımsızdır:** `Room.OnRoomEntered`'da odada anahtar varsa (`RoomKeyManager`, oda 8, 11, 20) yay ile açılır ve odada açık kalır, anahtarsız odada gizlidir; anahtar toplamak ananas sayacını açmaz, yalnızca o anahtarı boyar. Ölünce toplananlar olay vermeden geri döndüğü için `PlayerHealth.OnDeath`'ten bir kare sonra yenilenir (görünmeden).
   - **Takip eden parçalar ve anahtar:** karakterin etrafında dönen parçalar yalnızca `AirborneCoinShardManager`'ın ananas parçaları (oda 14, 15, 17); onlar zaten ekranda görünür. Anahtarlar toplanınca görselleri kaybolur (`hideVisual`), takip etmezler; "kaç anahtar kaldı" bilgisi bu yüzden HUD'da. Anahtarlar da karakteri takip edecekse anahtar satırı kaldırılabilir (açık karar).
-  - **Anahtar:** silüet ikon; toplanan boyalı (`hud_key`), eksik çıplak beton (`hud_key_used`). Odadaki tüm `RoomKeyManager`'ların anahtarları toplanır (oda 11'de iki yönetici var); en çok 3 gösterilir, fazlası uyarı verir. Anahtarsız odada yuvalar boş kalır.
-  - **Hareket:** tüm sayaç köşeden büyüyüp küçülür (yay, unscaled); ananas/anahtar değişince ikon ve yazı sıçrar, toplanan anahtar çakılır; odaya girince anahtarlar sırayla gelir (görünmeden hazırlanır). Boşta hareket bilerek yok (hızlı oyunda okunurluk).
+  - **Anahtar:** silüet ikon; toplanan boyalı (`hud_key`), eksik çıplak beton (`hud_key_used`). Odadaki tüm `RoomKeyManager`'ların anahtarları toplanır (oda 11'de iki yönetici var); en çok 3 gösterilir, fazlası uyarı verir. Yalnız anahtar varken köşede ortası boş halka görünür; halka ananasın arkasında çizilir. Anahtarlar halkanın ortasında, köşegen (45°) etrafında simetrik dizilir (`HudCounterPanel.KeyCenter(index, count)`).
+  - **Hareket:** ananas çeyrek dairesi köşeden, anahtar halkası yine köşeden, kendi başına büyüyüp küçülür (yay, unscaled); ananas değişince ikon ve yazı sıçrar, toplanan anahtar çakılır; odaya girince anahtarlar sırayla gelir. Boşta hareket bilerek yok (hızlı oyunda okunurluk).
+  - **Karakter altındayken soluklaşır (2026-11-14):** karakterin ekran noktası çeyrek dairenin (52) ya da halkanın (78) yarıçapı + 14 sanat pikseli payın içine girince o şekil %30 saydamlığa iner (`HudCounterPanel.IsBehind`, ~0,12 sn), çıkınca geri döner. Neden: oda 10'dan 11'e düşerken karakter ekranın sol üstünde, halkanın bandında beliriyor. Değerler (`FadedAlpha`, `FadeMargin`) başlangıç önerisi, gamepad ile ayarlanır. Not: `CanvasGroup` alfası gölge/çerçeve/dolguyu ayrı ayrı soluklaştırdığı için soluk şekil biraz bulanık görünür; sorun olursa tek malzemeli (shader) şekle geçilir.
   - Eski `CollectibleUIController` ve `Coin UI` nesnesi (eski `Canvas`, Camera, CRT içinde) kapatıldı, silinmedi; script durur ama kullanılmıyor. `Canvas` içindeki `IrisTransition` ve `DialogueBubbleUI` olduğu gibi çalışıyor.
 
 ## "Tek nefeste" ananas: `AirborneCoinShardManager`

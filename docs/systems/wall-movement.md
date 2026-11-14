@@ -1,6 +1,6 @@
 # Duvar: tırmanma, kenardan çıkma, kayma, duvar zıplaması
 
-*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-14 (duvara yapışma, temas kaybı kilitlemez).*
+*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-14 (duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında).*
 
 ## Tasarım niyeti
 
@@ -44,7 +44,7 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 - Tırmanırken her karede `PlayerController.CheckLedge` çalışır. Bel hizasındaki ışın duvara çarpıp baş hizasındaki ışın boşa gidiyorsa köşe adayı var demektir. Sonra hedef noktaya yukarıdan aşağı ışın atılır, üstte zemin olup olmadığı ve karakterin oraya sığıp sığmadığı kontrol edilir.
 - **Tehlikeye tırmanılmaz:** köşenin üstü ölüm katmanındaysa ya da hedef kutuda ölüm katmanı varsa köşe yok sayılır.
 - Köşe bulunduğunda yukarı tırmanma kilitlenir. Sol stick **yukarı (`y > 0.5`)** `LedgeClimbHoldTime` (0.1 sn) basılı tutulursa çıkış başlar. Zaten yukarı tırmanan oyuncu için bu otomatik gibi hissedilir.
-- Çıkış `LedgeClimbDuration` (0.2 sn) sürer: önce %40 dikey, sonra %60 yatay, ikisi de ease-in-out. Konum kinematik olarak `Update`'te yazılır. Sonunda karakter `GroundedState`'e geçer, yani bütün kaynaklar dolar.
+- Çıkış `LedgeClimbDuration` (0.2 sn) sürer: önce %40 dikey, sonra %60 yatay, ikisi de ease-in-out. Süre ve konum kinematik olarak `FixedUpdateState`'te (fizik adımında) yazılır. Sonunda karakter `GroundedState`'e geçer, yani bütün kaynaklar dolar.
 - Gizmo hata ayıklaması: Play Mode'da Scene view'de ışınlar ve hedef kutu çizilir (`PlayerController.OnDrawGizmos`).
 
 ## Kayma ayrıntıları
@@ -52,6 +52,7 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 - Giriş koşulu `AirborneState.ProcessWallInteraction`'da: `vy < 0`, kayma süresi kalmış, stick duvara doğru `> 0.1`.
 - **Kayma süresi yalnızca şunlarla yenilenir:** yere inmek, tırmanmaya girmek, **kayarken zıplamak** ve launch pad. Kayarken zıplamak süreyi yenilediği için iki duvar arasında sınırsız duvar zıplaması zinciri mümkün.
 - Süre bitince karakter mevcut hızıyla düşer (`isJumping: false`). Stick'i bırakıp ayrılınca `CoyoteTimeDuration` boyunca zıplama hâlâ çalışır, ama bu normal **dikey** zıplamadır, duvar zıplaması değil.
+- **Duvar zıplaması zıplama buffer'ını kullanır** (`JumpBufferTimer`, `JumpBufferDuration` 0.1 sn; hem kayarken hem tırmanırken): duvara değmeden en fazla 0.1 sn önce basılan zıplama, duvara girince çalışır. Yön kuralları (W5) aynı. Duvara değmeden mesafe ekleme ve yükselirken duvar zıplaması hâlâ yok.
 - **Duvar zıplaması:** `isJumping: true` (değişken yükseklik geçerli) ve `WallJumpInputLockoutTime` (0.1 sn) boyunca yatay girdi yok sayılır. Böylece oyuncu stick'i hâlâ duvara doğru tutuyorsa hemen geri yapışmaz.
 
 ## Tunable'lar (`PlayerStats.asset`)

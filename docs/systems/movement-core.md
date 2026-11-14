@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-05.*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-14 (dash süresi fizik adımında).*
 
 ## Tasarım niyeti
 
@@ -66,7 +66,7 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 | Koşma | Koşu tozu | `PlayerVFXManager.HandleRunDust` |
 | Dash harcandı | Taç rengi griye döner | `PlayerColorController.SetDashExhausted` |
 
-**Hit-stop yalnızca oyuncuyu durdurur.** `HitStopManager` `Time.timeScale`'e dokunmaz; yalnızca `HitStopEvents` yayınlar ve `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. Dünya (platformlar, tehlikeler) akmaya devam eder. Dash zamanlayıcısı da `Update`'te ilerlediği için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
+**Hit-stop yalnızca oyuncuyu durdurur.** `HitStopManager` `Time.timeScale`'e dokunmaz; yalnızca `HitStopEvents` yayınlar ve `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. Dünya (platformlar, tehlikeler) akmaya devam eder. Dash zamanlayıcısı `FixedUpdateState`'te (fizik adımında) ilerler ve hit-stop sırasında `FixedUpdate` atlandığı için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
 
 ## Tunable'lar (`PlayerStats.asset`)
 

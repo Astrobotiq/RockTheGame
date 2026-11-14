@@ -41,19 +41,20 @@ namespace New_Scripts.Player.States
             }
         }
 
-        public void UpdateState()
-        {
-            _dashTimer += Time.deltaTime;
-            
-            if (_dashTimer >= _stats.DashDuration)
-            {
-                ExitDashSequence();
-            }
-        }
+        public void UpdateState() { }
 
         public void FixedUpdateState()
         {
+            // Sure fizik adiminda sayilir: dash her zaman ayni adim sayisi kadar (DashDuration / fixedDeltaTime) surer,
+            // mesafe frame hizindan bagimsiz. Epsilon, 0.02 * 10 gibi birikimli float hatasinin fazladan adim eklemesini onler.
+            if (_dashTimer + 1e-4f >= _stats.DashDuration)
+            {
+                ExitDashSequence();
+                return;
+            }
+
             _context.Velocity = _dashDirection * _stats.DashSpeed;
+            _dashTimer += Time.fixedDeltaTime;
         }
 
         public void ExitState() { }

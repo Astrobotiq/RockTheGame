@@ -125,8 +125,9 @@ namespace New_Scripts.Player.States
                 return;
             }
 
-            if (context.Input.IsJumpPressed)
+            if (context.JumpBufferTimer > 0f)
             {
+                context.ConsumeJumpBuffer();
                 if (context.Audio != null) context.Audio.PlayJump();
                 if (context.VibrationSettings != null && HapticManager.Instance != null)
                 {

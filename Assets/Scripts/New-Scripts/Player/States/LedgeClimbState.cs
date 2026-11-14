@@ -35,10 +35,13 @@ namespace New_Scripts.Player.States
             context.Velocity = Vector2.zero;
         }
 
-        public void UpdateState()
+        public void UpdateState() { }
+
+        public void FixedUpdateState()
         {
-            elapsedTime += Time.deltaTime;
-            
+            // Sure ve konum yazimi fizik adiminda: Update'te yazmak yuksek fps'te Move ile yaristi.
+            elapsedTime += Time.fixedDeltaTime;
+
             float u = Mathf.Clamp01(elapsedTime / duration);
             
             // 40% vertical phase, 60% horizontal phase
@@ -59,16 +62,12 @@ namespace New_Scripts.Player.States
             }
             
             context.PlayerRigidbody.position = currentPos;
-            
+            context.Velocity = Vector2.zero;
+
             if (u >= 1f)
             {
                 context.TransitionToState(new GroundedState(context));
             }
-        }
-
-        public void FixedUpdateState()
-        {
-            context.Velocity = Vector2.zero;
         }
 
         public void ExitState()

@@ -107,8 +107,9 @@ namespace New_Scripts.Player.States
 
             if (CheckGrappleInputs()) return;
 
-            if (context.Input.IsJumpPressed)
+            if (context.JumpBufferTimer > 0f)
             {
+                context.ConsumeJumpBuffer();
                 context.ResetWallSlideTime();
                 
                 if (context.VibrationSettings != null && HapticManager.Instance != null)

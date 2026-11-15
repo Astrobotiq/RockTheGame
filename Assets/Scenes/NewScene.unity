@@ -1145,11 +1145,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83b8705fd44e41145acb784ef0225f24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.NPC.NPCDialogueBubble
-  bubbleContainer: {fileID: 297015917}
-  dialogueText: {fileID: 1994778616}
-  scaleDuration: 0.3
-  scaleInEase: 27
-  scaleOutEase: 5
+  textWidthArt: 104
+  fontSizeArt: 8
+  badgeWidthArt: 26
+  edgeMarginArt: 8
+  bottomMarginArt: 12
+  sideHysteresis: 0.1
+  flipCooldown: 0.6
+  playerClearance: 0.04
+  overlapAlpha: 0.4
+  fadeSpeed: 8
+  badgeSlamScale: 1.7
+  breathAmount: 0.03
+  breathSpeed: 2
 --- !u!114 &297015919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2950,7 +2958,7 @@ Camera:
   far clip plane: 5000
   field of view: 40
   orthographic: 1
-  orthographic size: 6.8
+  orthographic size: 6.4
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2975,7 +2983,7 @@ Transform:
   m_GameObject: {fileID: 963359373}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 26.178314, y: 8.200001, z: -10}
+  m_LocalPosition: {x: 152.9, y: 39.09, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3375,7 +3383,7 @@ Transform:
   m_GameObject: {fileID: 1176225079}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 174.1, y: 62.6, z: 0}
+  m_LocalPosition: {x: 152.9, y: 39.09, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3487,7 +3495,7 @@ Transform:
   m_GameObject: {fileID: 1235140385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 174.1, y: 62.6, z: -10}
+  m_LocalPosition: {x: 152.9, y: 39.09, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3505,7 +3513,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f453f694addf4275988fac205bc91968, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineConfiner2D
-  BoundingShape2D: {fileID: 6306062706622852316}
+  BoundingShape2D: {fileID: 0}
   Damping: 0.3
   SlowingDistance: 5
   OversizeWindow:
@@ -3538,7 +3546,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 40
-    OrthographicSize: 6.8
+    OrthographicSize: 6.4
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0
@@ -4322,6 +4330,7 @@ MonoBehaviour:
   keyIcon: {fileID: 21300000, guid: e803d05883a6ca74d981a4469197fd22, type: 3}
   keyMissingIcon: {fileID: 21300000, guid: 225d883689783354f8450dbf8e862f05, type: 3}
   showSeconds: 2.5
+  keysIntroSeconds: 3
   keyEnterStagger: 0.06
 --- !u!114 &1689001710
 MonoBehaviour:
@@ -4336,6 +4345,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.UI.Hud.RoomTitleCard
   startDelay: 0
+  entryWaitFrames: 4
   holdSeconds: 0.45
   beamDelay: 0.08
   numberDelay: 0.2
@@ -66348,6 +66358,10 @@ PrefabInstance:
       propertyPath: m_ChunkCullingBounds.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3878452142909574096, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.44
+      objectReference: {fileID: 0}
     - target: {fileID: 4734903240712724191, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
       propertyPath: m_Size.x
       value: 275
@@ -80551,6 +80565,10 @@ PrefabInstance:
     - target: {fileID: 6498420833694157241, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[187].Array.data[3].Y
       value: -120000000
+      objectReference: {fileID: 0}
+    - target: {fileID: 7829366909100342002, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.44
       objectReference: {fileID: 0}
     - target: {fileID: 9124116719469169598, guid: f42721502939fa64d995a2e8bb0760f0, type: 3}
       propertyPath: targetRoom
@@ -100582,7 +100600,7 @@ PrefabInstance:
     - target: {fileID: 7919817031395698459, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
       propertyPath: startingRoom
       value: 
-      objectReference: {fileID: 3201454815377950815}
+      objectReference: {fileID: 1931039137}
     - target: {fileID: 7919817031395698459, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
       propertyPath: playerTransform
       value: 
@@ -125039,18 +125057,13 @@ MonoBehaviour:
   musicStopChannel: {fileID: 11400000, guid: 8801a1d4d1b20fb499f7838bd13a8665, type: 2}
   ambientPlayChannel: {fileID: 11400000, guid: 79cd7f019077d854ebed7bb5d22d6ade, type: 2}
   ambientStopChannel: {fileID: 11400000, guid: 43212462242afe34bbf4a4a715150aeb, type: 2}
-  roomMusicCue: {fileID: 11400000, guid: 7c27bcad53d0afa4396355d6925fd8f3, type: 2}
+  roomMusicCue: {fileID: 0}
   stopMusicOnExit: 0
   roomAmbientCue: {fileID: 0}
   stopAmbientOnExit: 1
 --- !u!4 &6306062706622852315 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7206418327975168700, guid: 6f320e37f3bb3b04da58cbff1b6f79d9, type: 3}
-  m_PrefabInstance: {fileID: 6306062706622852312}
-  m_PrefabAsset: {fileID: 0}
---- !u!61 &6306062706622852316 stripped
-BoxCollider2D:
-  m_CorrespondingSourceObject: {fileID: 2955482348536916440, guid: 6f320e37f3bb3b04da58cbff1b6f79d9, type: 3}
   m_PrefabInstance: {fileID: 6306062706622852312}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &6488014216312802926
@@ -134783,6 +134796,22 @@ PrefabInstance:
       propertyPath: associatedCheckpoint
       value: 
       objectReference: {fileID: 544445996}
+    - target: {fileID: 1208407423164263754, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 1567251923619064863, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 2300757127366310122, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 2402846397346003142, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
     - target: {fileID: 2477457404900468628, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.size
       value: 218
@@ -151063,6 +151092,10 @@ PrefabInstance:
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[217].Array.data[3].Y
       value: -140000000
       objectReference: {fileID: 0}
+    - target: {fileID: 3045654565749874995, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
     - target: {fileID: 3086590555281803635, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 426
@@ -151103,6 +151136,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3343460026495760299, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 3570898097341951021, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
     - target: {fileID: 4904943874646918616, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
       propertyPath: targetRoom
       value: 
@@ -151115,6 +151156,22 @@ PrefabInstance:
       propertyPath: associatedCheckpoint
       value: 
       objectReference: {fileID: 7993224141891117169}
+    - target: {fileID: 5092308155864222436, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 5210371907280117804, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 5399218667809266268, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 5437250850768512779, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
     - target: {fileID: 5984062165387613278, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
       propertyPath: m_Name
       value: RoomNew-16
@@ -151146,6 +151203,26 @@ PrefabInstance:
     - target: {fileID: 6107433641216312037, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
       propertyPath: cameraOverrideSettings.overrideZoom
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6450832391919089194, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 6962806337396522813, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 7240853768104264952, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 7519666625521287904, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
+      objectReference: {fileID: 0}
+    - target: {fileID: 8488644194285633038, guid: 1069b053ef50c9540aba4fc32468dd8c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.31428573
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

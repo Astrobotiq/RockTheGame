@@ -60,6 +60,14 @@ namespace New_Scripts.Platform
             _isInitialized = true;
         }
 
+        public override bool TryGetPathBounds(out Rect worldBounds)
+        {
+            Vector2 center = centerTransform != null ? (Vector2)centerTransform.position : (Vector2)transform.position;
+            float r = Mathf.Abs(radius);
+            worldBounds = Rect.MinMaxRect(center.x - r, center.y - r, center.x + r, center.y + r);
+            return true;
+        }
+
         public override Vector2 GetPositionAtTime(float time)
         {
             if (!_isInitialized)

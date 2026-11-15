@@ -32,6 +32,14 @@ namespace New_Scripts.Platform
             }
         }
 
+        public override bool TryGetPathBounds(out Rect worldBounds)
+        {
+            worldBounds = default;
+            if (startTransform == null || endTransform == null) return false;
+            worldBounds = RectFromPoints(startTransform.position, endTransform.position);
+            return true;
+        }
+
         public override Vector2 GetPositionAtTime(float time)
         {
             if (!_isInitialized)

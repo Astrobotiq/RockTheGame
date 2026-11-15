@@ -28,5 +28,20 @@ namespace New_Scripts.Platform
         {
             return null;
         }
+
+        /// <summary>
+        /// Platform merkezinin gidebileceği dünya dikdörtgeni (editör: kamera çerçevesini tehlikeye sığdırmak için).
+        /// Platformun kendi boyutunu içermez. Desteklemeyen strateji false döner.
+        /// </summary>
+        public virtual bool TryGetPathBounds(out Rect worldBounds)
+        {
+            worldBounds = default;
+            return false;
+        }
+
+        protected static Rect RectFromPoints(Vector2 a, Vector2 b)
+        {
+            return Rect.MinMaxRect(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Max(a.x, b.x), Mathf.Max(a.y, b.y));
+        }
     }
 }

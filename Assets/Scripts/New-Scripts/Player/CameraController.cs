@@ -95,7 +95,7 @@ namespace New_Scripts.Player
             }
         }
 
-        private ICameraOverrideProvider GetHighestPriorityOverride()
+        private ICameraOverrideProvider GetHighestPriorityOverride(bool skipFrameAreas = false)
         {
             ICameraOverrideProvider highest = null;
             for (int i = 0; i < activeOverrides.Count; i++)
@@ -103,6 +103,11 @@ namespace New_Scripts.Player
                 var provider = activeOverrides[i];
                 if (provider != null && provider.IsActive)
                 {
+                    if (skipFrameAreas && provider.Settings != null && provider.Settings.focusType == CameraFocusType.FrameArea)
+                    {
+                        continue;
+                    }
+
                     if (highest == null || provider.Priority > highest.Priority)
                     {
                         highest = provider;
@@ -128,8 +133,180 @@ namespace New_Scripts.Player
         {
             if (isTransitioning) return;
 
+            EvaluateZones();
+            UpdateFrameCamera();
             UpdateFollowTarget();
             ClampFollowTargetToBounds();
+        }
+
+        /// <summary>Kayıtlı konum-bazlı bölgelere oyuncunun merkezini sorar; aktiflik buradan gelir.</summary>
+        private void EvaluateZones()
+        {
+            // transform.position: ışınlama (transform ataması) rigidbody.position'a bir fizik adımı sonra yansır.
+            Vector2 playerPos = targetRigidbody.transform.position;
+            for (int i = 0; i < activeOverrides.Count; i++)
+            {
+                if (activeOverrides[i] is IPositionCameraOverride zone)
+                {
+                    zone.UpdateActive(playerPos);
+                }
+            }
+        }
+
+        // --- Çerçeve kameraları (FrameArea) ---
+        // Çerçeve, oyuncu kamerasından ayrı, sabit bir CinemachineCamera'dır (composer ve confiner yok).
+        // Bölge aktifken önceliği yükselir; geçişi (konum + ortho boyu) Cinemachine Brain'in blend'i yapar.
+        // Confiner/composer'a dokunulmaz: confiner uzantısı composer'dan sonra kamerayı çeker, açıp kapamak sıçratır.
+        private const int FrameCameraCount = 2; // iki çerçeve bölgesi arası geçiş de blend'lensin diye dönüşümlü
+        private const int FrameActivePriority = 10;
+        private const int FrameInactivePriority = -1;
+
+        private CinemachineCamera[] frameCameras;
+        private int activeFrameCamera = -1;
+        private ICameraOverrideProvider activeFrameProvider;
+        private float lastBlendTime = 0.35f;
+        private CinemachineBrain brain;
+        private bool frameSnapPending;
+
+        private void EnsureFrameCameras()
+        {
+            if (frameCameras != null || virtualCamera == null) return;
+
+            frameCameras = new CinemachineCamera[FrameCameraCount];
+            CinemachineImpulseListener listenerSource = virtualCamera.GetComponent<CinemachineImpulseListener>();
+            for (int i = 0; i < FrameCameraCount; i++)
+            {
+                var go = new GameObject("FrameCamera_" + i);
+                go.transform.SetParent(transform, false);
+                var cam = go.AddComponent<CinemachineCamera>();
+                cam.Lens = virtualCamera.Lens;
+                cam.Priority = FrameInactivePriority;
+
+                // Çerçevedeyken de kamera sarsıntısı (hit impulse) çalışsın.
+                if (listenerSource != null)
+                {
+                    var listener = go.AddComponent<CinemachineImpulseListener>();
+                    JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(listenerSource), listener);
+                }
+
+                frameCameras[i] = cam;
+            }
+        }
+
+        /// <summary>Blend süresini Brain'e verir; Brain bunu bir sonraki öncelik değişiminde kullanır. 0 = kesme.</summary>
+        private void SetBlend(float time)
+        {
+            if (brain == null)
+            {
+                brain = Camera.main != null ? Camera.main.GetComponent<CinemachineBrain>() : null;
+                if (brain == null) brain = FindFirstObjectByType<CinemachineBrain>();
+                if (brain == null) return;
+            }
+
+            brain.DefaultBlend = time <= 0f
+                ? new CinemachineBlendDefinition(CinemachineBlendDefinition.Styles.Cut, 0f)
+                : new CinemachineBlendDefinition(CinemachineBlendDefinition.Styles.EaseInOut, time);
+        }
+
+        private void PlaceFrameCamera(CinemachineCamera cam, ICameraOverrideProvider provider)
+        {
+            (Vector2 center, float size) fit = ComputeFrameFit(provider);
+            cam.transform.position = new Vector3(fit.center.x, fit.center.y, virtualCamera.transform.position.z);
+            LensSettings lens = virtualCamera.Lens;
+            lens.OrthographicSize = fit.size;
+            cam.Lens = lens;
+        }
+
+        /// <summary>En yüksek öncelikli override bir çerçeveyse çerçeve kamerasını etkinleştirir, değilse bırakır.</summary>
+        private void UpdateFrameCamera()
+        {
+            ICameraOverrideProvider highest = GetHighestPriorityOverride();
+            CameraOverrideSettings s = highest?.Settings;
+            bool wantFrame = s != null && s.focusType == CameraFocusType.FrameArea;
+
+            // Oda geçişi/ışınlama sonrası ilk karede blend'siz oturur.
+            bool instant = frameSnapPending;
+            frameSnapPending = false;
+
+            if (wantFrame)
+            {
+                EnsureFrameCameras();
+                if (frameCameras == null) return;
+
+                if (!ReferenceEquals(highest, activeFrameProvider))
+                {
+                    int next = activeFrameCamera < 0 ? 0 : (activeFrameCamera + 1) % FrameCameraCount;
+                    PlaceFrameCamera(frameCameras[next], highest);
+                    SetBlend(instant ? 0f : s.blendTime);
+                    for (int i = 0; i < FrameCameraCount; i++)
+                    {
+                        frameCameras[i].Priority = i == next ? FrameActivePriority : FrameInactivePriority;
+                    }
+
+                    activeFrameCamera = next;
+                    activeFrameProvider = highest;
+                    lastBlendTime = s.blendTime;
+                }
+                else
+                {
+                    // Çerçeve ya da en-boy oranı canlı değişebilir; hep güncel tut.
+                    PlaceFrameCamera(frameCameras[activeFrameCamera], highest);
+                }
+            }
+            else if (activeFrameProvider != null)
+            {
+                DeactivateFrameCamera(false);
+            }
+        }
+
+        /// <summary>Oda geçişi başlıyor: çerçeve kamerası kesilerek bırakılır; pan şu an ekranda görünen boyla başlasın.</summary>
+        private void ReleaseFrameCameraForTransition()
+        {
+            if (activeFrameProvider == null) return;
+
+            if (virtualCamera != null && Camera.main != null)
+            {
+                virtualCamera.Lens.OrthographicSize = Camera.main.orthographicSize;
+            }
+
+            DeactivateFrameCamera(true);
+        }
+
+        private void DeactivateFrameCamera(bool instant)
+        {
+            if (frameCameras == null || activeFrameProvider == null) return;
+
+            SetBlend(instant ? 0f : lastBlendTime);
+            for (int i = 0; i < FrameCameraCount; i++)
+            {
+                frameCameras[i].Priority = FrameInactivePriority;
+            }
+
+            activeFrameCamera = -1;
+            activeFrameProvider = null;
+        }
+
+        /// <summary>Çerçeveli sağlayıcının dünya merkezi ve ortho boyu (elle zoom açıksa o boy).</summary>
+        private (Vector2 center, float size) ComputeFrameFit(ICameraOverrideProvider provider)
+        {
+            CameraOverrideSettings s = provider.Settings;
+            float aspect = Camera.main != null ? Camera.main.aspect : 16f / 9f;
+            Rect worldFrame = CameraFraming.ToWorldRect(provider.FrameSpace, s.frame);
+            (Vector2 center, float size) fit = CameraFraming.Fit(worldFrame, aspect, s.framePadding);
+            if (s.overrideZoom) fit.size = s.cameraSize;
+            return fit;
+        }
+
+        /// <summary>Oda override'larını temizler; bölgeler (konum-bazlı) kayıtlı kalır.</summary>
+        private void ClearRoomOverrides()
+        {
+            for (int i = activeOverrides.Count - 1; i >= 0; i--)
+            {
+                if (!(activeOverrides[i] is IPositionCameraOverride))
+                {
+                    activeOverrides.RemoveAt(i);
+                }
+            }
         }
 
 
@@ -145,7 +322,9 @@ namespace New_Scripts.Player
 
         private void UpdateFollowTarget()
         {
-            ICameraOverrideProvider activeOverride = GetHighestPriorityOverride();
+            // Çerçeve bölgesi ayrı bir kamerayla gösterilir (UpdateFrameCamera); oyuncu kamerası altta normal takibe devam eder,
+            // böylece çerçeveden çıkış blend'i hazır ve güncel bir kameraya yapılır.
+            ICameraOverrideProvider activeOverride = GetHighestPriorityOverride(true);
             CameraOverrideSettings settings = activeOverride?.Settings;
 
             Vector2 velocity = targetRigidbody.linearVelocity;
@@ -233,9 +412,7 @@ namespace New_Scripts.Player
             // 4. Zoom (Orthographic Size) Calculation
             if (virtualCamera != null)
             {
-                float normalOrthoSize = (settings != null && settings.overrideZoom)
-                    ? settings.cameraSize
-                    : (isZoomOverridden ? currentOverrideSize : minOrthoSize);
+                float normalOrthoSize = NormalOrthoSize(settings);
 
                 float currentSize = virtualCamera.Lens.OrthographicSize;
                 float newSize = Mathf.Lerp(currentSize, normalOrthoSize, Time.deltaTime * zoomLerpSpeed);
@@ -247,6 +424,12 @@ namespace New_Scripts.Player
                 }
                 previousOrthoSize = newSize;
             }
+        }
+
+        private float NormalOrthoSize(CameraOverrideSettings settings)
+        {
+            if (settings != null && settings.overrideZoom) return settings.cameraSize;
+            return isZoomOverridden ? currentOverrideSize : minOrthoSize;
         }
 
         private void ClampFollowTargetToBounds()
@@ -285,7 +468,8 @@ namespace New_Scripts.Player
         public void PrepareForTransition()
         {
             isTransitioning = true;
-            activeOverrides.Clear();
+            ClearRoomOverrides();
+            ReleaseFrameCameraForTransition();
             isZoomOverridden = false;
 
             if (Camera.main != null)
@@ -391,8 +575,10 @@ namespace New_Scripts.Player
         {
             // Işınlama (ceza, kayıtlı yarışa devam): eski odanın kamera override'ı ve öne bakış kalıntısı yeni odaya taşınmasın.
             // Normal geçiş aynısını PrepareForTransition'da yapar; yeni odanınki SetAsCurrent'te yeniden kaydolur.
-            activeOverrides.Clear();
+            ClearRoomOverrides();
+            DeactivateFrameCamera(true);
             _currentLookAheadOffset = Vector2.zero;
+            frameSnapPending = true; // bölgeler bir sonraki LateUpdate'te değerlendirilir (oda henüz uyuyor olabilir)
 
             confiner.BoundingShape2D = newBounds;
             confiner.InvalidateBoundingShapeCache();

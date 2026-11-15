@@ -8,7 +8,9 @@ namespace New_Scripts.Player
         Player,
         StaticPosition,
         TargetTransform,
-        PlayerAndTransform
+        PlayerAndTransform,
+        /// <summary>Kamera sabit bir dünya dikdörtgenini gösterir; ortho boyu en-boy oranından otomatik (CameraFraming.Fit).</summary>
+        FrameArea
     }
 
     [System.Serializable]
@@ -26,7 +28,20 @@ namespace New_Scripts.Player
         [ConditionalField(nameof(focusType), false, CameraFocusType.PlayerAndTransform)]
         [Range(0f, 1f)] public float focusWeight = 0.5f;
 
+        [Tooltip("Bölgenin transform'una göre yerel dikdörtgen; bölge taşınınca çerçeve de taşınır.")]
+        [ConditionalField(nameof(focusType), false, CameraFocusType.FrameArea)]
+        public Rect frame = new Rect(-10f, -6f, 20f, 12f);
+
+        [Tooltip("Çerçevenin kenarına eklenen pay (dünya birimi).")]
+        [ConditionalField(nameof(focusType), false, CameraFocusType.FrameArea)]
+        [Min(0f)] public float framePadding = 1f;
+
+        [Tooltip("Çerçeveye giriş ve çıkışta kameranın yerine varma süresi (sn). Çıkışta bırakılan bölgenin değeri kullanılır.")]
+        [ConditionalField(nameof(focusType), false, CameraFocusType.FrameArea)]
+        [Min(0.05f)] public float blendTime = 0.35f;
+
         [Header("Zoom Settings")]
+        [Tooltip("FrameArea'da açıksa otomatik boy yerine elle girilen cameraSize kullanılır.")]
         public bool overrideZoom;
 
         [ConditionalField(nameof(overrideZoom))]

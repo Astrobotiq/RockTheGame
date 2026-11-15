@@ -30,7 +30,8 @@ namespace New_Scripts.LevelChange
         public int Priority => cameraOverridePriority;
         public bool IsActive => useRoomCameraOverride;
         public CameraOverrideSettings Settings => cameraOverrideSettings;
-        
+        public Transform FrameSpace => transform;
+
         [Header("Room Events")]
         [Tooltip("Oyuncu bu odaya tam olarak girdiğinde tetiklenir.")]
         public UnityEvent OnRoomEntered;

@@ -14,6 +14,12 @@ namespace New_Scripts.Platform
 
         public override float Period => period;
 
+        public override bool TryGetPathBounds(out Rect worldBounds)
+        {
+            worldBounds = RectFromPoints(startPoint, endPoint);
+            return true;
+        }
+
         public override Vector2 GetPositionAtTime(float time)
         {
             if (period <= 0f) return startPoint;

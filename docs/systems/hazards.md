@@ -1,6 +1,6 @@
 # Tehlikeler
 
-*GDD §2 (sütun 3), §5.3, §6.2 "Tehlikeler". Son kod doğrulaması: 2026-10-05.*
+*GDD §2 (sütun 3), §5.3, §6.2 "Tehlikeler". Son kod doğrulaması: 2026-11-15.*
 
 ## Tasarım niyeti
 
@@ -34,20 +34,32 @@ Yalnızca görsel ve kurulum yardımcısı:
 - Asit materyalini atar ve objenin dünya boyutuna göre shader'a `_PixelScale` gönderir. Böylece asit hangi boyuta çekilirse çekilsin pikselleri kare ve `referencePPU` (16) ölçeğinde kalır.
 - `[ExecuteAlways]`: editörde ölçek değişince kendini günceller.
 
+## Hareketli tehlikelerin görünüşü
+
+`MovingDeath` (ve `AccelDeath Variant`), `RotatingDeath Variant` ve `WrappingDeathManager Variant` aynı görünüşü kullanır: yerçekimi makinesinin havada tuttuğu asit. Tasarım araştırması `reports/Asit yerçekimi tehlike tasarımı.md`.
+
+- **Asit kabuğu:** collider'lı objenin `SpriteRenderer`'ı. Sprite `HazardAcid_Quad` (1.5 birimlik dolgulu quad), materyal `M_HazardAcid_Circle` / `M_HazardAcid_Square`, shader `HazardAcid`. Taban şekil collider'ın kendisi; dalga ve küt dikenler yalnızca **dışa** taşar, görsel öldüren alandan küçük görünmez. Kutu, boyutunu transform ölçeğinden okur (`DisableBatching`, RisoSlab ile aynı).
+- **Çekirdek:** `Core` child'ı, `HazardCore_Circle` / `HazardCore_Square` prefab'ı (çizilmiş sprite, shader `HazardCore`). Daire çekirdeğin 8 lambası sırayla yanar, kare çekirdeğin ızgara yarıkları yavaşça nefes alır (`*_LampMask` / `*_VentMask` dokuları).
+- **`HazardCoreVisual`:** çekirdeği kare ve ortada tutar; boyutu kısa kenarın `_CoreFraction` katı (materyalden okunur, varsayılan 0.55). Hesap `HazardCoreMath`, test `HazardCoreMathTests`.
+- Cihazın tamamı öldürür; çekirdek ayrı bir güvenli bölge değildir.
+- Duvardan çıkan ezici bloklarda (oda 16) çekirdek başlangıçta duvarın arkasında kalır ve blok dışarı çıktıkça görünür. Bilerek böyle bırakıldı.
+- Ayarlar (lamba hızı, dalga, diken, çekirdek boyu) `Assets/Material/Hazard/` materyallerinde.
+
 ## Ölünce sıfırlama
 
 Hareketli tehlikeler `PlatformController` / `WrappingPlatformManager` üzerinden `IResettable`. Ölünce başlangıç konumuna ve fazına dönerler, yani her denemede aynı ritmi görürsün. Sabit tehlikelerde sıfırlanacak bir şey yok.
 
 ## Kod
 
-- `Death/DeathZone.cs`, `Death/AcidHazard.cs`, `Death/IKillable.cs`, `Death/PlayerHealth.cs`
+- `Death/DeathZone.cs`, `Death/AcidHazard.cs`, `Death/IKillable.cs`, `Death/PlayerHealth.cs`, `Death/HazardCoreVisual.cs`
+- Görünüş: `Assets/Shader/HazardAcid.shader`, `Assets/Shader/HazardCore.shader`, `Assets/Sprites/Hazard/`, `Assets/Prefab/New/Death/HazardCore/`
 - Hareket: `Platform/PlatformController.cs`, `WrappingPlatformManager.cs`, stratejiler
 - Prefab'lar: `Assets/Prefab/New/Death/`, diken Tilemap'i `Assets/Prefab/New/Room/RoomNew.prefab`
 
 ## Bilinen kenar durumlar ve tasarım notları
 
 1. **Hit-stop sırasında tehlikeler durmuyor.** Dash başlangıcında ve slingshot fırlatışında oyuncu `HitStopDuration` (0.2 sn) boyunca donuyor, dünya donmuyor ([`movement-core.md`](movement-core.md)). Hareketli bir tehlike bu sürede oyuncuya çarpabilir. Sık kullanılan "hareketli tuzak + dash" kombinasyonunda haksız bir ölüm gibi hissedilebilir; oynayarak kontrol edilmeli.
-2. **Okunurluk (oyun içi kamerayla, 6 Kasım 2026).** Oda 9'da dikenler gümüş ve koyu çerçeveli, mavi zeminde net okunuyor. En zayıf yer, node arkasındaki pembe ve lila halkaların üstündeki sıralar; çerçeve sayesinde yine seçiliyor. Oda 16'da kamera çok uzak (ortho 22) ve zemindeki dikenler ince bir noktalı çizgi gibi duruyor. Aynı odada beyaz ezici bloklar node'ların önünden geçerken node'u tamamen örtüyor. Beyaz dikdörtgen ve daireler tehlike (`MovingDeath`, `RotatingDeath`) ve Unity'nin varsayılan kare/dairesiyle çizilmiş.
+2. **Okunurluk (oyun içi kamerayla, 6 Kasım 2026).** Oda 9'da dikenler gümüş ve koyu çerçeveli, mavi zeminde net okunuyor. En zayıf yer, node arkasındaki pembe ve lila halkaların üstündeki sıralar; çerçeve sayesinde yine seçiliyor. Oda 16'da kamera çok uzak (ortho 22) ve zemindeki dikenler ince bir noktalı çizgi gibi duruyor. Aynı odada beyaz ezici bloklar node'ların önünden geçerken node'u tamamen örtüyor. O zamanki beyaz kare ve daireler 15 Kasım 2026'da asit + çekirdek görünüşüne geçti (aşağıda "Hareketli tehlikelerin görünüşü").
 3. **Rastgele hızlı wrapping** `minSpeed ≠ maxSpeed` ise ölümden ölüme farklı davranır. Ölümcül varyantta deterministik tutulmalı.
 4. **Asit ve diken görsel olarak farklı katmanlarda yaşıyor.** Diken bir Tilemap (oda prefab'ının parçası), asit ayrı prefab. Diken eklemek boyamakla, asit eklemek prefab koymakla yapılıyor.
 5. **GDD §6.2 tehlike listesi dikeni saymıyor**, ama her oda prefab'ında bir diken Tilemap'i var ve §8.1 dikenleri oda 9 ve 22'de gösteriyor.

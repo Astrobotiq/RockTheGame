@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_HazardAcid_Square
+  m_Shader: {fileID: 4800000, guid: 872a3dd10cb8e374dafb8fd3f96f3e97, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaSplitEnabled: 0
+    - _CoreFraction: 0.55
+    - _CoreShadow: 0.08
+    - _CornerRadius: 0.35
+    - _FlowAmount: 0.45
+    - _FlowScale: 3
+    - _FlowSpeed: 0.8
+    - _HighlightInset: 0.06
+    - _HighlightWidth: 0.05
+    - _OutlineWidth: 0.07
+    - _ShadeOffset: 0.12
+    - _Shape: 1
+    - _SpikeAmp: 0.035
+    - _SpikeDrift: 0.03
+    - _SpikeSpacing: 0.45
+    - _WobbleAmp: 0.05
+    - _WobbleSpeed: 2.2
+    - _WobbleWavelength: 0.7
+    m_Colors:
+    - _AcidColor: {r: 0.349, g: 0.878, b: 0.278, a: 1}
+    - _AcidDeep: {r: 0.059, g: 0.478, b: 0.133, a: 1}
+    - _AcidHighlight: {r: 0.78, g: 1, b: 0.439, a: 1}
+    - _AcidShade: {r: 0.122, g: 0.729, b: 0.161, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Flip: {r: 1, g: 1, b: 1, a: 0}
+    - _OutlineColor: {r: 0.055, g: 0.141, b: 0.078, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

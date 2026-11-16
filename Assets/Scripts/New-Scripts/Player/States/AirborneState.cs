@@ -60,7 +60,6 @@ namespace New_Scripts.Player.States
 
         public void UpdateState()
         {
-            DecrementTimers();
             HandleArmRouting();
             HandleCoyoteJump();
             HandleTransitions();
@@ -68,6 +67,8 @@ namespace New_Scripts.Player.States
 
         public void FixedUpdateState()
         {
+            DecrementTimers();
+
             if (_context.IsGrounded && _currentVelocity.y <= 0.01f)
             {
                 _context.TransitionToState(new GroundedState(_context));
@@ -86,9 +87,10 @@ namespace New_Scripts.Player.States
         {
         }
 
+        // Fizik adiminda sayilir (PF-6): sureler kare hizindan bagimsiz, her zaman ayni adim sayisi.
         private void DecrementTimers()
         {
-            float dt = Time.deltaTime;
+            float dt = Time.fixedDeltaTime;
             if (_coyoteTimer > 0f) _coyoteTimer -= dt;
             if (_horizontalInputLockoutTimer > 0f) _horizontalInputLockoutTimer -= dt;
             if (_grappleLockoutTimer > 0f) _grappleLockoutTimer -= dt;

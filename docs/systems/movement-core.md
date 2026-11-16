@@ -48,7 +48,7 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 
 **Hava kontrolü.** Yatay hız `MoveTowards` ile hedefe yaklaşır. Stick basılıysa `AirAcceleration`, boştaysa `AirDrag` kullanılır. Böylece kancadan ya da launch pad'den gelen momentum hemen kaybolmaz, ama yönlendirilebilir.
 
-**Coyote time ve jump buffer.** Zıplamaya basmak `JumpBufferTimer`'ı doldurur. Yere değen ilk karede buffer doluysa zıplama hemen gerçekleşir. Kenardan yürüyerek düşünce `AirborneState` `CoyoteTimeDuration` süresiyle açılır, bu sürede zıplama hâlâ çalışır.
+**Coyote time ve jump buffer.** Zıplamaya basmak `JumpBufferTimer`'ı doldurur. Yere değen ilk karede buffer doluysa zıplama hemen gerçekleşir. Kenardan yürüyerek düşünce `AirborneState` `CoyoteTimeDuration` süresiyle açılır, bu sürede zıplama hâlâ çalışır. Coyote ve `AirborneState`'in kilit sayaçları (yatay girdi, kanca, duvar tırmanma) fizik adımında düşer (16 Kasım 2026, PF-6), süreleri kare hızından bağımsız. `JumpBufferTimer` hâlâ `PlayerController.Update`'te `Time.deltaTime` ile düşer.
 
 **Hareketli zeminden zıplama.** Üstünde durulan yüzey `IMovingSurface` ise ve `JumpBoostMultiplier > 0` ise, yüzeyin hızı zıplamaya eklenir ve değişken zıplama yerçekimi devre dışı kalır. Coyote zıplamasında da son yüzey (`LastMovingSurface`) kullanılır. Ayrıntı: [`platforms.md`](platforms.md).
 

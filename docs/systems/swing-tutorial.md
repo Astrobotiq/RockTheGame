@@ -47,7 +47,7 @@ Node tepede menzilin sınırında (aşağıya bak). `HoldScale` 0.02 olsa 20 sn 
 ## Bilinen kenar durumlar ve açık kararlar
 
 1. **Menzil marjı küçük.** Yukarıdaki ölçüm; çözüm için `detectionRadius` (tüm kancayı etkiler), tutorial'a özel daha geniş erişim kontrolü ya da node yerini oynatmak seçenekleri var. Karar geliştiricinin.
-2. **Kanca kilidi donabilir.** `AirborneState` kilit sayaçları `Time.deltaTime` ile düşer; `timeScale` 0 iken sayaç durur. Tepede kilit sürüyorsa (örneğin bir sallanmadan hemen sonra) ateş çalışmaz, çıkış pause → Retry. Normal kenar zıplamasında kilit 0.
+2. **Kanca kilidi donabilir.** `AirborneState` kilit sayaçları fizik adımında düşer (16 Kasım 2026, PF-6); `timeScale` 0 iken `FixedUpdate` çalışmadığı için sayaç durur. Tepede kilit sürüyorsa (örneğin bir sallanmadan hemen sonra) ateş çalışmaz, çıkış pause → Retry. Normal kenar zıplamasında kilit 0.
 3. **Sahne pause'dayken kapanırsa** `PauseManager.OnDisable` saklı değeri geri verir, `SwingTutorial.OnDisable`'ın sırası belirsiz. Quit menüsü önce devam ettiği için sorun yok.
 4. **"SWING" yazısı** (`Tutorial-TextEffect (1)`, `<link=Rotate>`; `UI/UIEffects/Swing.asset` = `Effect_Rotate`) hep sallanır. Efekt `ScaledTime` iken tepede (`timeScale` 0) donuyordu; `Swing.asset`'in `timeType`'ı `UnscaledTime` yapıldı (15 Kasım). Bu paylaşılan asset, aynı efekti kullanan diğer "SWING" yazıları da (oda 21) artık zaman ölçeğinden bağımsız sallanır; pause'da da sallanır. İpucu ikonlarının Animator'ı `UnscaledTime`: yavaş zamanda akar.
 5. **Gamepad ile denenmedi.** `SlowScale`, `HoldScale`, rampalar, ipucu yayı his kararıdır (ST-4).

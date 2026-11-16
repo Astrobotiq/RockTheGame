@@ -33,7 +33,6 @@
 
 ### Precision toleransları (docs/precision-platformer-plani.md §3.5)
 
-- [ ] **Airborne kilit ve coyote sayaçlarını fizik adımına al** #code - `AirborneState.DecrementTimers` coyote, yatay kilit, kanca kilidi ve duvar tırmanma kilidini `Update`'te `deltaTime` ile sayıyor; `FixedUpdateState`'e taşı, süreler kare hızından bağımsız olsun (PF-6)
 - [ ] **Duvar zıplaması: değmeden mesafe ve yükselirken karar** #code - duvara ~0.35 birim yakınken (temas olmadan) ve yükselirken duvar zıplaması olsun mu; kararı `wall-movement.md`'ye yaz, W5 ile tutarlılığı kontrol et, olacaksa uygula (PF-5, precision-platformer-plani.md §3.4 #5)
 
 - [ ] **Dash mesafesi tutarlılık testi** #test - aynı dash'i farklı kare hızlarında (örn. `Application.targetFrameRate` 30/60/144) tekrar et, mesafe aynı mı; PlayMode kural testi olarak `DashRulesTests`'e eklenebilir; dash süresi task'ından sonra
@@ -105,6 +104,7 @@
 
 ## Done
 
+- [x] ~~**Airborne kilit ve coyote sayaçlarını fizik adımına al** #code~~ (2026-11-16) - `AirborneState.DecrementTimers` artık `FixedUpdateState`'in başında, `Time.fixedDeltaTime` ile (PF-6). `JumpBufferTimer` hâlâ `Update`'te
 - [x] ~~**Köşe düzeltmesi (tavan + dash)** #code~~ (2026-11-16) - `KinematicPhysicsHandler.Move` içinde, Celeste'in `OnCollideV/H` mantığı; tavan düzeltmesi hava ve dash'te, yatay düzeltme yalnızca dash'te. Yeni alanlar `CeilingCornerCorrection` / `DashCornerCorrection` 0.5 (Celeste 4 px), gamepad denemesinde çok kaygan geldi, 0.25'e indirildi, aday sırası `CornerCorrectionMath` + EditMode testi. Celeste'in aşağı dash yer düzeltmesi yapılmadı. **Gamepad ile denenmedi**; ayrıntı `movement-core.md`
 - [x] ~~**Momentum değişikliğini gamepad ile dene** #test~~ (2026-11-16) - PF-4 kapatıldı (kullanıcı isteği); ayrıntılı bulgu notu verilmedi, `WallSpeedRetentionTime` 0.06 olduğu gibi kaldı. Oda 16'daki swing→duvar→kayma geçişi bu değişiklikten bağımsız, eski davranış; kullanıcı böyle kalsın dedi
 - [x] ~~**Havadaki momentum: karar ve uygulama** #code~~ (2026-11-16) - PF-4, karar: (c) sıfırla + 0.06 sn geri ver. `AirborneState` duvara çarpan yatay hızı sıfırlıyor, duvar 0.06 sn içinde biterse (köşe) geri veriyor, ters yöne basılırsa vermiyor; saf `WallSpeedRetention` + `WallSpeedRetentionTests` 9 test, yeni `PlayerStatsSO.WallSpeedRetentionTime` (0.06, asset'te serileştirilmedi, kod varsayılanı). EditMode 427/427, PlayMode 41/41. Eski: saklı hız duvar bitince fırlatıyordu. **Gamepad ile denenmedi**; `movement-core.md` güncellendi

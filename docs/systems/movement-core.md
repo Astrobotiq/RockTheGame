@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-14 (dash süresi fizik adımında).*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur*
 
 ## Tasarım niyeti
 
@@ -66,7 +66,7 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 | Koşma | Koşu tozu | `PlayerVFXManager.HandleRunDust` |
 | Dash harcandı | Taç rengi griye döner | `PlayerColorController.SetDashExhausted` |
 
-**Hit-stop yalnızca oyuncuyu durdurur.** `HitStopManager` `Time.timeScale`'e dokunmaz; yalnızca `HitStopEvents` yayınlar ve `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. Dünya (platformlar, tehlikeler) akmaya devam eder. Dash zamanlayıcısı `FixedUpdateState`'te (fizik adımında) ilerler ve hit-stop sırasında `FixedUpdate` atlandığı için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
+**Hit-stop oyuncuyu ve hareketli platformları/tehlikeleri durdurur (16 Kasım 2026, PF-7).** `HitStopManager` `Time.timeScale`'e dokunmaz (pause ve swing tutorial onu yazıyor); `HitStopEvents` yayınlar ve `HitStopEvents.IsActive` bayrağını tutar. `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. `PlatformController`, `TriggeredPlatformController` ve `WrappingPlatformManager` bayrak true iken `FixedUpdate`'te yerinde bekler (`DeltaPosition` 0, strateji zamanı ilerlemez), hit-stop bitince kaldıkları yerden devam eder. Tehlikeler aynı sürücüleri kullandığı için onlar da durur. **Durmayanlar:** `LaunchPad` cooldown'u, kırılan platform sayaçları (`BreakablePlatform`, `SegmentedBreakablePlatform`), animasyonlar ve parçacıklar. Dash zamanlayıcısı `FixedUpdateState`'te (fizik adımında) ilerler ve hit-stop sırasında `FixedUpdate` atlandığı için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
 
 ## Tunable'lar (`PlayerStats.asset`)
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using New_Scripts.Death;
+using New_Scripts.Player.IFramePauseable;
 using UnityEngine;
 
 namespace New_Scripts.Platform
@@ -75,6 +76,15 @@ namespace New_Scripts.Platform
         private void FixedUpdate()
         {
             if (leftBound == null || rightBound == null) return;
+
+            if (HitStopEvents.IsActive)
+            {
+                foreach (PlatformController platform in platforms)
+                {
+                    if (platform != null) platform.HoldForHitStop();
+                }
+                return;
+            }
 
             Vector2 leftPos = leftBound.position;
             Vector2 rightPos = rightBound.position;

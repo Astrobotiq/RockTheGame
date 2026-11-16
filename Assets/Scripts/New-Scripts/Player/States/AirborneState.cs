@@ -260,13 +260,13 @@ namespace New_Scripts.Player.States
         {
             if (_context.CanWallClimb)
             {
-                if (_context.Input.IsLeftBumperHeld && _context.IsTouchingLeftWall)
+                if (_context.Input.IsLeftBumperHeld && _context.CanGrabWall(-1))
                 {
                     _context.TransitionToState(new WallClimbingState(_context, -1));
                     return;
                 }
 
-                if (_context.Input.IsRightBumperHeld && _context.IsTouchingRightWall)
+                if (_context.Input.IsRightBumperHeld && _context.CanGrabWall(1))
                 {
                     _context.TransitionToState(new WallClimbingState(_context, 1));
                     return;
@@ -275,11 +275,11 @@ namespace New_Scripts.Player.States
 
             if (_currentVelocity.y < 0f && _context.CurrentWallSlideTime > 0f)
             {
-                if (_context.IsTouchingLeftWall && _context.Input.LeftStick.x < -0.1f)
+                if (_context.Input.LeftStick.x < -0.1f && _context.CanGrabWall(-1))
                 {
                     _context.TransitionToState(new WallSlidingState(_context, -1));
                 }
-                else if (_context.IsTouchingRightWall && _context.Input.LeftStick.x > 0.1f)
+                else if (_context.Input.LeftStick.x > 0.1f && _context.CanGrabWall(1))
                 {
                     _context.TransitionToState(new WallSlidingState(_context, 1));
                 }

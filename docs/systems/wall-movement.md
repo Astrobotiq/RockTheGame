@@ -1,6 +1,6 @@
 # Duvar: tırmanma, kenardan çıkma, kayma, duvar zıplaması
 
-*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-14 (duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında).*
+*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-16 (duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında; tutunmaya giriş toleranslı).*
 
 ## Tasarım niyeti
 
@@ -23,7 +23,8 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 
 ## Tırmanma ayrıntıları
 
-- **Girişte duvara yapışma:** `WallSnapRaycastDistance` mesafesine kadar duvara doğru ışın atılır ve karakter `WallSnapSafetyOffset` boşlukla duvara oturtulur. Dikey hız sıfırlanır.
+- **Tutunmaya giriş (16 Kasım 2026, PF-8):** yerden ve havadan tırmanmaya (bumper basılı) ve havada kaymaya (düşerken stick duvara doğru) girmek için fiilî temas şart değil; `PlayerController.CanGrabWall`, sensör temasını **ya da** duvarın `WallClimbContactTolerance` (0.15) içinde olmasını kabul eder. Eskiden yalnızca ~0.045 temas sayılıyordu.
+- **Girişte duvara yapışma:** `WallSnapRaycastDistance` mesafesine kadar duvara doğru ışın atılır ve karakter `WallSnapSafetyOffset` boşlukla duvara oturtulur. Dikey hız sıfırlanır. Giriş artık yalnızca duvar temas/tolerans içindeyken olduğundan bu mesafenin pratik rolü, tolerans içindeki boşluğu tek seferde kapatmaktır; 2 birimlik değere ulaşan bir durum yok. Değer bilerek değiştirilmedi.
 - **Duvara yapışma:** her fizik adımında collider merkezinden duvara `WallClimbContactTolerance` (0.15) payı kadar ışın atılır. Duvar toleransın içindeyse ve `WallSnapSafetyOffset`'ten uzaksa X hızı boşluğu o adımda kapatacak değere ayarlanır (`WallClingMath.ClosingSpeed`); çarpışmayı yine `KinematicPhysicsHandler` çözer, `Rigidbody2D.position` yazılmaz. Hareketli duvarın tek adımlık taşıma kaçağı (0.08) ya da hizasız collider (0.045–0.075) böylece temas kaybı sayılmaz. Tırmanma kopması yalnızca sensör **ve** ışın duvarı bulamazsa olur. Kayma (`WallSlidingState`) aynı toleransı kullanır (stick duvara itiyorsa).
 - **Dayanıklılık** hareket edip etmemekten bağımsız, her saniye 1 azalır (`ConsumeWallStamina(Time.deltaTime)`). Göstergesi **kırılan stamina halkası**dır (`HudStaminaRing`, aşağıya bak); tırmanmaya girince açılır.
 

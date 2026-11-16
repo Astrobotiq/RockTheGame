@@ -124,6 +124,7 @@ namespace New_Scripts.Player
 
             PlayerRigidbody.bodyType = RigidbodyType2D.Kinematic;
             CurrentWallStamina = Stats.MaxWallStamina;
+            ResetWallSlideTime();
 
             TransitionToState(new AirborneState(this, Vector2.zero));
         }
@@ -285,7 +286,7 @@ namespace New_Scripts.Player
             JumpBufferTimer = 0f;
         }
 
-        public float CurrentWallSlideTime { get; private set; } = 2f;
+        public float CurrentWallSlideTime { get; private set; }
 
         public void ResetWallSlideTime()
         {
@@ -356,6 +357,12 @@ namespace New_Scripts.Player
         /// wallDirection (-1/1) yonunde, collider kenari ile duvar arasindaki bosluk
         /// <see cref="PlayerStatsSO.WallClimbContactTolerance"/> icindeyse true doner (tirmanma/kayma yapismasi icin).
         /// </summary>
+        public bool CanGrabWall(int wallDirection)
+        {
+            bool touching = wallDirection == -1 ? IsTouchingLeftWall : IsTouchingRightWall;
+            return touching || TryMeasureWallGap(wallDirection, out _);
+        }
+
         public bool TryMeasureWallGap(int wallDirection, out float gap)
         {
             gap = 0f;

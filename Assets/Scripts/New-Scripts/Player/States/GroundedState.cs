@@ -127,13 +127,13 @@ namespace New_Scripts.Player.States
         {
             if (!this.context.CanWallClimb) return;
 
-            if (this.context.Input.IsLeftBumperHeld && this.context.IsTouchingLeftWall)
+            if (this.context.Input.IsLeftBumperHeld && this.context.CanGrabWall(-1))
             {
                 this.context.TransitionToState(new WallClimbingState(this.context, -1));
                 return;
             }
 
-            if (this.context.Input.IsRightBumperHeld && this.context.IsTouchingRightWall)
+            if (this.context.Input.IsRightBumperHeld && this.context.CanGrabWall(1))
             {
                 this.context.TransitionToState(new WallClimbingState(this.context, 1));
             }

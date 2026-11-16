@@ -18,6 +18,8 @@ namespace New_Scripts.Player.IFramePauseable
         private void OnDisable()
         {
             HitStopEvents.RequestHitStop -= OnTriggerRequested;
+            // Oyun hit-stop sırasında kapanırsa bayrak (statik) takılı kalmasın.
+            HitStopEvents.IsActive = false;
         }
 
         private void OnTriggerRequested(float duration)
@@ -27,6 +29,7 @@ namespace New_Scripts.Player.IFramePauseable
             if (!_isHitStopActive)
             {
                 _isHitStopActive = true;
+                HitStopEvents.IsActive = true;
                 HitStopEvents.HitStopStarted?.Invoke();
             }
         }
@@ -40,6 +43,7 @@ namespace New_Scripts.Player.IFramePauseable
             if (_hitStopTimer <= 0f)
             {
                 _isHitStopActive = false;
+                HitStopEvents.IsActive = false;
                 HitStopEvents.HitStopEnded?.Invoke();
             }
         }

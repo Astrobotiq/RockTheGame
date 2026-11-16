@@ -1,4 +1,5 @@
 using New_Scripts.Death;
+using New_Scripts.Player.IFramePauseable;
 using UnityEngine;
 
 namespace New_Scripts.Platform
@@ -80,6 +81,12 @@ namespace New_Scripts.Platform
         {
             if (movementStrategy == null) return;
 
+            if (HitStopEvents.IsActive)
+            {
+                HoldForHitStop();
+                return;
+            }
+
             Vector2 newPosition = movementStrategy.GetPositionAtTime(Time.time - _timeOffset);
             
             DeltaPosition = newPosition - _previousPosition;
@@ -98,6 +105,17 @@ namespace New_Scripts.Platform
             }
 
             _previousPosition = newPosition;
+        }
+
+        /// <summary>
+        /// Hit-stop sırasında bu adımda platformu yerinde tutar: taşıma farkı sıfırlanır ve strateji zamanı
+        /// bir adım geri çekilir, böylece hit-stop bitince platform kaldığı yerden devam eder (zıplamaz).
+        /// Dışarıdan süren platformlar (<see cref="WrappingPlatformManager"/>) için de çağrılır.
+        /// </summary>
+        public void HoldForHitStop()
+        {
+            DeltaPosition = Vector2.zero;
+            _timeOffset += Time.fixedDeltaTime;
         }
 
         /// <summary>

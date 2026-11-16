@@ -27,13 +27,13 @@ namespace New_Scripts.Player.States
 
         public void EnterState()
         {
-            context.UseSlingshot();
-            
             if (!context.LeftAnchor.HasValue || !context.RightAnchor.HasValue)
             {
                 context.TransitionToState(new AirborneState(context, context.Velocity));
                 return;
             }
+
+            context.UseSlingshot();
 
             midpoint = (context.LeftAnchor.Value + context.RightAnchor.Value) / 2f;
             cachedLaunchDirection = (midpoint - context.PlayerRigidbody.position).normalized;

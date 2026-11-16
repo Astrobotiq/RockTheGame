@@ -1,4 +1,5 @@
 using New_Scripts.Death;
+using New_Scripts.Player.IFramePauseable;
 using UnityEngine;
 
 namespace New_Scripts.Platform
@@ -89,6 +90,13 @@ namespace New_Scripts.Platform
             if (movementStrategy == null) return;
 
             EnsureRigidbody();
+
+            // Hit-stop: süre sayacı ilerlemez, konum aynı kalır; bitince kaldığı yerden devam eder.
+            if (HitStopEvents.IsActive)
+            {
+                DeltaPosition = Vector2.zero;
+                return;
+            }
 
             bool playerOnTop = IsPlayerOnTop();
 

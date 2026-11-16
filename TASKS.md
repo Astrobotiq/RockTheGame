@@ -31,10 +31,6 @@
 
 ## Someday
 
-### Oyuncu FSM: momentum (PF-4)
-
-- [ ] **Momentum değişikliğini gamepad ile dene** #test - swing'den duvara çarpıp duvar ucundan çıkış, slingshot sonrası duvar teması (PF-4); kod 2026-11-16'da girdi, `WallSpeedRetentionTime` 0.06 çok kısa/uzun gelirse `PlayerStatsSO`'dan ayarla
-
 ### Precision toleransları (docs/precision-platformer-plani.md §3.5)
 
 - [ ] **Airborne kilit ve coyote sayaçlarını fizik adımına al** #code - `AirborneState.DecrementTimers` coyote, yatay kilit, kanca kilidi ve duvar tırmanma kilidini `Update`'te `deltaTime` ile sayıyor; `FixedUpdateState`'e taşı, süreler kare hızından bağımsız olsun (PF-6)
@@ -110,6 +106,7 @@
 
 ## Done
 
+- [x] ~~**Momentum değişikliğini gamepad ile dene** #test~~ (2026-11-16) - PF-4 kapatıldı (kullanıcı isteği); ayrıntılı bulgu notu verilmedi, `WallSpeedRetentionTime` 0.06 olduğu gibi kaldı. Oda 16'daki swing→duvar→kayma geçişi bu değişiklikten bağımsız, eski davranış; kullanıcı böyle kalsın dedi
 - [x] ~~**Havadaki momentum: karar ve uygulama** #code~~ (2026-11-16) - PF-4, karar: (c) sıfırla + 0.06 sn geri ver. `AirborneState` duvara çarpan yatay hızı sıfırlıyor, duvar 0.06 sn içinde biterse (köşe) geri veriyor, ters yöne basılırsa vermiyor; saf `WallSpeedRetention` + `WallSpeedRetentionTests` 9 test, yeni `PlayerStatsSO.WallSpeedRetentionTime` (0.06, asset'te serileştirilmedi, kod varsayılanı). EditMode 427/427, PlayMode 41/41. Eski: saklı hız duvar bitince fırlatıyordu. **Gamepad ile denenmedi**; `movement-core.md` güncellendi
 - [x] ~~**Player FSM küçükleri** #code~~ (2026-11-16) - PF-9: `SlingshotState` hakkı artık anchor kontrolünden sonra harcıyor; `CurrentWallSlideTime` `Awake`'te `MaxWallSlideTime` ile başlıyor (sabit 2f kalktı)
 - [x] ~~**Duvara tutunma toleransı** #code~~ (2026-11-16) - PF-8: `PlayerController.CanGrabWall` (temas ya da `WallClimbContactTolerance` 0.15 içinde); yerden/havadan tırmanma ve havada kayma girişi bunu kullanıyor, eski değer fiilî temas ~0.045. `WallSnapRaycastDistance` (2) değişmedi, `wall-movement.md`'de gerçek rolü yazıldı. **Gamepad ile denenmedi**; fazla yapışkan gelirse toleransı düşür

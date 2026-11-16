@@ -34,7 +34,6 @@
 ### Precision toleransları (docs/precision-platformer-plani.md §3.5)
 
 - [ ] **Hava sönümü gamepad testi** #test - kancadan ve slingshot'tan çıkıp stick'i ileri tut / bırak; momentum korunuyor mu, kontrol kaybı var mı; sönüm task'ıyla aynı ya da ertesi gün
-- [ ] **Yer/hava durumlarını birleştirme planı** #code - büyük iş, önce yalnızca plan: `GroundedState` + `AirborneState` tek `NormalState` olursa `SurfaceCarry`, `bypass*Gravity` parametreleri ve coyote aktarımı nasıl sadeleşir; parçalara bölünmüş task listesi çıkar (§3.4 #6)
 
 ### CRT
 
@@ -97,6 +96,7 @@
 
 ## Done
 
+- [x] ~~**Yer/hava durumlarını birleştirme planı** #code~~ (2026-11-16) - plan `docs/yer-hava-birlestirme-plani.md`: önce `AirEntry` profili (12 parametreli constructor → adı olan profiller, davranış aynı), `NormalState` birleştirmesi isteğe bağlı. Önerilen 4+1 task orada, TASKS.md'ye eklenmesi onay bekliyor
 - [x] ~~**Kancadan tek çıkış kuralı** #code~~ (2026-11-16) - karar: üç kural bilinçli olarak kalıyor, kod değişmedi; tek kural his ve oynanış açısından doğru gelmiyor (`feel-notlari.md`). Slingshot çıkışının tuşa bağlı olması ayrıca sorulacak
 - [x] ~~**Dash mesafesi tutarlılık testi** #test~~ (2026-11-16) - `DashRulesTests.D4`: 30/60/144 fps'te aynı dash aynı mesafe (fark < 0.001), `DashDistance`'a bir adım içinde. Kural D4 `bozulmamali-davranislar.md`'de, metin onay bekliyor
 - [x] ~~**Köşe düzeltmesi testi** #test~~ (2026-11-16) - `ToleranceRulesTests` (T1 tavan, T2 dash): değerin yarısı kadar değince geçiyor, değer + 0.15 değince takılıyor; mesafeler `PlayerStats`'tan okunuyor. Kurallar onay bekliyor. 0.25'in gamepad hissi denenmedi

@@ -103,6 +103,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 - Kanca girişleri: `GroundedState.CheckGrappleInput`, `AirborneState.ProcessGrappleInput`, `SwingingState.CheckOppositeGrappleCast`
 - `Player/Nodes/Rotation/`: `FullRotationNode`, `FullRotationTracker` (saf C#, testli), `SpeedBoostRotationEffect`, `RotationEventTrigger`
 - Prefab'lar: `Assets/Prefab/New/Node/`
+- Oda 5'teki yavaş zaman tutorial'ı (`SwingTutorial`, ilk node): [`swing-tutorial.md`](swing-tutorial.md). `NodeDetector` kurallarını `PlayerController.TryCastGrapple` ile kullanır.
 
 ## Bilinen kenar durumlar ve GDD ile farklar
 

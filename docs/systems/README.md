@@ -15,11 +15,13 @@ Yeni bir özellik üzerinde çalışmaya başlamadan önce ilgili dosyayı oku; 
 | [`platforms.md`](platforms.md) | Sürücü + strateji, taşıma, tetiklenen/kırılan/tek yönlü platform, launch pad, wrapping | §6.2 |
 | [`hazards.md`](hazards.md) | Diken, asit, hareketli/hızlanan/dönen/akan ölümcül nesneler | §6.2 |
 | [`collectibles.md`](collectibles.md) | Ananas, anahtar-kapı, slingshot yenileyici, tek nefeste ananas, envanter | §5.3, §6.2 |
+| [`swing-tutorial.md`](swing-tutorial.md) | Oda 5 ilk node: zıpla, zaman yavaşlar ve tepede durur, kolu çevir, ateşle, tutun; akış, zaman yazımı, ipuçları, ölçümler | §5.2, UI |
 | [`pause.md`](pause.md) | Start ile duraklat/devam, `timeScale`, ses/titreşim, çok oyunculuda kapalı | §11 |
 | [`ui-motion.md`](ui-motion.md) | UI hareket kuralları ve kontrol listesi: yay, poz, kayan imleç, giriş; UI donuk bırakılmaz | UI |
 | [`room-title-card.md`](room-title-card.md) | Odaya girişte çıkan başlık kartı: levha, kiriş, ekstrüde numara, şerit; tetik, zamanlama, tunable'lar | UI |
 | [`npc-dialogue.md`](npc-dialogue.md) | NPC diyalog levhası: köşede küçük beton levha, harf harf yazım, oyuncuyu kapatınca köşe değiştirme/soluklaşma; tetik ve satır seçimi | §7, UI |
 | [`camera.md`](camera.md) | Takip, öne bakış, oda override'ı, konumla algılanan bölgeler, `FrameArea` çerçevesi, blend ve confiner, editör araçları | — |
+| [`touch-animation.md`](touch-animation.md) | Dekorda temasta tek seferlik animasyon (`TouchAnimationTrigger`): tabela, zincir vb. için tekrar kullanılan bileşen | — |
 | [`multiplayer.md`](multiplayer.md) | Hayalet rakip, yarış ve birlikte modları, bayrak cezası, taşıyıcılar, yarış kaydı (MP 1 kodda: assembly, taşıyıcı arayüzü, mesajlar) | §9 |
 
 Her dosyada aynı bölümler var: tasarım niyeti, nasıl çalıştığı, tunable'lar (asset'teki gerçek değerler), kod yolları ve **bilinen kenar durumlar / GDD ile farklar**. Son bölüm, kodun GDD'den ayrıldığı yerleri listeler; hangisinin doğru olduğu geliştiricinin kararıdır.

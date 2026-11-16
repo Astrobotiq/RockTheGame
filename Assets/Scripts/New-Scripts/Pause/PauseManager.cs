@@ -37,6 +37,12 @@ namespace New_Scripts.Pause
 
         public static void Unblock(object owner) => Blockers.Remove(owner);
 
+        /// <summary>
+        /// En az bir sahip pause'u kapatmış (çok oyunculu oturum açık). <c>MultiplayerSession</c> Runtime'dan
+        /// görünmediği için, zamanı değiştiren tek oyunculu sistemler (swing tutorial) oturumu buradan anlar.
+        /// </summary>
+        public static bool IsPauseBlocked => Blockers.Count > 0;
+
         [SerializeField] private InputActionReference pauseAction;
         [SerializeField] private PlayerController player;
         [SerializeField] private PauseAudioSettingsSO audioSettings;

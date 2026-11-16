@@ -26,6 +26,7 @@ MonoBehaviour:
   AirAcceleration: 40
   AirDrag: 20
   MomentumDecay: 5
+  WallSpeedRetentionTime: 0.06
   DashDistance: 7
   DashDuration: 0.2
   DashImpactMultiplier: 0.5
@@ -63,6 +64,8 @@ MonoBehaviour:
   ApexHangGravityMultiplier: 0.5
   CoyoteTimeDuration: 0.1
   JumpBufferDuration: 0.1
+  CeilingCornerCorrection: 0.25
+  DashCornerCorrection: 0.25
   SwingHopForwardSpeed: 8
   SwingHopUpwardSpeed: 12
   SwingHopDuration: 0.15

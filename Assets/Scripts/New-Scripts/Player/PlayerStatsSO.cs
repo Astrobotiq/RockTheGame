@@ -90,6 +90,10 @@ namespace New_Scripts.Player
         [Header("Input Tolerances (Game Feel)")]
         public float CoyoteTimeDuration = 0.1f;
         public float JumpBufferDuration = 0.1f;
+        [Tooltip("Havada/dash'te yukari giderken tavan kosesine bu kadar (birim) yakinsa yana kaydirip gecirir. Celeste 4 px = 0.5; 0.5 gamepad'de fazla kaygan geldi. 0 = kapali.")]
+        public float CeilingCornerCorrection = 0.25f;
+        [Tooltip("Dash'te yatay hareket bir koseye bu kadar (birim) yakinsa dikey kaydirip gecirir. Celeste 4 px = 0.5; 0.5 gamepad'de fazla kaygan geldi. 0 = kapali.")]
+        public float DashCornerCorrection = 0.25f;
         
         [Header("Swing Hop Settings")]
         [Tooltip("Yerden swing'e geçerken node'a doğru yatay zıplama hızı")]

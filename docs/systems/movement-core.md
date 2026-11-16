@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması).*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi).*
 
 ## Tasarım niyeti
 
@@ -68,7 +68,18 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 
 **Hit-stop oyuncuyu ve hareketli platformları/tehlikeleri durdurur (16 Kasım 2026, PF-7).** `HitStopManager` `Time.timeScale`'e dokunmaz (pause ve swing tutorial onu yazıyor); `HitStopEvents` yayınlar ve `HitStopEvents.IsActive` bayrağını tutar. `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. `PlatformController`, `TriggeredPlatformController` ve `WrappingPlatformManager` bayrak true iken `FixedUpdate`'te yerinde bekler (`DeltaPosition` 0, strateji zamanı ilerlemez), hit-stop bitince kaldıkları yerden devam eder. Tehlikeler aynı sürücüleri kullandığı için onlar da durur. **Durmayanlar:** `LaunchPad` cooldown'u, kırılan platform sayaçları (`BreakablePlatform`, `SegmentedBreakablePlatform`), animasyonlar ve parçacıklar. Dash zamanlayıcısı `FixedUpdateState`'te (fizik adımında) ilerler ve hit-stop sırasında `FixedUpdate` atlandığı için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
 
-**Havada duvar çarpması (16 Kasım 2026, PF-4, seçenek c).** `AirborneState` her fizik adımında önceki adımın sensörüne bakar (`IsTouchingLeft/RightWall`). Hız duvara doğruysa oyuncunun yatay hızı sıfırlanır, çarpma hızı saklanır. Duvar `WallSpeedRetentionTime` (0.06 sn, 3 fizik adımı) içinde biterse (köşe, duvar ucu) saklanan hız geri verilir; oyuncu ters yöne basarsa ya da pencere dolarsa verilmez. Stick duvara itiyorsa ilk çarpma hızı korunur. Mantık `WallSpeedRetention` (saf C#, `WallSpeedRetentionTests`). Eskiden saklı hız duvar boyunca kaydıktan sonra `AirDrag` ile ~1 sn sönerek duvar bitince fırlatıyordu. Tavan için ayrı kural var (`HandleVerticalObstructions`). `WallSpeedRetentionTime = 0` geri vermeyi kapatır (yalnızca sıfırlar). Taşıyan yüzeyin hızı (`_carriedVelocityX`) bu hesaba girmez.
+**Havada duvar çarpması (16 Kasım 2026, PF-4, seçenek c).** `AirborneState` her fizik adımında önceki adımın sensörüne bakar (`IsTouchingLeft/RightWall`). Hız duvara doğruysa oyuncunun yatay hızı sıfırlanır, çarpma hızı saklanır. Duvar `WallSpeedRetentionTime` (0.06 sn, 3 fizik adımı) içinde biterse (köşe, duvar ucu) saklanan hız geri verilir; oyuncu ters yöne basarsa ya da pencere dolarsa verilmez. Stick duvara itiyorsa ilk çarpma hızı korunur. Mantık `WallSpeedRetention` (saf C#, `WallSpeedRetentionTests`). Eskiden saklı hız duvar boyunca kaydıktan sonra `AirDrag` ile ~1 sn sönerek duvar bitince fırlatıyordu. Tavan için ayrı kural var (`HandleVerticalObstructions`, önce köşe düzeltmesi denenir). `WallSpeedRetentionTime = 0` geri vermeyi kapatır (yalnızca sıfırlar). Taşıyan yüzeyin hızı (`_carriedVelocityX`) bu hesaba girmez.
+
+**Köşe düzeltmesi (16 Kasım 2026, Celeste `UpwardCornerCorrection` / `DashCornerCorrection`).** `KinematicPhysicsHandler.Move` içinde, çarpışma çözüldükten hemen sonra çalışır.
+- **Tavan:** yalnızca `AirborneState` ve `DashState`'te. Yukarı hareket tavana takılırsa oyuncu en fazla `CeilingCornerCorrection` (0.25) kadar yana kaydırılır. Kaydırılan yerden daha yukarı çıkılabiliyorsa oyuncu oraya taşınır ve dikey hız korunur. Yatay hız sağa doğruysa yalnızca sağa, sola doğruysa yalnızca sola, sıfırsa iki yöne birden denenir.
+- **Dash:** yalnızca `DashState`'te. Yatay hareket bir köşeye takılırsa oyuncu en fazla `DashCornerCorrection` (0.25) kadar dikey kaydırılır. Önce dikey hızın yönü denenir, dikey hız yoksa Celeste'teki gibi önce aşağı.
+
+Adaylar en yakından uzağa dört adımda denenir (`CornerCorrectionMath`, `CornerCorrectionMathTests`). Kaydırma hıza sayılmaz. Değer 0 olursa ilgili düzeltme kapanır.
+
+**Celeste'ten farklar:**
+- Celeste yatay dash düzeltmesini yalnızca tam yatay dash'te (dikey hız 0) yapar. Burada analog dash olduğu için her dash'te yapılıyor.
+- Celeste'in aşağı dash'te yere değince yaptığı yan kaydırma burada yok.
+- Celeste tavan düzeltmesini tırmanmada da yapar. Burada duvar ve ip durumlarında kapalı.
 
 ## Tunable'lar (`PlayerStats.asset`)
 
@@ -89,7 +100,8 @@ Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
 | `DashEndMomentumMultiplier` | 0.3 | dash sonu ~10.5 birim/sn kalır |
 | `DashImpactMultiplier` | 0.5 | yalnızca kamera sarsıntısının büyüklüğü |
 | `HitStopDuration` | 0.2 | dash ve slingshot fırlatışı ortak |
-| `WallSpeedRetentionTime` | 0.06 | asset'te serileştirilmedi, kod varsayılanı geçerli; Celeste değeri |
+| `WallSpeedRetentionTime` | 0.06 | Celeste değeri |
+| `CeilingCornerCorrection` / `DashCornerCorrection` | 0.25 / 0.25 | Celeste 4 px = 0.5, gamepad'de fazla kaygan geldi (16 Kasım 2026) |
 | `MomentumDecay` | 5 | hiçbir yerde okunmuyor |
 
 ## Kod

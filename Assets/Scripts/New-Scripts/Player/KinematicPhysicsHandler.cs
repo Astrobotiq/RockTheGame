@@ -26,6 +26,7 @@ namespace New_Scripts.Player
         private BoxCollider2D _boxCollider;
         private readonly RaycastHit2D[] _hitBuffer = new RaycastHit2D[16];
         private readonly Collider2D[] _overlapBuffer = new Collider2D[16];
+        private readonly float[] _cornerOffsets = new float[CornerCorrectionMath.MaxCandidates];
 
         // Eski *NonAlloc asiri yuklemeleri (layerMask + Physics2D.queriesHitTriggers) ile ayni
         // sonucu vermesi icin bu filtreler o davranisi bire bir tekrar eder.
@@ -80,16 +81,23 @@ namespace New_Scripts.Player
             return filter;
         }
 
-        public Vector2 Move(Vector2 deltaMovement)
+        /// <param name="ceilingCornerCorrection">Yukari giderken tavan kosesine takilinca en fazla bu kadar yana kaydirir (0 = kapali).</param>
+        /// <param name="dashCornerCorrection">Yatay hareket bir koseye takilinca en fazla bu kadar dikey kaydirir (0 = kapali).</param>
+        public Vector2 Move(Vector2 deltaMovement, float ceilingCornerCorrection = 0f, float dashCornerCorrection = 0f)
         {
             Vector2 position = _body.position;
+            Vector2 desiredMovement = deltaMovement;
 
             ResolvePenetrations(ref position);
 
             deltaMovement = ResolveHorizontalCollisions(position, deltaMovement);
+            if (dashCornerCorrection > 0f)
+                TryHorizontalCornerCorrection(ref position, ref deltaMovement, desiredMovement, dashCornerCorrection);
             position.x += deltaMovement.x;
 
             deltaMovement = ResolveVerticalCollisions(position, deltaMovement);
+            if (ceilingCornerCorrection > 0f)
+                TryCeilingCornerCorrection(ref position, ref deltaMovement, desiredMovement, ceilingCornerCorrection);
             position.y += deltaMovement.y;
 
             UpdateSensors(position);
@@ -198,6 +206,63 @@ namespace New_Scripts.Player
             if (validHit) movement.y = (minDistance - skinWidth) * directionY;
             return movement;
         }
+
+        /// <summary>
+        /// Celeste UpwardCornerCorrection: yukari hareket tavana takildiysa, yana kaydirilmis bir konumdan daha fazla
+        /// yukari gidilebiliyorsa oyuncuyu oraya kaydirir. Yatay hiza gore tek yon, yatay hiz yoksa iki yon denenir.
+        /// Kaydirma konuma eklenir, hiza sayilmaz (Move'un dondurdugu hiz degismez).
+        /// </summary>
+        private void TryCeilingCornerCorrection(ref Vector2 position, ref Vector2 movement, Vector2 desired, float maxDistance)
+        {
+            if (desired.y <= movementThreshold || movement.y >= desired.y - movementThreshold) return;
+
+            bool noHorizontal = Mathf.Abs(desired.x) < movementThreshold;
+            int sign = desired.x > 0f && !noHorizontal ? 1 : -1;
+            int count = CornerCorrectionMath.FillOffsets(maxDistance, sign, noHorizontal, _cornerOffsets);
+
+            for (int i = 0; i < count; i++)
+            {
+                float offsetX = _cornerOffsets[i];
+                if (!IsPathClear(ResolveHorizontalCollisions(position, new Vector2(offsetX, 0f)).x, offsetX)) continue;
+
+                Vector2 shifted = new Vector2(position.x + offsetX, position.y);
+                float upward = ResolveVerticalCollisions(shifted, new Vector2(0f, desired.y)).y;
+                if (upward <= movement.y + movementThreshold) continue;
+
+                position = shifted;
+                movement.y = upward;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Celeste DashCornerCorrection: yatay hareket bir koseye takildiysa, dikey kaydirilmis bir konumdan daha fazla
+        /// ilerlenebiliyorsa oyuncuyu oraya kaydirir. Once dikey hizin yonu, dikey hiz yoksa (Celeste gibi) once asagi.
+        /// </summary>
+        private void TryHorizontalCornerCorrection(ref Vector2 position, ref Vector2 movement, Vector2 desired, float maxDistance)
+        {
+            if (Mathf.Abs(desired.x) < movementThreshold) return;
+            if (Mathf.Abs(movement.x) >= Mathf.Abs(desired.x) - movementThreshold) return;
+
+            int sign = desired.y > movementThreshold ? 1 : -1;
+            int count = CornerCorrectionMath.FillOffsets(maxDistance, sign, true, _cornerOffsets);
+
+            for (int i = 0; i < count; i++)
+            {
+                float offsetY = _cornerOffsets[i];
+                if (!IsPathClear(ResolveVerticalCollisions(position, new Vector2(0f, offsetY)).y, offsetY)) continue;
+
+                Vector2 shifted = new Vector2(position.x, position.y + offsetY);
+                float forward = ResolveHorizontalCollisions(shifted, new Vector2(desired.x, 0f)).x;
+                if (Mathf.Abs(forward) <= Mathf.Abs(movement.x) + movementThreshold) continue;
+
+                position = shifted;
+                movement.x = forward;
+                return;
+            }
+        }
+
+        private static bool IsPathClear(float resolved, float requested) => Mathf.Abs(resolved - requested) < 1e-5f;
 
         private void UpdateSensors(Vector2 position)
         {

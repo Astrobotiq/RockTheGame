@@ -161,7 +161,11 @@ namespace New_Scripts.Player
 
             // 2. FSM'in hesapladığı teorik hızı bir delta mesafeye çevirip handler'a veriyoruz.
             // Handler, çarpışmaları çözüp objeyi hareket ettirdikten sonra "Gerçekten ulaştığım hız bu" diyerek gerçeği FSM'e geri döndürür.
-            Velocity = physicsHandler.Move(Velocity * Time.fixedDeltaTime);
+            // Kose duzeltmesi yalnizca serbest hareketde (hava, dash); ip ve duvar durumlarinda kaydirma yok.
+            bool isDashing = CurrentState is DashState;
+            float ceilingCorrection = isDashing || CurrentState is AirborneState ? Stats.CeilingCornerCorrection : 0f;
+            float dashCorrection = isDashing ? Stats.DashCornerCorrection : 0f;
+            Velocity = physicsHandler.Move(Velocity * Time.fixedDeltaTime, ceilingCorrection, dashCorrection);
         }
 
         public void TransitionToState(IPlayerState newState)

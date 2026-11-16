@@ -11,6 +11,7 @@ Sayısal değerler `PlayerStats.asset`'ten gelir ve buraya yazılmaz; ayarlanabi
 | D1 | Oyuncunun aynı anda en fazla bir dash hakkı vardır. |
 | D2 | Hak yalnızca dört durumda yenilenir: yere inmek, tek ya da çift kancaya tutunmak, launch pad ve respawn. |
 | D3 | Oyun, respawn'da olduğu gibi dash hakkı dolu başlar. |
+| D4 | Aynı dash, kare hızından bağımsız olarak her seferinde aynı mesafeyi gider. *(16 Kasım 2026, onay bekliyor)* |
 
 ## Swing
 
@@ -40,6 +41,15 @@ Sayısal değerler `PlayerStats.asset`'ten gelir ve buraya yazılmaz; ayarlanabi
 | W4 | Kayarken zıplamak kayma süresini yeniler; iki duvar arasında duvar zıplaması zinciri bilerek serbesttir. |
 | W5 | Tırmanırken zıplamak düz yukarı, kayarken zıplamak duvardan dışarı atar. |
 | W6 | Köşeden çıkmak için stick'i kısa süre (0.1 sn) yukarı tutmak gerekir. |
+| W7 | Havadayken duvar `WallJumpCheckDistance` içindeyse zıplamak, temas ve stick yönü olmadan, yükselirken de duvardan dışarı atar; daha uzaktan zıplamak duvar zıplaması değildir. *(16 Kasım 2026, onay bekliyor)* |
+| W8 | Duvara varmadan önce, buffer süresi içinde basılan zıplama, duvara varınca duvar zıplaması olur. *(16 Kasım 2026, onay bekliyor)* |
+
+## Toleranslar
+
+| ID | Kural |
+|---|---|
+| T1 | Yukarı giderken tavan köşesine `CeilingCornerCorrection`'dan az değen oyuncu yana kayıp geçer; daha fazla değen tavana takılır. *(16 Kasım 2026, onay bekliyor)* |
+| T2 | Yatay dash'te bir köşeye `DashCornerCorrection`'dan az değen oyuncu dikey kayıp geçer; daha fazla değen durur. *(16 Kasım 2026, onay bekliyor)* |
 
 ## Düzeltilen sapmalar
 
@@ -47,7 +57,7 @@ Sayısal değerler `PlayerStats.asset`'ten gelir ve buraya yazılmaz; ayarlanabi
 
 ## Testler
 
-`Assets/Tests/PlayMode/`: `DashRulesTests`, `SwingRulesTests`, `SlingshotRulesTests`, `WallRulesTests`. D3, `Assets/Tests/EditMode/PlayerStartStateTests` içinde. Süre bantları (W1'in ~6 sn'si) `PlayerStatsSanityTests`'te. Testler gerçek `NewScene`'i yükler, oyuncuyu odalardan uzak bir alana taşır ve girdiyi taklit eder; oyun hissini ölçmezler.
+`Assets/Tests/PlayMode/`: `DashRulesTests`, `SwingRulesTests`, `SlingshotRulesTests`, `WallRulesTests`, `ToleranceRulesTests`. D3, `Assets/Tests/EditMode/PlayerStartStateTests` içinde. Süre bantları (W1'in ~6 sn'si) `PlayerStatsSanityTests`'te. Testler gerçek `NewScene`'i yükler, oyuncuyu odalardan uzak bir alana taşır ve girdiyi taklit eder; oyun hissini ölçmezler.
 
 ## Henüz kural olmayanlar
 

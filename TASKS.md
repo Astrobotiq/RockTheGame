@@ -33,10 +33,6 @@
 
 ### Precision toleransları (docs/precision-platformer-plani.md §3.5)
 
-
-- [ ] **Dash mesafesi tutarlılık testi** #test - aynı dash'i farklı kare hızlarında (örn. `Application.targetFrameRate` 30/60/144) tekrar et, mesafe aynı mı; PlayMode kural testi olarak `DashRulesTests`'e eklenebilir; dash süresi task'ından sonra
-- [ ] **Köşe düzeltmesi testi** #test - tavan köşesine 0.1–0.4 birim değerek zıpla, geçiyor mu; 0.6'da geçmiyor mu; yatay dash'le bir duvar ucuna/basamağa 0.1–0.4 birim değ, aynısı; gamepad'de fazla "kaygan" geliyorsa `CeilingCornerCorrection` / `DashCornerCorrection`'ı (şu an 0.25) ayarla. PlayMode kural testi olarak eklenebilir (kural metnini insan onaylar)
-- [ ] **Duvar zıplaması buffer testi** #test - duvara değmeden 1–5 kare önce zıpla, duvar zıplaması çıkıyor mu; `WallRulesTests`'e eklenebilir; buffer task'ından sonra
 - [ ] **Hava sönümü gamepad testi** #test - kancadan ve slingshot'tan çıkıp stick'i ileri tut / bırak; momentum korunuyor mu, kontrol kaybı var mı; sönüm task'ıyla aynı ya da ertesi gün
 - [ ] **Kancadan tek çıkış kuralı** #code - tek kanca, çift kanca ve slingshot bırakışı şu an üç farklı yerçekimi kuralı; `feel-notlari.md`'deki karar verilince tek kurala indir (§3.4 #7)
 - [ ] **Yer/hava durumlarını birleştirme planı** #code - büyük iş, önce yalnızca plan: `GroundedState` + `AirborneState` tek `NormalState` olursa `SurfaceCarry`, `bypass*Gravity` parametreleri ve coyote aktarımı nasıl sadeleşir; parçalara bölünmüş task listesi çıkar (§3.4 #6)
@@ -102,6 +98,9 @@
 
 ## Done
 
+- [x] ~~**Dash mesafesi tutarlılık testi** #test~~ (2026-11-16) - `DashRulesTests.D4`: 30/60/144 fps'te aynı dash aynı mesafe (fark < 0.001), `DashDistance`'a bir adım içinde. Kural D4 `bozulmamali-davranislar.md`'de, metin onay bekliyor
+- [x] ~~**Köşe düzeltmesi testi** #test~~ (2026-11-16) - `ToleranceRulesTests` (T1 tavan, T2 dash): değerin yarısı kadar değince geçiyor, değer + 0.15 değince takılıyor; mesafeler `PlayerStats`'tan okunuyor. Kurallar onay bekliyor. 0.25'in gamepad hissi denenmedi
+- [x] ~~**Duvar zıplaması buffer testi** #test~~ (2026-11-16) - `WallRulesTests.W8` (menzil dışında basılan zıplama duvara varınca duvar zıplaması) + `W7` (yükselirken yakın duvar = duvar zıplaması, uzak duvar değil). Kurallar onay bekliyor
 - [x] ~~**Havada sınır üstü hız sönümü** #code~~ (2026-11-16) - yeni `AirOverspeedReduce` 16 (Celeste oranı 0.4 × `AirAcceleration` 40): hız 10'un üstünde ve stick aynı yöndeyse kullanılır, eskiden 40. Yere inişteki anında kesilmeye dokunulmadı (anlık koşu bilinçli). Eski/yeni `feel-notlari.md`'de. **Gamepad ile denenmedi**
 - [x] ~~**Duvar zıplaması: değmeden mesafe ve yükselirken karar** #code~~ (2026-11-16) - karar: Celeste gibi. Havadayken duvar `WallJumpCheckDistance` (0.375) içindeyse zıplama dışarı duvar zıplaması; temas, stick ve düşüş şart değil, coyote önce. `WallSlidingState.PerformWallJump` ortak, `PlayerController.IsWallWithin` kutu taraması. **Gamepad ile denenmedi**; ayrıntı `wall-movement.md` (PF-5)
 - [x] ~~**Airborne kilit ve coyote sayaçlarını fizik adımına al** #code~~ (2026-11-16) - `AirborneState.DecrementTimers` artık `FixedUpdateState`'in başında, `Time.fixedDeltaTime` ile (PF-6). `JumpBufferTimer` hâlâ `Update`'te

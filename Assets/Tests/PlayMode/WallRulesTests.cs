@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace RockTheGame.Tests.PlayMode
 {
-    /// <summary>docs/bozulmamali-davranislar.md W1-W6. ~6 sn bandini PlayerStatsSanityTests korur.</summary>
+    /// <summary>docs/bozulmamali-davranislar.md W1-W8. ~6 sn bandini PlayerStatsSanityTests korur.</summary>
     public class WallRulesTests : PlayerRuleTestBase
     {
         [UnityTest]
@@ -132,6 +132,58 @@ namespace RockTheGame.Tests.PlayMode
 
             Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
             Assert.Less(Player.Velocity.x, 0f);
+            Assert.Greater(Player.Velocity.y, 0f);
+        }
+
+        /// <summary>Sol yuzeyi oyuncunun sag kenarindan gap kadar uzakta bir duvar (temas yok).</summary>
+        private void SpawnWallAtGap(float gap)
+        {
+            SpawnWall(Player.PlayerRigidbody.position.x + 0.5f + gap);
+        }
+
+        [UnityTest]
+        public IEnumerator W7_JumpNearWallWhileRising_IsWallJump()
+        {
+            SpawnWallAtGap(Player.Stats.WallJumpCheckDistance * 0.5f);
+            Player.TransitionToState(new AirborneState(Player, new Vector2(0f, 5f)));
+
+            yield return PressJump();
+
+            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            Assert.AreEqual(-Player.Stats.WallSlideJumpForce.x, Player.Velocity.x, 0.01f, "duvardan disari atmali");
+            Assert.AreEqual(Player.Stats.WallSlideJumpForce.y, Player.Velocity.y, 0.01f);
+        }
+
+        [UnityTest]
+        public IEnumerator W7_JumpFartherFromWall_IsNotWallJump()
+        {
+            SpawnWallAtGap(Player.Stats.WallJumpCheckDistance + 0.25f);
+            Player.TransitionToState(new AirborneState(Player, Vector2.zero));
+
+            yield return PressJump();
+            yield return new WaitForSeconds(Player.Stats.JumpBufferDuration * 2f);
+
+            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            Assert.AreEqual(0f, Player.Velocity.x, 0.01f);
+            Assert.LessOrEqual(Player.Velocity.y, 0f, "duvar ziplamasi ya da normal ziplama olmamali");
+        }
+
+        [UnityTest]
+        public IEnumerator W8_JumpPressedBeforeReachingWall_BecomesWallJump()
+        {
+            // MoveSpeed (10) ile 0.6 birim 3 fizik adimi: basis karesinde menzil disinda, buffer (0.1 sn) bitmeden menzilde.
+            SpawnWallAtGap(Player.Stats.WallJumpCheckDistance + 0.6f);
+            Input.LeftStick = Vector2.right;
+            Player.TransitionToState(new AirborneState(Player, new Vector2(Player.Stats.MoveSpeed, 0f)));
+
+            yield return PressJump();
+            Assert.Greater(Player.Velocity.x, 0f, "basildigi anda duvar menzilde olmamali");
+
+            float deadline = Time.unscaledTime + Player.Stats.JumpBufferDuration + 0.1f;
+            while (Player.Velocity.x >= 0f && Time.unscaledTime < deadline)
+                yield return null;
+
+            Assert.Less(Player.Velocity.x, 0f, "buffer'daki ziplama duvara varinca duvar ziplamasi olmali");
             Assert.Greater(Player.Velocity.y, 0f);
         }
 

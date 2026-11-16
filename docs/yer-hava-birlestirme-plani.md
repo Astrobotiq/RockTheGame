@@ -64,7 +64,7 @@ Kazancı Aşama 1'in üstüne az: yer↔hava sınırındaki son iki aktarımı (
 - **Coyote ile boost'lu yüzey** (`LastMovingSurface`, yalnızca apex hang kapanır). Profilde ayrı bir bayrak olarak kalmalı.
 - **His değişmemeli.** Bu iş bir yeniden düzenleme. Bitince gamepad ile hızlı bir tur gerekir: zıplama, kanca çıkışı, duvar zıplaması, launch pad.
 
-## Önerilen task'lar (TASKS.md'ye eklenmedi, onay bekliyor)
+## Önerilen task'lar (16 Kasım 2026'da TASKS.md Someday'e eklendi)
 
 Her biri ~1–1.5 saat.
 

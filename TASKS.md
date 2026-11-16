@@ -34,6 +34,12 @@
 ### Precision toleransları (docs/precision-platformer-plani.md §3.5)
 
 - [ ] **Hava sönümü gamepad testi** #test - kancadan ve slingshot'tan çıkıp stick'i ileri tut / bırak; momentum korunuyor mu, kontrol kaybı var mı; sönüm task'ıyla aynı ya da ertesi gün
+- [ ] **Slingshot çıkışı gamepad testi** #test - slingshot'ı A basılı ve bırakılmış fırlat; yükseklik artık aynı (hep 3× yükselirken, tek kanca bırakışı gibi), yukarı fırlatış fazla kısa geliyor mu (`feel-notlari.md`)
+- [ ] **Havaya giriş tablosunun kural testleri** #test - `movement-core.md`'deki dört satır için PlayMode testi (örn. swing bırakınca tuş basılı olsa da yükselişte 3×, dash sonu sabit 1×); kural metinleri `bozulmamali-davranislar.md`'ye, onayla. `AirEntry`'den önce (yer-hava-birlestirme-plani.md)
+- [ ] **`AirEntry` profili: tip ve fabrikalar** #code - struct + adlı fabrikalar (`Jump`, `WallJump`, `ClimbJump`, `SwingRelease`, `SlingshotLaunch`, `LaunchPad`, `Fall`, `WalkOff`), `AirborneState`'e profil alan constructor (eskisi geçici kalır); dash, yer ve swing çağrı yerlerini taşı. Davranış değişmez (yer-hava-birlestirme-plani.md)
+- [ ] **`AirEntry` profili: kalan çağrı yerleri** #code - duvar durumları, slingshot, `LaunchPad`, `PlayerController`; 12 parametreli constructor'ı sil, `movement-core.md` tablosunu profillere bağla
+- [ ] **Profil geçişi testi** #test - EditMode + PlayMode yeşil, gamepad ile hızlı tur (zıplama, üç kanca çıkışı, duvar zıplaması, launch pad); kalan çağrı yerleri task'ıyla aynı ya da ertesi gün
+- [ ] **`CurrentState` okuyan dış kodun envanteri** #code - isteğe bağlı, `NormalState` (Aşama 2) öncesi: `PlayerAnimationController`, `PlayerVFXManager`, `LocalPlayerBroadcaster`, `PenaltyHandler`, `DoorJuicyVisual`, `PauseManager` durum tipine bakıyor mu; parçalara bölünmüş plan
 
 ### CRT
 
@@ -96,7 +102,8 @@
 
 ## Done
 
-- [x] ~~**Yer/hava durumlarını birleştirme planı** #code~~ (2026-11-16) - plan `docs/yer-hava-birlestirme-plani.md`: önce `AirEntry` profili (12 parametreli constructor → adı olan profiller, davranış aynı), `NormalState` birleştirmesi isteğe bağlı. Önerilen 4+1 task orada, TASKS.md'ye eklenmesi onay bekliyor
+- [x] ~~**Slingshot çıkışı tuştan bağımsız** #code~~ (2026-11-16) - `SlingshotState` çıkışı (fırlatış sonu ve erken bırakma) `bypassJumpGravity: true`: yükselirken hep 3×, düşerken 1.5×, tek kanca bırakışı gibi; eskiden A basılıyken 1× + apex hang. Kural L5 + `SlingshotRulesTests.L5`. **Gamepad ile denenmedi**
+- [x] ~~**Yer/hava durumlarını birleştirme planı** #code~~ (2026-11-16) - plan `docs/yer-hava-birlestirme-plani.md`: önce `AirEntry` profili (12 parametreli constructor → adı olan profiller, davranış aynı), `NormalState` birleştirmesi isteğe bağlı. önerilen task'lar Someday'e eklendi
 - [x] ~~**Kancadan tek çıkış kuralı** #code~~ (2026-11-16) - karar: üç kural bilinçli olarak kalıyor, kod değişmedi; tek kural his ve oynanış açısından doğru gelmiyor (`feel-notlari.md`). Slingshot çıkışının tuşa bağlı olması ayrıca sorulacak
 - [x] ~~**Dash mesafesi tutarlılık testi** #test~~ (2026-11-16) - `DashRulesTests.D4`: 30/60/144 fps'te aynı dash aynı mesafe (fark < 0.001), `DashDistance`'a bir adım içinde. Kural D4 `bozulmamali-davranislar.md`'de (onaylandı)
 - [x] ~~**Köşe düzeltmesi testi** #test~~ (2026-11-16) - `ToleranceRulesTests` (T1 tavan, T2 dash): değerin yarısı kadar değince geçiyor, değer + 0.15 değince takılıyor; mesafeler `PlayerStats`'tan okunuyor. Kurallar onaylandı. 0.25'in gamepad hissi denenmedi

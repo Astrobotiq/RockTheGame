@@ -17,10 +17,10 @@ namespace RockTheGame.Tests.PlayMode
             Assert.IsInstanceOf<DashState>(Player.CurrentState);
             Assert.IsFalse(Player.HasDashCharge);
 
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
             yield return PressDash();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
         }
 
         [UnityTest]
@@ -129,7 +129,7 @@ namespace RockTheGame.Tests.PlayMode
 
             yield return PressJump();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.IsFalse(Player.HasDashCharge);
         }
     }

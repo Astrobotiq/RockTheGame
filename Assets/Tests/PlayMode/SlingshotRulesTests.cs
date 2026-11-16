@@ -30,7 +30,7 @@ namespace RockTheGame.Tests.PlayMode
 
             Input.IsLeftTriggerHeld = false;
             Input.IsRightTriggerHeld = false;
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
 
             Assert.IsFalse(Player.CanSlingshot);
         }
@@ -107,7 +107,7 @@ namespace RockTheGame.Tests.PlayMode
             float deadline = Time.unscaledTime + Timeout;
             while (Player.CurrentState is SlingshotState && Time.unscaledTime < deadline)
                 yield return new WaitForFixedUpdate();
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState, "slingshot firlatisi bitmedi");
+            AssertInAir("slingshot firlatisi bitmedi");
 
             // Kilit bitince tutulan tetikler yeniden kancaya tutunmasin.
             Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = false;

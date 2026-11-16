@@ -91,6 +91,11 @@ namespace New_Scripts.Player
 
         // --- State Management ---
         public IPlayerState CurrentState { get; private set; }
+        /// <summary>Normal hareket durumunda ve yerde (kanca, duvar, dash değil). Yer/hava durumlarının nasıl
+        /// bölündüğünden bağımsız soru (yer-hava-birlestirme-plani.md Aşama 2).</summary>
+        public bool IsInNormalGround => CurrentState is GroundedState;
+        /// <summary>Normal hareket durumunda ve havada (kanca, duvar, dash değil).</summary>
+        public bool IsInNormalAir => CurrentState is AirborneState;
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
 

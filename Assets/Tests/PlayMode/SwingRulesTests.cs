@@ -16,7 +16,7 @@ namespace RockTheGame.Tests.PlayMode
         {
             yield return SwingIntoSlope(slopeDegrees);
 
-            Assert.IsInstanceOf<GroundedState>(Player.CurrentState);
+            AssertOnGround();
         }
 
         [UnityTest]
@@ -24,7 +24,7 @@ namespace RockTheGame.Tests.PlayMode
         {
             yield return SwingIntoSlope(slopeDegrees, spendDash: true);
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.IsFalse(Player.HasDashCharge);
             Assert.IsNull(Player.RightAnchor);
         }
@@ -52,7 +52,7 @@ namespace RockTheGame.Tests.PlayMode
             Player.UseDash();
             yield return WaitWhileState<SwingingState>();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.IsFalse(Player.HasDashCharge);
             Assert.IsNull(Player.RightAnchor);
             Assert.IsNull(Player.LeftAnchor);

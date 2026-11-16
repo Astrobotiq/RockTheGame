@@ -18,7 +18,7 @@ namespace RockTheGame.Tests.PlayMode
             Assert.Less(Player.CurrentWallStamina, before);
 
             Player.ConsumeWallStamina(Player.CurrentWallStamina);
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
 
             Assert.IsFalse(Player.CanWallClimb);
         }
@@ -66,7 +66,7 @@ namespace RockTheGame.Tests.PlayMode
 
             yield return PressJump();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.AreEqual(before, Player.CurrentWallStamina, 0.0001f);
         }
 
@@ -118,7 +118,7 @@ namespace RockTheGame.Tests.PlayMode
 
             yield return PressJump();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.AreEqual(0f, Player.Velocity.x, 0.0001f);
             Assert.Greater(Player.Velocity.y, 0f);
         }
@@ -130,7 +130,7 @@ namespace RockTheGame.Tests.PlayMode
 
             yield return PressJump();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.Less(Player.Velocity.x, 0f);
             Assert.Greater(Player.Velocity.y, 0f);
         }
@@ -145,11 +145,11 @@ namespace RockTheGame.Tests.PlayMode
         public IEnumerator W7_JumpNearWallWhileRising_IsWallJump()
         {
             SpawnWallAtGap(Player.Stats.WallJumpCheckDistance * 0.5f);
-            Player.TransitionToState(new AirborneState(Player, new Vector2(0f, 5f), AirEntry.Fall()));
+            EnterAir(new Vector2(0f, 5f), AirEntry.Fall());
 
             yield return PressJump();
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.AreEqual(-Player.Stats.WallSlideJumpForce.x, Player.Velocity.x, 0.01f, "duvardan disari atmali");
             Assert.AreEqual(Player.Stats.WallSlideJumpForce.y, Player.Velocity.y, 0.01f);
         }
@@ -158,12 +158,12 @@ namespace RockTheGame.Tests.PlayMode
         public IEnumerator W7_JumpFartherFromWall_IsNotWallJump()
         {
             SpawnWallAtGap(Player.Stats.WallJumpCheckDistance + 0.25f);
-            Player.TransitionToState(new AirborneState(Player, Vector2.zero, AirEntry.Fall()));
+            EnterAir(Vector2.zero, AirEntry.Fall());
 
             yield return PressJump();
             yield return new WaitForSeconds(Player.Stats.JumpBufferDuration * 2f);
 
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
             Assert.AreEqual(0f, Player.Velocity.x, 0.01f);
             Assert.LessOrEqual(Player.Velocity.y, 0f, "duvar ziplamasi ya da normal ziplama olmamali");
         }
@@ -174,7 +174,7 @@ namespace RockTheGame.Tests.PlayMode
             // MoveSpeed (10) ile 0.6 birim 3 fizik adimi: basis karesinde menzil disinda, buffer (0.1 sn) bitmeden menzilde.
             SpawnWallAtGap(Player.Stats.WallJumpCheckDistance + 0.6f);
             Input.LeftStick = Vector2.right;
-            Player.TransitionToState(new AirborneState(Player, new Vector2(Player.Stats.MoveSpeed, 0f), AirEntry.Fall()));
+            EnterAir(new Vector2(Player.Stats.MoveSpeed, 0f), AirEntry.Fall());
 
             yield return PressJump();
             Assert.Greater(Player.Velocity.x, 0f, "basildigi anda duvar menzilde olmamali");
@@ -192,7 +192,7 @@ namespace RockTheGame.Tests.PlayMode
         {
             yield return SlideOnRightWall();
             Input.LeftStick = Vector2.left;
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
             yield return new WaitForFixedUpdate();
             Assert.IsTrue(Player.IsWallWithin(1, Player.Stats.WallJumpCheckDistance), "duvar hala menzilde olmali");
 

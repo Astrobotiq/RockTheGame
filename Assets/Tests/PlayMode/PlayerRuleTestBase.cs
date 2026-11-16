@@ -107,6 +107,34 @@ namespace RockTheGame.Tests.PlayMode
             Assert.IsInstanceOf<T>(Player.CurrentState, "Beklenen duruma gecilmedi");
         }
 
+        // Yer/hava sorusu durum tipine değil PlayerController'a sorulur: Aşama 2'de (NormalState) testler değişmez.
+
+        protected IEnumerator WaitForGround()
+        {
+            float deadline = Time.unscaledTime + Timeout;
+            while (!Player.IsInNormalGround && Time.unscaledTime < deadline)
+                yield return null;
+            AssertOnGround("Yere inilmedi");
+        }
+
+        protected IEnumerator WaitForAir()
+        {
+            float deadline = Time.unscaledTime + Timeout;
+            while (!Player.IsInNormalAir && Time.unscaledTime < deadline)
+                yield return null;
+            AssertInAir("Havaya gecilmedi");
+        }
+
+        protected void AssertOnGround(string message = null) =>
+            Assert.IsTrue(Player.IsInNormalGround, $"{message ?? "Yerde olmali"}; durum {Player.CurrentState?.GetType().Name}");
+
+        protected void AssertInAir(string message = null) =>
+            Assert.IsTrue(Player.IsInNormalAir, $"{message ?? "Havada olmali"}; durum {Player.CurrentState?.GetType().Name}");
+
+        /// <summary>Oyuncuyu verilen hız ve havaya giriş profiliyle doğrudan havaya sokar.</summary>
+        protected void EnterAir(Vector2 velocity, New_Scripts.Player.States.AirEntry entry) =>
+            Player.TransitionToState(new New_Scripts.Player.States.AirborneState(Player, velocity, entry));
+
         protected IEnumerator WaitWhileState<T>() where T : IPlayerState
         {
             float deadline = Time.unscaledTime + Timeout;
@@ -143,7 +171,7 @@ namespace RockTheGame.Tests.PlayMode
         protected IEnumerator LandOnFloor()
         {
             SpawnFloor(Player.PlayerRigidbody.position.y - 1f);
-            yield return WaitForState<New_Scripts.Player.States.GroundedState>();
+            yield return WaitForGround();
         }
 
         protected IEnumerator GrabWithRight(Vector2 nodePosition)

@@ -24,10 +24,10 @@ namespace RockTheGame.Tests.PlayMode
         private IEnumerator SampleAirborne(List<float> samples, int maxSteps = 120)
         {
             samples.Add(Player.Velocity.y);
-            for (int i = 0; i < maxSteps && Player.CurrentState is AirborneState; i++)
+            for (int i = 0; i < maxSteps && Player.IsInNormalAir; i++)
             {
                 yield return new WaitForFixedUpdate();
-                if (!(Player.CurrentState is AirborneState)) break;
+                if (!Player.IsInNormalAir) break;
                 samples.Add(Player.Velocity.y);
             }
         }
@@ -61,7 +61,7 @@ namespace RockTheGame.Tests.PlayMode
             yield return WaitForHitStopEnd();
             Input.IsJumpHeld = jumpHeld;
             yield return PressJump();
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
             yield return SampleAirborne(samples);
         }
 
@@ -101,7 +101,7 @@ namespace RockTheGame.Tests.PlayMode
             Assert.IsInstanceOf<SwingingState>(Player.CurrentState, $"bırakma noktasına varılmadı, hız {Player.Velocity}");
 
             Input.IsRightTriggerHeld = false;
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
             var s = new List<float>();
             yield return SampleAirborne(s);
 
@@ -116,7 +116,7 @@ namespace RockTheGame.Tests.PlayMode
         {
             Input.IsJumpHeld = true;
             yield return TouchLaunchPad();
-            Assert.IsInstanceOf<AirborneState>(Player.CurrentState);
+            AssertInAir();
 
             var s = new List<float>();
             yield return SampleAirborne(s, 20);
@@ -138,16 +138,16 @@ namespace RockTheGame.Tests.PlayMode
         {
             var floor = SpawnFloor(Player.PlayerRigidbody.position.y - 1f);
             floor.AddComponent<BoostSurface>();
-            yield return WaitForState<GroundedState>();
+            yield return WaitForGround();
             yield return WaitForHitStopEnd();
 
             Input.IsJumpHeld = true;
             yield return PressJump();
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
             var s = new List<float>();
             yield return SampleAirborne(s);
 
-            // GroundedState boost'lu yüzeyde endEarlyGravityMultiplier 0.5 veriyor.
+            // Boost'lu yüzeyden zıplama (AirEntry.Jump(true)) endEarlyGravityMultiplier 0.5 veriyor.
             float soft = Player.Stats.JumpEndEarlyGravityMultiplier * 0.5f;
             Assert.AreEqual(soft, Rising(s), MultiplierTolerance, "tuş basılı olsa da yumuşak kesik yükseliş");
             Assert.AreEqual(soft, NearApexRising(s), MultiplierTolerance, "tepede asılı kalma yok");
@@ -161,7 +161,7 @@ namespace RockTheGame.Tests.PlayMode
             Input.LeftStick = Vector2.up;
             yield return PressDash();
             yield return WaitForState<DashState>();
-            yield return WaitForState<AirborneState>();
+            yield return WaitForAir();
             Input.LeftStick = Vector2.zero;
 
             var s = new List<float>();

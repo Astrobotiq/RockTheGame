@@ -3,7 +3,7 @@ using UnityEngine;
 namespace New_Scripts.Player.States
 {
     /// <summary>
-    /// Havaya giriş profili: <see cref="AirborneState"/>'in yerçekimi kuralı, kilitleri, coyote'u ve taşıma hızı.
+    /// Havaya giriş profili: <see cref="NormalState"/>'in havadaki yerçekimi kuralı, kilitleri, coyote'u ve taşıma hızı.
     /// docs/systems/movement-core.md'deki "havaya giriş → yerçekimi kuralı" tablosu bu fabrikaların listesidir;
     /// yeni bir havaya geçiş ya mevcut bir profili seçer ya da buraya yeni bir profil ekler (yer-hava-birlestirme-plani.md).
     ///

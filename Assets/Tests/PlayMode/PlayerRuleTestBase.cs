@@ -133,7 +133,7 @@ namespace RockTheGame.Tests.PlayMode
 
         /// <summary>Oyuncuyu verilen hız ve havaya giriş profiliyle doğrudan havaya sokar.</summary>
         protected void EnterAir(Vector2 velocity, New_Scripts.Player.States.AirEntry entry) =>
-            Player.TransitionToState(new New_Scripts.Player.States.AirborneState(Player, velocity, entry));
+            Player.TransitionToState(new New_Scripts.Player.States.NormalState(Player, velocity, entry));
 
         protected IEnumerator WaitWhileState<T>() where T : IPlayerState
         {

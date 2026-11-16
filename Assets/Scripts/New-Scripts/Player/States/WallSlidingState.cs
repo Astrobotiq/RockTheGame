@@ -47,7 +47,7 @@ namespace New_Scripts.Player.States
 
             if (context.CurrentWallSlideTime <= 0f)
             {
-                context.TransitionToState(new AirborneState(context, velocity, AirEntry.WallDrop(CurrentCarrierVelocity())));
+                context.TransitionToState(new NormalState(context, velocity, AirEntry.WallDrop(CurrentCarrierVelocity())));
                 return;
             }
 
@@ -58,7 +58,7 @@ namespace New_Scripts.Player.States
             {
                 // Coyote yok (Celeste gibi): hemen ardından basılan zıplamayı havadan duvar zıplaması karşılar (W9).
                 // Eskiden coyote açıktı ve öncelikli olduğu için duvarın dibinde dikey zıplama çıkıyordu.
-                context.TransitionToState(new AirborneState(context, velocity,
+                context.TransitionToState(new NormalState(context, velocity,
                     AirEntry.WallDrop(CurrentCarrierVelocity(), wallClimbLockout: 0.2f)));
                 return;
             }
@@ -76,11 +76,11 @@ namespace New_Scripts.Player.States
 
             if (context.IsGrounded)
             {
-                context.TransitionToState(new GroundedState(context));
+                context.TransitionToState(new NormalState(context));
             }
             else if (!IsStillOnWall())
             {
-                context.TransitionToState(new AirborneState(context, velocity, AirEntry.WallDrop(CurrentCarrierVelocity())));
+                context.TransitionToState(new NormalState(context, velocity, AirEntry.WallDrop(CurrentCarrierVelocity())));
             }
         }
 
@@ -126,8 +126,8 @@ namespace New_Scripts.Player.States
         }
 
         /// <summary>
-        /// Duvardan disari ziplama (W5 kayma kurali): buffer'i tuketir, kayma suresini yeniler (W4), AirborneState'e gecer.
-        /// Kayarken ve havada duvara yakinken (AirborneState, WallJumpCheckDistance) ayni ziplama kullanilir.
+        /// Duvardan disari ziplama (W5 kayma kurali): buffer'i tuketir, kayma suresini yeniler (W4), havaya (NormalState) gecer.
+        /// Kayarken ve havada duvara yakinken (NormalState, WallJumpCheckDistance) ayni ziplama kullanilir.
         /// </summary>
         public static void PerformWallJump(PlayerController context, int wallDirection)
         {
@@ -152,7 +152,7 @@ namespace New_Scripts.Player.States
             if (bypassJumpGravity) jumpDirection += surfaceAddition;
             else carriedVelocity = surfaceAddition;
 
-            context.TransitionToState(new AirborneState(context, jumpDirection,
+            context.TransitionToState(new NormalState(context, jumpDirection,
                 AirEntry.WallJump(stats.WallJumpInputLockoutTime, boostedSurface: bypassJumpGravity, carriedVelocity)));
         }
 

@@ -5,7 +5,7 @@ namespace New_Scripts.Player
     /// <summary>
     /// Havada duvara carpinca yatay hizi sifirlar, duvar kisa sure icinde biterse (kose) hizi geri verir
     /// (docs/systems/movement-core.md "Havada duvar carpmasi", Celeste'in <c>wallSpeedRetentionTimer</c>'i).
-    /// Unity'ye dokunmaz; <c>AirborneState</c> her fizik adiminda <see cref="Step"/> cagirir.
+    /// Unity'ye dokunmaz; <c>NormalState</c> havadayken her fizik adiminda <see cref="Step"/> cagirir.
     /// </summary>
     public struct WallSpeedRetention
     {

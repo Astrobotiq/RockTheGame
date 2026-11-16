@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri).*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri; yer/hava tek durum `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -10,10 +10,10 @@ Celeste'ten alınan "oyuncu dostu" katman. Kanca oyunun kalbi, bu dosyadaki hare
 
 | Girdi | Ne yapar | Kod |
 |---|---|---|
-| Sol stick X | Koşma ve hava kontrolü (analog) | `GroundedState.FixedUpdateState`, `AirborneState.ApplyAirMovement` |
+| Sol stick X | Koşma ve hava kontrolü (analog) | `NormalState.FixedUpdateGround`, `NormalState.ApplyAirMovement` |
 | Sol stick (2D) | Dash yönü (8 yön değil, serbest analog yön). Stick boşsa karakterin baktığı yön. | `DashState` ctor |
-| Güney tuşu | Zıplama. Basılı tutmak yüksekliği artırır. | `PlayerController.Update` (buffer), `GroundedState`, `AirborneState` |
-| Batı tuşu | Dash | `GroundedState.CheckDashTransition`, `AirborneState.HandleTransitions` |
+| Güney tuşu | Zıplama. Basılı tutmak yüksekliği artırır. | `PlayerController.Update` (buffer), `NormalState` |
+| Batı tuşu | Dash | `NormalState.CheckDashTransition` |
 
 Sağ stick de okunuyor (`IInputReader.RightStick`), ama temel hareket için değil, sağ kolun nişanı için. Bkz. [`grapple.md`](grapple.md).
 
@@ -35,7 +35,7 @@ Karakter kinematik bir `Rigidbody2D`. Her `FixedUpdate`'te aktif state istenen h
 
 **Deneme: `CelesteVariableJump` (varsayılan kapalı, 16 Kasım 2026).** Açıkken oyuncunun kendi zıplamalarında (`VariableJump` profilleri: `Jump(false)`, coyote, `WallJump`, `ClimbJump`; boost'lu yüzeyde değil) "tuş bırakılmış" satırı kalkar: tuş basılıyken `VarJumpTime` boyunca yukarı hız sabit tutulur, bırakınca süre biter ve yükseliş 1× sürer; tepede asılı kalma yalnızca tuş basılıyken. Tam yükseklik aynı kalsın diye başlangıç hızı `PlayerStatsSO.HoldJumpSpeed` ile düşürülür. Açıkken `AirEntryRulesTests.H1` (iki test) ve `WallRulesTests.W7_JumpNearWallWhileRising` eski mekanizmayı ölçtüğü için kırılır; kalıcı olursa bu testler geliştirici onayıyla güncellenir.
 
-Bu çarpanlar yalnızca `IsJumping` profilleriyle girilen havada uygulanır. Havaya her geçiş `new AirborneState(context, hız, AirEntry.X())` ile adı olan bir profil seçer (`Player/States/AirEntry.cs`, 16 Kasım 2026); tablo bu profillerin listesidir. Yeni bir havaya geçiş ya mevcut bir profili seçer ya da `AirEntry`'ye yeni bir profil ekler ve buraya bir satır yazar.
+Bu çarpanlar yalnızca `IsJumping` profilleriyle girilen havada uygulanır. Havaya her geçiş (`new NormalState(context, hız, AirEntry.X())` ya da yerden ayrılınca `NormalState.LeaveGround`) adı olan bir profil seçer (`Player/States/AirEntry.cs`, 16 Kasım 2026); tablo bu profillerin listesidir. Yeni bir havaya geçiş ya mevcut bir profili seçer ya da `AirEntry`'ye yeni bir profil ekler ve buraya bir satır yazar. Yer ve hava tek durumdur (`NormalState`, Celeste `StNormal`, 16 Kasım 2026): yerde olmak `IsOnGround` alanıdır, yere iniş `OnLand()` (hızın y'si sıfır, kancalar bırakılır, dash/slingshot/stamina/kayma süresi yenilenir, renk, ses, toz, titreşim; bu sırayla), yerden ayrılış `LeaveGround` ile olur. Dış kod yer/havayı durum tipine değil `PlayerController.IsInNormalGround` / `IsInNormalAir`'e sorar.
 
 | Havaya giriş | Profil | Yerçekimi kuralı | Kural |
 |---|---|---|---|
@@ -55,13 +55,13 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 
 **Hava kontrolü.** Yatay hız `MoveTowards` ile hedefe yaklaşır. Stick basılıysa `AirAcceleration`, boştaysa `AirDrag` kullanılır. Hız `MoveSpeed × AirControlMultiplier`'ın (10) üstündeyken stick aynı yöndeyse `AirOverspeedReduce` (16) kullanılır (16 Kasım 2026, Celeste `RunReduce`): ileri basmak momentumu bırakmaktan (20) daha yavaş söndürür, eskiden 40 ile iki kat hızlı söndürüyordu. Yere inişte hız hâlâ tek adımda `stick × 10`'a kesilir (anlık koşu, bilinçli). Böylece kancadan ya da launch pad'den gelen momentum hemen kaybolmaz, ama yönlendirilebilir.
 
-**Coyote time ve jump buffer.** Zıplamaya basmak `JumpBufferTimer`'ı doldurur. Yere değen ilk karede buffer doluysa zıplama hemen gerçekleşir. Kenardan yürüyerek düşünce `AirborneState` `CoyoteTimeDuration` süresiyle açılır, bu sürede zıplama hâlâ çalışır. Coyote ve `AirborneState`'in kilit sayaçları (yatay girdi, kanca, duvar tırmanma) fizik adımında düşer (16 Kasım 2026, PF-6), süreleri kare hızından bağımsız. `JumpBufferTimer` hâlâ `PlayerController.Update`'te `Time.deltaTime` ile düşer.
+**Coyote time ve jump buffer.** Zıplamaya basmak `JumpBufferTimer`'ı doldurur. Yere değen ilk karede buffer doluysa zıplama hemen gerçekleşir. Kenardan yürüyerek düşünce `NormalState.OnLeaveGround` coyote'u `CoyoteTimeDuration` süresiyle açar, bu sürede zıplama hâlâ çalışır. Coyote ve havadaki kilit sayaçları (yatay girdi, kanca, duvar tırmanma) fizik adımında düşer (16 Kasım 2026, PF-6), süreleri kare hızından bağımsız. `JumpBufferTimer` hâlâ `PlayerController.Update`'te `Time.deltaTime` ile düşer.
 
 **Hareketli zeminden zıplama.** Üstünde durulan yüzey `IMovingSurface` ise ve `JumpBoostMultiplier > 0` ise, yüzeyin hızı zıplamaya eklenir ve değişken zıplama yerçekimi devre dışı kalır. Coyote zıplamasında da son yüzey (`LastMovingSurface`) kullanılır. Ayrıntı: [`platforms.md`](platforms.md).
 
-**Dash.** `DashSpeed = DashDistance / DashDuration` hızla, yerçekimsiz, sabit yönde gider. Bitince `AirborneState`'e geçer ve hızın yalnızca `DashEndMomentumMultiplier` kadarını taşır. Yerde bitse bile önce havaya geçer, sonraki fizik adımında yere döner.
+**Dash.** `DashSpeed = DashDistance / DashDuration` hızla, yerçekimsiz, sabit yönde gider. Bitince havaya (`NormalState`, `AirEntry.Fall`) geçer ve hızın yalnızca `DashEndMomentumMultiplier` kadarını taşır. Yerde bitse bile önce havaya geçer, sonraki fizik adımında iner (`OnLand`); `NormalState` birleştirmesinde bilerek korundu.
 
-**Dash hakkı.** `HasDashCharge` tek bir bool. Şunlar yeniler: yere inmek (`GroundedState`), tek ya da çift kancaya tutunmak (`SwingingState`, `DualSwingingState`), launch pad ([`platforms.md`](platforms.md)) ve respawn.
+**Dash hakkı.** `HasDashCharge` tek bir bool. Şunlar yeniler: yere inmek (`NormalState.OnLand`), tek ya da çift kancaya tutunmak (`SwingingState`, `DualSwingingState`), launch pad ([`platforms.md`](platforms.md)) ve respawn.
 
 ## Game feel bağlantıları
 
@@ -69,16 +69,16 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 |---|---|---|
 | Dash başlangıcı | Hit-stop (`HitStopDuration`) + kamera sarsıntısı + `HighImpact` titreşimi + `Dash` titreşimi + ses | `DashState.EnterState` → `PlayerController.NotifyImpact` |
 | Dash süresince | Gölge izi (ghost afterimage) | `PlayerVFXManager.HandleGhostEffect` |
-| Zıplama / iniş | Toz, ses, `Jump` / `Land` titreşimi | `GroundedState` |
+| Zıplama / iniş | Toz, ses, `Jump` / `Land` titreşimi | `NormalState` (`CheckLeaveGround`, `OnLand`) |
 | Koşma | Koşu tozu | `PlayerVFXManager.HandleRunDust` |
 | Dash harcandı | Taç rengi griye döner | `PlayerColorController.SetDashExhausted` |
 
 **Hit-stop oyuncuyu ve hareketli platformları/tehlikeleri durdurur (16 Kasım 2026, PF-7).** `HitStopManager` `Time.timeScale`'e dokunmaz (pause ve swing tutorial onu yazıyor); `HitStopEvents` yayınlar ve `HitStopEvents.IsActive` bayrağını tutar. `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. `PlatformController`, `TriggeredPlatformController` ve `WrappingPlatformManager` bayrak true iken `FixedUpdate`'te yerinde bekler (`DeltaPosition` 0, strateji zamanı ilerlemez), hit-stop bitince kaldıkları yerden devam eder. Tehlikeler aynı sürücüleri kullandığı için onlar da durur. **Durmayanlar:** `LaunchPad` cooldown'u, kırılan platform sayaçları (`BreakablePlatform`, `SegmentedBreakablePlatform`), animasyonlar ve parçacıklar. Dash zamanlayıcısı `FixedUpdateState`'te (fizik adımında) ilerler ve hit-stop sırasında `FixedUpdate` atlandığı için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
 
-**Havada duvar çarpması (16 Kasım 2026, PF-4, seçenek c).** `AirborneState` her fizik adımında önceki adımın sensörüne bakar (`IsTouchingLeft/RightWall`). Hız duvara doğruysa oyuncunun yatay hızı sıfırlanır, çarpma hızı saklanır. Duvar `WallSpeedRetentionTime` (0.06 sn, 3 fizik adımı) içinde biterse (köşe, duvar ucu) saklanan hız geri verilir; oyuncu ters yöne basarsa ya da pencere dolarsa verilmez. Stick duvara itiyorsa ilk çarpma hızı korunur. Mantık `WallSpeedRetention` (saf C#, `WallSpeedRetentionTests`). Eskiden saklı hız duvar boyunca kaydıktan sonra `AirDrag` ile ~1 sn sönerek duvar bitince fırlatıyordu. Tavan için ayrı kural var (`HandleVerticalObstructions`, önce köşe düzeltmesi denenir). `WallSpeedRetentionTime = 0` geri vermeyi kapatır (yalnızca sıfırlar). Taşıyan yüzeyin hızı (`_carriedVelocityX`) bu hesaba girmez.
+**Havada duvar çarpması (16 Kasım 2026, PF-4, seçenek c).** Havadaki `NormalState` her fizik adımında önceki adımın sensörüne bakar (`IsTouchingLeft/RightWall`). Hız duvara doğruysa oyuncunun yatay hızı sıfırlanır, çarpma hızı saklanır. Duvar `WallSpeedRetentionTime` (0.06 sn, 3 fizik adımı) içinde biterse (köşe, duvar ucu) saklanan hız geri verilir; oyuncu ters yöne basarsa ya da pencere dolarsa verilmez. Stick duvara itiyorsa ilk çarpma hızı korunur. Mantık `WallSpeedRetention` (saf C#, `WallSpeedRetentionTests`). Eskiden saklı hız duvar boyunca kaydıktan sonra `AirDrag` ile ~1 sn sönerek duvar bitince fırlatıyordu. Tavan için ayrı kural var (`HandleVerticalObstructions`, önce köşe düzeltmesi denenir). `WallSpeedRetentionTime = 0` geri vermeyi kapatır (yalnızca sıfırlar). Taşıyan yüzeyin hızı (`_carriedVelocityX`) bu hesaba girmez.
 
 **Köşe düzeltmesi (16 Kasım 2026, Celeste `UpwardCornerCorrection` / `DashCornerCorrection`).** `KinematicPhysicsHandler.Move` içinde, çarpışma çözüldükten hemen sonra çalışır.
-- **Tavan:** yalnızca `AirborneState` ve `DashState`'te. Yukarı hareket tavana takılırsa oyuncu en fazla `CeilingCornerCorrection` (0.25) kadar yana kaydırılır. Kaydırılan yerden daha yukarı çıkılabiliyorsa oyuncu oraya taşınır ve dikey hız korunur. Yatay hız sağa doğruysa yalnızca sağa, sola doğruysa yalnızca sola, sıfırsa iki yöne birden denenir.
+- **Tavan:** yalnızca havadaki `NormalState`'te (`PlayerController.IsInNormalAir`) ve `DashState`'te. Yukarı hareket tavana takılırsa oyuncu en fazla `CeilingCornerCorrection` (0.25) kadar yana kaydırılır. Kaydırılan yerden daha yukarı çıkılabiliyorsa oyuncu oraya taşınır ve dikey hız korunur. Yatay hız sağa doğruysa yalnızca sağa, sola doğruysa yalnızca sola, sıfırsa iki yöne birden denenir.
 - **Dash:** yalnızca `DashState`'te. Yatay hareket bir köşeye takılırsa oyuncu en fazla `DashCornerCorrection` (0.25) kadar dikey kaydırılır. Önce dikey hızın yönü denenir, dikey hız yoksa Celeste'teki gibi önce aşağı.
 
 Adaylar en yakından uzağa dört adımda denenir (`CornerCorrectionMath`, `CornerCorrectionMathTests`). Kaydırma hıza sayılmaz. Değer 0 olursa ilgili düzeltme kapanır.
@@ -116,7 +116,7 @@ Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
 
 - `Player/PlayerController.cs`: FSM bağlamı, jump buffer, dash hakkı, `NotifyImpact`
 - `Player/KinematicPhysicsHandler.cs`: çarpışma çözümü, `IsGrounded`, duvar ve tavan sensörleri, tek yönlü platform, hareketli yüzey taşıma
-- `Player/States/GroundedState.cs`, `AirborneState.cs`, `DashState.cs`, `Player/WallSpeedRetention.cs`
+- `Player/States/NormalState.cs`, `AirEntry.cs`, `DashState.cs`, `Player/WallSpeedRetention.cs`
 - `Player/InputHandler.cs` (`IInputReader`): tetik eşiği 0.1
 - `Player/IFramePauseable/HitStopManager.cs`, `Player/PlayerVFXManager.cs`, `Player/Visual/PlayerColorController.cs`
 

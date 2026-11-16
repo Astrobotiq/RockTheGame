@@ -6,6 +6,8 @@
 
 ## Active
 
+- [ ] **Aşama 2 testi** #test - EditMode + PlayMode yeşil (yapıldı); gamepad turu: zıplama, iniş, üç kanca çıkışı, duvar, launch pad, dash'in yerde bitmesi (bir adımlık hava farkı korundu, aynı hissetmeli). Branch `feature/normal-state`, due 2026-11-16
+
 ### Kamera çerçeve bölgesi (oda 4)
 
 
@@ -31,12 +33,6 @@
 
 ## Someday
 
-### Yer/hava birleştirme Aşama 2 (docs/yer-hava-birlestirme-plani.md, isteğe bağlı)
-
-- [ ] **Testleri durum tipinden ayır** #test - `PlayerRuleTestBase`'e `WaitForGround()` / `WaitForAir()` yardımcıları, testlerdeki 24 `GroundedState`/`AirborneState` yerini onlara taşı; davranış değişmez. `NormalState`'ten önce
-- [ ] **`NormalState` iskeleti** #code - `GroundedState` + `AirborneState` tek sınıf: `IsOnGround`, `OnLand()` (iniş yan etkileri aynı sırayla), `OnLeaveGround()` (`AirEntry.WalkOff`); eski iki sınıf ince sarmalayıcı kalır
-- [ ] **`NormalState`: çağrı yerleri ve dış kod** #code - 30 çağrı yerini taşı, köşe düzeltmesi ve `SwingTutorial` için `PlayerController.IsInNormalAir`, eski sınıfları sil, `movement-core.md`
-- [ ] **Aşama 2 testi** #test - EditMode + PlayMode yeşil; gamepad turu (zıplama, iniş, üç kanca çıkışı, duvar, launch pad, dash'in yerde bitmesi: bir adımlık hava farkı); çağrı yerleri task'ıyla aynı ya da ertesi gün
 
 ### CRT
 
@@ -99,6 +95,9 @@
 
 ## Done
 
+- [x] ~~**`NormalState`: çağrı yerleri ve dış kod** #code~~ (2026-11-16) - 30 çağrı yeri `new NormalState(...)`, `GroundedState`/`AirborneState` silindi; köşe düzeltmesi ve `SwingTutorial` `PlayerController.IsInNormalAir`'e soruyor; sistem dokümanları ve CLAUDE.md güncellendi. EditMode 441/441, PlayMode 57/57
+- [x] ~~**`NormalState` iskeleti** #code~~ (2026-11-16) - yer + hava tek sınıf: `IsOnGround`, `OnLand()` (iniş yan etkileri aynı sırayla), `LeaveGround`/`OnLeaveGround()` (`AirEntry.WalkOff`); aynı karedeki geçiş sırası da korundu; dash'in yerde bitince bir adım havası bilerek kaldı
+- [x] ~~**Testleri durum tipinden ayır** #test~~ (2026-11-16) - `PlayerRuleTestBase`: `WaitForGround`/`WaitForAir`/`AssertOnGround`/`AssertInAir`/`EnterAir`; soru `PlayerController.IsInNormalGround`/`IsInNormalAir`'e. PlayMode 57/57
 - [x] ~~**`CurrentState` okuyan dış kodun envanteri** #code~~ (2026-11-16) - altı dosyanın hiçbiri yer/hava tipine bakmıyor; etkilenen üretim kodu yalnızca köşe düzeltmesi ve `SwingTutorial`, ayrıca 30 iç çağrı yeri ve testlerde 24 yer. Aşama 2 dört parçaya bölündü (yer-hava-birlestirme-plani.md), task listesine eklenmedi
 - [x] ~~**Profil geçişi testi** #test~~ (2026-11-16) - EditMode 441/441, PlayMode 57/57; gamepad turu (zıplama, üç kanca çıkışı, duvar zıplaması, launch pad) farksız. Tur sırasında bulunan duvar coyote hatası düzeltildi (W9)
 - [x] ~~**`AirEntry` profili: kalan çağrı yerleri** #code~~ (2026-11-16) - duvar durumları, slingshot, `LaunchPad`, `PlayerController` ve testlerdeki kurulumlar taşındı; 12 parametreli constructor silindi (hiç kullanılmayan `bypassApexHangGravity`/`bypassEndEarlyGravity` parametreleri de gitti); `movement-core.md` tablosu profil sütunuyla. EditMode 437/437, PlayMode 56/56. Gamepad turu: Profil geçişi testi

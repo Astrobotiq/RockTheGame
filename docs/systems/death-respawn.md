@@ -1,6 +1,6 @@
 # Ölüm ve yeniden doğma
 
-*GDD §2 (sütun 3), §5.3. Son kod doğrulaması: 2026-10-05.*
+*GDD §2 (sütun 3), §5.3. Son kod doğrulaması: 2026-11-16 (yer/hava tek durum: `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -28,7 +28,7 @@ Can barı yok, tek temas öldürür. Ölüm hızlı ve ucuz olmalı ki "bir daha
 | Oyuncu respawn noktasına taşınır ve tekrar aktif edilir (hâlâ donuk) | — |
 | Kameranın yetişmesi beklenir | `_cameraCatchUpDelay` 0.3 sn |
 | İris açılır, merkez respawn noktası | 0.5 sn |
-| `OnEndRespawn`: `AirborneState`'e geçilir, kontrol oyuncuda | — |
+| `OnEndRespawn`: havaya geçilir (`NormalState`, `AirEntry.Fall`), kontrol oyuncuda | — |
 
 Ölümden kontrolün geri gelmesine kadar yaklaşık **1.3 sn** geçer. Değerler `Prefab/New/Managers/RespawnManager.prefab` ve `TransitionManager.prefab` içinde (`_maxRadius` 2).
 
@@ -45,7 +45,7 @@ Can barı yok, tek temas öldürür. Ölüm hızlı ve ucuz olmalı ki "bir daha
 | Anahtarlarla açılan/kapanan kapı | Eski hâline döner (anahtarlar kalıcı değilse) | `RoomKeyManager` |
 | Süreli yeniden doğan toplanabilirler (örn. slingshot yenileyici) | Hemen geri gelir | `Collectible.respawnsAfterDelay` |
 | Oyuncunun kaynakları (dash, slingshot, dayanıklılık) | Dolar | `OnStartRespawn` |
-| Duvar kayma süresi | İlk yere inişte dolar | `GroundedState` |
+| Duvar kayma süresi | İlk yere inişte dolar | `NormalState.OnLand` |
 | Dönen node, `OncePerNode` modu | **Sıfırlanmaz** | `FullRotationNode` `IResettable` değil |
 | Uyuyan odalardaki nesneler | **Sıfırlanmaz** | `IResettable` kaydı `OnEnable`/`OnDisable`'da yapılıyor; yalnızca o an aktif olan oda ve komşuları sıfırlanır |
 

@@ -380,7 +380,7 @@ namespace RockTheGame.Tests
         }
 
         [Test]
-        public void Aim_PlayerLeavesAirborneState_Aborts_NoTimeLock()
+        public void Aim_PlayerLeavesNormalAir_Aborts_NoTimeLock()
         {
             // timeScale 0 iken oyuncu dash'e girerse FixedUpdate hiç çalışmaz: zaman bırakılmalı.
             GoToAim();

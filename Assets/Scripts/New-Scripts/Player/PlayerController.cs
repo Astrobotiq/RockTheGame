@@ -131,7 +131,7 @@ namespace New_Scripts.Player
             CurrentWallStamina = Stats.MaxWallStamina;
             ResetWallSlideTime();
 
-            TransitionToState(new AirborneState(this, Vector2.zero, AirEntry.Fall()));
+            TransitionToState(new NormalState(this, Vector2.zero, AirEntry.Fall()));
         }
 
         private void OnEnable()
@@ -286,7 +286,7 @@ namespace New_Scripts.Player
         }
         
         public void OnEndRespawn(){
-            TransitionToState(new AirborneState(this, Vector2.zero, AirEntry.Fall()));
+            TransitionToState(new NormalState(this, Vector2.zero, AirEntry.Fall()));
             _isPaused = false;
         }
 
@@ -320,14 +320,14 @@ namespace New_Scripts.Player
             switch (direction)
             {
                 case TransitionDirection.Up:
-                    TransitionToState(new AirborneState(this,
+                    TransitionToState(new NormalState(this,
                         new Vector2(_preTransitionVelocity.x, Stats.JumpVelocity), AirEntry.Fall()));
                     break;
 
                 case TransitionDirection.Right:
                 case TransitionDirection.Left:
                 case TransitionDirection.Down:
-                    TransitionToState(new AirborneState(this, _preTransitionVelocity, AirEntry.Fall()));
+                    TransitionToState(new NormalState(this, _preTransitionVelocity, AirEntry.Fall()));
                     break;
             }
         }

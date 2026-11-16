@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-16 (slingshot çıkışı tuştan bağımsız).*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-16 (slingshot çıkışı tuştan bağımsız; yer/hava tek durum: `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -29,7 +29,7 @@ Kanca bir tetikleyici değil, **basılı tutulan** bir eylem: tetik eşiği `Inp
 
 ### Yerden kanca (swing hop)
 
-Yerdeyken **yalnızca sağ tetik** çalışır (`GroundedState.CheckGrappleInput`), sol tetik dalı yok. Tutununca `SwingingState(wasGrounded: true)` önce `SwingHopDuration` boyunca node tarafına doğru bir sıçrama yapar (`SwingHopForwardSpeed` yatay, `SwingHopUpwardSpeed` dikey, normal yerçekimi). Sıçrama bitince ip uzunluğu o anki mesafeye sabitlenir ve sarkaç başlar. Yerde sol kol görsel olarak hareket yönüne bakar, sağ kol sağ stick'e.
+Yerdeyken **yalnızca sağ tetik** çalışır (`NormalState.CheckGroundGrappleInput`), sol tetik dalı yok. Tutununca `SwingingState(wasGrounded: true)` önce `SwingHopDuration` boyunca node tarafına doğru bir sıçrama yapar (`SwingHopForwardSpeed` yatay, `SwingHopUpwardSpeed` dikey, normal yerçekimi). Sıçrama bitince ip uzunluğu o anki mesafeye sabitlenir ve sarkaç başlar. Yerde sol kol görsel olarak hareket yönüne bakar, sağ kol sağ stick'e.
 
 Bu asimetri bilinçli bir tercih (GDD §5.1).
 
@@ -39,9 +39,9 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - Her fizik adımında hız ipe teğet olacak şekilde izdüşürülür, oyuncu tekrar ip boyuna oturtulur.
 - Pompalama `SwingForceMultiplier` ile teğet hıza eklenir. `MaxSwingSpeed × ActiveSpeedMultiplier` üstüne pompalayarak çıkılamaz, ama yerçekimiyle bu sınır aşılabilir (sınır yalnızca girdinin eklenmesini engeller).
 - Girişte dash hakkı ve taç rengi yenilenir.
-- **Çarpışma:** Oyuncunun kendi kutusuyla (1x1) BoxCast. Çarpılan yüzey yataydan en fazla `MaxWallAngle` (45°) eğikse karakter yere iner (`GroundedState`). Daha dikse kanca kopar ve karakter havaya geçer.
+- **Çarpışma:** Oyuncunun kendi kutusuyla (1x1) BoxCast. Çarpılan yüzey yataydan en fazla `MaxWallAngle` (45°) eğikse karakter yere iner (`NormalState`, yerde). Daha dikse kanca kopar ve karakter havaya geçer.
 - Swing sırasında dash ve duvara tutunma yok.
-- **Bırakma:** tetik bırakılınca `AirborneState(isJumping: true, bypassJumpGravity: true)`. Bu modda yükselirken hep `JumpEndEarlyGravityMultiplier` (3×), düşerken `FallGravityMultiplier` (1.5×) uygulanır; apex hang yok. Yani swing'den yukarı fırlayış zıplama tuşundan bağımsız ve hızla söner.
+- **Bırakma:** tetik bırakılınca `AirEntry.SwingRelease()`. Bu modda yükselirken hep `JumpEndEarlyGravityMultiplier` (3×), düşerken `FallGravityMultiplier` (1.5×) uygulanır; apex hang yok. Yani swing'den yukarı fırlayış zıplama tuşundan bağımsız ve hızla söner.
 
 ### Çift kanca (`DualSwingingState`)
 
@@ -49,7 +49,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - Fizik farklı: iki ip birer **tek yönlü yay**. Yalnızca gerildiğinde (`mesafe > ip boyu`) `DualSpringStiffness` ve `DualSpringDamping` ile çeker, gevşekken hiçbir şey yapmaz. Yerçekimi `SwingGravity` (25), yani tek kancadan daha hafif.
 - Pompalama iki stick'in X ortalaması × `DualSwingForceMultiplier`. Hız sınırı yok.
 - Durum yalnızca `Velocity`'yi hesaplar; pozisyonu `PlayerController.FixedUpdate` içindeki `KinematicPhysicsHandler.Move` ilerletir. (2026-11-14'e kadar durum pozisyonu da kendisi set ediyordu, hareket adım başına iki kez uygulanıyordu.)
-- Bir tetik bırakılırsa diğer kolla tek kancaya döner (hop yapmadan). İkisi birden bırakılırsa `AirborneState(isJumping: false)`: sabit yerçekimi, değişken zıplama çarpanları yok.
+- Bir tetik bırakılırsa diğer kolla tek kancaya döner (hop yapmadan). İkisi birden bırakılırsa `AirEntry.Fall()`: sabit yerçekimi, değişken zıplama çarpanları yok.
 - Çarpışmada açı kuralı tek kancayla aynı (`MaxWallAngle`), ama arama oyuncu kutusuyla değil `DualSwingCollisionRadius` (0.4) daireyle yapılıyor.
 - Girişte dash hakkı yenilenir ama taç rengi sıfırlanmaz. Tek kancadan geçildiği için pratikte zaten sıfırlanmış olur.
 
@@ -60,8 +60,8 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - **Girişte hak harcanır** (`UseSlingshot`, kollar "tükendi" rengine döner). Gerilme sırasında tetikler bırakılsa bile hak gider.
 - **Gerilme (anticipation):** `SlingshotAnticipationDuration` boyunca node'un tersine `SlingshotAnticipationSpeed` hızla geri çekilir.
 - **Fırlatma:** kamera hedefe atlar (`OnSlingshotLaunch`), ses çalar, `NotifyImpact` → hit-stop (`HitStopDuration`) + kamera sarsıntısı + titreşim. Sonra hız `SlingshotLaunchDuration` içinde ease-out ile `MaxSlingshotSpeed`'e çıkar. Yön, **girişteki konumdan node'a** doğru sabittir.
-- Asset'te `SlingshotLaunchDuration` 0.01, fizik adımı 0.02: fırlatma tek adımda tam hıza ulaşır ve aynı adımda `AirborneState`'e geçer. Ease-out pratikte devre dışı.
-- **Çıkış:** `AirborneState(isJumping: true, grappleLockout: SlingshotGrappleLockout, bypassJumpGravity: true)`. Tek kanca bırakışıyla aynı kural: yükselirken hep 3×, düşerken 1.5×, apex hang yok, **zıplama tuşundan bağımsız** (16 Kasım 2026). Eskiden A basılıyken 1× + apex hang veriyordu; geliştirici "slingshot'tan sonra tuşu basılı tutup daha uzun havada kalmak saçma" dedi. Erken bırakma (gerilme sırasında iki tetik bırakılırsa) da aynı kuralı kullanır. Yatay hız hava kontrolüyle söner: stick boşsa `AirDrag` 20 birim/sn², stick ileri basılıysa hedef 10'a `AirAcceleration` 40 ile iner.
+- Asset'te `SlingshotLaunchDuration` 0.01, fizik adımı 0.02: fırlatma tek adımda tam hıza ulaşır ve aynı adımda havaya (`NormalState`) geçer. Ease-out pratikte devre dışı.
+- **Çıkış:** `AirEntry.SlingshotLaunch(SlingshotGrappleLockout)`. Tek kanca bırakışıyla aynı kural: yükselirken hep 3×, düşerken 1.5×, apex hang yok, **zıplama tuşundan bağımsız** (16 Kasım 2026). Eskiden A basılıyken 1× + apex hang veriyordu; geliştirici "slingshot'tan sonra tuşu basılı tutup daha uzun havada kalmak saçma" dedi. Erken bırakma (gerilme sırasında iki tetik bırakılırsa) da aynı kuralı kullanır. Yatay hız hava kontrolüyle söner: stick boşsa `AirDrag` 20 birim/sn², stick ileri basılıysa hedef 10'a `AirAcceleration` 40 ile iner.
 - **Yenilenme:** yere inmek, slingshot yenileyici toplanabilir ([`collectibles.md`](collectibles.md)), launch pad ([`platforms.md`](platforms.md)) ve respawn. Kancaya tutunmak yenilemez.
 
 ### Dönen node (`FullRotationNode`)
@@ -100,7 +100,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 
 - `Player/NodeDetector.cs`, `Player/TargetVisualizer.cs`, `Player/GrappleVisualManager.cs`, `Player/ArmController.cs`
 - `Player/States/SwingingState.cs`, `DualSwingingState.cs`, `SlingshotState.cs`
-- Kanca girişleri: `GroundedState.CheckGrappleInput`, `AirborneState.ProcessGrappleInput`, `SwingingState.CheckOppositeGrappleCast`
+- Kanca girişleri: `NormalState.CheckGroundGrappleInput` (yerde), `NormalState.ProcessGrappleInput` (havada), `SwingingState.CheckOppositeGrappleCast`
 - `Player/Nodes/Rotation/`: `FullRotationNode`, `FullRotationTracker` (saf C#, testli), `SpeedBoostRotationEffect`, `RotationEventTrigger`
 - Prefab'lar: `Assets/Prefab/New/Node/`
 - Oda 5'teki yavaş zaman tutorial'ı (`SwingTutorial`, ilk node): [`swing-tutorial.md`](swing-tutorial.md). `NodeDetector` kurallarını `PlayerController.TryCastGrapple` ile kullanır.

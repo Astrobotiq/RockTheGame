@@ -70,17 +70,17 @@ Sonuç: Aşama 2'nin dış bedeli beklenenden küçük, üretim kodunda iki yer.
 
 Her biri ~1–1.5 saat, sırayla:
 
-1. **Testleri durum tipinden ayır** #test: `PlayerRuleTestBase`'e `WaitForGround()` / `WaitForAir()` (yer/hava sorusunu tip yerine `IsGrounded` ve "normal durumda mı" ile soran) yardımcıları ekle, 24 yeri onlara taşı. Davranış değişmez; Aşama 2'den sonra testlere dokunmak gerekmez. Kodla aynı gün değil, **önce**.
-2. **`NormalState` iskeleti** #code: `GroundedState` + `AirborneState` kodunu tek sınıfa al; `IsOnGround` alanı, `OnLand()` (bugünkü `GroundedState.EnterState` yan etkileri aynı sırayla) ve `OnLeaveGround()` (`AirEntry.WalkOff`). Eski iki sınıf bu adımda `NormalState`'e yönlendiren ince sarmalayıcı olarak kalır, çağrı yerleri değişmez.
-3. **Çağrı yerleri ve dış kod** #code: 30 çağrı yerini `NormalState`'e taşı, `PlayerController` köşe düzeltmesini ve `SwingTutorial`'ı yeni soruya bağla (`PlayerController`'a tek bir `IsInNormalAir` özelliği), eski sınıfları sil, `movement-core.md`'yi güncelle.
+1. *(Yapıldı, 16 Kasım 2026: soru `PlayerController.IsInNormalGround`/`IsInNormalAir`'e, ayrıca `EnterAir` yardımcısı.)* **Testleri durum tipinden ayır** #test: `PlayerRuleTestBase`'e `WaitForGround()` / `WaitForAir()` (yer/hava sorusunu tip yerine `IsGrounded` ve "normal durumda mı" ile soran) yardımcıları ekle, 24 yeri onlara taşı. Davranış değişmez; Aşama 2'den sonra testlere dokunmak gerekmez. Kodla aynı gün değil, **önce**.
+2. *(Yapıldı, 16 Kasım 2026: `Player/States/NormalState.cs`. Zıplama aynı karede kancaya geçilmişken de eski sırayla çalışır: `LeaveGround` durumu geri alır.)* **`NormalState` iskeleti** #code: `GroundedState` + `AirborneState` kodunu tek sınıfa al; `IsOnGround` alanı, `OnLand()` (bugünkü `GroundedState.EnterState` yan etkileri aynı sırayla) ve `OnLeaveGround()` (`AirEntry.WalkOff`). Eski iki sınıf bu adımda `NormalState`'e yönlendiren ince sarmalayıcı olarak kalır, çağrı yerleri değişmez.
+3. *(Yapıldı, 16 Kasım 2026: eski iki sınıf silindi; sistem dokümanları ve CLAUDE.md güncellendi.)* **Çağrı yerleri ve dış kod** #code: 30 çağrı yerini `NormalState`'e taşı, `PlayerController` köşe düzeltmesini ve `SwingTutorial`'ı yeni soruya bağla (`PlayerController`'a tek bir `IsInNormalAir` özelliği), eski sınıfları sil, `movement-core.md`'yi güncelle.
 4. **Aşama 2 testi** #test: EditMode + PlayMode yeşil; gamepad turu (zıplama, iniş, üç kanca çıkışı, duvar, launch pad, dash'in yerde bitmesi). Riskler bölümündeki "dash yerde biterse bir adım hava" farkına özellikle bak. 3 ile aynı gün ya da ertesi gün.
 
-**Öneri:** Aşama 1 yapıldı (16 Kasım 2026). Aşama 2'yi ancak yer↔hava sınırında yine hata çıkarsa düşün; envanter bedelin küçük olduğunu gösteriyor ama kazanç da küçük (coyote ve hız aktarımı).
+**Durum:** Aşama 1 ve Aşama 2'nin kod kısmı yapıldı (16 Kasım 2026, branch `feature/normal-state`). Kalan: gamepad turu (4).
 
 ## Riskler
 
 - **İniş yan etkilerinin sırası.** `GroundedState.EnterState` hızın `y`'sini sıfırlıyor, kancaları bırakıyor ve kaynakları yeniliyor. Sıra değişirse D2/W2/L2 kuralları bozulur. PlayMode testleri bunu koruyor.
-- **"Dash yerde biterse önce havaya, sonraki adımda yere" garipliği** ([`movement-core.md`](systems/movement-core.md)). Aşama 2'de bu bir adımlık hava kaybolur: iniş yan etkileri bir adım erken olur. Muhtemelen fark edilmez, ama davranış değişikliği sayılır.
+- **"Dash yerde biterse önce havaya, sonraki adımda yere" garipliği** ([`movement-core.md`](systems/movement-core.md)). *(16 Kasım 2026: bilerek korundu. `DashState` hâlâ `AirEntry.Fall` ile havaya girer, iniş bir sonraki fizik adımında olur; davranış değişmedi.)*
 - **Coyote ile boost'lu yüzey** (`LastMovingSurface`, yalnızca apex hang kapanır). Profilde ayrı bir bayrak olarak kalmalı.
 - **His değişmemeli.** Bu iş bir yeniden düzenleme. Bitince gamepad ile hızlı bir tur gerekir: zıplama, kanca çıkışı, duvar zıplaması, launch pad.
 

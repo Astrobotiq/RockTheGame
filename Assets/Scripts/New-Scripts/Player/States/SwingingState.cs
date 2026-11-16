@@ -42,7 +42,7 @@ namespace New_Scripts.Player.States
         {
             if (!TrySetAnchorPoint())
             {
-                _context.TransitionToState(new AirborneState(_context, _context.Velocity, AirEntry.Fall()));
+                _context.TransitionToState(new NormalState(_context, _context.Velocity, AirEntry.Fall()));
                 return;
             }
 
@@ -250,7 +250,7 @@ namespace New_Scripts.Player.States
             {
                 ReleaseAnchor();
 
-                _context.TransitionToState(new AirborneState(_context, _currentVelocity, AirEntry.SwingRelease()));
+                _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease()));
                 return;
             }
 
@@ -294,7 +294,7 @@ namespace New_Scripts.Player.States
         {
             _context.LeftAnchor = null;
             _context.RightAnchor = null;
-            _context.TransitionToState(new AirborneState(_context, _currentVelocity, AirEntry.Fall()));
+            _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.Fall()));
         }
 
         private bool CheckSweepCollision(Vector2 playerPos, Vector2 movementDelta)
@@ -312,7 +312,7 @@ namespace New_Scripts.Player.States
                 {
                     _context.LeftAnchor = null;
                     _context.RightAnchor = null;
-                    _context.TransitionToState(new GroundedState(_context));
+                    _context.TransitionToState(new NormalState(_context));
                 }
 
                 return true;

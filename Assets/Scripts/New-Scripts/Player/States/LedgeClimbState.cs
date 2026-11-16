@@ -66,7 +66,7 @@ namespace New_Scripts.Player.States
 
             if (u >= 1f)
             {
-                context.TransitionToState(new GroundedState(context));
+                context.TransitionToState(new NormalState(context));
             }
         }
 

@@ -1,6 +1,6 @@
 # Platformlar
 
-*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-14.*
+*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-16 (launch pad `AirEntry.LaunchPad`, `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -60,7 +60,7 @@ Bileşen değil, **katman**. `KinematicPhysicsHandler.oneWayPlatformLayerMask` i
 - `transform.up` yönünde `launchSpeed` (varsayılan 15, her örnekte ayrı) hızla fırlatır. Pad döndürülerek yönü değiştirilir.
 - Algılama `FixedUpdate`'te bir `OverlapBox` (`detectionOffset`, `detectionSize`). Tetiklendikten sonra `triggerCooldown` (0.2 sn) boyunca yeniden tetiklenmez.
 - **Bütün kaynakları doldurur:** dash, slingshot, dayanıklılık, kayma süresi ve renkler.
-- Oyuncuyu `AirborneState(isJumping: true, bypassJumpGravity: true)` ile fırlatır: yükselirken 3×, düşerken 1.5× yerçekimi, zıplama tuşundan bağımsız.
+- Oyuncuyu `AirEntry.LaunchPad()` profiliyle fırlatır: yükselirken 3×, düşerken 1.5× yerçekimi, zıplama tuşundan bağımsız.
 - Juice: squash/stretch (UniTask), VFX, ses kanalı, `LaunchPadProfile` titreşimi, `onLaunch`/`onLaunchComplete` UnityEvent'leri.
 - Editörde seçiliyken yörünge gizmo'su çizer (`playerStats` atanmışsa). Gizmo hava kontrolü girdisini hesaba katmaz.
 - "Hareketli ve döngüsel versiyonlar" (GDD) ayrı kod değil, prefab kompozisyonu: `JumpPad/MovingLauncPad.prefab` (hareketli platform + pad) ve `PlatformWrapper/WrappingLaunchPadManager Variant.prefab` (sınırdan sınıra akan pad'ler).

@@ -149,9 +149,9 @@ namespace New_Scripts.Platform
                 player.ColorController.ResetAllColors();
             }
 
-            // 2. Oyuncu hızını ata ve AirborneState'e geçir
+            // 2. Oyuncu hızını ata ve havaya geçir (NormalState, launch pad profili)
             player.Velocity = launchVelocity;
-            player.TransitionToState(new AirborneState(player, launchVelocity, AirEntry.LaunchPad()));
+            player.TransitionToState(new NormalState(player, launchVelocity, AirEntry.LaunchPad()));
 
             // 3. Efektleri tetikle
             if (launchVFXPrefab != null)

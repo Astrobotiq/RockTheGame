@@ -10,7 +10,7 @@ Oda 5 kancanın tanıtıldığı oda. Eskiden node'un altında statik iki satır
 
 | Adım | Ne olur | Biter |
 |---|---|---|
-| `Waiting` | Hiçbir şey. İpuçları gizli. | Oyuncu `AirborneState`'te, anchor yok, node `NodeDetector` kurallarıyla erişilebilir. |
+| `Waiting` | Hiçbir şey. İpuçları gizli. | Oyuncu havada (`PlayerController.IsInNormalAir`), anchor yok, node `NodeDetector` kurallarıyla erişilebilir. |
 | `Slowing` | `timeScale` 1 → `SlowScale` (0.1), `RampInDuration` (0.15 sn). 1. ipucu girer. | Rampa bitti ve dikey hız ≤ 0 (tepe). |
 | `Aim` | `timeScale` = `HoldScale` (0). Oyuncu tepede asılı. 1. ipucu ("Move Right Arm" + RS) görünür. | Sağ stick node'u seçiyor ve `AimConfirmTime` (0.2 sn) sürdü. |
 | `Fire` | 1. ipucu çıkar, 2. ipucu ("Right Grapple" + RT) girer. Zaman hâlâ bekliyor. | Oyuncu node'a tutundu. Nişan `AimLostGrace` (0.3 sn) kaybolursa `Aim`'e döner. |
@@ -25,7 +25,7 @@ Oda 5 kancanın tanıtıldığı oda. Eskiden node'un altında statik iki satır
 
 Node tepede menzilin sınırında (aşağıya bak). `HoldScale` 0.02 olsa 20 sn beklemede oyuncu ~4 birim düşer, node menzilden çıkar, tutorial kilitlenir. 0'da bu imkânsız. "Yavaş akmaya devam etsin" istenirse `HoldScale` artırılır; o zaman `Aim`'e "menzilden çıktıysa 0'a in" güvencesi eklenmeli (şu an `Aim/Fire`'da menzil kaybı tutorial'ı bırakıyor, bu bir yedek). Bu bir his kararı.
 
-`timeScale` 0 iken çalışanlar: `PlayerController.Update` → `AirborneState.UpdateState` → `ProcessGrappleInput`, `ArmController`, `TargetVisualizer` (kol ve nişangâh anında döner). Çalışmayanlar: `FixedUpdate` (yerçekimi, hareket), kamera yumuşatması, `Time.deltaTime` sayaçları.
+`timeScale` 0 iken çalışanlar: `PlayerController.Update` → `NormalState.UpdateState` (havada) → `ProcessGrappleInput`, `ArmController`, `TargetVisualizer` (kol ve nişangâh anında döner). Çalışmayanlar: `FixedUpdate` (yerçekimi, hareket), kamera yumuşatması, `Time.deltaTime` sayaçları.
 
 ## Kod
 
@@ -47,7 +47,7 @@ Node tepede menzilin sınırında (aşağıya bak). `HoldScale` 0.02 olsa 20 sn 
 ## Bilinen kenar durumlar ve açık kararlar
 
 1. **Menzil marjı küçük.** Yukarıdaki ölçüm; çözüm için `detectionRadius` (tüm kancayı etkiler), tutorial'a özel daha geniş erişim kontrolü ya da node yerini oynatmak seçenekleri var. Karar geliştiricinin.
-2. **Kanca kilidi donabilir.** `AirborneState` kilit sayaçları fizik adımında düşer (16 Kasım 2026, PF-6); `timeScale` 0 iken `FixedUpdate` çalışmadığı için sayaç durur. Tepede kilit sürüyorsa (örneğin bir sallanmadan hemen sonra) ateş çalışmaz, çıkış pause → Retry. Normal kenar zıplamasında kilit 0.
+2. **Kanca kilidi donabilir.** Havadaki `NormalState`'in kilit sayaçları fizik adımında düşer (16 Kasım 2026, PF-6); `timeScale` 0 iken `FixedUpdate` çalışmadığı için sayaç durur. Tepede kilit sürüyorsa (örneğin bir sallanmadan hemen sonra) ateş çalışmaz, çıkış pause → Retry. Normal kenar zıplamasında kilit 0.
 3. **Sahne pause'dayken kapanırsa** `PauseManager.OnDisable` saklı değeri geri verir, `SwingTutorial.OnDisable`'ın sırası belirsiz. Quit menüsü önce devam ettiği için sorun yok.
 4. **"SWING" yazısı** (`Tutorial-TextEffect (1)`, `<link=Rotate>`; `UI/UIEffects/Swing.asset` = `Effect_Rotate`) hep sallanır. Efekt `ScaledTime` iken tepede (`timeScale` 0) donuyordu; `Swing.asset`'in `timeType`'ı `UnscaledTime` yapıldı (15 Kasım). Bu paylaşılan asset, aynı efekti kullanan diğer "SWING" yazıları da (oda 21) artık zaman ölçeğinden bağımsız sallanır; pause'da da sallanır. İpucu ikonlarının Animator'ı `UnscaledTime`: yavaş zamanda akar.
 5. **Gamepad ile denenmedi.** `SlowScale`, `HoldScale`, rampalar, ipucu yayı his kararıdır (ST-4).

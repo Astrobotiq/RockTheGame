@@ -100294,7 +100294,7 @@ PrefabInstance:
     - target: {fileID: 7919817031395698459, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
       propertyPath: startingRoom
       value: 
-      objectReference: {fileID: 934850575}
+      objectReference: {fileID: 1317876392}
     - target: {fileID: 7919817031395698459, guid: caf419fb4a8d5ee4c946d6e3592ac478, type: 3}
       propertyPath: playerTransform
       value: 

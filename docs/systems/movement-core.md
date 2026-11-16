@@ -37,8 +37,8 @@ Bu çarpanlar yalnızca `isJumping: true` ile girilen havada uygulanır. Havaya 
 
 | Havaya giriş | Yerçekimi kuralı |
 |---|---|
-| Yerden zıplama, coyote, duvar zıplamaları (kayarken ve tırmanırken), slingshot çıkışı | Tablodaki tam kural (tuşa bağlı) |
-| Swing bırakma, launch pad (`bypassJumpGravity`) | Yükselirken hep 3×, düşerken 1.5×, apex hang yok; tuştan bağımsız |
+| Yerden zıplama, coyote, duvar zıplamaları (kayarken, tırmanırken, havadan) | Tablodaki tam kural (tuşa bağlı) |
+| Swing bırakma, slingshot çıkışı (16 Kasım 2026'dan beri), launch pad (`bypassJumpGravity`) | Yükselirken hep 3×, düşerken 1.5×, apex hang yok; tuştan bağımsız |
 | `JumpBoostMultiplier > 0` olan hareketli zeminden/duvardan zıplama | Aynısı ama yükselirken 1.5× (`endEarlyGravityMultiplier` 0.5). Coyote ile yapılırsa yalnızca apex hang kapanır. |
 | Dash sonu, dual swing bırakma, duvardan düşme, kanca kopması, oda geçişi, respawn | Sabit 1× (düşüş bile hızlanmaz) |
 

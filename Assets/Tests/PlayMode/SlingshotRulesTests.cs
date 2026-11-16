@@ -7,7 +7,7 @@ using UnityEngine.TestTools;
 
 namespace RockTheGame.Tests.PlayMode
 {
-    /// <summary>docs/bozulmamali-davranislar.md L1-L4.</summary>
+    /// <summary>docs/bozulmamali-davranislar.md L1-L5.</summary>
     public class SlingshotRulesTests : PlayerRuleTestBase
     {
         private static readonly Vector2 NodePosition = Origin + new Vector2(0f, 4f);
@@ -93,6 +93,48 @@ namespace RockTheGame.Tests.PlayMode
             yield return WaitForState<DualSwingingState>();
 
             Assert.IsFalse(Player.CanSlingshot, "cift kanca");
+        }
+
+        /// <summary>Slingshot'i firlatir, cikistan sonra en yuksek noktanin cikis konumuna gore yuksekligini dondurur.</summary>
+        private IEnumerator LaunchAndMeasureRise(bool jumpHeld, System.Action<float> rise)
+        {
+            yield return ResetPlayerAt(Origin);
+            Input.IsJumpHeld = jumpHeld;
+            yield return GrabWithLeft(NodePosition);
+            yield return AimSecondHookAtSameNode();
+            Assert.IsInstanceOf<SlingshotState>(Player.CurrentState);
+
+            float deadline = Time.unscaledTime + Timeout;
+            while (Player.CurrentState is SlingshotState && Time.unscaledTime < deadline)
+                yield return new WaitForFixedUpdate();
+            Assert.IsInstanceOf<AirborneState>(Player.CurrentState, "slingshot firlatisi bitmedi");
+
+            // Kilit bitince tutulan tetikler yeniden kancaya tutunmasin.
+            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = false;
+            Input.LeftStick = Input.RightStick = Vector2.zero;
+
+            float startY = Player.PlayerRigidbody.position.y;
+            float maxY = startY;
+            for (int i = 0; i < 100; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                maxY = Mathf.Max(maxY, Player.PlayerRigidbody.position.y);
+            }
+            rise(maxY - startY);
+            Input.IsJumpHeld = false;
+            yield return WaitForHitStopEnd();
+        }
+
+        [UnityTest]
+        public IEnumerator L5_LaunchHeight_DoesNotDependOnJumpButton()
+        {
+            float released = 0f, held = 0f;
+
+            yield return LaunchAndMeasureRise(false, r => released = r);
+            yield return LaunchAndMeasureRise(true, r => held = r);
+
+            Assert.Greater(released, 0.1f, "slingshot yukari firlatmali");
+            Assert.AreEqual(released, held, 0.05f, "ziplama tusunu basili tutmak yuksekligi degistirmemeli");
         }
 
         [UnityTest]

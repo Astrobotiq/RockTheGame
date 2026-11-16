@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-14.*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-16 (slingshot çıkışı tuştan bağımsız).*
 
 ## Tasarım niyeti
 
@@ -61,7 +61,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - **Gerilme (anticipation):** `SlingshotAnticipationDuration` boyunca node'un tersine `SlingshotAnticipationSpeed` hızla geri çekilir.
 - **Fırlatma:** kamera hedefe atlar (`OnSlingshotLaunch`), ses çalar, `NotifyImpact` → hit-stop (`HitStopDuration`) + kamera sarsıntısı + titreşim. Sonra hız `SlingshotLaunchDuration` içinde ease-out ile `MaxSlingshotSpeed`'e çıkar. Yön, **girişteki konumdan node'a** doğru sabittir.
 - Asset'te `SlingshotLaunchDuration` 0.01, fizik adımı 0.02: fırlatma tek adımda tam hıza ulaşır ve aynı adımda `AirborneState`'e geçer. Ease-out pratikte devre dışı.
-- **Çıkış:** `AirborneState(isJumping: true, grappleLockout: SlingshotGrappleLockout)`. Normal zıplama kuralları geçerli. Zıplama tuşu basılı değilse yukarı fırlayışa 3× yerçekimi uygulanır, yani **dikey slingshot yüksekliği A'yı basılı tutmaya bağlı**. Yatay hız hava kontrolüyle söner: stick boşsa `AirDrag` 20 birim/sn², stick ileri basılıysa hedef 10'a `AirAcceleration` 40 ile iner.
+- **Çıkış:** `AirborneState(isJumping: true, grappleLockout: SlingshotGrappleLockout, bypassJumpGravity: true)`. Tek kanca bırakışıyla aynı kural: yükselirken hep 3×, düşerken 1.5×, apex hang yok, **zıplama tuşundan bağımsız** (16 Kasım 2026). Eskiden A basılıyken 1× + apex hang veriyordu; geliştirici "slingshot'tan sonra tuşu basılı tutup daha uzun havada kalmak saçma" dedi. Erken bırakma (gerilme sırasında iki tetik bırakılırsa) da aynı kuralı kullanır. Yatay hız hava kontrolüyle söner: stick boşsa `AirDrag` 20 birim/sn², stick ileri basılıysa hedef 10'a `AirAcceleration` 40 ile iner.
 - **Yenilenme:** yere inmek, slingshot yenileyici toplanabilir ([`collectibles.md`](collectibles.md)), launch pad ([`platforms.md`](platforms.md)) ve respawn. Kancaya tutunmak yenilemez.
 
 ### Dönen node (`FullRotationNode`)
@@ -108,7 +108,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 ## Bilinen kenar durumlar ve GDD ile farklar
 
 1. **Yerden yalnızca sağ tetik:** bilinçli tercih (GDD §5.1).
-2. **Kancadan üç çıkış, üç farklı yerçekimi.** Tek kanca bırakışında yükselirken her zaman 3× (tuştan bağımsız). Slingshot çıkışında A basılı değilse 3×, basılıysa 1× + apex hang (tuşa bağlı). Dual swing bırakışında sabit 1×. Geliştirici oynayıp karar verecek (`feel-notlari.md`). Tam tablo: [`movement-core.md`](movement-core.md).
+2. **Kancadan üç çıkış, üç farklı yerçekimi.** Tek kanca bırakışında yükselirken her zaman 3× (tuştan bağımsız). Slingshot çıkışı da 3× (16 Kasım 2026'dan beri tuştan bağımsız). Dual swing bırakışında sabit 1×. Tek kurala indirmeme kararı bilinçli (`feel-notlari.md`). Tam tablo: [`movement-core.md`](movement-core.md).
 3. **Slingshot fırlatma eğrisi fiilen yok.** `SlingshotLaunchDuration` (0.01) fizik adımından (0.02) kısa olduğu için ease-out tek adımda bitiyor.
 4. **Slingshot hakkı gerilme başında harcanıyor.** Gerilme sırasında vazgeçmek hakkı geri vermez.
 5. **GDD "dönen node hız patlaması verir" diyor.** Kodda bu, 1.2 sn boyunca yalnızca tek kanca sarkaç hız sınırının yükselmesi + tek seferlik ×1.2 hız. Hız patlaması prefab'ı hiçbir odada yok; sahnede kullanılan tek dönen node kapı açıyor.

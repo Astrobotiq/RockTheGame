@@ -11,10 +11,11 @@ Hissi hiçbir test ölçmez; yalnızca gamepad'le oynayan kişi değerlendirebil
 | *(YYYY-AA-GG)* | *(`AlanAdı`)* | *(eski → yeni)* | *(neden)* | *(oyuncu doldurur: iyi / kötü / karışık)* |
 | 2026-11-16 | `CeilingCornerCorrection` / `DashCornerCorrection` (yeni) | yok (0) → 0.5 → 0.25 | Celeste köşe düzeltmesi; 0.5 gamepad'de çok kaygan geldi | 0.5: kötü (kaygan). 0.25: *denenmedi* |
 | 2026-11-16 | `WallJumpCheckDistance` (yeni) | yok (temas şart) → 0.375 | Havadan duvar zıplaması, Celeste 3 px (PF-5) | *denenmedi* |
+| 2026-11-16 | Slingshot çıkış yerçekimi (`SlingshotState`, alan değil) | tuşa bağlı (A basılı: 1× + apex hang, değil: 3×) → hep 3× yükselirken, 1.5× düşerken (tek kanca bırakışıyla aynı) | Geliştirici: slingshot'tan sonra tuşu basılı tutup uzun havada kalmak saçma. A basılı tutan oyuncunun dikey slingshot'u kısalır | *denenmedi* |
 | 2026-11-16 | `AirOverspeedReduce` (yeni) | 40 (`AirAcceleration`) → 16 | Hız sınırın (10) üstündeyken stick aynı yöndeyse; eskiden ileri basmak bırakmaktan (20) hızlı söndürüyordu. Celeste oranı 0.4 × ivme. Yere inişte hız hâlâ anında 10'a kesiliyor (bilinçli) | *denenmedi* |
 
 ## Notlar
 
 *(Oynarken fark ettiğin, henüz değer değişikliğine dönüşmemiş his notları.)*
 
-- **Kancadan çıkış yerçekimi (karar: böyle kalır, 16 Kasım 2026):** Tek kanca bırakılınca yükselirken hep 3×, düşerken 1.5×. Çift kanca bırakılınca sabit 1×. Slingshot çıkışında zıplama tuşuna bağlı (basılıysa 1×, değilse 3×). Tek kurala indirme önerisi reddedildi: geliştirici bu hale emek vererek getirdi; kural tutarlı olur ama his ve oynanış açısından doğru gelmiyor. "Swing'den ya da slingshot'tan sonra zıplama tuşunu basılı tutup daha uzun havada kalmak saçma" (geliştirici). Not: slingshot çıkışı bugün tam da tuşa bağlı; bunun da değişmesi istenip istenmediği sorulacak.
+- **Kancadan çıkış yerçekimi (karar: böyle kalır, 16 Kasım 2026):** Tek kanca bırakılınca yükselirken hep 3×, düşerken 1.5×. Çift kanca bırakılınca sabit 1×. Slingshot çıkışı o gün tuşa bağlıydı (basılıysa 1×, değilse 3×). Tek kurala indirme önerisi reddedildi: geliştirici bu hale emek vererek getirdi; kural tutarlı olur ama his ve oynanış açısından doğru gelmiyor. "Swing'den ya da slingshot'tan sonra zıplama tuşunu basılı tutup daha uzun havada kalmak saçma" (geliştirici). Bunun üzerine slingshot çıkışı tuştan bağımsız yapıldı, artık tek kanca bırakışıyla aynı (yukarıdaki tablo).

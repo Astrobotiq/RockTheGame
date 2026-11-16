@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması).*
 
 ## Tasarım niyeti
 
@@ -68,6 +68,8 @@ Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız
 
 **Hit-stop oyuncuyu ve hareketli platformları/tehlikeleri durdurur (16 Kasım 2026, PF-7).** `HitStopManager` `Time.timeScale`'e dokunmaz (pause ve swing tutorial onu yazıyor); `HitStopEvents` yayınlar ve `HitStopEvents.IsActive` bayrağını tutar. `PlayerController` hem `Update` hem `FixedUpdate`'i atlar. `PlatformController`, `TriggeredPlatformController` ve `WrappingPlatformManager` bayrak true iken `FixedUpdate`'te yerinde bekler (`DeltaPosition` 0, strateji zamanı ilerlemez), hit-stop bitince kaldıkları yerden devam eder. Tehlikeler aynı sürücüleri kullandığı için onlar da durur. **Durmayanlar:** `LaunchPad` cooldown'u, kırılan platform sayaçları (`BreakablePlatform`, `SegmentedBreakablePlatform`), animasyonlar ve parçacıklar. Dash zamanlayıcısı `FixedUpdateState`'te (fizik adımında) ilerler ve hit-stop sırasında `FixedUpdate` atlandığı için hit-stop dash süresinden yemez: her dash önce `HitStopDuration` kadar donar, sonra `DashDuration` kadar gider.
 
+**Havada duvar çarpması (16 Kasım 2026, PF-4, seçenek c).** `AirborneState` her fizik adımında önceki adımın sensörüne bakar (`IsTouchingLeft/RightWall`). Hız duvara doğruysa oyuncunun yatay hızı sıfırlanır, çarpma hızı saklanır. Duvar `WallSpeedRetentionTime` (0.06 sn, 3 fizik adımı) içinde biterse (köşe, duvar ucu) saklanan hız geri verilir; oyuncu ters yöne basarsa ya da pencere dolarsa verilmez. Stick duvara itiyorsa ilk çarpma hızı korunur. Mantık `WallSpeedRetention` (saf C#, `WallSpeedRetentionTests`). Eskiden saklı hız duvar boyunca kaydıktan sonra `AirDrag` ile ~1 sn sönerek duvar bitince fırlatıyordu. Tavan için ayrı kural var (`HandleVerticalObstructions`). `WallSpeedRetentionTime = 0` geri vermeyi kapatır (yalnızca sıfırlar). Taşıyan yüzeyin hızı (`_carriedVelocityX`) bu hesaba girmez.
+
 ## Tunable'lar (`PlayerStats.asset`)
 
 Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
@@ -87,13 +89,14 @@ Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
 | `DashEndMomentumMultiplier` | 0.3 | dash sonu ~10.5 birim/sn kalır |
 | `DashImpactMultiplier` | 0.5 | yalnızca kamera sarsıntısının büyüklüğü |
 | `HitStopDuration` | 0.2 | dash ve slingshot fırlatışı ortak |
+| `WallSpeedRetentionTime` | 0.06 | asset'te serileştirilmedi, kod varsayılanı geçerli; Celeste değeri |
 | `MomentumDecay` | 5 | hiçbir yerde okunmuyor |
 
 ## Kod
 
 - `Player/PlayerController.cs`: FSM bağlamı, jump buffer, dash hakkı, `NotifyImpact`
 - `Player/KinematicPhysicsHandler.cs`: çarpışma çözümü, `IsGrounded`, duvar ve tavan sensörleri, tek yönlü platform, hareketli yüzey taşıma
-- `Player/States/GroundedState.cs`, `AirborneState.cs`, `DashState.cs`
+- `Player/States/GroundedState.cs`, `AirborneState.cs`, `DashState.cs`, `Player/WallSpeedRetention.cs`
 - `Player/InputHandler.cs` (`IInputReader`): tetik eşiği 0.1
 - `Player/IFramePauseable/HitStopManager.cs`, `Player/PlayerVFXManager.cs`, `Player/Visual/PlayerColorController.cs`
 

@@ -29,6 +29,8 @@ namespace New_Scripts.Player
         public float AirAcceleration = 20f;
         public float AirDrag = 5f;
         public float MomentumDecay = 2f;
+        [Tooltip("Havada duvara carpinca yatay hiz sifirlanir; duvar bu sure (sn) icinde biterse hiz geri verilir (kose cikisi). 0 = geri verme.")]
+        public float WallSpeedRetentionTime = 0.06f;
 
         [Header("Dash")]
         [Tooltip("Dash yeteneğinin kat edeceği toplam yatay/dikey mesafe (Birim).")]

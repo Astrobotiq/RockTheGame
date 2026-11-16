@@ -24,6 +24,7 @@ namespace New_Scripts.Player.States
         // Taşıyan yüzeyden devralınan yatay hız. Hava sürtünmesi/ivmesi yalnızca oyuncunun kendi hızına
         // işler (yüzeyin referans çerçevesi); aksi halde 0.2 sn içinde sönüp duvar kaçardı.
         private float _carriedVelocityX;
+        private WallSpeedRetention _wallSpeedRetention;
 
         /// <param name="carriedVelocity">Taşıyan yüzeyden ayrılırken aktarılan hız (<see cref="SurfaceCarry"/>).
         /// Y bileşeni normal hıza eklenir (yerçekimi sönümler), X bileşeni referans çerçevesi olarak taşınır.</param>
@@ -73,6 +74,7 @@ namespace New_Scripts.Player.States
                 return;
             }
 
+            HandleHorizontalObstructions();
             ApplyCustomGravity();
             ApplyAirMovement();
             HandleVerticalObstructions();
@@ -194,6 +196,13 @@ namespace New_Scripts.Player.States
             float accel = Mathf.Abs(moveInput) < 0.05f ? _stats.AirDrag : _stats.AirAcceleration;
 
             _currentVelocity.x = Mathf.MoveTowards(_currentVelocity.x, targetX, accel * Time.fixedDeltaTime);
+        }
+
+        // Duvara carpan yatay hiz sifirlanir; duvar WallSpeedRetentionTime icinde biterse geri verilir (PF-4).
+        private void HandleHorizontalObstructions()
+        {
+            _currentVelocity.x = _wallSpeedRetention.Step(_currentVelocity.x, _context.IsTouchingLeftWall,
+                _context.IsTouchingRightWall, _stats.WallSpeedRetentionTime, Time.fixedDeltaTime);
         }
 
         private void HandleVerticalObstructions()

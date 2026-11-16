@@ -30,7 +30,7 @@ Sayısal değerler `PlayerStats.asset`'ten gelir ve buraya yazılmaz; ayarlanabi
 | L2 | Hak yalnızca yere inmek, slingshot yenileyici, launch pad ve respawn ile yenilenir. |
 | L3 | Kancaya tutunmak slingshot hakkını yenilemez. |
 | L4 | Hak yoksa aynı node'a iki kolla tutunmak çift kanca olur. |
-| L5 | Slingshot çıkışı zıplama tuşundan bağımsızdır: tuşu basılı tutmak fırlatışı uzatmaz. *(16 Kasım 2026, onay bekliyor)* |
+| L5 | Slingshot çıkışı zıplama tuşundan bağımsızdır: tuşu basılı tutmak fırlatışı uzatmaz. *(16 Kasım 2026)* |
 
 ## Duvar
 

@@ -104,14 +104,14 @@ namespace New_Scripts.Player.States
                     bypassJumpGravity = true;
                 }
 
-                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, isJumping:true, bypassJumpGravity: bypassJumpGravity, endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f));
+                this.context.TransitionToState(new AirborneState(this.context, jumpVelocityVector, AirEntry.Jump(boostedSurface: bypassJumpGravity)));
                 
 
                 
             }
             else if (!this.context.IsGrounded)
             {
-                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, isJumping:true,grappleLockout:0f, wallClimbLockout:0f, coyote:this.stats.CoyoteTimeDuration));
+                this.context.TransitionToState(new AirborneState(this.context, this.context.Velocity, AirEntry.WalkOff(this.stats.CoyoteTimeDuration)));
             }
         }
 

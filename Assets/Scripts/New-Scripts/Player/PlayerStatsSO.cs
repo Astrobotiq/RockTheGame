@@ -14,6 +14,10 @@ namespace New_Scripts.Player
         [Header("Jump Design Parameters")]
         public float JumpHeight = 4f;
         public float TimeToApex = 0.4f;
+        [Tooltip("Celeste gibi degisken ziplama (deneme): tus basiliyken VarJumpTime boyunca yukari hiz sabit tutulur, birakinca yukselis normal (1x) yercekimiyle surer ve tepede asili kalma olmaz. Kapaliyken tusu birakmak JumpEndEarlyGravityMultiplier verir. Tam ziplama yuksekligi iki modda ayni: baslangic hizi HoldJumpSpeed ile dusurulur. Yerden, coyote, duvar ve tirmanma ziplamalarinda; boost'lu yuzeyde degil.")]
+        public bool CelesteVariableJump = false;
+        [Tooltip("Celeste VarJumpTime: tus basiliyken yukari hizin sabit tutuldugu sure (sn).")]
+        public float VarJumpTime = 0.2f;
 
         [Header("Swinging")]
         public float SwingGravity = 25f;
@@ -109,5 +113,16 @@ namespace New_Scripts.Player
         
         public float Gravity => -(2f * JumpHeight) / (TimeToApex * TimeToApex);
         public float JumpVelocity => Mathf.Abs(Gravity) * TimeToApex;
+
+        /// <summary>
+        /// Hizi holdTime boyunca sabit tutulan bir ziplamanin, tutmasiz originalSpeed ziplamasiyla ayni tepe yuksekligine
+        /// cikmasi icin baslangic hizi: v*t + v^2/(2g) = v0^2/(2g)  =>  v = -g*t + sqrt(g^2*t^2 + v0^2).
+        /// </summary>
+        public static float HoldJumpSpeed(float originalSpeed, float gravityMagnitude, float holdTime)
+        {
+            if (originalSpeed <= 0f || holdTime <= 0f) return originalSpeed;
+            float gt = gravityMagnitude * holdTime;
+            return -gt + Mathf.Sqrt(gt * gt + originalSpeed * originalSpeed);
+        }
     }
 }

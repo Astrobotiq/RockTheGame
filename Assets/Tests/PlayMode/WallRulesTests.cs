@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace RockTheGame.Tests.PlayMode
 {
-    /// <summary>docs/bozulmamali-davranislar.md W1-W8. ~6 sn bandini PlayerStatsSanityTests korur.</summary>
+    /// <summary>docs/bozulmamali-davranislar.md W1-W9. ~6 sn bandini PlayerStatsSanityTests korur.</summary>
     public class WallRulesTests : PlayerRuleTestBase
     {
         [UnityTest]
@@ -145,7 +145,7 @@ namespace RockTheGame.Tests.PlayMode
         public IEnumerator W7_JumpNearWallWhileRising_IsWallJump()
         {
             SpawnWallAtGap(Player.Stats.WallJumpCheckDistance * 0.5f);
-            Player.TransitionToState(new AirborneState(Player, new Vector2(0f, 5f)));
+            Player.TransitionToState(new AirborneState(Player, new Vector2(0f, 5f), AirEntry.Fall()));
 
             yield return PressJump();
 
@@ -158,7 +158,7 @@ namespace RockTheGame.Tests.PlayMode
         public IEnumerator W7_JumpFartherFromWall_IsNotWallJump()
         {
             SpawnWallAtGap(Player.Stats.WallJumpCheckDistance + 0.25f);
-            Player.TransitionToState(new AirborneState(Player, Vector2.zero));
+            Player.TransitionToState(new AirborneState(Player, Vector2.zero, AirEntry.Fall()));
 
             yield return PressJump();
             yield return new WaitForSeconds(Player.Stats.JumpBufferDuration * 2f);
@@ -174,7 +174,7 @@ namespace RockTheGame.Tests.PlayMode
             // MoveSpeed (10) ile 0.6 birim 3 fizik adimi: basis karesinde menzil disinda, buffer (0.1 sn) bitmeden menzilde.
             SpawnWallAtGap(Player.Stats.WallJumpCheckDistance + 0.6f);
             Input.LeftStick = Vector2.right;
-            Player.TransitionToState(new AirborneState(Player, new Vector2(Player.Stats.MoveSpeed, 0f)));
+            Player.TransitionToState(new AirborneState(Player, new Vector2(Player.Stats.MoveSpeed, 0f), AirEntry.Fall()));
 
             yield return PressJump();
             Assert.Greater(Player.Velocity.x, 0f, "basildigi anda duvar menzilde olmamali");
@@ -185,6 +185,23 @@ namespace RockTheGame.Tests.PlayMode
 
             Assert.Less(Player.Velocity.x, 0f, "buffer'daki ziplama duvara varinca duvar ziplamasi olmali");
             Assert.Greater(Player.Velocity.y, 0f);
+        }
+
+        [UnityTest]
+        public IEnumerator W9_JumpRightAfterLettingGoOfWall_IsWallJump()
+        {
+            yield return SlideOnRightWall();
+            Input.LeftStick = Vector2.left;
+            yield return WaitForState<AirborneState>();
+            yield return new WaitForFixedUpdate();
+            Assert.IsTrue(Player.IsWallWithin(1, Player.Stats.WallJumpCheckDistance), "duvar hala menzilde olmali");
+
+            // Zıplama tek karede basılı: frame fazından bas, bir Update görsün (oyundaki WasPressedThisFrame gibi).
+            yield return null;
+            yield return PressJump();
+            yield return new WaitForFixedUpdate();
+
+            Assert.Less(Player.Velocity.x, -Player.Stats.WallSlideJumpForce.x * 0.5f, $"duvardan disari atmali, hiz {Player.Velocity}");
         }
 
         private IEnumerator ClimbToLedge()

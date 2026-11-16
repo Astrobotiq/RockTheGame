@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi).*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri).*
 
 ## Tasarım niyeti
 
@@ -33,14 +33,21 @@ Karakter kinematik bir `Rigidbody2D`. Her `FixedUpdate`'te aktif state istenen h
 | Tepe noktası yakını (`\|vy\| < ApexThreshold`) | `ApexHangGravityMultiplier` (tepede asılı kalma) |
 | Diğer | 1 |
 
-Bu çarpanlar yalnızca `isJumping: true` ile girilen havada uygulanır. Havaya hangi yoldan girildiği bu yüzden önemli:
+**Deneme: `CelesteVariableJump` (varsayılan kapalı, 16 Kasım 2026).** Açıkken oyuncunun kendi zıplamalarında (`VariableJump` profilleri: `Jump(false)`, coyote, `WallJump`, `ClimbJump`; boost'lu yüzeyde değil) "tuş bırakılmış" satırı kalkar: tuş basılıyken `VarJumpTime` boyunca yukarı hız sabit tutulur, bırakınca süre biter ve yükseliş 1× sürer; tepede asılı kalma yalnızca tuş basılıyken. Tam yükseklik aynı kalsın diye başlangıç hızı `PlayerStatsSO.HoldJumpSpeed` ile düşürülür. Açıkken `AirEntryRulesTests.H1` (iki test) ve `WallRulesTests.W7_JumpNearWallWhileRising` eski mekanizmayı ölçtüğü için kırılır; kalıcı olursa bu testler geliştirici onayıyla güncellenir.
 
-| Havaya giriş | Yerçekimi kuralı |
-|---|---|
-| Yerden zıplama, coyote, duvar zıplamaları (kayarken, tırmanırken, havadan) | Tablodaki tam kural (tuşa bağlı) |
-| Swing bırakma, slingshot çıkışı (16 Kasım 2026'dan beri), launch pad (`bypassJumpGravity`) | Yükselirken hep 3×, düşerken 1.5×, apex hang yok; tuştan bağımsız |
-| `JumpBoostMultiplier > 0` olan hareketli zeminden/duvardan zıplama | Aynısı ama yükselirken 1.5× (`endEarlyGravityMultiplier` 0.5). Coyote ile yapılırsa yalnızca apex hang kapanır. |
-| Dash sonu, dual swing bırakma, duvardan düşme, kanca kopması, oda geçişi, respawn | Sabit 1× (düşüş bile hızlanmaz) |
+Bu çarpanlar yalnızca `IsJumping` profilleriyle girilen havada uygulanır. Havaya her geçiş `new AirborneState(context, hız, AirEntry.X())` ile adı olan bir profil seçer (`Player/States/AirEntry.cs`, 16 Kasım 2026); tablo bu profillerin listesidir. Yeni bir havaya geçiş ya mevcut bir profili seçer ya da `AirEntry`'ye yeni bir profil ekler ve buraya bir satır yazar.
+
+| Havaya giriş | Profil | Yerçekimi kuralı | Kural |
+|---|---|---|---|
+| Yerden zıplama | `Jump(false)` | Tablodaki tam kural (tuşa bağlı) | H1 |
+| Kenardan yürüyerek düşme ve coyote zıplaması | `WalkOff` | Tam kural, coyote açık | H1 |
+| Duvar zıplaması (kayarken, havadan) / tırmanırken dikey zıplama | `WallJump` / `ClimbJump` | Tam kural; boost'lu duvarda alttaki satır | W5 |
+| Swing bırakma, slingshot çıkışı (16 Kasım 2026'dan beri), launch pad | `SwingRelease`, `SlingshotLaunch`, `LaunchPad` | Yükselirken hep 3×, düşerken 1.5×, apex hang yok; tuştan bağımsız | H2, L5 |
+| `JumpBoostMultiplier > 0` olan hareketli zeminden/duvardan zıplama | `Jump(true)`, `WallJump`/`ClimbJump` (`boostedSurface`) | Aynısı ama yükselirken 1.5× (`EndEarlyGravityMultiplier` 0.5). Coyote ile yapılırsa yalnızca apex hang kapanır. | H3 |
+| Dash sonu, dual swing bırakma, kanca kopması, oda geçişi, respawn | `Fall` | Sabit 1× (düşüş bile hızlanmaz) | H4 |
+| Duvardan bırakma, kayma süresi bitmesi, dayanıklılık bitmesi | `WallDrop` | Sabit 1×; taşıyan duvarın hızı, duvar kilidi; coyote yok (hemen zıplamayı havadan duvar zıplaması karşılar, W9) | — |
+
+Kural testleri: `AirEntryRulesTests` (H1–H4); fabrikaların parametreleri `AirEntryTests`'te.
 
 Örneğin dash sonrasındaki düşüş, zıplama sonrasındaki düşüşten daha yavaştır.
 

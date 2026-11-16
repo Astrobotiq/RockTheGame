@@ -31,15 +31,12 @@
 
 ## Someday
 
-### Precision toleransları (docs/precision-platformer-plani.md §3.5)
+### Yer/hava birleştirme Aşama 2 (docs/yer-hava-birlestirme-plani.md, isteğe bağlı)
 
-- [ ] **Hava sönümü gamepad testi** #test - kancadan ve slingshot'tan çıkıp stick'i ileri tut / bırak; momentum korunuyor mu, kontrol kaybı var mı; sönüm task'ıyla aynı ya da ertesi gün
-- [ ] **Slingshot çıkışı gamepad testi** #test - slingshot'ı A basılı ve bırakılmış fırlat; yükseklik artık aynı (hep 3× yükselirken, tek kanca bırakışı gibi), yukarı fırlatış fazla kısa geliyor mu (`feel-notlari.md`)
-- [ ] **Havaya giriş tablosunun kural testleri** #test - `movement-core.md`'deki dört satır için PlayMode testi (örn. swing bırakınca tuş basılı olsa da yükselişte 3×, dash sonu sabit 1×); kural metinleri `bozulmamali-davranislar.md`'ye, onayla. `AirEntry`'den önce (yer-hava-birlestirme-plani.md)
-- [ ] **`AirEntry` profili: tip ve fabrikalar** #code - struct + adlı fabrikalar (`Jump`, `WallJump`, `ClimbJump`, `SwingRelease`, `SlingshotLaunch`, `LaunchPad`, `Fall`, `WalkOff`), `AirborneState`'e profil alan constructor (eskisi geçici kalır); dash, yer ve swing çağrı yerlerini taşı. Davranış değişmez (yer-hava-birlestirme-plani.md)
-- [ ] **`AirEntry` profili: kalan çağrı yerleri** #code - duvar durumları, slingshot, `LaunchPad`, `PlayerController`; 12 parametreli constructor'ı sil, `movement-core.md` tablosunu profillere bağla
-- [ ] **Profil geçişi testi** #test - EditMode + PlayMode yeşil, gamepad ile hızlı tur (zıplama, üç kanca çıkışı, duvar zıplaması, launch pad); kalan çağrı yerleri task'ıyla aynı ya da ertesi gün
-- [ ] **`CurrentState` okuyan dış kodun envanteri** #code - isteğe bağlı, `NormalState` (Aşama 2) öncesi: `PlayerAnimationController`, `PlayerVFXManager`, `LocalPlayerBroadcaster`, `PenaltyHandler`, `DoorJuicyVisual`, `PauseManager` durum tipine bakıyor mu; parçalara bölünmüş plan
+- [ ] **Testleri durum tipinden ayır** #test - `PlayerRuleTestBase`'e `WaitForGround()` / `WaitForAir()` yardımcıları, testlerdeki 24 `GroundedState`/`AirborneState` yerini onlara taşı; davranış değişmez. `NormalState`'ten önce
+- [ ] **`NormalState` iskeleti** #code - `GroundedState` + `AirborneState` tek sınıf: `IsOnGround`, `OnLand()` (iniş yan etkileri aynı sırayla), `OnLeaveGround()` (`AirEntry.WalkOff`); eski iki sınıf ince sarmalayıcı kalır
+- [ ] **`NormalState`: çağrı yerleri ve dış kod** #code - 30 çağrı yerini taşı, köşe düzeltmesi ve `SwingTutorial` için `PlayerController.IsInNormalAir`, eski sınıfları sil, `movement-core.md`
+- [ ] **Aşama 2 testi** #test - EditMode + PlayMode yeşil; gamepad turu (zıplama, iniş, üç kanca çıkışı, duvar, launch pad, dash'in yerde bitmesi: bir adımlık hava farkı); çağrı yerleri task'ıyla aynı ya da ertesi gün
 
 ### CRT
 
@@ -102,7 +99,14 @@
 
 ## Done
 
-- [x] ~~**Slingshot çıkışı tuştan bağımsız** #code~~ (2026-11-16) - `SlingshotState` çıkışı (fırlatış sonu ve erken bırakma) `bypassJumpGravity: true`: yükselirken hep 3×, düşerken 1.5×, tek kanca bırakışı gibi; eskiden A basılıyken 1× + apex hang. Kural L5 + `SlingshotRulesTests.L5`. **Gamepad ile denenmedi**
+- [x] ~~**`CurrentState` okuyan dış kodun envanteri** #code~~ (2026-11-16) - altı dosyanın hiçbiri yer/hava tipine bakmıyor; etkilenen üretim kodu yalnızca köşe düzeltmesi ve `SwingTutorial`, ayrıca 30 iç çağrı yeri ve testlerde 24 yer. Aşama 2 dört parçaya bölündü (yer-hava-birlestirme-plani.md), task listesine eklenmedi
+- [x] ~~**Profil geçişi testi** #test~~ (2026-11-16) - EditMode 441/441, PlayMode 57/57; gamepad turu (zıplama, üç kanca çıkışı, duvar zıplaması, launch pad) farksız. Tur sırasında bulunan duvar coyote hatası düzeltildi (W9)
+- [x] ~~**`AirEntry` profili: kalan çağrı yerleri** #code~~ (2026-11-16) - duvar durumları, slingshot, `LaunchPad`, `PlayerController` ve testlerdeki kurulumlar taşındı; 12 parametreli constructor silindi (hiç kullanılmayan `bypassApexHangGravity`/`bypassEndEarlyGravity` parametreleri de gitti); `movement-core.md` tablosu profil sütunuyla. EditMode 437/437, PlayMode 56/56. Gamepad turu: Profil geçişi testi
+- [x] ~~**`AirEntry` profili: tip ve fabrikalar** #code~~ (2026-11-16) - `Player/States/AirEntry.cs`: 9 fabrika (planlananlara ek `WallDrop`), `AirborneState(context, velocity, AirEntry)`; dash, yer, tek ve çift kanca taşındı, eski constructor geçici duruyor. EditMode `AirEntryTests` (fabrikalar eski kombinasyonları birebir üretiyor). EditMode 437/437, PlayMode 56/56
+- [x] ~~**Havaya giriş tablosunun kural testleri** #test~~ (2026-11-16) - `AirEntryRulesTests` (6 test): H1 yerden zıplama tuşa bağlı, H2 swing bırakma/launch pad tuştan bağımsız 3×, H3 boost'lu yüzey 1.5×, H4 dash sonu sabit 1×; çarpan her fizik adımında ölçülüyor. Kurallar onaylandı. `movement-core.md` tablosuna kenardan düşme eklendi
+- [x] ~~**Slingshot çıkışı gamepad testi** #test~~ (2026-11-16) - A basılı / bırakılmış fırlatış, yukarı/çapraz/yana, sonrasında kanca, erken bırakma denendi; sonuç iyi (`feel-notlari.md`)
+- [x] ~~**Hava sönümü gamepad testi** #test~~ (2026-11-16) - `AirOverspeedReduce` 16: kancadan/slingshot'tan çıkıp stick ileri / bırakılmış / ters denendi, sonuç iyi (`feel-notlari.md`)
+- [x] ~~**Slingshot çıkışı tuştan bağımsız** #code~~ (2026-11-16) - `SlingshotState` çıkışı (fırlatış sonu ve erken bırakma) `bypassJumpGravity: true`: yükselirken hep 3×, düşerken 1.5×, tek kanca bırakışı gibi; eskiden A basılıyken 1× + apex hang. Kural L5 + `SlingshotRulesTests.L5`. Gamepad: iyi
 - [x] ~~**Yer/hava durumlarını birleştirme planı** #code~~ (2026-11-16) - plan `docs/yer-hava-birlestirme-plani.md`: önce `AirEntry` profili (12 parametreli constructor → adı olan profiller, davranış aynı), `NormalState` birleştirmesi isteğe bağlı. önerilen task'lar Someday'e eklendi
 - [x] ~~**Kancadan tek çıkış kuralı** #code~~ (2026-11-16) - karar: üç kural bilinçli olarak kalıyor, kod değişmedi; tek kural his ve oynanış açısından doğru gelmiyor (`feel-notlari.md`). Slingshot çıkışının tuşa bağlı olması ayrıca sorulacak
 - [x] ~~**Dash mesafesi tutarlılık testi** #test~~ (2026-11-16) - `DashRulesTests.D4`: 30/60/144 fps'te aynı dash aynı mesafe (fark < 0.001), `DashDistance`'a bir adım içinde. Kural D4 `bozulmamali-davranislar.md`'de (onaylandı)

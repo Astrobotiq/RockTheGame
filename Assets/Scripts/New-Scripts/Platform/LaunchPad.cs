@@ -151,12 +151,7 @@ namespace New_Scripts.Platform
 
             // 2. Oyuncu hızını ata ve AirborneState'e geçir
             player.Velocity = launchVelocity;
-            player.TransitionToState(new AirborneState(
-                player,
-                launchVelocity,
-                isJumping: true,
-                bypassJumpGravity: true
-            ));
+            player.TransitionToState(new AirborneState(player, launchVelocity, AirEntry.LaunchPad()));
 
             // 3. Efektleri tetikle
             if (launchVFXPrefab != null)

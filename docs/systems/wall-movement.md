@@ -1,6 +1,6 @@
 # Duvar: tırmanma, kenardan çıkma, kayma, duvar zıplaması
 
-*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-16 (duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında; tutunmaya giriş toleranslı; havadan duvar zıplaması).*
+*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-16 (duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında; tutunmaya giriş toleranslı; havadan duvar zıplaması; duvardan ayrılınca coyote yok).*
 
 ## Tasarım niyeti
 
@@ -16,7 +16,7 @@ Celeste kökenli "oyuncu dostu" katman. Duvar bir kurtarma alanı: yakalanırsı
 | Zıplama | **Dikey**: `(0, ClimbVerticalJumpVelocity)` | **Dışarı**: `(−duvarYönü × WallSlideJumpForce.x, WallSlideJumpForce.y)` |
 | Dash | Var | Var |
 | Kanca | **Yok** | Var (iki tetik de, kendi stick'iyle) |
-| Bırakınca | Bumper bırakılırsa hız sıfırlanıp düşer, 0.2 sn tekrar tutunamaz. Bumper basılıyken temas kopması (duvar toleransın dışına çıktı) kilitlemez: düşer ama duvar geri gelirse hemen tutunur | Stick duvardan çekilirse düşer, 0.2 sn tutunma kilidi + coyote penceresi |
+| Bırakınca | Bumper bırakılırsa hız sıfırlanıp düşer, 0.2 sn tekrar tutunamaz. Bumper basılıyken temas kopması (duvar toleransın dışına çıktı) kilitlemez: düşer ama duvar geri gelirse hemen tutunur | Stick duvardan çekilirse düşer, 0.2 sn tutunma kilidi; hemen zıplarsa havadan duvar zıplaması (W9) |
 | Titreşim | `WallClimbLeft/Right` (sürekli) | `WallSlideLeft/Right` (sürekli) |
 
 Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
@@ -52,9 +52,9 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 
 - Giriş koşulu `AirborneState.ProcessWallInteraction`'da: `vy < 0`, kayma süresi kalmış, stick duvara doğru `> 0.1`.
 - **Kayma süresi yalnızca şunlarla yenilenir:** yere inmek, tırmanmaya girmek, **kayarken zıplamak** ve launch pad. Kayarken zıplamak süreyi yenilediği için iki duvar arasında sınırsız duvar zıplaması zinciri mümkün.
-- Süre bitince karakter mevcut hızıyla düşer (`isJumping: false`). Stick'i bırakıp ayrılınca `CoyoteTimeDuration` boyunca zıplama hâlâ çalışır, ama bu normal **dikey** zıplamadır, duvar zıplaması değil.
+- Süre bitince karakter mevcut hızıyla düşer (`isJumping: false`). Stick'i duvardan çekip ayrılınca coyote açılmaz (16 Kasım 2026'dan beri): duvar hâlâ `WallJumpCheckDistance` içindeyken basılan zıplama havadan duvar zıplamasıdır (W9). Eskiden `CoyoteTimeDuration` açılıyordu ve öncelikli olduğu için duvarın dibinde dikey zıplama çıkıyordu ("tırmanmıyorken tırmanma zıplaması").
 - **Duvar zıplaması zıplama buffer'ını kullanır** (`JumpBufferTimer`, `JumpBufferDuration` 0.1 sn; hem kayarken hem tırmanırken): duvara değmeden en fazla 0.1 sn önce basılan zıplama, duvara girince çalışır. Yön kuralları (W5) aynı.
-- **Havadan duvar zıplaması (16 Kasım 2026, PF-5, Celeste `WallJumpCheck`):** `AirborneState`'teyken zıplama buffer'ı doluysa ve duvar `WallJumpCheckDistance` (0.375, Celeste 3 px) içindeyse kayarkenki dışarı zıplama yapılır (`WallSlidingState.PerformWallJump`, kayma süresini de yeniler). Temas, stick yönü ve düşüş şart değil: yükselirken de çalışır. Duvar tüm oyuncu kutusuyla taranır (`PlayerController.IsWallWithin`), merkez ışınıyla değil. **Öncelik:** coyote açıksa önce normal zıplama (Celeste'teki sıra; yukarıdaki "stick'i bırakınca coyote" davranışı korunur). İki yanda da duvar varsa önce sağdaki. Tırmanırken zıplama `WallClimbingState`'te kalır, hâlâ dikey (W5). Mesafe yalnızca duvarın var olduğunu bilmek için; hareketli duvardan hız aktarımı temas varsa olur.
+- **Havadan duvar zıplaması (16 Kasım 2026, PF-5, Celeste `WallJumpCheck`):** `AirborneState`'teyken zıplama buffer'ı doluysa ve duvar `WallJumpCheckDistance` (0.375, Celeste 3 px) içindeyse kayarkenki dışarı zıplama yapılır (`WallSlidingState.PerformWallJump`, kayma süresini de yeniler). Temas, stick yönü ve düşüş şart değil: yükselirken de çalışır. Duvar tüm oyuncu kutusuyla taranır (`PlayerController.IsWallWithin`), merkez ışınıyla değil. **Öncelik:** coyote açıksa önce normal zıplama (Celeste'teki sıra). Coyote yalnızca yerden yürüyerek düşünce açılır; duvardan ayrılınca açılmaz, Celeste'teki gibi. İki yanda da duvar varsa önce sağdaki. Tırmanırken zıplama `WallClimbingState`'te kalır, hâlâ dikey (W5). Mesafe yalnızca duvarın var olduğunu bilmek için; hareketli duvardan hız aktarımı temas varsa olur.
 - **Duvar zıplaması:** `isJumping: true` (değişken yükseklik geçerli) ve `WallJumpInputLockoutTime` (0.1 sn) boyunca yatay girdi yok sayılır. Böylece oyuncu stick'i hâlâ duvara doğru tutuyorsa hemen geri yapışmaz.
 
 ## Tunable'lar (`PlayerStats.asset`)

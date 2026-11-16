@@ -25,7 +25,7 @@ namespace New_Scripts.Player.States
         {
             if (!context.LeftAnchor.HasValue || !context.RightAnchor.HasValue)
             {
-                context.TransitionToState(new AirborneState(context, context.Velocity));
+                context.TransitionToState(new AirborneState(context, context.Velocity, AirEntry.Fall()));
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace New_Scripts.Player.States
             {
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new AirborneState(context, currentVelocity));
+                context.TransitionToState(new AirborneState(context, currentVelocity, AirEntry.Fall()));
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace New_Scripts.Player.States
                 {
                     context.LeftAnchor = null;
                     context.RightAnchor = null;
-                    context.TransitionToState(new AirborneState(context, currentVelocity));
+                    context.TransitionToState(new AirborneState(context, currentVelocity, AirEntry.Fall()));
                     return;
                 }
                 else

@@ -62,7 +62,7 @@ namespace New_Scripts.Player.States
         private void ExitDashSequence()
         {
             Vector2 exitVelocity = _context.Velocity * _stats.DashEndMomentumMultiplier;
-            _context.TransitionToState(new AirborneState(_context, exitVelocity));
+            _context.TransitionToState(new AirborneState(_context, exitVelocity, AirEntry.Fall()));
         }
     }
 }

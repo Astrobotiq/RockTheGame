@@ -47,7 +47,7 @@ namespace New_Scripts.Player.States
 
             if (context.CurrentWallSlideTime <= 0f)
             {
-                context.TransitionToState(new AirborneState(context, velocity, carriedVelocity: CurrentCarrierVelocity()));
+                context.TransitionToState(new AirborneState(context, velocity, AirEntry.WallDrop(CurrentCarrierVelocity())));
                 return;
             }
 
@@ -56,8 +56,10 @@ namespace New_Scripts.Player.States
             
             if (!isPushingTowardsWall)
             {
-                context.TransitionToState(new AirborneState(context, velocity, false, grappleLockout:0f, wallClimbLockout:0.2f, coyote:stats.CoyoteTimeDuration,
-                    carriedVelocity: CurrentCarrierVelocity()));
+                // Coyote yok (Celeste gibi): hemen ardından basılan zıplamayı havadan duvar zıplaması karşılar (W9).
+                // Eskiden coyote açıktı ve öncelikli olduğu için duvarın dibinde dikey zıplama çıkıyordu.
+                context.TransitionToState(new AirborneState(context, velocity,
+                    AirEntry.WallDrop(CurrentCarrierVelocity(), wallClimbLockout: 0.2f)));
                 return;
             }
 
@@ -78,7 +80,7 @@ namespace New_Scripts.Player.States
             }
             else if (!IsStillOnWall())
             {
-                context.TransitionToState(new AirborneState(context, velocity, carriedVelocity: CurrentCarrierVelocity()));
+                context.TransitionToState(new AirborneState(context, velocity, AirEntry.WallDrop(CurrentCarrierVelocity())));
             }
         }
 
@@ -150,18 +152,8 @@ namespace New_Scripts.Player.States
             if (bypassJumpGravity) jumpDirection += surfaceAddition;
             else carriedVelocity = surfaceAddition;
 
-            context.TransitionToState(new AirborneState(
-                context: context,
-                inheritedVelocity: jumpDirection,
-                isJumping: true,
-                grappleLockout: 0f,
-                wallClimbLockout: 0f,
-                coyote: 0f,
-                horizontalLockout: stats.WallJumpInputLockoutTime,
-                bypassJumpGravity: bypassJumpGravity,
-                endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f,
-                carriedVelocity: carriedVelocity
-            ));
+            context.TransitionToState(new AirborneState(context, jumpDirection,
+                AirEntry.WallJump(stats.WallJumpInputLockoutTime, boostedSurface: bypassJumpGravity, carriedVelocity)));
         }
 
         private bool CheckGrappleInputs()

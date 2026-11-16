@@ -30,7 +30,7 @@ namespace RockTheGame.Tests.PlayMode
         private IEnumerator JumpStraightUpAndTrackPeak(System.Action<float> peak)
         {
             Input.IsJumpHeld = true;
-            Player.TransitionToState(new AirborneState(Player, new Vector2(0f, Player.Stats.JumpVelocity), isJumping: true));
+            Player.TransitionToState(new AirborneState(Player, new Vector2(0f, Player.Stats.JumpVelocity), AirEntry.Jump(false)));
 
             float maxY = float.MinValue;
             for (int i = 0; i < 50; i++)

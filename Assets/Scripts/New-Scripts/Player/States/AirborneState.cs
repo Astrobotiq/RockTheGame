@@ -18,39 +18,46 @@ namespace New_Scripts.Player.States
         private float _horizontalInputLockoutTimer;
         private bool _isJumping;
         private bool _bypassJumpGravity;
+        // Yalnızca boost'lu yüzeyden coyote zıplamasında açılır (HandleCoyoteJump).
         private bool _bypassApexHangGravity;
-        private bool _bypassEndEarlyGravity;
         private float _endEarlyGravityMultiplier;
         // Taşıyan yüzeyden devralınan yatay hız. Hava sürtünmesi/ivmesi yalnızca oyuncunun kendi hızına
         // işler (yüzeyin referans çerçevesi); aksi halde 0.2 sn içinde sönüp duvar kaçardı.
         private float _carriedVelocityX;
         private WallSpeedRetention _wallSpeedRetention;
+        // Celeste değişken zıplaması (PlayerStatsSO.CelesteVariableJump): tuş basılıyken bu süre boyunca yukarı hız sabit.
+        private bool _holdJump;
+        private float _varJumpTimer;
+        private float _varJumpSpeed;
 
-        /// <param name="carriedVelocity">Taşıyan yüzeyden ayrılırken aktarılan hız (<see cref="SurfaceCarry"/>).
-        /// Y bileşeni normal hıza eklenir (yerçekimi sönümler), X bileşeni referans çerçevesi olarak taşınır.</param>
-        public AirborneState(PlayerController context, Vector2 inheritedVelocity, bool isJumping = false,
-            float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f,
-            bool bypassJumpGravity = false, bool bypassApexHangGravity = false, bool bypassEndEarlyGravity = false
-            , float endEarlyGravityMultiplier = 1f, Vector2 carriedVelocity = default)
+        /// <summary>Havaya adı olan bir profille girer (<see cref="AirEntry"/>). Profil taşıma hızı içeriyorsa
+        /// (<see cref="SurfaceCarry"/>) Y bileşeni normal hıza eklenir (yerçekimi sönümler), X bileşeni referans çerçevesi olarak taşınır.</summary>
+        public AirborneState(PlayerController context, Vector2 inheritedVelocity, AirEntry entry)
         {
             _context = context;
             _stats = context.Stats;
-            _currentVelocity = inheritedVelocity + new Vector2(0f, carriedVelocity.y);
-            _carriedVelocityX = carriedVelocity.x;
-            _isJumping = isJumping;
-            _grappleLockoutTimer = grappleLockout;
-            _wallClimbLockoutTimer = wallClimbLockout;
-            _coyoteTimer = coyote;
-            _horizontalInputLockoutTimer = horizontalLockout;
-            _bypassJumpGravity = bypassJumpGravity;
-            _bypassApexHangGravity = bypassApexHangGravity;
-            _bypassEndEarlyGravity = bypassEndEarlyGravity;
-            _endEarlyGravityMultiplier = endEarlyGravityMultiplier;
+            _currentVelocity = inheritedVelocity + new Vector2(0f, entry.CarriedVelocity.y);
+            _carriedVelocityX = entry.CarriedVelocity.x;
+            _isJumping = entry.IsJumping;
+            _grappleLockoutTimer = entry.GrappleLockout;
+            _wallClimbLockoutTimer = entry.WallClimbLockout;
+            _coyoteTimer = entry.Coyote;
+            _horizontalInputLockoutTimer = entry.HorizontalLockout;
+            _bypassJumpGravity = entry.BypassJumpGravity;
+            _endEarlyGravityMultiplier = Mathf.Clamp01(entry.EndEarlyGravityMultiplier);
 
-            if (_endEarlyGravityMultiplier < 0f)
-                _endEarlyGravityMultiplier = 0f;
-            else if (_endEarlyGravityMultiplier > 1f)
-                _endEarlyGravityMultiplier = 1f;
+            if (entry.VariableJump) TryBeginHoldJump(inheritedVelocity.y, entry.CarriedVelocity.y);
+        }
+
+        /// <summary>Celeste modunda zıplamanın başlangıç hızını düşürür ve tutma süresini başlatır (tam yükseklik aynı kalır).</summary>
+        private void TryBeginHoldJump(float jumpSpeed, float carriedY)
+        {
+            if (!_stats.CelesteVariableJump || jumpSpeed <= 0f) return;
+
+            _holdJump = true;
+            _currentVelocity.y = PlayerStatsSO.HoldJumpSpeed(jumpSpeed, Mathf.Abs(_stats.Gravity), _stats.VarJumpTime) + carriedY;
+            _varJumpSpeed = _currentVelocity.y;
+            _varJumpTimer = _stats.VarJumpTime;
         }
 
         public void EnterState()
@@ -111,6 +118,7 @@ namespace New_Scripts.Player.States
             if (_horizontalInputLockoutTimer > 0f) _horizontalInputLockoutTimer -= dt;
             if (_grappleLockoutTimer > 0f) _grappleLockoutTimer -= dt;
             if (_wallClimbLockoutTimer > 0f) _wallClimbLockoutTimer -= dt;
+            if (_varJumpTimer > 0f) _varJumpTimer -= dt;
         }
 
         private void HandleArmRouting()
@@ -144,6 +152,7 @@ namespace New_Scripts.Player.States
                 }
                 
                 _currentVelocity = jumpVelocityVector;
+                if (!_bypassApexHangGravity) TryBeginHoldJump(jumpVelocityVector.y, 0f);
             }
         }
 
@@ -189,11 +198,12 @@ namespace New_Scripts.Player.States
                     {
                         gravityMultiplier = _stats.FallGravityMultiplier;
                     }
-                    else if (!_bypassEndEarlyGravity && _currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
+                    else if (!_holdJump && _currentVelocity.y > 0f && !_context.Input.IsJumpHeld)
                     {
                         gravityMultiplier = _stats.JumpEndEarlyGravityMultiplier * _endEarlyGravityMultiplier;
                     }
-                    else if (!_bypassApexHangGravity && Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
+                    else if (!_bypassApexHangGravity && (!_holdJump || _context.Input.IsJumpHeld)
+                             && Mathf.Abs(_currentVelocity.y) < _stats.ApexThreshold)
                     {
                         gravityMultiplier = _stats.ApexHangGravityMultiplier;
                     }
@@ -203,6 +213,13 @@ namespace New_Scripts.Player.States
             float gravityStep = _stats.Gravity * gravityMultiplier * Time.fixedDeltaTime;
             _currentVelocity.y += gravityStep;
             _currentVelocity.y = Mathf.Max(_currentVelocity.y, _stats.TerminalVelocity);
+
+            // Celeste: tuş basılıyken yukarı hız tutma süresi boyunca düşmez; bırakınca süre biter.
+            if (_varJumpTimer > 0f)
+            {
+                if (_context.Input.IsJumpHeld) _currentVelocity.y = Mathf.Max(_currentVelocity.y, _varJumpSpeed);
+                else _varJumpTimer = 0f;
+            }
         }
 
         private void ApplyAirMovement()
@@ -236,6 +253,7 @@ namespace New_Scripts.Player.States
             if (_currentVelocity.y > 0f && _context.IsTouchingCeiling)
             {
                 _currentVelocity.y = 0f;
+                _varJumpTimer = 0f;
             }
         }
 

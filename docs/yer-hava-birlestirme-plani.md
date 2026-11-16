@@ -30,6 +30,7 @@ public readonly struct AirEntry
     public static AirEntry LaunchPad(...);
     public static AirEntry Fall(...);          // dash sonu, dual bırakma, duvardan düşme, kopma, respawn
     public static AirEntry WalkOff(...);       // kenardan yürüyerek düşme (coyote açık)
+    public static AirEntry WallDrop(...);      // duvardan bırakma/düşme: sabit 1×, taşıma, duvar kilidi, coyote
 }
 ```
 
@@ -48,14 +49,33 @@ public readonly struct AirEntry
 
 Kazancı Aşama 1'in üstüne az: yer↔hava sınırındaki son iki aktarımı (coyote ve hız) kaldırır. Bunun bedeli, durum tipine bakan dış kodun hepsini değiştirmek.
 
-| Durum tipine bakan yer | Ne yapıyor |
-|---|---|
-| `PlayerController.FixedUpdate` | köşe düzeltmesi (`is AirborneState`) |
-| `SwingTutorial` / `SwingTutorialFlow` | `IsAirborne = CurrentState is AirborneState` |
-| PlayMode testleri (5 dosya, ~15 yer) | `WaitForState<GroundedState>`, `IsInstanceOf<AirborneState>` |
-| `PlayerAnimationController`, `PlayerVFXManager`, `LocalPlayerBroadcaster`, `PenaltyHandler`, `DoorJuicyVisual`, `PauseManager` | `CurrentState` okuyor. Tipe mi bakıyor, bakılmadı. Aşama 2'nin ilk işi |
+**Envanter (16 Kasım 2026, Aşama 1 bittikten sonra).** `CurrentState` okuyan dış kodun çoğu `GroundedState`/`AirborneState`'e hiç bakmıyor:
 
-**Öneri:** Aşama 1'i yap. Aşama 2'yi ancak Aşama 1'den sonra yer↔hava sınırında yine hata çıkarsa düşün.
+| Yer | Neye bakıyor | Aşama 2 etkisi |
+|---|---|---|
+| `PlayerController.FixedUpdate` | köşe düzeltmesi: `is AirborneState \|\| is DashState` | **Değişir:** "normal durum ve yerde değil" |
+| `SwingTutorial.ReadInput` | `IsAirborne = CurrentState is AirborneState` | **Değişir:** aynı soru |
+| `PlayerController.OnDrawGizmos` | durum adını yazar | Yalnızca etiket ("NormalState") |
+| `PlayerAnimationController` | Dash, Swing, DualSwing, WallClimb, WallSlide; yer için `IsGrounded` özelliği | Yok |
+| `PlayerVFXManager` | Swing, DualSwing, Dash | Yok |
+| `LocalPlayerBroadcaster` | Swing, DualSwing, Dash, WallClimb, WallSlide; yer için `IsGrounded` özelliği | Yok |
+| `PenaltyHandler`, `PauseManager` | yalnızca `PlayerTransitionState` | Yok |
+| `DoorJuicyVisual` | oyuncuya bakmıyor (kendi `SnapToCurrentState` metodu, isim benzerliği) | Yok |
+
+Durumların kendi içinde: 25 `new AirborneState(...)` (hepsi artık `AirEntry` ile) ve 5 `new GroundedState(...)` (`AirborneState`, `SwingingState`, `DualSwingingState`, `WallSlidingState`, `LedgeClimbState`). Testlerde 24 yer (`WaitForState<GroundedState>`, `IsInstanceOf<AirborneState>` vb., 7 dosya; `PlayerRuleTestBase.LandOnFloor` dahil) ve `SwingTutorialFlowTests`'te yalnızca bir test adı.
+
+Sonuç: Aşama 2'nin dış bedeli beklenenden küçük, üretim kodunda iki yer. Asıl iş durumların içi ve testler.
+
+### Aşama 2'nin parçaları (yapılacaksa)
+
+Her biri ~1–1.5 saat, sırayla:
+
+1. **Testleri durum tipinden ayır** #test: `PlayerRuleTestBase`'e `WaitForGround()` / `WaitForAir()` (yer/hava sorusunu tip yerine `IsGrounded` ve "normal durumda mı" ile soran) yardımcıları ekle, 24 yeri onlara taşı. Davranış değişmez; Aşama 2'den sonra testlere dokunmak gerekmez. Kodla aynı gün değil, **önce**.
+2. **`NormalState` iskeleti** #code: `GroundedState` + `AirborneState` kodunu tek sınıfa al; `IsOnGround` alanı, `OnLand()` (bugünkü `GroundedState.EnterState` yan etkileri aynı sırayla) ve `OnLeaveGround()` (`AirEntry.WalkOff`). Eski iki sınıf bu adımda `NormalState`'e yönlendiren ince sarmalayıcı olarak kalır, çağrı yerleri değişmez.
+3. **Çağrı yerleri ve dış kod** #code: 30 çağrı yerini `NormalState`'e taşı, `PlayerController` köşe düzeltmesini ve `SwingTutorial`'ı yeni soruya bağla (`PlayerController`'a tek bir `IsInNormalAir` özelliği), eski sınıfları sil, `movement-core.md`'yi güncelle.
+4. **Aşama 2 testi** #test: EditMode + PlayMode yeşil; gamepad turu (zıplama, iniş, üç kanca çıkışı, duvar, launch pad, dash'in yerde bitmesi). Riskler bölümündeki "dash yerde biterse bir adım hava" farkına özellikle bak. 3 ile aynı gün ya da ertesi gün.
+
+**Öneri:** Aşama 1 yapıldı (16 Kasım 2026). Aşama 2'yi ancak yer↔hava sınırında yine hata çıkarsa düşün; envanter bedelin küçük olduğunu gösteriyor ama kazanç da küçük (coyote ve hız aktarımı).
 
 ## Riskler
 
@@ -69,7 +89,7 @@ Kazancı Aşama 1'in üstüne az: yer↔hava sınırındaki son iki aktarımı (
 Her biri ~1–1.5 saat.
 
 1. **Havaya giriş tablosunun kural testleri** #test: tablonun dört satırı için PlayMode testi. Örneğin "swing bırakınca tuş basılı olsa da yükselişte 3×", "dash sonu sabit 1×". Kural metinleri `bozulmamali-davranislar.md`'ye, geliştirici onayıyla. Aşama 1'den **önce**.
-2. **`AirEntry` profili: tip ve fabrikalar** #code: struct'ı ve fabrikaları yaz, `AirborneState`'e profil alan bir constructor ekle (eskisi geçici olarak kalır). Dash, yer ve swing çağrı yerlerini taşı.
-3. **`AirEntry` profili: kalan çağrı yerleri** #code: duvar durumları, slingshot, `LaunchPad`, `PlayerController`; eski 12 parametreli constructor'ı sil, `movement-core.md` tablosunu profillere bağla.
+2. *(Yapıldı, 16 Kasım 2026: `Player/States/AirEntry.cs`, `AirEntryTests`. Kod okununca `WallDrop` eklendi; çift kanca da bu adımda taşındı.)* **`AirEntry` profili: tip ve fabrikalar** #code: struct'ı ve fabrikaları yaz, `AirborneState`'e profil alan bir constructor ekle (eskisi geçici olarak kalır). Dash, yer ve swing çağrı yerlerini taşı.
+3. *(Yapıldı, 16 Kasım 2026.)* **`AirEntry` profili: kalan çağrı yerleri** #code: duvar durumları, slingshot, `LaunchPad`, `PlayerController`; eski 12 parametreli constructor'ı sil, `movement-core.md` tablosunu profillere bağla.
 4. **Profil geçişi testi** #test: EditMode + PlayMode yeşil, gamepad ile hızlı tur (zıplama, üç kanca çıkışı, duvar zıplaması, launch pad). 3 ile aynı gün ya da ertesi gün.
-5. *(İsteğe bağlı, Aşama 2)* **`CurrentState` okuyan dış kodun envanteri** #code: tablodaki altı dosyanın durum tipine bakıp bakmadığını çıkar, `NormalState`'in kesin parçalara bölünmüş planını yaz.
+5. *(Yapıldı, 16 Kasım 2026: yukarıdaki envanter ve parçalar.)* **`CurrentState` okuyan dış kodun envanteri** #code: tablodaki altı dosyanın durum tipine bakıp bakmadığını çıkar, `NormalState`'in kesin parçalara bölünmüş planını yaz.

@@ -64,8 +64,8 @@ namespace New_Scripts.Player.States
 
             if (context.CurrentWallStamina <= 0f)
             {
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.5f,
-                    carriedVelocity: CurrentCarrierVelocity()));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,
+                    AirEntry.WallDrop(CurrentCarrierVelocity(), wallClimbLockout: 0.5f)));
                 return;
             }
 
@@ -145,16 +145,8 @@ namespace New_Scripts.Player.States
                 if (bypassJumpGravity) jumpVelocity += surfaceAddition;
                 else carriedVelocity = surfaceAddition;
 
-                context.TransitionToState(new AirborneState(
-                    context: context,
-                    inheritedVelocity: jumpVelocity,
-                    isJumping: true,
-                    grappleLockout: 0f,
-                    wallClimbLockout: 0.2f,
-                    bypassJumpGravity: bypassJumpGravity,
-                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f,
-                    carriedVelocity: carriedVelocity
-                ));
+                context.TransitionToState(new AirborneState(context, jumpVelocity,
+                    AirEntry.ClimbJump(boostedSurface: bypassJumpGravity, carriedVelocity)));
                 return;
             }
 
@@ -162,8 +154,8 @@ namespace New_Scripts.Player.States
             if (!isBumperHeld)
             {
                 // Oyuncu bumper'i biraktı: 0.2 sn tekrar tutunma kilidi.
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0.2f,
-                    carriedVelocity: CurrentCarrierVelocity()));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,
+                    AirEntry.WallDrop(CurrentCarrierVelocity(), wallClimbLockout: 0.2f)));
                 return;
             }
 
@@ -171,8 +163,8 @@ namespace New_Scripts.Player.States
             if (!isTouching && !context.TryMeasureWallGap(wallDirection, out _))
             {
                 // Bumper basili ama duvar tolerans disinda: gercek temas kaybi, kilit yok (duvar donerse hemen tutunulur).
-                context.TransitionToState(new AirborneState(context, Vector2.zero,false, grappleLockout:0f, wallClimbLockout:0f,
-                    carriedVelocity: CurrentCarrierVelocity()));
+                context.TransitionToState(new AirborneState(context, Vector2.zero,
+                    AirEntry.WallDrop(CurrentCarrierVelocity())));
             }
         }
 

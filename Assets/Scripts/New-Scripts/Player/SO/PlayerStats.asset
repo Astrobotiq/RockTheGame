@@ -25,6 +25,7 @@ MonoBehaviour:
   AirControlMultiplier: 1
   AirAcceleration: 40
   AirDrag: 20
+  AirOverspeedReduce: 16
   MomentumDecay: 5
   WallSpeedRetentionTime: 0.06
   DashDistance: 7
@@ -52,6 +53,7 @@ MonoBehaviour:
   WallSlideJumpForce: {x: 11, y: 11}
   MaxWallSlideTime: 2
   WallJumpInputLockoutTime: 0.1
+  WallJumpCheckDistance: 0.375
   DualSpringStiffness: 25
   DualSpringDamping: 5
   DualSwingForceMultiplier: 15

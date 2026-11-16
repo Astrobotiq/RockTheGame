@@ -28,6 +28,8 @@ namespace New_Scripts.Player
         public float AirControlMultiplier = 0.5f;
         public float AirAcceleration = 20f;
         public float AirDrag = 5f;
+        [Tooltip("Havada yatay hiz MoveSpeed'in ustundeyken ve stick ayni yondeyken sonum (birim/sn2). Celeste orani: 0.4 x AirAcceleration.")]
+        public float AirOverspeedReduce = 16f;
         public float MomentumDecay = 2f;
         [Tooltip("Havada duvara carpinca yatay hiz sifirlanir; duvar bu sure (sn) icinde biterse hiz geri verilir (kose cikisi). 0 = geri verme.")]
         public float WallSpeedRetentionTime = 0.06f;

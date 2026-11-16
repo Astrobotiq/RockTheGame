@@ -211,7 +211,15 @@ namespace New_Scripts.Player.States
 
             float moveInput = _context.Input.LeftStick.x;
             float targetX = moveInput * _stats.MoveSpeed * _stats.AirControlMultiplier;
-            float accel = Mathf.Abs(moveInput) < 0.05f ? _stats.AirDrag : _stats.AirAcceleration;
+            float maxX = _stats.MoveSpeed * _stats.AirControlMultiplier;
+            bool hasInput = Mathf.Abs(moveInput) >= 0.05f;
+            float accel = !hasInput ? _stats.AirDrag : _stats.AirAcceleration;
+
+            // Celeste RunReduce: sinirin ustundeyken ayni yone basmak momentumu daha yavas sondurur (3.4 #3).
+            if (hasInput && Mathf.Abs(_currentVelocity.x) > maxX && Mathf.Sign(_currentVelocity.x) == Mathf.Sign(moveInput))
+            {
+                accel = _stats.AirOverspeedReduce;
+            }
 
             _currentVelocity.x = Mathf.MoveTowards(_currentVelocity.x, targetX, accel * Time.fixedDeltaTime);
         }

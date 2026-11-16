@@ -9,6 +9,9 @@ Hissi hiçbir test ölçmez; yalnızca gamepad'le oynayan kişi değerlendirebil
 | Tarih | Değer (SO alanı) | Eski → Yeni | Neden | Oynayınca sonuç |
 |---|---|---|---|---|
 | *(YYYY-AA-GG)* | *(`AlanAdı`)* | *(eski → yeni)* | *(neden)* | *(oyuncu doldurur: iyi / kötü / karışık)* |
+| 2026-11-16 | `CeilingCornerCorrection` / `DashCornerCorrection` (yeni) | yok (0) → 0.5 → 0.25 | Celeste köşe düzeltmesi; 0.5 gamepad'de çok kaygan geldi | 0.5: kötü (kaygan). 0.25: *denenmedi* |
+| 2026-11-16 | `WallJumpCheckDistance` (yeni) | yok (temas şart) → 0.375 | Havadan duvar zıplaması, Celeste 3 px (PF-5) | *denenmedi* |
+| 2026-11-16 | `AirOverspeedReduce` (yeni) | 40 (`AirAcceleration`) → 16 | Hız sınırın (10) üstündeyken stick aynı yöndeyse; eskiden ileri basmak bırakmaktan (20) hızlı söndürüyordu. Celeste oranı 0.4 × ivme. Yere inişte hız hâlâ anında 10'a kesiliyor (bilinçli) | *denenmedi* |
 
 ## Notlar
 

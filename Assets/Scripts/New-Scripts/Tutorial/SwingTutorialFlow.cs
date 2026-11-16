@@ -20,7 +20,7 @@ namespace New_Scripts.Tutorial
     /// <summary>Akışın her karede aldığı girdiler (sahne bileşeni doldurur).</summary>
     public struct SwingTutorialInput
     {
-        /// <summary><c>CurrentState is AirborneState</c>.</summary>
+        /// <summary><c>PlayerController.IsInNormalAir</c>.</summary>
         public bool IsAirborne;
         /// <summary>Sol ya da sağ anchor dolu.</summary>
         public bool HasAnyAnchor;

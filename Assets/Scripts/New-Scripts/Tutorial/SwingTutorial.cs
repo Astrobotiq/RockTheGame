@@ -112,7 +112,7 @@ namespace New_Scripts.Tutorial
 
             return new SwingTutorialInput
             {
-                IsAirborne = player.CurrentState is AirborneState,
+                IsAirborne = player.IsInNormalAir,
                 HasAnyAnchor = player.LeftAnchor.HasValue || player.RightAnchor.HasValue,
                 NodeReachable = reachable,
                 AimedAtNode = aimed,

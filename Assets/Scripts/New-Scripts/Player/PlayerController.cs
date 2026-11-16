@@ -93,9 +93,9 @@ namespace New_Scripts.Player
         public IPlayerState CurrentState { get; private set; }
         /// <summary>Normal hareket durumunda ve yerde (kanca, duvar, dash değil). Yer/hava durumlarının nasıl
         /// bölündüğünden bağımsız soru (yer-hava-birlestirme-plani.md Aşama 2).</summary>
-        public bool IsInNormalGround => CurrentState is GroundedState;
+        public bool IsInNormalGround => CurrentState is NormalState { IsOnGround: true };
         /// <summary>Normal hareket durumunda ve havada (kanca, duvar, dash değil).</summary>
-        public bool IsInNormalAir => CurrentState is AirborneState;
+        public bool IsInNormalAir => CurrentState is NormalState { IsOnGround: false };
         public Vector2? LeftAnchor { get; set; }
         public Vector2? RightAnchor { get; set; }
 
@@ -168,7 +168,7 @@ namespace New_Scripts.Player
             // Handler, çarpışmaları çözüp objeyi hareket ettirdikten sonra "Gerçekten ulaştığım hız bu" diyerek gerçeği FSM'e geri döndürür.
             // Kose duzeltmesi yalnizca serbest hareketde (hava, dash); ip ve duvar durumlarinda kaydirma yok.
             bool isDashing = CurrentState is DashState;
-            float ceilingCorrection = isDashing || CurrentState is AirborneState ? Stats.CeilingCornerCorrection : 0f;
+            float ceilingCorrection = isDashing || IsInNormalAir ? Stats.CeilingCornerCorrection : 0f;
             float dashCorrection = isDashing ? Stats.DashCornerCorrection : 0f;
             Velocity = physicsHandler.Move(Velocity * Time.fixedDeltaTime, ceilingCorrection, dashCorrection);
         }

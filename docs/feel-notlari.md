@@ -17,4 +17,4 @@ Hissi hiçbir test ölçmez; yalnızca gamepad'le oynayan kişi değerlendirebil
 
 *(Oynarken fark ettiğin, henüz değer değişikliğine dönüşmemiş his notları.)*
 
-- **Kancadan çıkış yerçekimi (karar bekliyor):** Tek kanca bırakılınca yükselirken hep 3×, düşerken 1.5×. Çift kanca bırakılınca sabit 1×. Slingshot çıkışında zıplama tuşuna bağlı (basılıysa 1×, değilse 3×). Üçü de böyle mi kalsın, oynayıp karar ver.
+- **Kancadan çıkış yerçekimi (karar: böyle kalır, 16 Kasım 2026):** Tek kanca bırakılınca yükselirken hep 3×, düşerken 1.5×. Çift kanca bırakılınca sabit 1×. Slingshot çıkışında zıplama tuşuna bağlı (basılıysa 1×, değilse 3×). Tek kurala indirme önerisi reddedildi: geliştirici bu hale emek vererek getirdi; kural tutarlı olur ama his ve oynanış açısından doğru gelmiyor. "Swing'den ya da slingshot'tan sonra zıplama tuşunu basılı tutup daha uzun havada kalmak saçma" (geliştirici). Not: slingshot çıkışı bugün tam da tuşa bağlı; bunun da değişmesi istenip istenmediği sorulacak.

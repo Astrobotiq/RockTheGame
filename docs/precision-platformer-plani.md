@@ -202,7 +202,7 @@ Hepsi koddan doğrulandı; hiçbiri oynanarak ölçülmedi. Değer değişikliğ
 
 6. **Yer ve hava ayrı durumlar.** Bugüne kadarki birçok düzeltme (`SurfaceCarry`, `_carriedVelocityX`, `bypassJumpGravity` / `bypassApexHangGravity` / `bypassEndEarlyGravity` / `endEarlyGravityMultiplier`) bu sınırda bilgi taşıma zorunluluğundan doğmuş. `movement-core.md`'deki "havaya giriş → yerçekimi kuralı" tablosunun beş satırı var. Bu bir hata değil, ama yeni her mekanikte aynı sınıf hatayı üretecek bir yapı.
 
-7. **Kancadan üç ayrı çıkış kuralı.** Zaten `feel-notlari.md`'de karar bekliyor. Precision açısından öneri: tek kural.
+7. **Kancadan üç ayrı çıkış kuralı.** Zaten `feel-notlari.md`'de karar bekliyor. Precision açısından öneri: tek kural. **Karar (16 Kasım 2026): üç kural bilinçli olarak kalıyor** (`feel-notlari.md`).
 
 8. **Hareketli node ipi taşımıyor** (`grapple.md` #8). Hareketli node'lu oda yapılırsa bu, ilk testte görünecek.
 

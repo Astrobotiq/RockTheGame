@@ -33,7 +33,6 @@
 
 ### Precision toleransları (docs/precision-platformer-plani.md §3.5)
 
-- [ ] **Duvar zıplaması: değmeden mesafe ve yükselirken karar** #code - duvara ~0.35 birim yakınken (temas olmadan) ve yükselirken duvar zıplaması olsun mu; kararı `wall-movement.md`'ye yaz, W5 ile tutarlılığı kontrol et, olacaksa uygula (PF-5, precision-platformer-plani.md §3.4 #5)
 
 - [ ] **Dash mesafesi tutarlılık testi** #test - aynı dash'i farklı kare hızlarında (örn. `Application.targetFrameRate` 30/60/144) tekrar et, mesafe aynı mı; PlayMode kural testi olarak `DashRulesTests`'e eklenebilir; dash süresi task'ından sonra
 - [ ] **Köşe düzeltmesi testi** #test - tavan köşesine 0.1–0.4 birim değerek zıpla, geçiyor mu; 0.6'da geçmiyor mu; yatay dash'le bir duvar ucuna/basamağa 0.1–0.4 birim değ, aynısı; gamepad'de fazla "kaygan" geliyorsa `CeilingCornerCorrection` / `DashCornerCorrection`'ı (şu an 0.25) ayarla. PlayMode kural testi olarak eklenebilir (kural metnini insan onaylar)
@@ -104,6 +103,7 @@
 
 ## Done
 
+- [x] ~~**Duvar zıplaması: değmeden mesafe ve yükselirken karar** #code~~ (2026-11-16) - karar: Celeste gibi. Havadayken duvar `WallJumpCheckDistance` (0.375) içindeyse zıplama dışarı duvar zıplaması; temas, stick ve düşüş şart değil, coyote önce. `WallSlidingState.PerformWallJump` ortak, `PlayerController.IsWallWithin` kutu taraması. **Gamepad ile denenmedi**; ayrıntı `wall-movement.md` (PF-5)
 - [x] ~~**Airborne kilit ve coyote sayaçlarını fizik adımına al** #code~~ (2026-11-16) - `AirborneState.DecrementTimers` artık `FixedUpdateState`'in başında, `Time.fixedDeltaTime` ile (PF-6). `JumpBufferTimer` hâlâ `Update`'te
 - [x] ~~**Köşe düzeltmesi (tavan + dash)** #code~~ (2026-11-16) - `KinematicPhysicsHandler.Move` içinde, Celeste'in `OnCollideV/H` mantığı; tavan düzeltmesi hava ve dash'te, yatay düzeltme yalnızca dash'te. Yeni alanlar `CeilingCornerCorrection` / `DashCornerCorrection` 0.5 (Celeste 4 px), gamepad denemesinde çok kaygan geldi, 0.25'e indirildi, aday sırası `CornerCorrectionMath` + EditMode testi. Celeste'in aşağı dash yer düzeltmesi yapılmadı. **Gamepad ile denenmedi**; ayrıntı `movement-core.md`
 - [x] ~~**Momentum değişikliğini gamepad ile dene** #test~~ (2026-11-16) - PF-4 kapatıldı (kullanıcı isteği); ayrıntılı bulgu notu verilmedi, `WallSpeedRetentionTime` 0.06 olduğu gibi kaldı. Oda 16'daki swing→duvar→kayma geçişi bu değişiklikten bağımsız, eski davranış; kullanıcı böyle kalsın dedi

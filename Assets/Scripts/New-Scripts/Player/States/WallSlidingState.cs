@@ -109,38 +109,7 @@ namespace New_Scripts.Player.States
 
             if (context.JumpBufferTimer > 0f)
             {
-                context.ConsumeJumpBuffer();
-                context.ResetWallSlideTime();
-                
-                if (context.VibrationSettings != null && HapticManager.Instance != null)
-                {
-                    HapticManager.Instance.Vibrate(context.VibrationSettings.Jump);
-                }
-                
-                Vector2 jumpDirection = new Vector2(-wallDirection * stats.WallSlideJumpForce.x, stats.WallSlideJumpForce.y);
-                
-                IMovingSurface movingSurface = wallDirection == -1 
-                    ? context.PhysicsHandler.CurrentLeftMovingSurface 
-                    : context.PhysicsHandler.CurrentRightMovingSurface;
-                
-                // Boost'lu yüzeyde eski formül jumpDirection'a eklenir; değilse yüzeyin hızı referans çerçevesi olarak taşınır.
-                Vector2 surfaceAddition = SurfaceCarry.JumpAddition(movingSurface, Time.fixedDeltaTime, out bool bypassJumpGravity);
-                Vector2 carriedVelocity = Vector2.zero;
-                if (bypassJumpGravity) jumpDirection += surfaceAddition;
-                else carriedVelocity = surfaceAddition;
-
-                context.TransitionToState(new AirborneState(
-                    context: context,
-                    inheritedVelocity: jumpDirection,
-                    isJumping: true,
-                    grappleLockout: 0f,
-                    wallClimbLockout: 0f,
-                    coyote: 0f,
-                    horizontalLockout: stats.WallJumpInputLockoutTime,
-                    bypassJumpGravity: bypassJumpGravity,
-                    endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f,
-                    carriedVelocity: carriedVelocity
-                ));
+                PerformWallJump(context, wallDirection);
                 return;
             }
 
@@ -152,6 +121,47 @@ namespace New_Scripts.Player.States
                 context.TransitionToState(new WallClimbingState(context, wallDirection));
                 return;
             }
+        }
+
+        /// <summary>
+        /// Duvardan disari ziplama (W5 kayma kurali): buffer'i tuketir, kayma suresini yeniler (W4), AirborneState'e gecer.
+        /// Kayarken ve havada duvara yakinken (AirborneState, WallJumpCheckDistance) ayni ziplama kullanilir.
+        /// </summary>
+        public static void PerformWallJump(PlayerController context, int wallDirection)
+        {
+            PlayerStatsSO stats = context.Stats;
+            context.ConsumeJumpBuffer();
+            context.ResetWallSlideTime();
+
+            if (context.VibrationSettings != null && HapticManager.Instance != null)
+            {
+                HapticManager.Instance.Vibrate(context.VibrationSettings.Jump);
+            }
+
+            Vector2 jumpDirection = new Vector2(-wallDirection * stats.WallSlideJumpForce.x, stats.WallSlideJumpForce.y);
+
+            IMovingSurface movingSurface = wallDirection == -1
+                ? context.PhysicsHandler.CurrentLeftMovingSurface
+                : context.PhysicsHandler.CurrentRightMovingSurface;
+
+            // Boost'lu yüzeyde eski formül jumpDirection'a eklenir; değilse yüzeyin hızı referans çerçevesi olarak taşınır.
+            Vector2 surfaceAddition = SurfaceCarry.JumpAddition(movingSurface, Time.fixedDeltaTime, out bool bypassJumpGravity);
+            Vector2 carriedVelocity = Vector2.zero;
+            if (bypassJumpGravity) jumpDirection += surfaceAddition;
+            else carriedVelocity = surfaceAddition;
+
+            context.TransitionToState(new AirborneState(
+                context: context,
+                inheritedVelocity: jumpDirection,
+                isJumping: true,
+                grappleLockout: 0f,
+                wallClimbLockout: 0f,
+                coyote: 0f,
+                horizontalLockout: stats.WallJumpInputLockoutTime,
+                bypassJumpGravity: bypassJumpGravity,
+                endEarlyGravityMultiplier: bypassJumpGravity ? 0.5f : 1f,
+                carriedVelocity: carriedVelocity
+            ));
         }
 
         private bool CheckGrappleInputs()

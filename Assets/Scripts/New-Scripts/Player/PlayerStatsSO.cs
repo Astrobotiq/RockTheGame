@@ -70,6 +70,8 @@ namespace New_Scripts.Player
         public Vector2 WallSlideJumpForce = new Vector2(15f, 18f);
         public float MaxWallSlideTime = 2f;
         public float WallJumpInputLockoutTime = 0.15f;
+        [Tooltip("Havadayken duvar bu mesafe (birim) icindeyse ziplama duvar ziplamasi olur; temas ve stick sart degil, yukselirken de. Celeste 3 px = 0.375. 0 = kapali.")]
+        public float WallJumpCheckDistance = 0.375f;
         
         [Header("Dual Swinging")]
         public float DualSpringStiffness = 25f;

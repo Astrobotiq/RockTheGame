@@ -391,6 +391,30 @@ namespace New_Scripts.Player
 
         private readonly RaycastHit2D[] _wallGapHits = new RaycastHit2D[4];
 
+        /// <summary>
+        /// Celeste WallJumpCheck: oyuncu kutusu wallDirection yonunde distance icinde bir duvara degiyor mu.
+        /// Merkez isini degil tum kutuyu tarar (yalnizca ust ya da alt kismi duvara bakan oyuncu da sayilir);
+        /// zemin ve tavana degmemek icin kutu dikeyde 0.1 kucultulur.
+        /// </summary>
+        public bool IsWallWithin(int wallDirection, float distance)
+        {
+            if (wallDirection == 0 || distance <= 0f) return false;
+
+            Bounds bounds = PlayerCollider.bounds;
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(groundLayerMask);
+            Vector2 size = new Vector2(bounds.size.x, bounds.size.y - 0.1f);
+
+            int count = Physics2D.BoxCast(bounds.center, size, 0f, new Vector2(wallDirection, 0f), filter,
+                _wallGapHits, distance);
+            for (int i = 0; i < count; i++)
+            {
+                if (_wallGapHits[i].collider != PlayerCollider) return true;
+            }
+
+            return false;
+        }
+
         public LedgeDetectionResult CheckLedge(int wallDirection)
         {
             LedgeDetectionResult result = new LedgeDetectionResult();

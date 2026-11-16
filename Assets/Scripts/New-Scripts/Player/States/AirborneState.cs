@@ -62,7 +62,23 @@ namespace New_Scripts.Player.States
         {
             HandleArmRouting();
             HandleCoyoteJump();
+            if (HandleAirWallJump()) return;
             HandleTransitions();
+        }
+
+        // Celeste gibi (PF-5): coyote once (HandleCoyoteJump buffer'i tuketir), sonra duvar yakinsa duvar ziplamasi;
+        // temas, stick yonu ve dusus sart degil. Iki yanda duvar varsa once sag (Celeste WallJumpCheck(1)).
+        private bool HandleAirWallJump()
+        {
+            if (_context.JumpBufferTimer <= 0f) return false;
+
+            float distance = _stats.WallJumpCheckDistance;
+            int wallDirection = _context.IsWallWithin(1, distance) ? 1
+                : _context.IsWallWithin(-1, distance) ? -1 : 0;
+            if (wallDirection == 0) return false;
+
+            WallSlidingState.PerformWallJump(_context, wallDirection);
+            return true;
         }
 
         public void FixedUpdateState()

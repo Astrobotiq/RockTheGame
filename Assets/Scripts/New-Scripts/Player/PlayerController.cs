@@ -386,6 +386,9 @@ namespace New_Scripts.Player
             {
                 HapticManager.Instance.StopContinuousVibration();
             }
+            // Spiraldeyken ölünce SwingingState ancak OnEndRespawn'da çıkar; geçiş boyunca yön kilidi ve döngü sesi sürmesin.
+            SpiralFacingSign = 0;
+            if (Audio != null) Audio.StopSpiralLoop();
         }
         
         public void OnEndRespawn(){

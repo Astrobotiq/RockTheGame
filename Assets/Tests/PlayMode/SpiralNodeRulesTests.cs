@@ -315,7 +315,8 @@ namespace RockTheGame.Tests.PlayMode
             yield return WaitForFlip(spiral, 300, (a, f) => { angle = a; flipped = f; });
             Assert.IsTrue(flipped, $"6 sn icinde yon degismedi, aci {angle}");
             Assert.AreEqual(-1, spiral.SpinSign);
-            Assert.AreEqual(360f, angle, 10f, "ilk 360° CCW birikince cevrilmeli");
+            // Olcum tutunma frame'inden baslar, sayac ilk motor adimindan: aradaki birkac adim (adim basina ~5-8°) ust payda.
+            Assert.That(angle, Is.InRange(350f, 400f), "ilk 360° CCW birikince cevrilmeli");
             Assert.AreEqual(1, reversedEvents, "Reversed olayi bir kez");
 
             int steps = 0;
@@ -372,6 +373,25 @@ namespace RockTheGame.Tests.PlayMode
 
             Assert.AreEqual(1, spiral.SpinSign, "respawn'da ilk yonune donmeli");
             Assert.IsFalse(spiral.IsConnected);
+        }
+
+        [UnityTest]
+        public IEnumerator SP_RespawnTransition_ReleasesFacingLockImmediately()
+        {
+            // Ölüm geçişi (iris kapanıp açılırken) oyuncu duraklatılır; SwingingState ancak OnEndRespawn'da çıkar.
+            // Yön kilidi ve döngü sesi geçiş boyunca sürmemeli.
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.Clockwise);
+            yield return GrabFromRestBelow(spiral);
+            yield return WaitFixedSteps(10);
+            Assert.AreEqual(-1, Player.SpiralFacingSign, "kurulum: spiralde yon kilitli");
+
+            Player.OnStartRespawn();
+            for (int i = 0; i < 10; i++) yield return null;
+            Assert.AreEqual(0, Player.SpiralFacingSign, "respawn gecisinde yon kilidi kalkmali");
+
+            Input.Clear();
+            Teleport(Origin);
+            Player.OnEndRespawn();
         }
 
         [UnityTest]

@@ -164,7 +164,7 @@ Tuning stratejisi: önce Celeste sabitleriyle başla (bilinen iyi bir nokta), so
 | Kenar çıkışı | Otomatik climb hop | Otomatik | 0.1 sn yukarı tutma + 0.2 sn animasyon (bilinçli) |
 | Hareketli yüzey | Solid oyuncuyu iter/taşır, lift speed | Celeste gibi | Oyuncu tarafında çözülüyor (`KinematicPhysicsHandler.Move` sonunda `DeltaPosition` ekleniyor) + `SurfaceCarry` + `_carriedVelocityX`. Çalışıyor ama kural her durumda ayrı ayrı yazılmış |
 | Kanca hedefi | — | Histerezis + buffer | En iyi hizalanan node, ±60° koni, engel kontrolü, nişangâh var. Histerezis ve buffer yok |
-| Hareketli node | — | Anchor node'u izler | Anchor bir `Vector2` kopyası; node gider, ip kalır |
+| Hareketli node | — | Anchor node'u izler | Anchor node'u izler, taşır, bırakışta hızını verir (17 Kasım 2026, `hareketli-node-tasarimi.md`) |
 | Kancadan çıkış | — | Tek kural | Üç farklı kural (tek: hep 3×, çift: sabit 1×, slingshot: tuşa bağlı). `feel-notlari.md`'de karar bekliyor |
 | Kural testleri | Yok (açık değil) | Var, saf C# | Var (PlayMode, sahne yükleyerek) + EditMode bant testleri. Celeste'te bile olmayan bir şey |
 | Tuning verisi | Kodda sabit | SO | SO (`PlayerStatsSO`), türetilmiş değerler (gravity, dash hızı) var. İyi |
@@ -204,7 +204,7 @@ Hepsi koddan doğrulandı; hiçbiri oynanarak ölçülmedi. Değer değişikliğ
 
 7. **Kancadan üç ayrı çıkış kuralı.** Zaten `feel-notlari.md`'de karar bekliyor. Precision açısından öneri: tek kural. **Karar (16 Kasım 2026): üç kural bilinçli olarak kalıyor** (`feel-notlari.md`).
 
-8. **Hareketli node ipi taşımıyor** (`grapple.md` #8). Hareketli node'lu oda yapılırsa bu, ilk testte görünecek.
+8. ~~**Hareketli node ipi taşımıyor**~~ Çözüldü (17 Kasım 2026): anchor node'u izliyor, bkz. `hareketli-node-tasarimi.md`.
 
 9. **50 Hz fizik, 60/144 Hz ekran.** Interpolasyon açık olduğu için görüntü akıcı, ama girdi gecikmesi kare başına değişiyor (0–20 ms). 60 Hz denemesi `TASKS.md`'de zaten var; #1 ile birlikte düşünülmeli.
 

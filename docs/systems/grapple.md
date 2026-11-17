@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-16 (slingshot çıkışı tuştan bağımsız; yer/hava tek durum: `NormalState`).*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-17 (hareketli node: anchor node'u izler, taşır, bırakışta hızını verir).*
 
 ## Tasarım niyeti
 
@@ -23,7 +23,7 @@ Kanca bir tetikleyici değil, **basılı tutulan** bir eylem: tetik eşiği `Inp
 - Stick yönüyle node yönü arasındaki nokta çarpımı `minimumDotProduct` (0.5) ve üstündeyse aday olur. Bu, stick'in iki yanında ±60°'lik bir koni demek.
 - Adaylardan **en yakını değil, stick'le en iyi hizalanan** seçilir. Oyuncu ile node arasında engel (`obstacleLayerMask`) varsa aday elenir.
 - Tutunma anlıktır: mermi ya da uçuş süresi yok. İp animasyonu (`GrappleVisualManager`) yalnızca görsel. `TargetVisualizer` her iki stick için o an seçilecek node'u nişangâhla gösterir.
-- Anchor, node'un `transform.position`'ıdır. Node hareket etse bile anchor tutunma anındaki noktada kalır.
+- Anchor, node'un `transform.position`'ıdır. Kol node'un `Transform`'unu da tutar (`PlayerController.AttachAnchor`) ve anchor her fizik adımında node'un konumunu izler. Bkz. "Hareketli node".
 
 ## Durumlar
 
@@ -64,6 +64,16 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - **Çıkış:** `AirEntry.SlingshotLaunch(SlingshotGrappleLockout)`. Tek kanca bırakışıyla aynı kural: yükselirken hep 3×, düşerken 1.5×, apex hang yok, **zıplama tuşundan bağımsız** (16 Kasım 2026). Eskiden A basılıyken 1× + apex hang veriyordu; geliştirici "slingshot'tan sonra tuşu basılı tutup daha uzun havada kalmak saçma" dedi. Erken bırakma (gerilme sırasında iki tetik bırakılırsa) da aynı kuralı kullanır. Yatay hız hava kontrolüyle söner: stick boşsa `AirDrag` 20 birim/sn², stick ileri basılıysa hedef 10'a `AirAcceleration` 40 ile iner.
 - **Yenilenme:** yere inmek, slingshot yenileyici toplanabilir ([`collectibles.md`](collectibles.md)), launch pad ([`platforms.md`](platforms.md)) ve respawn. Kancaya tutunmak yenilemez.
 
+### Hareketli node
+
+*Tasarım: [`../hareketli-node-tasarimi.md`](../hareketli-node-tasarimi.md). Kurallar M1–M5: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).*
+
+- **İzleme:** `PlayerController.FixedUpdate`, durumdan önce `RefreshMovingAnchors()` ile anchor'ı node'un konumuna çeker; o adımdaki kayma `AnchorDelta(kol)`, hız `AnchorVelocity(kol)`. Node `PlatformController` (`Rigidbody2D.MovePosition`) ile hareket ettiği için anchor node'u **bir fizik adımı geriden** izler. Node pasifleşir ya da yok olursa anchor son konumda kalır, kanca kopmaz.
+- **Ham atama sabittir:** `LeftAnchor`/`RightAnchor`'a doğrudan nokta atamak node bağlantısını siler (testler ve anchor'ı silen yerler bunu kullanır).
+- **Taşıma:** durumların hızı node'a göre kalır; node kayması ayrıca eklenir. Tek kancada sarkaç kısıtından önce konuma eklenir (çarpışma taraması dahil), çift kanca ve slingshot'ta iki anchor'ın ortalaması hız olarak `Move`'a verilir. Yerden kanca hop'u sırasında taşıma yok, yalnızca anchor güncellenir.
+- **Fırlatma:** tek kanca bırakışı, çift kancada iki tetiği birden bırakma ve slingshot çıkışında (ortalama) node hızı × `MovingNodeLaunchMultiplier` `AirEntry.CarriedVelocity` ile aktarılır: Y normal hıza eklenir, X taşınır ve hava sürtünmesinden etkilenmez (duvardan ayrılma kuralı, [`platforms.md`](platforms.md)). Çarpışmayla kopma ve çift kancadan tek kancaya düşüş aktarmaz.
+- **Prefab:** `Assets/Prefab/New/Node/Node-Moving.prefab`: kök `PlatformController` + kinematik `Rigidbody2D` + `LinearPingPongStrategy` (period 4), child `Node` (node katmanı, oda node'larının kopyası). `startPoint`/`endPoint` **dünya koordinatı**: her yerleştirmede ayarlanmalı, yoksa node (0,0)–(6,0) arasına ışınlanır. Başka strateji (dairesel vb.) aynı şekilde takılabilir.
+
 ### Dönen node (`FullRotationNode`)
 
 - Yalnızca **tek kanca** sırasında sayılır. Tutunulan noktada `FullRotationNode` varsa bir `FullRotationTracker` oluşur. Tracker ardışık yönler arasındaki işaretli açıyı biriktirir, iki yön de sayılır.
@@ -88,6 +98,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 | `DualSwingForceMultiplier` | 15 | çift kanca |
 | `DualSwingCollisionRadius` | 0.4 | çift kanca |
 | `NodeCoincidenceThreshold` | 0.5 | slingshot koşulu |
+| `MovingNodeLaunchMultiplier` | 1 | hareketli node bırakışında aktarılan hız oranı |
 | `MaxSlingshotSpeed` | 65 | |
 | `SlingshotLaunchDuration` | 0.01 | bir fizik adımından kısa |
 | `SlingshotGrappleLockout` | 0.25 | çıkıştan sonra tekrar kanca atılamayan süre |
@@ -100,9 +111,9 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 
 - `Player/NodeDetector.cs`, `Player/TargetVisualizer.cs`, `Player/GrappleVisualManager.cs`, `Player/ArmController.cs`
 - `Player/States/SwingingState.cs`, `DualSwingingState.cs`, `SlingshotState.cs`
-- Kanca girişleri: `NormalState.CheckGroundGrappleInput` (yerde), `NormalState.ProcessGrappleInput` (havada), `SwingingState.CheckOppositeGrappleCast`
+- Kanca girişleri: `NormalState.CheckGroundGrappleInput` (yerde), `NormalState.ProcessGrappleInput` (havada), `SwingingState.CheckOppositeGrappleCast`, `WallSlidingState` (kayarken). Hepsi node'u `PlayerController.AttachAnchor` ile bağlar.
 - `Player/Nodes/Rotation/`: `FullRotationNode`, `FullRotationTracker` (saf C#, testli), `SpeedBoostRotationEffect`, `RotationEventTrigger`
-- Prefab'lar: `Assets/Prefab/New/Node/`
+- Prefab'lar: `Assets/Prefab/New/Node/` (hareketli: `Node-Moving.prefab`)
 - Oda 5'teki yavaş zaman tutorial'ı (`SwingTutorial`, ilk node): [`swing-tutorial.md`](swing-tutorial.md). `NodeDetector` kurallarını `PlayerController.TryCastGrapple` ile kullanır.
 
 ## Bilinen kenar durumlar ve GDD ile farklar
@@ -114,9 +125,9 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 5. **GDD "dönen node hız patlaması verir" diyor.** Kodda bu, 1.2 sn boyunca yalnızca tek kanca sarkaç hız sınırının yükselmesi + tek seferlik ×1.2 hız. Hız patlaması prefab'ı hiçbir odada yok; sahnede kullanılan tek dönen node kapı açıyor.
 6. **`OncePerNode` ölünce sıfırlanmıyor.** Ölmeden önce bir kez tamamlanan node, respawn'dan sonra tekrar tetiklenmez. Kapı açan node için bu sorun olmayabilir; bkz. [`death-respawn.md`](death-respawn.md).
 7. **Ölü kod:** `Player/Grappler.cs` hiçbir sahne ya da prefab'da kullanılmıyor (CLAUDE.md onu aktif sistemin parçası sayıyor). `SwingInitialBoost` okunmuyor.
-8. **Hareketli node'lar anchor'ı taşımaz.** Anchor bir `Vector2` kopyası. Node hareket ederse ip eski noktada kalır.
+8. **Hareketli node bir adım geriden izlenir** ve hareketli dönen node test edilmedi (17 Kasım 2026, kapsam dışı bırakıldı). İpin görsel olarak node'un gerisinde kalıp kalmadığı gamepad turunda bakılacak.
 9. **Çift kanca çarpışması hâlâ daire.** Tek kanca 5 Kasım 2026'dan beri oyuncu kutusuyla arıyor (eğimde takılma düzeltildi); çift kanca `DualSwingCollisionRadius` (0.4) daireyle arıyor ve eğimde test edilmedi. Ayrıntı: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).
 
 ## Testler
 
-`FullRotationTrackerTests`, `SwingRulesTests`, `SlingshotRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).
+`FullRotationTrackerTests`, `SwingRulesTests`, `SlingshotRulesTests`, `MovingNodeRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).

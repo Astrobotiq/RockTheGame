@@ -64,13 +64,23 @@ Yerçekimi çarpanları `PlayerStats.asset`'ten okunur; korunan şey hangi giri�
 | H3 | Zıplama boost'u olan hareketli yüzeyden zıplamada yükseliş tuştan bağımsızdır ve H2'dekinden yumuşaktır; tepede asılı kalma yoktur. *(16 Kasım 2026)* |
 | H4 | Dash bitince yerçekimi sabittir: tuş, yükseliş ya da düşüş fark etmez, düşüş de hızlanmaz. *(16 Kasım 2026)* |
 
+## Hareketli node
+
+| ID | Kural |
+|---|---|
+| M1 | Kanca anchor'ı tutunulan node'u her fizik adımında izler (bir adım geriden). Node pasifleşirse anchor son konumda kalır, kanca kopmaz. Respawn node bağlantısını siler; ham nokta atanan anchor sabittir. *(17 Kasım 2026)* |
+| M2 | Tek kancada oyuncu node'la birlikte taşınır; sarkaç node'a göre çalışır. Node oyuncuyu dik bir yüzeye götürürse S2 geçerli: kanca kopar. *(17 Kasım 2026)* |
+| M3 | Hareket eden node'dan tek kancayı bırakınca node'un hızı × `MovingNodeLaunchMultiplier` (1) oyuncuya geçer. *(17 Kasım 2026)* |
+| M4 | Çift kancada oyuncu iki node'un ortalama kaymasıyla taşınır; iki tetik birden bırakılınca ortalama node hızı geçer. Biri sabit biri hareketli node'da hız sonlu kalır. *(17 Kasım 2026)* |
+| M5 | Hareket eden node'dan slingshot çıkışında node hızı geçer. *(17 Kasım 2026)* |
+
 ## Düzeltilen sapmalar
 
 - **S1 ve S2, 20° ve üstü eğimler (5 Kasım 2026):** Tek kanca çarpışmayı 0.5 yarıçaplı daireyle arıyordu. Oyuncunun 1x1 kutusunun köşesi yüzeye önce değiyor, daire yüzeye ulaşamıyor ve karakter sallanmada takılı kalıyordu; 50° ve 60°'de kanca da kopmuyordu. Artık arama oyuncunun kendi kutusuyla yapılıyor. Çift kanca hâlâ 0.4 yarıçaplı daire kullanıyor ve eğimde test edilmedi.
 
 ## Testler
 
-`Assets/Tests/PlayMode/`: `DashRulesTests`, `SwingRulesTests`, `SlingshotRulesTests`, `WallRulesTests`, `ToleranceRulesTests`, `AirEntryRulesTests`. D3, `Assets/Tests/EditMode/PlayerStartStateTests` içinde. Süre bantları (W1'in ~6 sn'si) `PlayerStatsSanityTests`'te. Testler gerçek `NewScene`'i yükler, oyuncuyu odalardan uzak bir alana taşır ve girdiyi taklit eder; oyun hissini ölçmezler.
+`Assets/Tests/PlayMode/`: `DashRulesTests`, `SwingRulesTests`, `SlingshotRulesTests`, `WallRulesTests`, `ToleranceRulesTests`, `AirEntryRulesTests`, `MovingNodeRulesTests`. D3, `Assets/Tests/EditMode/PlayerStartStateTests` içinde. Süre bantları (W1'in ~6 sn'si) `PlayerStatsSanityTests`'te. Testler gerçek `NewScene`'i yükler, oyuncuyu odalardan uzak bir alana taşır ve girdiyi taklit eder; oyun hissini ölçmezler.
 
 ## Henüz kural olmayanlar
 

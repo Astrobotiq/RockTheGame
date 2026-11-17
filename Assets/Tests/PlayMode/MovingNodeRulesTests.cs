@@ -261,16 +261,9 @@ namespace RockTheGame.Tests.PlayMode
             Assert.Greater(Player.Velocity.x, 8f, "Birakista sahte node hizi aktarilmali");
         }
 
-        [UnityTest]
-        public IEnumerator T1_LandingMarker_DropsAfterSlingshotLanding()
+        /// <summary>Isaretci odasinda NodeStart'taki node'dan slingshot yapip yere iner; inis x'ini dondurur.</summary>
+        private IEnumerator SlingshotAndLand(System.Action<float> landedX)
         {
-            var room = new GameObject("MarkerRoom");
-            Track(room);
-            room.AddComponent<New_Scripts.Player.Nodes.SlingshotLandingMarkers>();
-            GameObject node = SpawnNode(NodeStart);
-            node.transform.SetParent(room.transform, true);
-            SpawnFloor(Origin.y - 0.5f);
-
             EnterAir(Vector2.zero, AirEntry.Fall());
             Vector2 aim = (NodeStart - Player.PlayerRigidbody.position).normalized;
             Input.LeftStick = Input.RightStick = aim;
@@ -279,13 +272,58 @@ namespace RockTheGame.Tests.PlayMode
             Input.IsRightTriggerHeld = true;
             yield return WaitForState<SlingshotState>();
             yield return WaitWhileState<SlingshotState>();
-            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = false;
+            Input.Clear();
             yield return WaitForGround();
+            landedX(Player.PlayerRigidbody.position.x);
+            yield return new WaitForFixedUpdate();
             yield return null;
+        }
 
-            var marker = room.transform.Find("Landing Node");
-            Assert.IsNotNull(marker, "Inis isaretcisi olusmali");
-            Assert.IsNotNull(marker.GetComponent<LineRenderer>(), "Isaretcinin diregi olmali");
+        private New_Scripts.Player.Nodes.SlingshotLandingMarkers SpawnMarkerRoom(out GameObject node)
+        {
+            var room = new GameObject("MarkerRoom");
+            Track(room);
+            var markers = room.AddComponent<New_Scripts.Player.Nodes.SlingshotLandingMarkers>();
+            node = SpawnNode(NodeStart);
+            node.transform.SetParent(room.transform, true);
+            SpawnFloor(Origin.y - 0.5f);
+            return markers;
+        }
+
+        [UnityTest]
+        public IEnumerator T1_LandingMarker_DropsRealAndGhostLandings()
+        {
+            var markers = SpawnMarkerRoom(out _);
+            yield return SlingshotAndLand(_ => { });
+
+            var group = markers.transform.Find("Throw Node");
+            Assert.IsNotNull(group, "Atis isaretcisi olusmali");
+            foreach (string name in new[] { "Landing Real", "Landing Ghost +X", "Landing Ghost -X" })
+                Assert.IsNotNull(group.Find(name)?.GetComponent<LineRenderer>(), $"{name} diregi olmali");
+            Assert.Greater(markers.LastGhostOffset, 1f, "Hayalet inis gercek inisten ayrismali");
+        }
+
+        [UnityTest]
+        public IEnumerator T2_GhostLanding_MatchesSimulatedNodeLanding()
+        {
+            // Normal node'dan atis: +X hayaletin yeri tahmin edilir.
+            var markers = SpawnMarkerRoom(out GameObject node);
+            float normalX = 0f;
+            yield return SlingshotAndLand(x => normalX = x);
+            float predictedX = normalX + markers.LastGhostOffset;
+
+            // Ayni node bu kez birakista +10 hareket ediyormus gibi: gercek inis tahminle ortusmeli.
+            yield return WaitForHitStopEnd();
+            yield return ResetPlayerAt(Origin);
+            yield return WaitFixedSteps(25);
+            var simulated = node.AddComponent<New_Scripts.Player.Nodes.SimulatedNodeVelocity>();
+            SetField(simulated, "velocity", new Vector2(10f, 0f));
+            float simulatedX = 0f;
+            yield return SlingshotAndLand(x => simulatedX = x);
+
+            TestContext.WriteLine($"T2 normal {normalX - Origin.x:0.000}, tahmin +X {predictedX - Origin.x:0.000}, gercek +X {simulatedX - Origin.x:0.000}");
+            Assert.AreEqual(predictedX, simulatedX, 0.25f,
+                $"Hayalet +X inisi gercek +X inisiyle ortusmeli (normal {normalX - Origin.x:0.00}, ofset {markers.LastGhostOffset:0.00})");
         }
 
         /// <summary>Sol kolla sol node'a, sonra sag kolla sag node'a tutunur.</summary>

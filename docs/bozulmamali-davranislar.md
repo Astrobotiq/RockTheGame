@@ -69,10 +69,13 @@ Yerçekimi çarpanları `PlayerStats.asset`'ten okunur; korunan şey hangi giri�
 | ID | Kural |
 |---|---|
 | M1 | Kanca anchor'ı tutunulan node'u her fizik adımında izler (bir adım geriden). Node pasifleşirse anchor son konumda kalır, kanca kopmaz. Respawn node bağlantısını siler; ham nokta atanan anchor sabittir. *(17 Kasım 2026)* |
-| M2 | Tek kancada oyuncu node'la birlikte taşınır; sarkaç node'a göre çalışır. Node oyuncuyu dik bir yüzeye götürürse S2 geçerli: kanca kopar. *(17 Kasım 2026)* |
-| M3 | Hareket eden node'dan tek kancayı bırakınca node'un hızı × `MovingNodeLaunchMultiplier` (1) oyuncuya geçer. *(17 Kasım 2026)* |
-| M4 | Çift kancada oyuncu iki node'un ortalama kaymasıyla taşınır; iki tetik birden bırakılınca ortalama node hızı geçer. Biri sabit biri hareketli node'da hız sonlu kalır. *(17 Kasım 2026)* |
+| M2 | Tek kancada oyuncu node'la birlikte ilerler ve ip boyu korunur. Node oyuncuyu dik bir yüzeye götürürse S2 geçerli: kanca kopar. *(17 Kasım 2026; atalet sonrası "node'un altında kalır"dan değişti)* |
+| M3 | Hareket eden node'dan tek kancayı bırakınca node'un hızı × `MovingNodeLaunchMultiplier` (1), oyuncunun o anki salınım hızının üstüne eklenir. *(17 Kasım 2026)* |
+| M4 | Çift kancada oyuncu node'larla birlikte ilerler; iki tetik birden bırakılınca dünyaya göre hız korunur (ortalama node hızı aktarılır). Biri sabit biri hareketli node'da hız sonlu kalır. *(17 Kasım 2026)* |
 | M5 | Hareket eden node'dan slingshot çıkışında node hızı geçer. *(17 Kasım 2026)* |
+| M6 | Node'un ivmesi salınıma geçer: duran node kalkınca oyuncu (tek ya da çift kancada) geride kalıp sallanır. *(17 Kasım 2026)* |
+| M7 | Hareket eden node'u yakalayan oyuncu node'un hızını anında almaz; dünyaya göre hızı korunur, ip onu çeker. *(17 Kasım 2026)* |
+| M1e | İp hareketli node'a ulaşır; fırlatma animasyonu yalnızca yeni tutunuşta baştan başlar. *(17 Kasım 2026)* |
 
 ## Düzeltilen sapmalar
 

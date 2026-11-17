@@ -230,8 +230,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5088978822609424542}
   - component: {fileID: 948770276022213447}
-  - component: {fileID: 3503414472146226251}
   - component: {fileID: 5864669692667661707}
+  - component: {fileID: 1755512225739014571}
   m_Layer: 0
   m_Name: Node-Moving
   m_TagString: Untagged
@@ -282,22 +282,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &3503414472146226251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5575987390859168635}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 775b333a2d554b2cab698804dd88b0f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Platform.LinearPingPongStrategy
-  startPoint: {x: 0, y: 0}
-  endPoint: {x: 6, y: 0}
-  period: 4
-  phaseOffset: 0
 --- !u!114 &5864669692667661707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -310,4 +294,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ae177d3750347eeaa379c620e2da199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Platform.PlatformController
-  movementStrategy: {fileID: 3503414472146226251}
+  movementStrategy: {fileID: 1755512225739014571}
+--- !u!114 &1755512225739014571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5575987390859168635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8528394df5b93914398fb73300f1ad69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Platform.SinePingPongStrategy
+  startPoint: {x: 0, y: 0}
+  endPoint: {x: 6, y: 0}
+  period: 4
+  phaseOffset: 0

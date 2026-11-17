@@ -89,6 +89,16 @@ Yeni bir EditMode testi yok. Saf mantık yalnızca toplama işlemi.
 - `docs/systems/platforms.md`: "Ayrılırken hız aktarımı" maddesine kanca bırakışı eklenir.
 - `docs/bozulmamali-davranislar.md`: yeni kurallar.
 
+## Ek: atalet (17 Kasım 2026, playtest sonrası)
+
+Gamepad turunda "node hareketi swing'e hiç etki etmiyor" geri bildirimi geldi. Sebep §2'deki saf öteleme: node çerçevesinde sarkaç, node'un ivmesini hiç görmüyordu. Üç açıdan (fizik, oyun referansları, kod) fikir toplandı; kullanıcı "atalet + yumuşak hareket" paketini seçti:
+
+- Yumuşatılmış node hızının değişimi × `MovingNodeInertia` (0.6) node'a göre hızdan çıkarılır (tek + çift kanca), değişim `MovingNodeMaxPivotAccel` (60) ile sınırlı.
+- Kanca durumları birbirine dünya hızı devreder; yakalama anında dünya hızı korunur (`AttachAnchor` node hızını anında alır).
+- `SinePingPongStrategy`: ivmesi sürekli gidip gelme, `Node-Moving` prefab'ının varsayılanı.
+- M2/M3/M4 ataletle uyumlu yeniden tanımlandı; M6, M6b, M7 eklendi.
+- Ertelenenler: titreşim/ip gerginliği/kamera öne bakışı (yalnızca sunum), hop sırasında taşıma, bırakışta hizalama bonusu.
+
 ## Kısıtlar
 
 - Unity 6000.3.10f1. Sahne işleri yalnızca `unity command eval` ile yapılır, `.unity` dosyası elle düzenlenmez.

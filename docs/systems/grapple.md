@@ -99,6 +99,7 @@ Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar S
 - **Sprite yönü:** motor çalışırken spinden gelir (CCW sağ, CW sol); stick ve hız dalı atlanır (`PlayerController.SpiralFacingSign`).
 - **Ses / titreşim:** tutununca döngü sesi (`spiralLoopCue`, sabit perde) ve `SpiralOrbit` sürekli titreşim; tersine tutunmada ve çevrilmede tek seferlik. Cue'lar şimdilik boş. Döngü sesinin durması için sahnedeki `PlayerAudioController.sfxStopChannel` atanmalı.
 - **Görsel:** `UI/SpiralNode` shader'ı (halftone kuyruklu kollar, dış halkada yön dişleri). Açı script'ten sürülür, hit-stop ve pause'da durur. Bağlı değilken `targetSpeed / idleReferenceRadius` (3) rad/sn döner.
+- **Test odası:** `RoomNew-SpiralTest` (roomId 97, NewScene'de x −480, slingshot test odasının yanında): kaldırıcı, duvar kopması, fırlatıcı, zıt yönlü zincir, tersine tutunma, ters dönen spiral. Hepsi yerden tutunulur (zeminden 8 birim). Oraya başlamak için `LevelBootstrapper.startingRoom`.
 - **Level tasarımı:** dönüş diski ip boyu kadar yarıçaplıdır; tutunulabilecek en uzak mesafe `NodeDetector.detectionRadius` (NewScene'de 10, varsayılan 15) olduğundan yaklaşık 10.5 birimlik (varsayılanla 15.5) bir daire boş kalmalı, ya da duvarın kancayı koparması bilinçli olmalı.
 
 ## Tunable'lar (`PlayerStats.asset`)

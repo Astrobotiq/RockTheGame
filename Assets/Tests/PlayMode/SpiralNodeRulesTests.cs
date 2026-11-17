@@ -216,5 +216,104 @@ namespace RockTheGame.Tests.PlayMode
             }
             Assert.AreEqual(Player.Stats.JumpEndEarlyGravityMultiplier, multiplier, 0.01f, "spiral birakisi H2 gibi kesik yukselmeli");
         }
+
+        // ---- SP4 ----
+
+        [UnityTest]
+        public IEnumerator SP4_SpiralPushesIntoWall_BreaksGrapple([Values(1f, 2f, 3f, 4.2f)] float wallOffset, [Values(4f, 7f)] float rope)
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, rope), SpinDirection.CounterClockwise);
+            // CCW oyuncuyu saga goturur; duvar donus dairesinin icinde.
+            SpawnWall(spiral.transform.position.x + wallOffset);
+            yield return GrabFromRestBelow(spiral, rope);
+
+            int steps = 0;
+            while (Player.CurrentState is SwingingState && steps < 75)
+            {
+                yield return new WaitForFixedUpdate();
+                steps++;
+            }
+            Assert.IsFalse(Player.CurrentState is SwingingState,
+                $"1.5 sn icinde kanca kopmadi, oyuncu duvarda takili; konum {Player.PlayerRigidbody.position - Origin}");
+            Assert.IsNull(Player.RightAnchor, "kopunca anchor silinmeli");
+
+            Input.IsRightTriggerHeld = false;
+            for (int i = 0; i < 25; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                Assert.IsNotInstanceOf<SwingingState>(Player.CurrentState, "kopunca tekrar spirale donmemeli");
+            }
+        }
+
+        // ---- SP6 ----
+
+        [UnityTest]
+        public IEnumerator SP6_DualSwing_MotorOff()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            yield return GrabFromRestBelow(spiral);
+            Assert.IsTrue(spiral.IsConnected, "tek kancada spiral bagli olmali");
+
+            Vector2 other = (Vector2)spiral.transform.position + new Vector2(-4f, 0f);
+            SpawnNode(other);
+            Input.LeftStick = (other - Player.PlayerRigidbody.position).normalized;
+            Input.IsLeftTriggerHeld = true;
+            yield return WaitForState<DualSwingingState>();
+
+            Assert.IsFalse(spiral.IsConnected, "cift kancada motor calismamali");
+        }
+
+        [UnityTest]
+        public IEnumerator SP6b_SameSpiralBothArms_IsNormalSlingshot()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            yield return GrabFromRestBelow(spiral);
+            Assert.IsTrue(Player.CanSlingshot, "slingshot hakki dolu olmali");
+
+            Input.LeftStick = ((Vector2)spiral.transform.position - Player.PlayerRigidbody.position).normalized;
+            Input.IsLeftTriggerHeld = true;
+            yield return WaitForState<SlingshotState>();
+            Assert.IsFalse(spiral.IsConnected);
+        }
+
+        // ---- Dikkat edilecekler ----
+
+        [UnityTest]
+        public IEnumerator SP_NoFullRotationOnSpiral()
+        {
+            GameObject node = SpawnNode(Origin + new Vector2(0f, Rope));
+            node.SetActive(false);
+            var trigger = node.AddComponent<New_Scripts.Player.Nodes.Rotation.RotationEventTrigger>();
+            trigger.OnRotationCompleted = new UnityEngine.Events.UnityEvent();
+            int completions = 0;
+            trigger.OnRotationCompleted.AddListener(() => completions++);
+            var rotation = node.AddComponent<New_Scripts.Player.Nodes.Rotation.FullRotationNode>();
+            SetField(rotation, "rotationEffectComponent", trigger);
+            var spiral = node.AddComponent<SpiralNode>();
+            node.SetActive(true);
+            yield return null;
+
+            yield return GrabFromRestBelow(spiral);
+            float angle = 0f;
+            yield return MeasureRotation(node.transform.position, 300, a => angle = a);
+
+            Assert.GreaterOrEqual(angle, 360f, "test kurulumu: spiral en az bir tur dondurmeli");
+            Assert.AreEqual(0, completions, "spiral varken donen node efekti tetiklenmemeli");
+        }
+
+        [UnityTest]
+        public IEnumerator SP_NodeDeactivated_NoException()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            yield return GrabFromRestBelow(spiral);
+            yield return WaitFixedSteps(10);
+
+            spiral.gameObject.SetActive(false);
+            for (int i = 0; i < 50; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                Assert.IsInstanceOf<SwingingState>(Player.CurrentState, $"adim {i}: node pasiflesince kanca kopmamali (M1)");
+            }
+        }
     }
 }

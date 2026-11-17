@@ -37,6 +37,13 @@ namespace New_Scripts.Player.States
         // --- Spiral node (docs/spiral-node-tasarimi.md) ---
         private SpiralNode _spiral;
 
+        // Takılma kontrolü: önceki adımın konumu, teğeti ve komut verilen teğet hızı
+        private bool _hasSpiralSample;
+        private Vector2 _spiralSamplePos;
+        private Vector2 _spiralSampleTangent;
+        private float _spiralSampleCommand;
+        private int _spiralBlockedCount;
+
         public SwingingState(PlayerController context, ActiveArm swingingArm, bool wasGrounded = false)
         {
             _context = context;
@@ -119,6 +126,25 @@ namespace New_Scripts.Player.States
 
             _spiral.Connect(_context);
             return true;
+        }
+
+        /// <summary>
+        /// Spiral oyuncuyu bir yüzeye bastırıyorsa (tutunma çarpışması teğet hareketi sessizce durdurur) art arda
+        /// SpiralBlockedSteps adım komutun SpiralBlockedRatio'su bile gerçekleşmez; o zaman kanca kopar (SP4).
+        /// </summary>
+        private bool IsSpiralBlocked()
+        {
+            if (!_hasSpiralSample) return false;
+
+            Vector2 moved = _context.PlayerRigidbody.position - _spiralSamplePos - _context.AnchorDelta(_swingingArm);
+            float actual = Vector2.Dot(moved, _spiralSampleTangent) / Time.fixedDeltaTime;
+
+            if (SpiralDriveMath.IsBlocked(_spiralSampleCommand, actual, _stats.SpiralBlockedRatio))
+                _spiralBlockedCount++;
+            else
+                _spiralBlockedCount = 0;
+
+            return _spiralBlockedCount >= _stats.SpiralBlockedSteps;
         }
 
         /// <summary>
@@ -230,10 +256,19 @@ namespace New_Scripts.Player.States
             // yakalayınca ip oyuncuyu çeker.
             _pivotVelocity = _context.AnchorVelocity(_swingingArm);
             _currentVelocity = _context.Velocity - _pivotVelocity;
+            // Hop'tan ilk pendulum adımına geçişte takılma ölçülmez.
+            _hasSpiralSample = false;
+            _spiralBlockedCount = 0;
         }
 
         private void ApplyArcadePendulum()
         {
+            if (_spiral != null && IsSpiralBlocked())
+            {
+                BreakGrapple();
+                return;
+            }
+
             float playerInputX = _swingingArm == ActiveArm.Left
                 ? _context.Input.LeftStick.x
                 : _context.Input.RightStick.x;
@@ -256,6 +291,10 @@ namespace New_Scripts.Player.States
             {
                 // Spiral pompalamanın ve MaxSwingSpeed sınırının yerine geçer.
                 speedAlongTangent = DriveSpiral(speedAlongTangent, tangent);
+                _hasSpiralSample = true;
+                _spiralSamplePos = playerPos;
+                _spiralSampleTangent = tangent;
+                _spiralSampleCommand = speedAlongTangent;
             }
             else
             {

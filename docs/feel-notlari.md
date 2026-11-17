@@ -23,6 +23,7 @@ Hissi hiçbir test ölçmez; yalnızca gamepad'le oynayan kişi değerlendirebil
 | 2026-11-17 | `SwingForceMultiplier` / `MaxSwingSpeed` / `SwingHopForwardSpeed` | 20 / 25 / 8 → 28 / 28 / 10 | Daha hızlı pompalama; 45° bırakış ~%45 daha uzağa gider, dik bırakış 3.0 → 4.1. Koşarken kancaya geçişte hız düşmez. Risk: bazı swing odaları atlanabilir | *denenmedi* |
 | 2026-11-17 | `DualSpringStiffness` / `DualSpringDamping` / `DualSwingForceMultiplier` | 25 / 5 / 15 → 40 / 5.5 / 20 | Çift kanca daha gergin ve canlı (sarkma 1.0 → 0.63, yay periyodu 1.26 → 0.99 sn) | *denenmedi* |
 | 2026-11-17 | `SlingshotAnticipationDuration` / `Speed` | 0.1 / 10 → 0.08 / 12 | Gerilme daha kısa, geri çekilme mesafesi aynı (~1) | *denenmedi* |
+| 2026-11-17 | `SpiralNode.targetSpeed` (kod varsayılanı + `Node-Spiral`, `Node-SpiralReversing`) | 18 → 32 | Geliştirici: spiral normal node'dan daha hızlı atmalı. Normal tek kanca pompalama sınırı 28; spiral nötrde 32, stick spin yönünde 45, tersinde 19. Durgundan hedefe ~0.5 sn+ (ivme 60). 4 birimlik ipte tur ~0.8 sn | *denenmedi* |
 
 ## Notlar
 

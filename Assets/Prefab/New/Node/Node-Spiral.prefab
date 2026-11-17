@@ -143,7 +143,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Player.Nodes.Spiral.SpiralNode
   direction: 1
-  targetSpeed: 18
+  targetSpeed: 32
   reverseEveryDegrees: 0
   idleReferenceRadius: 3
   visual: {fileID: 3033427866151602985}

@@ -23,7 +23,7 @@ namespace New_Scripts.Player.Nodes.Spiral
         [SerializeField] private SpinDirection direction = SpinDirection.CounterClockwise;
 
         [Tooltip("Oyuncuyu döndürdüğü teğet hız (birim/sn).")]
-        [SerializeField] private float targetSpeed = 18f;
+        [SerializeField] private float targetSpeed = 32f;
 
         [Tooltip("0 = normal spiral (hiç yön değiştirmez). > 0 = ters dönen spiral: tutunurken bu kadar derece dönünce yön değiştirir.")]
         [SerializeField] private float reverseEveryDegrees = 0f;

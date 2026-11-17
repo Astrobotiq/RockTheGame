@@ -90,7 +90,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar SP1–SP7.
 
 - **Kontroller:** normal tek kanca gibi tutunulur. Stick spinin teğeti yönünde iterse hızlanır, tersine iterse yavaşlar (±`SpiralInputInfluence`, 0.4), ama dönüşü asla durdurmaz ya da çevirmez. Bırakış normal tek kanca bırakışıdır (H2: yükselirken 3×).
-- **Motor:** yalnızca tek kancada, hop bittikten sonra. Her adımda yerçekimi aynen eklenir, sonra `SwingingState` pompalama ve `MaxSwingSpeed` sınırı yerine node'a göre teğet hızı hedefe (`targetSpeed`, 18, × stick × `ActiveSpeedMultiplier`) yaklaştırır: spin yönünde altındaysa `SpiralDriveAccel` (60), tersine gidiyorsa `SpiralOpposeAccel` (45), üstündeyse fazla hız korunur (`SpiralOverspeedDecay` 0). İki ivme de |`Gravity`| (32) üstünde olduğu için spiral her ip boyunda tam tur attırır (`PlayerStatsSanityTests` korur). İp boyu tutunma anındaki mesafedir.
+- **Motor:** yalnızca tek kancada, hop bittikten sonra. Her adımda yerçekimi aynen eklenir, sonra `SwingingState` pompalama ve `MaxSwingSpeed` sınırı yerine node'a göre teğet hızı hedefe (`targetSpeed`, 32, × stick × `ActiveSpeedMultiplier`) yaklaştırır: spin yönünde altındaysa `SpiralDriveAccel` (60), tersine gidiyorsa `SpiralOpposeAccel` (45), üstündeyse fazla hız korunur (`SpiralOverspeedDecay` 0). İki ivme de |`Gravity`| (32) üstünde olduğu için spiral her ip boyunda tam tur attırır (`PlayerStatsSanityTests` korur). İp boyu tutunma anındaki mesafedir.
 - **Tersine tutunma:** oyuncu yavaşlar, durur ve spiral yönüne döner (−25 b/sn'den ~0.6 sn). Anlık değildir.
 - **Takılma:** tutunma çarpışması yalnızca radyal düzeltmeyi tarar; spiral oyuncuyu bir duvara bastırınca teğet hareket sessizce durur. Bu yüzden spiralde her adım gerçekleşen teğet hız komutla karşılaştırılır; art arda `SpiralBlockedSteps` (3) adım `SpiralBlockedRatio` (0.25) altında kalırsa kanca kopar (SP4).
 - **Çift kanca / slingshot:** motor çalışmaz. Spiral + normal node normal çift kancadır, aynı spirale iki kol normal slingshot'tır. Kol spiralde kalırsa görsel soluklaşır.
@@ -131,7 +131,7 @@ Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar S
 | `SpiralOverspeedDecay` | 0 | hedefin üstündeyken yavaşlama; 0 = fazla hız korunur |
 | `SpiralBlockedRatio` / `SpiralBlockedSteps` | 0.25 / 3 | takılınca kopma |
 
-`SpiralNode` alanları: `direction`, `targetSpeed` (18), `reverseEveryDegrees` (0; ters dönen prefab'da 360), `idleReferenceRadius` (3), `visual`.
+`SpiralNode` alanları: `direction`, `targetSpeed` (32), `reverseEveryDegrees` (0; ters dönen prefab'da 360), `idleReferenceRadius` (3), `visual`.
 
 Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 

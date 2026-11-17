@@ -174,9 +174,9 @@ namespace New_Scripts.Player.States
         {
             if (_context.Input.IsRightTriggerHeld && !_context.RightAnchor.HasValue)
             {
-                if (_context.TryCastGrapple(_context.Input.RightStick, out Vector2 hitPoint))
+                if (_context.TryCastGrapple(_context.Input.RightStick, out Vector2 hitPoint, out Transform node))
                 {
-                    _context.RightAnchor = hitPoint;
+                    _context.AttachAnchor(ActiveArm.Right, hitPoint, node);
                     _context.TransitionToState(new SwingingState(_context, ActiveArm.Right, wasGrounded: true));
                 }
             }
@@ -457,16 +457,9 @@ namespace New_Scripts.Player.States
 
         private void AttemptGrappleTransition(Vector2 direction, ActiveArm arm)
         {
-            if (_context.TryCastGrapple(direction, out Vector2 hitPoint))
+            if (_context.TryCastGrapple(direction, out Vector2 hitPoint, out Transform node))
             {
-                if (arm == ActiveArm.Left)
-                {
-                    _context.LeftAnchor = hitPoint;
-                }
-                else
-                {
-                    _context.RightAnchor = hitPoint;
-                }
+                _context.AttachAnchor(arm, hitPoint, node);
 
                 EvaluateFinalGrappleState();
             }

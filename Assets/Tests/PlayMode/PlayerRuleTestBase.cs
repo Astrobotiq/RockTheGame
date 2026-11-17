@@ -152,6 +152,18 @@ namespace RockTheGame.Tests.PlayMode
             yield return null;
         }
 
+        /// <summary>Hareketli node: her fizik adımından sonra node'u <paramref name="step"/> kadar kaydırır.</summary>
+        protected IEnumerator MoveEachFixedStep(GameObject node, Vector2 step, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                node.transform.position += (Vector3)step;
+                Physics2D.SyncTransforms();
+            }
+            yield return null;
+        }
+
         protected IEnumerator PressDash()
         {
             Input.IsDashPressed = true;

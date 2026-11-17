@@ -34,9 +34,16 @@ namespace New_Scripts.Player
 
         public bool TryFindBestNode(Vector2 aimDirection, Vector2 origin, out Vector2 bestNodePosition)
         {
+            return TryFindBestNode(aimDirection, origin, out bestNodePosition, out _);
+        }
+
+        /// <summary>En iyi node'un konumu ve Transform'u (hareketli node'u izlemek için).</summary>
+        public bool TryFindBestNode(Vector2 aimDirection, Vector2 origin, out Vector2 bestNodePosition, out Transform bestNode)
+        {
             detectionProfilerMarker.Begin();
             
             bestNodePosition = Vector2.zero;
+            bestNode = null;
             
             if (aimDirection.sqrMagnitude < 0.01f)
             {
@@ -66,6 +73,7 @@ namespace New_Scripts.Player
                     {
                         highestDot = dotProduct;
                         bestNodePosition = nodePos;
+                        bestNode = colliders[i].transform;
                         nodeFound = true;
                     }
                 }

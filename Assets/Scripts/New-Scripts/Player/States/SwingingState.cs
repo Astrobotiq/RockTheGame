@@ -267,10 +267,9 @@ namespace New_Scripts.Player.States
 
             Vector2 aimStick = _swingingArm == ActiveArm.Left ? _context.Input.RightStick : _context.Input.LeftStick;
 
-            if (_context.TryCastGrapple(aimStick, out Vector2 hitPoint))
+            if (_context.TryCastGrapple(aimStick, out Vector2 hitPoint, out Transform node))
             {
-                if (_swingingArm == ActiveArm.Left) _context.RightAnchor = hitPoint;
-                else _context.LeftAnchor = hitPoint;
+                _context.AttachAnchor(_swingingArm == ActiveArm.Left ? ActiveArm.Right : ActiveArm.Left, hitPoint, node);
 
                 EvaluateDualGrappleTransition();
             }

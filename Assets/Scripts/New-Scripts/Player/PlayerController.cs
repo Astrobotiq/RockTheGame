@@ -96,8 +96,26 @@ namespace New_Scripts.Player
         public bool IsInNormalGround => CurrentState is NormalState { IsOnGround: true };
         /// <summary>Normal hareket durumunda ve havada (kanca, duvar, dash değil).</summary>
         public bool IsInNormalAir => CurrentState is NormalState { IsOnGround: false };
-        public Vector2? LeftAnchor { get; set; }
-        public Vector2? RightAnchor { get; set; }
+        /// <summary>Ham nokta atamak sabit anchor demektir: o kolun izlenen node'u silinir.
+        /// Hareketli node'a tutunmak için <see cref="AttachAnchor"/> (docs/hareketli-node-tasarimi.md).</summary>
+        public Vector2? LeftAnchor
+        {
+            get => _leftAnchor;
+            set { _leftAnchor = value; LeftAnchorNode = null; _leftAnchorDelta = Vector2.zero; }
+        }
+        public Vector2? RightAnchor
+        {
+            get => _rightAnchor;
+            set { _rightAnchor = value; RightAnchorNode = null; _rightAnchorDelta = Vector2.zero; }
+        }
+        /// <summary>Anchor'ın izlediği node; sabit anchor'da null.</summary>
+        public Transform LeftAnchorNode { get; private set; }
+        public Transform RightAnchorNode { get; private set; }
+
+        private Vector2? _leftAnchor;
+        private Vector2? _rightAnchor;
+        private Vector2 _leftAnchorDelta;
+        private Vector2 _rightAnchorDelta;
 
         public bool HasDashCharge { get; private set; } = true;
         public bool CanSlingshot { get; private set; } = true;
@@ -161,7 +179,8 @@ namespace New_Scripts.Player
         private void FixedUpdate()
         {
             if (_isPaused) return;
-    
+
+            RefreshMovingAnchors();
             CurrentState?.FixedUpdateState();
 
             // 2. FSM'in hesapladığı teorik hızı bir delta mesafeye çevirip handler'a veriyoruz.
@@ -184,7 +203,49 @@ namespace New_Scripts.Player
 
         public bool TryCastGrapple(Vector2 direction, out Vector2 hitPoint)
         {
-            return nodeDetector.TryFindBestNode(direction, PlayerRigidbody.position, out hitPoint);
+            return TryCastGrapple(direction, out hitPoint, out _);
+        }
+
+        public bool TryCastGrapple(Vector2 direction, out Vector2 hitPoint, out Transform node)
+        {
+            return nodeDetector.TryFindBestNode(direction, PlayerRigidbody.position, out hitPoint, out node);
+        }
+
+        /// <summary>Kolu bir node'a bağlar: anchor her fizik adımında node'un konumunu izler.</summary>
+        public void AttachAnchor(ActiveArm arm, Vector2 point, Transform node)
+        {
+            if (arm == ActiveArm.Left)
+            {
+                LeftAnchor = point;
+                LeftAnchorNode = node;
+            }
+            else
+            {
+                RightAnchor = point;
+                RightAnchorNode = node;
+            }
+        }
+
+        /// <summary>Kolun node'unun bu fizik adımındaki kayması; sabit anchor'da sıfır.</summary>
+        public Vector2 AnchorDelta(ActiveArm arm) => arm == ActiveArm.Left ? _leftAnchorDelta : _rightAnchorDelta;
+
+        /// <summary>Kolun node'unun bu fizik adımındaki hızı (<c>AnchorDelta / fixedDeltaTime</c>).</summary>
+        public Vector2 AnchorVelocity(ActiveArm arm) => AnchorDelta(arm) / Time.fixedDeltaTime;
+
+        /// <summary>Durumdan önce: izlenen node'lar kaydıysa anchor'ı yeniler. Pasif ya da yok olmuş node'da anchor son konumda kalır.</summary>
+        private void RefreshMovingAnchors()
+        {
+            _leftAnchorDelta = FollowNode(LeftAnchorNode, ref _leftAnchor);
+            _rightAnchorDelta = FollowNode(RightAnchorNode, ref _rightAnchor);
+        }
+
+        private static Vector2 FollowNode(Transform node, ref Vector2? anchor)
+        {
+            if (node == null || !anchor.HasValue || !node.gameObject.activeInHierarchy) return Vector2.zero;
+            Vector2 current = node.position;
+            Vector2 delta = current - anchor.Value;
+            anchor = current;
+            return delta;
         }
 
         public bool CheckNodeCoincidence()

@@ -163,9 +163,9 @@ namespace New_Scripts.Player.States
             // Sol Kanca Atisi
             if (context.Input.IsLeftTriggerHeld && !context.LeftAnchor.HasValue)
             {
-                if (context.TryCastGrapple(context.Input.LeftStick, out Vector2 hitPoint))
+                if (context.TryCastGrapple(context.Input.LeftStick, out Vector2 hitPoint, out Transform node))
                 {
-                    context.LeftAnchor = hitPoint;
+                    context.AttachAnchor(ActiveArm.Left, hitPoint, node);
                     transitionTriggered = true;
                 }
             }
@@ -173,9 +173,9 @@ namespace New_Scripts.Player.States
             // Sag Kanca Atisi
             if (context.Input.IsRightTriggerHeld && !context.RightAnchor.HasValue)
             {
-                if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint))
+                if (context.TryCastGrapple(context.Input.RightStick, out Vector2 hitPoint, out Transform node))
                 {
-                    context.RightAnchor = hitPoint;
+                    context.AttachAnchor(ActiveArm.Right, hitPoint, node);
                     transitionTriggered = true;
                 }
             }

@@ -214,15 +214,20 @@ namespace New_Scripts.Player
         /// <summary>Kolu bir node'a bağlar: anchor her fizik adımında node'un konumunu izler.</summary>
         public void AttachAnchor(ActiveArm arm, Vector2 point, Transform node)
         {
+            // Node'un o anki hızı: tutunma anında da AnchorVelocity geçerli olsun (dünya → node'a göre hız dönüşümü).
+            var surface = node != null ? node.GetComponentInParent<New_Scripts.Platform.IMovingSurface>() : null;
+            Vector2 delta = surface != null ? surface.DeltaPosition : Vector2.zero;
             if (arm == ActiveArm.Left)
             {
                 LeftAnchor = point;
                 LeftAnchorNode = node;
+                _leftAnchorDelta = delta;
             }
             else
             {
                 RightAnchor = point;
                 RightAnchorNode = node;
+                _rightAnchorDelta = delta;
             }
         }
 

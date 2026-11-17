@@ -178,9 +178,10 @@ namespace New_Scripts.Player.States
         private void InitializePendulum()
         {
             _ropeLength = Vector2.Distance(_context.PlayerRigidbody.position, _anchorPoint);
-            _currentVelocity = _context.Velocity;
-            // Sıfırdan başlar: hareket eden node'a tutununca ip oyuncuyu node'un hızına doğru çeker.
-            _pivotVelocity = Vector2.zero;
+            // Gelen hız dünyaya göre: tutunma anında korunur, node'a göre hız = dünya − node. Hareket eden node'u
+            // yakalayınca ip oyuncuyu çeker.
+            _pivotVelocity = _context.AnchorVelocity(_swingingArm);
+            _currentVelocity = _context.Velocity - _pivotVelocity;
         }
 
         private void ApplyArcadePendulum()
@@ -307,6 +308,8 @@ namespace New_Scripts.Player.States
 
         private void EvaluateDualGrappleTransition()
         {
+            // Sonraki durum dünyaya göre hız bekler (sallanırken Velocity node'a göre).
+            _context.Velocity = _currentVelocity + _context.AnchorVelocity(_swingingArm);
             if (_context.CanSlingshot && _context.CheckNodeCoincidence())
                 _context.TransitionToState(new SlingshotState(_context));
             else

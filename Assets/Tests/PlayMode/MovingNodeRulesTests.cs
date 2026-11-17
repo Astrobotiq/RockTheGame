@@ -105,6 +105,53 @@ namespace RockTheGame.Tests.PlayMode
                 "Node kalkinca oyuncu geride kalmali (node'un ivmesi salinima gecer)");
         }
 
+        /// <summary>Gercek hareketli node: PlatformController + LinearPingPongStrategy, child node. Spawn aninda baslangic noktasinda.</summary>
+        private GameObject SpawnPlatformNode(Vector2 start, Vector2 end, float period)
+        {
+            var root = new GameObject("MovingNodeRoot");
+            root.SetActive(false);
+            root.transform.position = start;
+            root.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+            var strategy = root.AddComponent<New_Scripts.Platform.LinearPingPongStrategy>();
+            SetField(strategy, "startPoint", start);
+            SetField(strategy, "endPoint", end);
+            SetField(strategy, "period", period);
+            SetField(strategy, "phaseOffset", -Time.time);
+            var controller = root.AddComponent<New_Scripts.Platform.PlatformController>();
+            SetField(controller, "movementStrategy", strategy);
+            GameObject node = SpawnNode(start);
+            node.transform.SetParent(root.transform, true);
+            root.SetActive(true);
+            Track(root);
+            return node;
+        }
+
+        private static void SetField(object target, string name, object value)
+        {
+            var f = target.GetType().GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(f, name);
+            f.SetValue(target, value);
+        }
+
+        [UnityTest]
+        public IEnumerator M7_GrabbingMovingNode_KeepsWorldVelocity()
+        {
+            // Node 10 b/sn ile saga gidiyor; oyuncu havada durgun. Tutununca oyuncu node'un hizini aninda almamali,
+            // ip onu cekmeli (yakalama aninda dunya hizi korunur).
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            GameObject node = SpawnPlatformNode(NodeStart + new Vector2(-1f, 0f), NodeStart + new Vector2(39f, 0f), 8f);
+            yield return WaitFixedSteps(3);
+
+            Input.RightStick = ((Vector2)node.transform.position - Player.PlayerRigidbody.position).normalized;
+            Input.IsRightTriggerHeld = true;
+            yield return WaitForState<SwingingState>();
+            float grabX = Player.PlayerRigidbody.position.x;
+            yield return WaitFixedSteps(3);
+
+            Assert.Less(Player.PlayerRigidbody.position.x - grabX, 0.3f,
+                "Hareketli node'u yakalayan oyuncu node'un hizini aninda almamali");
+        }
+
         [UnityTest]
         public IEnumerator M2b_CarriedIntoWall_BreaksTheHook()
         {
@@ -150,15 +197,9 @@ namespace RockTheGame.Tests.PlayMode
         [UnityTest]
         public IEnumerator M4_DualSwing_CarriedAndLaunched()
         {
-            // Simetrik ve durgun baslar: node'a gore yatay hiz 0 kalir, olcum salinim fazina bagli olmaz.
-            Vector2 leftPos = Origin + new Vector2(-1.5f, 3f), rightPos = Origin + new Vector2(1.5f, 3f);
-            GameObject left = SpawnNode(leftPos), right = SpawnNode(rightPos);
-            EnterAir(Vector2.zero, AirEntry.Fall());
-            Player.Velocity = Vector2.zero;
-            Player.AttachAnchor(ActiveArm.Left, leftPos, left.transform);
-            Player.AttachAnchor(ActiveArm.Right, rightPos, right.transform);
-            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = true;
-            Player.TransitionToState(new DualSwingingState(Player));
+            GameObject left = SpawnNode(Origin + new Vector2(-1.5f, 3f)), right = SpawnNode(Origin + new Vector2(1.5f, 3f));
+            StartDualSwing(left, right);
+            float startX = Player.PlayerRigidbody.position.x;
 
             Vector2 step = new Vector2(0.2f, 0f);
             for (int i = 0; i < 25; i++)
@@ -170,10 +211,12 @@ namespace RockTheGame.Tests.PlayMode
             }
             yield return WaitFixedSteps(1);
 
+            // Atalet oyuncuyu sallar (M6b), ama oyuncu node'larla birlikte ilerler.
             Assert.IsInstanceOf<DualSwingingState>(Player.CurrentState);
-            float meanX = (left.transform.position.x + right.transform.position.x) * 0.5f;
-            Assert.Less(Mathf.Abs(Player.PlayerRigidbody.position.x - meanX), 0.5f);
+            Assert.Greater(Player.PlayerRigidbody.position.x - startX, 2.5f, "Oyuncu node'larla birlikte ilerlemeli");
 
+            // Cift kancada Velocity dunyaya gore (yay hizi + node tasimasi): birakinca korunmali, node hizi kaybolmamali.
+            float worldVelocityX = Player.Velocity.x;
             Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = false;
             yield return new WaitForFixedUpdate();
             left.transform.position += (Vector3)step;
@@ -181,7 +224,39 @@ namespace RockTheGame.Tests.PlayMode
             yield return WaitForAir();
             yield return WaitFixedSteps(1);
 
-            Assert.Greater(Player.Velocity.x, 8f);
+            Assert.AreEqual(worldVelocityX, Player.Velocity.x, 2f, "Birakista dunya hizi korunmali (node hizi aktarilir)");
+        }
+
+        /// <summary>Iki node'a simetrik ve durgun cift kanca: node'a gore yatay hiz 0 baslar.</summary>
+        private void StartDualSwing(GameObject left, GameObject right)
+        {
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            Player.Velocity = Vector2.zero;
+            Player.AttachAnchor(ActiveArm.Left, left.transform.position, left.transform);
+            Player.AttachAnchor(ActiveArm.Right, right.transform.position, right.transform);
+            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = true;
+            Player.TransitionToState(new DualSwingingState(Player));
+        }
+
+        [UnityTest]
+        public IEnumerator M6b_DualSwing_NodesStartingToMove_PlayerLagsBehind()
+        {
+            GameObject left = SpawnNode(Origin + new Vector2(-1.5f, 3f)), right = SpawnNode(Origin + new Vector2(1.5f, 3f));
+            StartDualSwing(left, right);
+
+            Vector2 step = new Vector2(0.2f, 0f);
+            for (int i = 0; i < 12; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                left.transform.position += (Vector3)step;
+                right.transform.position += (Vector3)step;
+                Physics2D.SyncTransforms();
+            }
+            yield return WaitFixedSteps(1);
+
+            float meanX = (left.transform.position.x + right.transform.position.x) * 0.5f;
+            Assert.Less(Player.PlayerRigidbody.position.x - meanX, -0.3f,
+                "Node'lar kalkinca oyuncu geride kalmali (node'larin ivmesi yaylara gecer)");
         }
 
         [UnityTest]

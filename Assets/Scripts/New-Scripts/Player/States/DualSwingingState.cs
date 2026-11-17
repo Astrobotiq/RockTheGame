@@ -14,6 +14,8 @@ namespace New_Scripts.Player.States
         private float leftRopeLength;
         private float rightRopeLength;
         private Vector2 currentVelocity;
+        // Hareketli node ataleti: iki node'un ortalama hızı, sınırlı ivmeyle yumuşatılmış
+        private Vector2 pivotVelocity;
 
         public DualSwingingState(PlayerController context)
         {
@@ -31,7 +33,9 @@ namespace New_Scripts.Player.States
 
             leftRopeLength = Vector2.Distance(context.PlayerRigidbody.position, context.LeftAnchor.Value);
             rightRopeLength = Vector2.Distance(context.PlayerRigidbody.position, context.RightAnchor.Value);
-            currentVelocity = context.Velocity;
+            // Gelen hız dünyaya göre; yaylar node'lara göre çalışır.
+            pivotVelocity = MeanAnchorVelocity();
+            currentVelocity = context.Velocity - pivotVelocity;
             
             context.ResetDash();
 
@@ -97,6 +101,11 @@ namespace New_Scripts.Player.States
         {
             currentVelocity.y -= stats.SwingGravity * Time.fixedDeltaTime;
 
+            // Node'ların ivmesi ters yönde yaylara geçer (tek kancayla aynı kural).
+            Vector2 previousPivot = pivotVelocity;
+            pivotVelocity = Vector2.MoveTowards(pivotVelocity, MeanAnchorVelocity(), stats.MovingNodeMaxPivotAccel * Time.fixedDeltaTime);
+            currentVelocity -= (pivotVelocity - previousPivot) * stats.MovingNodeInertia;
+
             float playerInputX = (context.Input.LeftStick.x + context.Input.RightStick.x) * 0.5f;
             currentVelocity.x += playerInputX * stats.DualSwingForceMultiplier * Time.fixedDeltaTime;
 
@@ -134,6 +143,9 @@ namespace New_Scripts.Player.States
             // zaten uyguluyor. Burada da set edersek hareket her adimda iki kez uygulanir.
             context.Velocity = currentVelocity + carry / Time.fixedDeltaTime;
         }
+
+        private Vector2 MeanAnchorVelocity() =>
+            (context.AnchorVelocity(ActiveArm.Left) + context.AnchorVelocity(ActiveArm.Right)) * 0.5f;
 
         private Vector2 CalculateSpringForce(Vector2 anchor, float ropeLength)
         {

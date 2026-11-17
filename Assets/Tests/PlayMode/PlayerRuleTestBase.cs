@@ -272,6 +272,9 @@ namespace RockTheGame.Tests.PlayMode
             return go;
         }
 
+        /// <summary>Testin kendi kurdugu objeyi TearDown'da silinecekler listesine ekler.</summary>
+        protected void Track(GameObject go) => _spawned.Add(go);
+
         protected GameObject SpawnNode(Vector2 position)
         {
             var go = new GameObject("Node") { layer = GrappleLayer };

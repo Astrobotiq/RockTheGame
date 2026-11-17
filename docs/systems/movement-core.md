@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-16 (dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri; yer/hava tek durum `NormalState`).*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-17 (`AirOverspeedReduce` 20; dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri; yer/hava tek durum `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -53,7 +53,7 @@ Kural testleri: `AirEntryRulesTests` (H1–H4); fabrikaların parametreleri `Air
 
 Düşüş hızı `TerminalVelocity` ile sınırlı. Tavana çarpınca dikey hız sıfırlanır.
 
-**Hava kontrolü.** Yatay hız `MoveTowards` ile hedefe yaklaşır. Stick basılıysa `AirAcceleration`, boştaysa `AirDrag` kullanılır. Hız `MoveSpeed × AirControlMultiplier`'ın (10) üstündeyken stick aynı yöndeyse `AirOverspeedReduce` (16) kullanılır (16 Kasım 2026, Celeste `RunReduce`): ileri basmak momentumu bırakmaktan (20) daha yavaş söndürür, eskiden 40 ile iki kat hızlı söndürüyordu. Yere inişte hız hâlâ tek adımda `stick × 10`'a kesilir (anlık koşu, bilinçli). Böylece kancadan ya da launch pad'den gelen momentum hemen kaybolmaz, ama yönlendirilebilir.
+**Hava kontrolü.** Yatay hız `MoveTowards` ile hedefe yaklaşır. Stick basılıysa `AirAcceleration`, boştaysa `AirDrag` kullanılır. Hız `MoveSpeed × AirControlMultiplier`'ın (10) üstündeyken stick aynı yöndeyse `AirOverspeedReduce` (20) kullanılır (16 Kasım 2026, Celeste `RunReduce`): ileri basmak momentumu bırakmaktan (`AirDrag` 24) daha yavaş söndürür, eskiden 40 ile iki kat hızlı söndürüyordu. Yere inişte hız hâlâ tek adımda `stick × 10`'a kesilir (anlık koşu, bilinçli). Böylece kancadan ya da launch pad'den gelen momentum hemen kaybolmaz, ama yönlendirilebilir.
 
 **Coyote time ve jump buffer.** Zıplamaya basmak `JumpBufferTimer`'ı doldurur. Yere değen ilk karede buffer doluysa zıplama hemen gerçekleşir. Kenardan yürüyerek düşünce `NormalState.OnLeaveGround` coyote'u `CoyoteTimeDuration` süresiyle açar, bu sürede zıplama hâlâ çalışır. Coyote ve havadaki kilit sayaçları (yatay girdi, kanca, duvar tırmanma) fizik adımında düşer (16 Kasım 2026, PF-6), süreleri kare hızından bağımsız. `JumpBufferTimer` hâlâ `PlayerController.Update`'te `Time.deltaTime` ile düşer.
 
@@ -102,7 +102,7 @@ Asset'teki gerçek değerler. Koddaki varsayılanlar farklı, asset esas.
 | `TerminalVelocity` | −40 | |
 | `AirControlMultiplier` | 1 | havada da tam hız |
 | `AirAcceleration` / `AirDrag` | 40 / 20 | |
-| `AirOverspeedReduce` | 16 | sınır üstü + stick aynı yönde; Celeste oranı 0.4 × 40. Gamepad ile denenmedi |
+| `AirOverspeedReduce` | 20 | sınır üstü + stick aynı yönde; `AirDrag`'den (24) küçük kalmalı. 16 → 12 → 20 (17 Kasım): 12 yana slingshot'ı fazla uzattı, 20 gamepad'le denendi |
 | `CoyoteTimeDuration` / `JumpBufferDuration` | 0.1 / 0.1 | `PlayerStatsSanityTests` 0.01–0.25 bandını korur |
 | `DashDistance` / `DashDuration` | 7 / 0.2 | → `DashSpeed` 35 |
 | `DashEndMomentumMultiplier` | 0.3 | dash sonu ~10.5 birim/sn kalır |

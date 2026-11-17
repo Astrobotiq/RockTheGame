@@ -27,7 +27,7 @@ MonoBehaviour:
   AirControlMultiplier: 1
   AirAcceleration: 60
   AirDrag: 24
-  AirOverspeedReduce: 12
+  AirOverspeedReduce: 20
   MomentumDecay: 5
   WallSpeedRetentionTime: 0.06
   DashDistance: 7

@@ -212,6 +212,28 @@ namespace RockTheGame.Tests.PlayMode
             Assert.Greater(Player.Velocity.x - swingVelocityX, 8f);
         }
 
+        [UnityTest]
+        public IEnumerator M9_CarriedNodeVelocity_FadesOverDecayTime()
+        {
+            GameObject node = null;
+            yield return GrabNodeAbove(NodeStart, n => node = n);
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 10);
+
+            float swingVelocityX = Player.Velocity.x;
+            Input.IsRightTriggerHeld = false;
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 1);
+            yield return WaitForAir();
+            yield return WaitFixedSteps(1);
+            Assert.Greater(Player.Velocity.x - swingVelocityX, 6f, "Birakis aninda node hizi tasinmali");
+
+            // Sonme suresi + pay: stick bos, kendi hiz hava surtunmesiyle zaten soner; node'dan gelen de sonmeli.
+            float decay = Player.Stats.MovingNodeCarryDecayTime;
+            yield return WaitFixedSteps(Mathf.CeilToInt((decay + 0.15f) / Time.fixedDeltaTime));
+
+            AssertInAir();
+            Assert.Less(Mathf.Abs(Player.Velocity.x), 2f, $"Tasinan yatay hiz {decay} sn icinde sonmeli");
+        }
+
         /// <summary>Sol kolla sol node'a, sonra sag kolla sag node'a tutunur.</summary>
         private IEnumerator GrabTwoNodes(Vector2 leftPos, Vector2 rightPos)
         {

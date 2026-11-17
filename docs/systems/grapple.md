@@ -73,7 +73,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - **Atalet (17 Kasım 2026, playtest: "node hareketi swing'e hiç etki etmiyor"):** node'un hızlanması, durması ve dönmesi salınıma geçer. Her adımda node hızı `MovingNodeMaxPivotAccel` (60 b/sn²) sınırıyla yumuşatılır; bu yumuşatılmış hızdaki değişim × `MovingNodeInertia` (0.6; 0 = yalnızca taşıma, 1 = tam fizik) node'a göre hızdan çıkarılır. Radyal kısmı ip kısıtı atar. Çift kancada iki node'un ortalaması kullanılır; slingshot'ta atalet yok. Sınır, `LinearPingPong`'un tek adımlık dönüşünü ~0.17 sn'ye yayar; `SinePingPongStrategy`'de ivme zaten süreklidir ve sınıra takılmaz.
 - **Yakalama ve durum geçişleri:** kanca durumları birbirine **dünyaya göre** hız devreder; durum içinde node'a göre hız = dünya − node. `AttachAnchor` node hızını `IMovingSurface.DeltaPosition`'dan anında aldığı için hareket eden node'u yakalayan oyuncu node'un hızını almaz, ip onu çeker.
 - **Taşıma:** durumların hızı node'a göre kalır; node kayması ayrıca eklenir. Tek kancada sarkaç kısıtından önce konuma eklenir (çarpışma taraması dahil), çift kanca ve slingshot'ta iki anchor'ın ortalaması hız olarak `Move`'a verilir. Yerden kanca hop'u sırasında taşıma yok, yalnızca anchor güncellenir.
-- **Fırlatma:** tek kanca bırakışı, çift kancada iki tetiği birden bırakma ve slingshot çıkışında (ortalama) node hızı × `MovingNodeLaunchMultiplier` `AirEntry.CarriedVelocity` ile aktarılır: Y normal hıza eklenir, X taşınır ve hava sürtünmesinden etkilenmez (duvardan ayrılma kuralı, [`platforms.md`](platforms.md)). Çarpışmayla kopma ve çift kancadan tek kancaya düşüş aktarmaz.
+- **Fırlatma:** tek kanca bırakışı, çift kancada iki tetiği birden bırakma ve slingshot çıkışında (ortalama) node hızı × `MovingNodeLaunchMultiplier` `AirEntry.CarriedVelocity` ile aktarılır: Y normal hıza eklenir, X taşınır ve hava sürtünmesinden etkilenmez (duvardan ayrılma kuralı, [`platforms.md`](platforms.md)); duvar kuralından farkı, taşınan X `MovingNodeCarryDecayTime` (0.6 sn) içinde doğrusal olarak sıfıra iner (`AirEntry.CarriedDecayTime`). Çarpışmayla kopma ve çift kancadan tek kancaya düşüş aktarmaz.
 - **Prefab:** `Assets/Prefab/New/Node/Node-Moving.prefab`: kök `PlatformController` + kinematik `Rigidbody2D` + `SinePingPongStrategy` (uçlarda yavaşlayan gidip gelme, period 4), child `Node` (node katmanı, oda node'larının kopyası). `startPoint`/`endPoint` **dünya koordinatı**: her yerleştirmede ayarlanmalı, yoksa node (0,0)–(6,0) arasına ışınlanır. Başka strateji (dairesel vb.) aynı şekilde takılabilir.
 
 ### Dönen node (`FullRotationNode`)
@@ -101,6 +101,7 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 | `DualSwingCollisionRadius` | 0.4 | çift kanca |
 | `NodeCoincidenceThreshold` | 0.5 | slingshot koşulu |
 | `MovingNodeLaunchMultiplier` | 1 | hareketli node bırakışında aktarılan hız oranı |
+| `MovingNodeCarryDecayTime` | 0.6 | bırakışta taşınan yatay hızın sıfıra indiği süre (sn); 0 = sönmez |
 | `MovingNodeInertia` | 0.6 | node ivmesinin salınıma geçen oranı (tek + çift kanca) |
 | `MovingNodeMaxPivotAccel` | 60 | ataletin hesaplandığı node hızının değişim sınırı (b/sn²) |
 | `MaxSlingshotSpeed` | 65 | |

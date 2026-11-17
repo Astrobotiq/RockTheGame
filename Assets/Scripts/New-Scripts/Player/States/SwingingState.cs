@@ -281,7 +281,7 @@ namespace New_Scripts.Player.States
                 Vector2 nodeVelocity = _context.AnchorVelocity(_swingingArm) * _stats.MovingNodeLaunchMultiplier;
                 ReleaseAnchor();
 
-                _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease(nodeVelocity)));
+                _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease(nodeVelocity, _stats.MovingNodeCarryDecayTime)));
                 return;
             }
 

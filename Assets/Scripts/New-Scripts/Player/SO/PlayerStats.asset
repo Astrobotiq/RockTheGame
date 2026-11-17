@@ -35,6 +35,7 @@ MonoBehaviour:
   DashImpactMultiplier: 0.5
   DashEndMomentumMultiplier: 0.28
   MovingNodeLaunchMultiplier: 1
+  MovingNodeCarryDecayTime: 0.6
   MovingNodeInertia: 0.6
   MovingNodeMaxPivotAccel: 60
   MaxSlingshotSpeed: 65

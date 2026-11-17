@@ -29,6 +29,8 @@ namespace New_Scripts.Player.States
         // Taşıyan yüzeyden devralınan yatay hız. Hava sürtünmesi/ivmesi yalnızca oyuncunun kendi hızına
         // işler (yüzeyin referans çerçevesi); aksi halde 0.2 sn içinde sönüp duvar kaçardı.
         private float _carriedVelocityX;
+        // Taşınan yatay hızın saniyedeki sönme miktarı (AirEntry.CarriedDecayTime); 0 = sönmez.
+        private float _carriedDecayRate;
         private WallSpeedRetention _wallSpeedRetention;
         // Celeste değişken zıplaması (PlayerStatsSO.CelesteVariableJump): tuş basılıyken bu süre boyunca yukarı hız sabit.
         private bool _holdJump;
@@ -122,6 +124,7 @@ namespace New_Scripts.Player.States
             IsOnGround = false;
             _currentVelocity = inheritedVelocity + new Vector2(0f, entry.CarriedVelocity.y);
             _carriedVelocityX = entry.CarriedVelocity.x;
+            _carriedDecayRate = entry.CarriedDecayTime > 0f ? Mathf.Abs(_carriedVelocityX) / entry.CarriedDecayTime : 0f;
             _isJumping = entry.IsJumping;
             _grappleLockoutTimer = entry.GrappleLockout;
             _wallClimbLockoutTimer = entry.WallClimbLockout;
@@ -262,6 +265,8 @@ namespace New_Scripts.Player.States
             ApplyCustomGravity();
             ApplyAirMovement();
             HandleVerticalObstructions();
+            if (_carriedDecayRate > 0f)
+                _carriedVelocityX = Mathf.MoveTowards(_carriedVelocityX, 0f, _carriedDecayRate * Time.fixedDeltaTime);
 
             ApplyAirVelocity();
         }

@@ -50,6 +50,8 @@ namespace New_Scripts.Player
         [Header("Moving Node")]
         [Tooltip("Hareketli node'dan bırakınca node hızının oyuncuya aktarılan oranı (docs/hareketli-node-tasarimi.md).")]
         public float MovingNodeLaunchMultiplier = 1f;
+        [Tooltip("Hareketli node'dan bırakınca taşınan yatay hızın sıfıra indiği süre (sn). 0 = sönmez (duvar kuralı gibi).")]
+        public float MovingNodeCarryDecayTime = 0.6f;
         [Tooltip("Node'un ivmesinin salınıma geçen oranı: 0 = node yalnızca taşır, 1 = tam fizik (pivot ivmesinin ters kuvveti).")]
         public float MovingNodeInertia = 0.6f;
         [Tooltip("Ataletin hesaplandığı node hızının bir saniyede en fazla ne kadar değişebileceği (b/sn²). Ani dönüşlerin darbesini birkaç adıma yayar.")]

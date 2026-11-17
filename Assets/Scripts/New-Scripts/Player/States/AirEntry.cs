@@ -27,6 +27,9 @@ namespace New_Scripts.Player.States
         public readonly float Coyote;
         public readonly float HorizontalLockout;
         public readonly Vector2 CarriedVelocity;
+        /// <summary>Taşınan yatay hızın sıfıra indiği süre (sn); 0 = sönmez (duvardan ayrılma kuralı).
+        /// Yalnızca hareketli node bırakışları verir (docs/hareketli-node-tasarimi.md).</summary>
+        public readonly float CarriedDecayTime;
         /// <summary>Oyuncunun kendi zıplaması: CelesteVariableJump açıkken tuş basılı tutma süresi bu profillerde işler.</summary>
         public readonly bool VariableJump;
 
@@ -35,7 +38,7 @@ namespace New_Scripts.Player.States
 
         private AirEntry(bool isJumping, bool bypassJumpGravity = false, float endEarlyGravityMultiplier = 1f,
             float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f,
-            Vector2 carriedVelocity = default, bool variableJump = false)
+            Vector2 carriedVelocity = default, bool variableJump = false, float carriedDecayTime = 0f)
         {
             IsJumping = isJumping;
             BypassJumpGravity = bypassJumpGravity;
@@ -46,6 +49,7 @@ namespace New_Scripts.Player.States
             HorizontalLockout = horizontalLockout;
             CarriedVelocity = carriedVelocity;
             VariableJump = variableJump;
+            CarriedDecayTime = carriedDecayTime;
         }
 
         private static AirEntry JumpRule(bool boostedSurface, float wallClimbLockout = 0f, float horizontalLockout = 0f,
@@ -71,18 +75,20 @@ namespace New_Scripts.Player.States
 
         /// <summary>Tek kancayı bırakma (H2): yükselirken 3×, düşerken 1.5×, tuştan bağımsız.
         /// Hareketli node'dan bırakınca node'un hızı <paramref name="carriedVelocity"/> ile taşınır.</summary>
-        public static AirEntry SwingRelease(Vector2 carriedVelocity = default) =>
-            new AirEntry(true, bypassJumpGravity: true, carriedVelocity: carriedVelocity);
+        public static AirEntry SwingRelease(Vector2 carriedVelocity = default, float carriedDecayTime = 0f) =>
+            new AirEntry(true, bypassJumpGravity: true, carriedVelocity: carriedVelocity, carriedDecayTime: carriedDecayTime);
 
         /// <summary>Slingshot fırlatışının sonu ya da erken bırakma (L5): SwingRelease kuralı + kanca kilidi.</summary>
-        public static AirEntry SlingshotLaunch(float grappleLockout, Vector2 carriedVelocity = default) =>
-            new AirEntry(true, bypassJumpGravity: true, grappleLockout: grappleLockout, carriedVelocity: carriedVelocity);
+        public static AirEntry SlingshotLaunch(float grappleLockout, Vector2 carriedVelocity = default, float carriedDecayTime = 0f) =>
+            new AirEntry(true, bypassJumpGravity: true, grappleLockout: grappleLockout, carriedVelocity: carriedVelocity,
+                carriedDecayTime: carriedDecayTime);
 
         /// <summary>Launch pad (H2): SwingRelease kuralı.</summary>
         public static AirEntry LaunchPad() => new AirEntry(true, bypassJumpGravity: true);
 
         /// <summary>Sabit 1× (H4): dash sonu, çift kanca bırakma, kanca kopması, oda geçişi, respawn.</summary>
-        public static AirEntry Fall(Vector2 carriedVelocity = default) => new AirEntry(false, carriedVelocity: carriedVelocity);
+        public static AirEntry Fall(Vector2 carriedVelocity = default, float carriedDecayTime = 0f) =>
+            new AirEntry(false, carriedVelocity: carriedVelocity, carriedDecayTime: carriedDecayTime);
 
         /// <summary>Duvardan bırakma/düşme: sabit 1×, taşıyan duvarın hızı, isteğe bağlı duvar kilidi. Coyote yok:
         /// hemen ardından basılan zıplamayı havadan duvar zıplaması karşılar (W9).</summary>

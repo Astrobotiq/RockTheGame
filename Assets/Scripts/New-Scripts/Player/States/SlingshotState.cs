@@ -141,7 +141,7 @@ namespace New_Scripts.Player.States
             context.LeftAnchor = null;
             context.RightAnchor = null;
             context.TransitionToState(new NormalState(context, relativeVelocity,
-                AirEntry.SlingshotLaunch(stats.SlingshotGrappleLockout, nodeVelocity)));
+                AirEntry.SlingshotLaunch(stats.SlingshotGrappleLockout, nodeVelocity, stats.MovingNodeCarryDecayTime)));
         }
     }
 }

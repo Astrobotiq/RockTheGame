@@ -78,7 +78,7 @@ namespace New_Scripts.Player.States
                                        * (0.5f * stats.MovingNodeLaunchMultiplier);
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new NormalState(context, currentVelocity, AirEntry.Fall(nodeVelocity)));
+                context.TransitionToState(new NormalState(context, currentVelocity, AirEntry.Fall(nodeVelocity, stats.MovingNodeCarryDecayTime)));
                 return;
             }
 

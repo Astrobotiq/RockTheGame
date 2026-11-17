@@ -75,6 +75,7 @@ Yerçekimi çarpanları `PlayerStats.asset`'ten okunur; korunan şey hangi giri�
 | M5 | Hareket eden node'dan slingshot çıkışında node hızı geçer. *(17 Kasım 2026)* |
 | M6 | Node'un ivmesi salınıma geçer: duran node kalkınca oyuncu (tek ya da çift kancada) geride kalıp sallanır. *(17 Kasım 2026)* |
 | M7 | Hareket eden node'u yakalayan oyuncu node'un hızını anında almaz; dünyaya göre hızı korunur, ip onu çeker. *(17 Kasım 2026)* |
+| M9 | Hareketli node'dan bırakınca taşınan yatay hız `MovingNodeCarryDecayTime` (0.6 sn) içinde söner; hareketli duvardan ayrılırken taşınan hız sönmez. *(17 Kasım 2026)* |
 | M8 | Sabit hızlı gerçek node'da (interpolation açık) anchor her adım aynı kaymayı görür (±%10). *(17 Kasım 2026)* |
 | M1e | İp hareketli node'a ulaşır; fırlatma animasyonu yalnızca yeni tutunuşta baştan başlar. *(17 Kasım 2026)* |
 

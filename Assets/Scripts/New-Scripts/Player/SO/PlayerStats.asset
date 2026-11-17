@@ -15,28 +15,30 @@ MonoBehaviour:
   MoveSpeed: 10
   JumpHeight: 4
   TimeToApex: 0.5
+  CelesteVariableJump: 0
+  VarJumpTime: 0.2
   SwingGravity: 25
   SwingInitialBoost: 5
-  SwingForceMultiplier: 20
-  MaxSwingSpeed: 25
+  SwingForceMultiplier: 28
+  MaxSwingSpeed: 28
   SwingCollisionRadius: 0.5
   MaxWallAngle: 45
-  TerminalVelocity: -40
+  TerminalVelocity: -32
   AirControlMultiplier: 1
-  AirAcceleration: 40
-  AirDrag: 20
-  AirOverspeedReduce: 16
+  AirAcceleration: 60
+  AirDrag: 24
+  AirOverspeedReduce: 12
   MomentumDecay: 5
   WallSpeedRetentionTime: 0.06
   DashDistance: 7
-  DashDuration: 0.2
+  DashDuration: 0.16
   DashImpactMultiplier: 0.5
-  DashEndMomentumMultiplier: 0.3
+  DashEndMomentumMultiplier: 0.28
   MaxSlingshotSpeed: 65
   SlingshotLaunchDuration: 0.01
   SlingshotGrappleLockout: 0.25
-  SlingshotAnticipationDuration: 0.1
-  SlingshotAnticipationSpeed: 10
+  SlingshotAnticipationDuration: 0.08
+  SlingshotAnticipationSpeed: 12
   ClimbSpeed: 8
   WallJumpForce: {x: 11, y: 14}
   ClimbVerticalJumpVelocity: 14
@@ -50,15 +52,15 @@ MonoBehaviour:
   LedgeClimbDuration: 0.2
   WallSlideMaxSpeed: 3
   WallSlideFriction: 10
-  WallSlideJumpForce: {x: 11, y: 11}
+  WallSlideJumpForce: {x: 11, y: 13}
   MaxWallSlideTime: 2
   WallJumpInputLockoutTime: 0.1
-  WallJumpCheckDistance: 0.375
-  DualSpringStiffness: 25
-  DualSpringDamping: 5
-  DualSwingForceMultiplier: 15
+  WallJumpCheckDistance: 0.125
+  DualSpringStiffness: 40
+  DualSpringDamping: 5.5
+  DualSwingForceMultiplier: 20
   DualSwingCollisionRadius: 0.4
-  HitStopDuration: 0.2
+  HitStopDuration: 0.05
   NodeCoincidenceThreshold: 0.5
   FallGravityMultiplier: 1.5
   JumpEndEarlyGravityMultiplier: 3
@@ -68,6 +70,6 @@ MonoBehaviour:
   JumpBufferDuration: 0.1
   CeilingCornerCorrection: 0.25
   DashCornerCorrection: 0.25
-  SwingHopForwardSpeed: 8
+  SwingHopForwardSpeed: 10
   SwingHopUpwardSpeed: 12
   SwingHopDuration: 0.15

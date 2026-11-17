@@ -15,6 +15,8 @@ namespace New_Scripts.Player.States
         private Vector2 midpoint;
         private Vector2 initialLaunchVelocity;
         private Vector2 cachedLaunchDirection;
+        /// <summary>Node'a göre hız (taşıma hariç); çıkışta NormalState'e bu verilir, node hızı ayrıca taşınır.</summary>
+        private Vector2 relativeVelocity;
 
         private SlingshotPhase currentPhase;
         private float stateTimer;
@@ -56,6 +58,8 @@ namespace New_Scripts.Player.States
         public void FixedUpdateState()
         {
             stateTimer += Time.fixedDeltaTime;
+            if (context.LeftAnchor.HasValue && context.RightAnchor.HasValue)
+                midpoint = (context.LeftAnchor.Value + context.RightAnchor.Value) / 2f;
 
             if (currentPhase == SlingshotPhase.Anticipation)
             {
@@ -82,15 +86,14 @@ namespace New_Scripts.Player.States
         {
             if (!context.Input.IsLeftTriggerHeld && !context.Input.IsRightTriggerHeld)
             {
-                context.LeftAnchor = null;
-                context.RightAnchor = null;
-                context.TransitionToState(new NormalState(context, context.Velocity, AirEntry.SlingshotLaunch(stats.SlingshotGrappleLockout)));
+                Exit();
             }
         }
 
         private void ApplyAnticipationPhysics()
         {
-            context.Velocity = -cachedLaunchDirection * stats.SlingshotAnticipationSpeed;
+            relativeVelocity = -cachedLaunchDirection * stats.SlingshotAnticipationSpeed;
+            context.Velocity = relativeVelocity + CarryVelocity();
 
             if (stateTimer >= stats.SlingshotAnticipationDuration)
             {
@@ -104,7 +107,8 @@ namespace New_Scripts.Player.States
                 }
                 
                 initialLaunchVelocity = Vector2.zero;
-                context.Velocity = initialLaunchVelocity;
+                relativeVelocity = initialLaunchVelocity;
+                context.Velocity = relativeVelocity + CarryVelocity();
 
                 context.NotifyImpact(cachedLaunchDirection);
             }
@@ -117,17 +121,31 @@ namespace New_Scripts.Player.States
             float easeOutT = 1f - ((1f - t) * (1f - t));
 
             Vector2 targetVelocity = cachedLaunchDirection * stats.MaxSlingshotSpeed;
-            context.Velocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, easeOutT);
+            relativeVelocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, easeOutT);
+            context.Velocity = relativeVelocity + CarryVelocity();
 
             Vector2 currentDirectionToMidpoint = midpoint - context.PlayerRigidbody.position;
             bool hasPassedMidpoint = Vector2.Dot(cachedLaunchDirection, currentDirectionToMidpoint) < 0f;
 
             if (t >= 1f || hasPassedMidpoint)
             {
-                context.LeftAnchor = null;
-                context.RightAnchor = null;
-                context.TransitionToState(new NormalState(context, context.Velocity, AirEntry.SlingshotLaunch(stats.SlingshotGrappleLockout)));
+                Exit();
             }
+        }
+
+        /// <summary>Hareketli node: iki anchor'ın ortalama kayması hız olarak (Move çarpışmayla uygular).</summary>
+        private Vector2 CarryVelocity() =>
+            (context.AnchorDelta(ActiveArm.Left) + context.AnchorDelta(ActiveArm.Right)) * 0.5f / Time.fixedDeltaTime;
+
+        /// <summary>Fırlatma sonu ya da erken bırakma: node'a göre hız + taşınan node hızı.</summary>
+        private void Exit()
+        {
+            Vector2 nodeVelocity = (context.AnchorVelocity(ActiveArm.Left) + context.AnchorVelocity(ActiveArm.Right))
+                                   * (0.5f * stats.MovingNodeLaunchMultiplier);
+            context.LeftAnchor = null;
+            context.RightAnchor = null;
+            context.TransitionToState(new NormalState(context, relativeVelocity,
+                AirEntry.SlingshotLaunch(stats.SlingshotGrappleLockout, nodeVelocity)));
         }
     }
 }

@@ -75,14 +75,14 @@ namespace New_Scripts.Player.States
             new AirEntry(true, bypassJumpGravity: true, carriedVelocity: carriedVelocity);
 
         /// <summary>Slingshot fırlatışının sonu ya da erken bırakma (L5): SwingRelease kuralı + kanca kilidi.</summary>
-        public static AirEntry SlingshotLaunch(float grappleLockout) =>
-            new AirEntry(true, bypassJumpGravity: true, grappleLockout: grappleLockout);
+        public static AirEntry SlingshotLaunch(float grappleLockout, Vector2 carriedVelocity = default) =>
+            new AirEntry(true, bypassJumpGravity: true, grappleLockout: grappleLockout, carriedVelocity: carriedVelocity);
 
         /// <summary>Launch pad (H2): SwingRelease kuralı.</summary>
         public static AirEntry LaunchPad() => new AirEntry(true, bypassJumpGravity: true);
 
         /// <summary>Sabit 1× (H4): dash sonu, çift kanca bırakma, kanca kopması, oda geçişi, respawn.</summary>
-        public static AirEntry Fall() => new AirEntry(false);
+        public static AirEntry Fall(Vector2 carriedVelocity = default) => new AirEntry(false, carriedVelocity: carriedVelocity);
 
         /// <summary>Duvardan bırakma/düşme: sabit 1×, taşıyan duvarın hızı, isteğe bağlı duvar kilidi. Coyote yok:
         /// hemen ardından basılan zıplamayı havadan duvar zıplaması karşılar (W9).</summary>

@@ -1,4 +1,5 @@
 using System.Collections;
+using New_Scripts.Player;
 using New_Scripts.Player.States;
 using NUnit.Framework;
 using UnityEngine;
@@ -112,6 +113,91 @@ namespace RockTheGame.Tests.PlayMode
             yield return WaitForAir();
             yield return WaitFixedSteps(1);
 
+            Assert.Greater(Player.Velocity.x, 8f);
+        }
+
+        /// <summary>Sol kolla sol node'a, sonra sag kolla sag node'a tutunur.</summary>
+        private IEnumerator GrabTwoNodes(Vector2 leftPos, Vector2 rightPos)
+        {
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            yield return GrabWithLeft(leftPos);
+            SpawnNode(rightPos);
+            Input.RightStick = (rightPos - Player.PlayerRigidbody.position).normalized;
+            Input.IsRightTriggerHeld = true;
+        }
+
+        [UnityTest]
+        public IEnumerator M4_DualSwing_CarriedAndLaunched()
+        {
+            // Simetrik ve durgun baslar: node'a gore yatay hiz 0 kalir, olcum salinim fazina bagli olmaz.
+            Vector2 leftPos = Origin + new Vector2(-1.5f, 3f), rightPos = Origin + new Vector2(1.5f, 3f);
+            GameObject left = SpawnNode(leftPos), right = SpawnNode(rightPos);
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            Player.Velocity = Vector2.zero;
+            Player.AttachAnchor(ActiveArm.Left, leftPos, left.transform);
+            Player.AttachAnchor(ActiveArm.Right, rightPos, right.transform);
+            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = true;
+            Player.TransitionToState(new DualSwingingState(Player));
+
+            Vector2 step = new Vector2(0.2f, 0f);
+            for (int i = 0; i < 25; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                left.transform.position += (Vector3)step;
+                right.transform.position += (Vector3)step;
+                Physics2D.SyncTransforms();
+            }
+            yield return WaitFixedSteps(1);
+
+            Assert.IsInstanceOf<DualSwingingState>(Player.CurrentState);
+            float meanX = (left.transform.position.x + right.transform.position.x) * 0.5f;
+            Assert.Less(Mathf.Abs(Player.PlayerRigidbody.position.x - meanX), 0.5f);
+
+            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = false;
+            yield return new WaitForFixedUpdate();
+            left.transform.position += (Vector3)step;
+            right.transform.position += (Vector3)step;
+            yield return WaitForAir();
+            yield return WaitFixedSteps(1);
+
+            Assert.Greater(Player.Velocity.x, 8f);
+        }
+
+        [UnityTest]
+        public IEnumerator M4b_DualSwing_OneMovingOneStatic_StaysFinite()
+        {
+            Vector2 leftPos = Origin + new Vector2(-1.5f, 3f), rightPos = Origin + new Vector2(1.5f, 3f);
+            Player.UseSlingshot();
+            yield return GrabTwoNodes(leftPos, rightPos);
+            yield return WaitForState<DualSwingingState>();
+
+            yield return MoveEachFixedStep(FindSpawnedNode(rightPos), new Vector2(0.2f, 0f), 25);
+
+            Vector2 v = Player.Velocity, p = Player.PlayerRigidbody.position;
+            Assert.IsFalse(float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(p.x) || float.IsNaN(p.y));
+            Assert.Less(v.magnitude, 100f);
+            Assert.IsTrue(Player.CurrentState is DualSwingingState || Player.IsInNormalGround,
+                $"durum {Player.CurrentState?.GetType().Name}");
+        }
+
+        [UnityTest]
+        public IEnumerator M5_SlingshotFromMovingNode_InheritsNodeVelocity()
+        {
+            yield return GrabTwoNodes(NodeStart, NodeStart);
+            yield return WaitForState<SlingshotState>();
+            GameObject node = FindSpawnedNode(NodeStart);
+
+            float deadline = Time.unscaledTime + Timeout;
+            while (Player.CurrentState is SlingshotState && Time.unscaledTime < deadline)
+            {
+                yield return new WaitForFixedUpdate();
+                node.transform.position += new Vector3(0.2f, 0f, 0f);
+                Physics2D.SyncTransforms();
+            }
+            yield return WaitForHitStopEnd();
+            yield return WaitFixedSteps(1);
+
+            AssertInAir();
             Assert.Greater(Player.Velocity.x, 8f);
         }
 

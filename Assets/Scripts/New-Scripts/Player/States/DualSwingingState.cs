@@ -69,9 +69,12 @@ namespace New_Scripts.Player.States
 
             if (!leftHeld && !rightHeld)
             {
+                // Hareketli node'lardan bırakış: node hızlarının ortalaması taşınır.
+                Vector2 nodeVelocity = (context.AnchorVelocity(ActiveArm.Left) + context.AnchorVelocity(ActiveArm.Right))
+                                       * (0.5f * stats.MovingNodeLaunchMultiplier);
                 context.LeftAnchor = null;
                 context.RightAnchor = null;
-                context.TransitionToState(new NormalState(context, currentVelocity, AirEntry.Fall()));
+                context.TransitionToState(new NormalState(context, currentVelocity, AirEntry.Fall(nodeVelocity)));
                 return;
             }
 
@@ -100,9 +103,11 @@ namespace New_Scripts.Player.States
             currentVelocity += CalculateSpringForce(context.LeftAnchor.Value, leftRopeLength);
             currentVelocity += CalculateSpringForce(context.RightAnchor.Value, rightRopeLength);
 
+            // Hareketli node: yaylar node'a göre çalışır, oyuncu iki node'un ortalama kaymasıyla taşınır.
+            Vector2 carry = (context.AnchorDelta(ActiveArm.Left) + context.AnchorDelta(ActiveArm.Right)) * 0.5f;
+
             Vector2 playerPos = context.PlayerRigidbody.position;
-            Vector2 nextPosition = playerPos + currentVelocity * Time.fixedDeltaTime;
-            Vector2 movementDelta = nextPosition - playerPos;
+            Vector2 movementDelta = currentVelocity * Time.fixedDeltaTime + carry;
 
             RaycastHit2D hit = Physics2D.CircleCast(playerPos, stats.DualSwingCollisionRadius, movementDelta.normalized, movementDelta.magnitude, context.GroundLayerMask);
 
@@ -127,7 +132,7 @@ namespace New_Scripts.Player.States
 
             // Pozisyonu burada ilerletmiyoruz: PlayerController.FixedUpdate Velocity'yi KinematicPhysicsHandler.Move ile
             // zaten uyguluyor. Burada da set edersek hareket her adimda iki kez uygulanir.
-            context.Velocity = currentVelocity;
+            context.Velocity = currentVelocity + carry / Time.fixedDeltaTime;
         }
 
         private Vector2 CalculateSpringForce(Vector2 anchor, float ropeLength)

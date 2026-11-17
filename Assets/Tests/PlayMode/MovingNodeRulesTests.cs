@@ -202,6 +202,27 @@ namespace RockTheGame.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator M1e_RopeReachesMovingNode()
+        {
+            var visuals = Object.FindFirstObjectByType<New_Scripts.Player.GrappleVisualManager>();
+            Assert.IsNotNull(visuals, "GrappleVisualManager bulunamadi");
+            var rope = (LineRenderer)typeof(New_Scripts.Player.GrappleVisualManager)
+                .GetField("rightRopeRenderer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .GetValue(visuals);
+
+            GameObject node = null;
+            yield return GrabNodeAbove(NodeStart, n => node = n);
+            // Firlatma animasyonu (0.15 sn) bittikten sonra da node hareket ediyor
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 20);
+            yield return WaitFixedSteps(1);
+            yield return new WaitForEndOfFrame();
+
+            Vector2 ropeEnd = rope.GetPosition(rope.positionCount - 1);
+            Assert.Less(Vector2.Distance(ropeEnd, Player.RightAnchor.Value), 0.05f,
+                "Ip hareketli node'a ulasmali; anchor her adim degisince firlatma animasyonu bastan basliyordu");
+        }
+
+        [UnityTest]
         public IEnumerator M1d_RawAnchorAssignment_IsStatic()
         {
             GameObject node = SpawnNode(NodeStart);

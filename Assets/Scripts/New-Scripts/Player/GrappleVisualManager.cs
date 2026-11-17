@@ -30,6 +30,7 @@ namespace New_Scripts.Player
             public bool isActive;
             public float animationTimer;
             public Vector2? currentAnchor;
+            public Transform currentNode;
         }
 
         private void Awake()
@@ -41,9 +42,9 @@ namespace New_Scripts.Player
         private void LateUpdate()
         {
             UpdateRopeVisuals(leftRopeRenderer, leftRopeData, playerContext.LeftArm.transform.position,
-                playerContext.LeftAnchor);
+                playerContext.LeftAnchor, playerContext.LeftAnchorNode);
             UpdateRopeVisuals(rightRopeRenderer, rightRopeData, playerContext.RightArm.transform.position,
-                playerContext.RightAnchor);
+                playerContext.RightAnchor, playerContext.RightAnchorNode);
         }
 
         private void InitializeRope(LineRenderer rope)
@@ -56,17 +57,21 @@ namespace New_Scripts.Player
             }
         }
 
-        private void UpdateRopeVisuals(LineRenderer rope, RopeData data, Vector3 startPosition, Vector2? targetAnchor)
+        private void UpdateRopeVisuals(LineRenderer rope, RopeData data, Vector3 startPosition, Vector2? targetAnchor, Transform targetNode)
         {
             if (rope == null) return;
 
             if (targetAnchor.HasValue)
             {
-                if (!data.isActive || data.currentAnchor != targetAnchor)
+                // Yeni tutunuş: hareketli node'da anchor her adım değişir, orada yalnızca node değişirse animasyon baştan başlar.
+                bool newGrapple = !data.isActive || targetNode != data.currentNode
+                                  || (targetNode == null && data.currentAnchor != targetAnchor);
+                data.currentAnchor = targetAnchor;
+                if (newGrapple)
                 {
                     data.isActive = true;
                     data.animationTimer = 0f;
-                    data.currentAnchor = targetAnchor;
+                    data.currentNode = targetNode;
                     rope.enabled = true;
                     rope.positionCount = resolution;
                 }
@@ -82,6 +87,7 @@ namespace New_Scripts.Player
                 {
                     data.isActive = false;
                     data.currentAnchor = null;
+                    data.currentNode = null;
                     rope.enabled = false;
                 }
             }

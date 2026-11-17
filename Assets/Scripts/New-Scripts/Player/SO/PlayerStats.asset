@@ -77,3 +77,9 @@ MonoBehaviour:
   SwingHopForwardSpeed: 10
   SwingHopUpwardSpeed: 12
   SwingHopDuration: 0.15
+  SpiralDriveAccel: 60
+  SpiralOpposeAccel: 45
+  SpiralInputInfluence: 0.4
+  SpiralOverspeedDecay: 0
+  SpiralBlockedRatio: 0.25
+  SpiralBlockedSteps: 3

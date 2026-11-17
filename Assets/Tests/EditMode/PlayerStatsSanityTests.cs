@@ -55,5 +55,12 @@ namespace RockTheGame.Tests
             Assert.That(_stats.DashDuration, Is.GreaterThan(0f));
             Assert.AreEqual(_stats.DashDistance / _stats.DashDuration, _stats.DashSpeed, 0.0001f);
         }
+
+        [Test]
+        public void SpiralMotor_GuaranteesLoop()
+        {
+            Assert.IsTrue(New_Scripts.Player.Nodes.Spiral.SpiralDriveMath.GuaranteesLoop(_stats.SpiralDriveAccel, _stats.SpiralOpposeAccel, _stats.Gravity),
+                "Spiral ivmeleri |Gravity| değerinden büyük olmalı; yoksa spiral her ip boyunda tam tur attıramaz");
+        }
     }
 }

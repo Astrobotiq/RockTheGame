@@ -79,13 +79,25 @@ Yerçekimi çarpanları `PlayerStats.asset`'ten okunur; korunan şey hangi giri�
 | M8 | Sabit hızlı gerçek node'da (interpolation açık) anchor her adım aynı kaymayı görür (±%10). *(17 Kasım 2026)* |
 | M1e | İp hareketli node'a ulaşır; fırlatma animasyonu yalnızca yeni tutunuşta baştan başlar. *(17 Kasım 2026)* |
 
+## Spiral node
+
+| ID | Kural |
+|---|---|
+| SP1 | Tek kancayla spirale durgun tutunan oyuncu spiralin yönünde tam tur atar; ip boyundan bağımsız. *(17 Kasım 2026)* |
+| SP2 | Spiralin tersine giderek tutunan oyuncu yavaşlar, durur ve spiral yönüne döner; dönüş anlık değildir. *(17 Kasım 2026)* |
+| SP3 | Stick spiralin hızını değiştirir ama dönüşü durdurmaz, çevirmez. *(17 Kasım 2026)* |
+| SP4 | Spiral oyuncuyu bir yüzeye bastırırsa kanca kopar; oyuncu takılı kalmaz. *(17 Kasım 2026)* |
+| SP5 | Spiralden bırakış normal tek kanca bırakışıdır (H2). *(17 Kasım 2026)* |
+| SP6 | Çift kancada motor çalışmaz; aynı spirale iki kol normal slingshot'tır. *(17 Kasım 2026)* |
+| SP7 | Ters dönen spiral, tutunurken kendi yönünde `reverseEveryDegrees` (360°) dönünce yön değiştirir ve tutundukça her seferinde tekrarlar; bırakınca ilk yönüne döner. Normal spiral hiç yön değiştirmez. *(17 Kasım 2026)* |
+
 ## Düzeltilen sapmalar
 
 - **S1 ve S2, 20° ve üstü eğimler (5 Kasım 2026):** Tek kanca çarpışmayı 0.5 yarıçaplı daireyle arıyordu. Oyuncunun 1x1 kutusunun köşesi yüzeye önce değiyor, daire yüzeye ulaşamıyor ve karakter sallanmada takılı kalıyordu; 50° ve 60°'de kanca da kopmuyordu. Artık arama oyuncunun kendi kutusuyla yapılıyor. Çift kanca hâlâ 0.4 yarıçaplı daire kullanıyor ve eğimde test edilmedi.
 
 ## Testler
 
-`Assets/Tests/PlayMode/`: `DashRulesTests`, `SwingRulesTests`, `SlingshotRulesTests`, `WallRulesTests`, `ToleranceRulesTests`, `AirEntryRulesTests`, `MovingNodeRulesTests`. D3, `Assets/Tests/EditMode/PlayerStartStateTests` içinde. Süre bantları (W1'in ~6 sn'si) `PlayerStatsSanityTests`'te. Testler gerçek `NewScene`'i yükler, oyuncuyu odalardan uzak bir alana taşır ve girdiyi taklit eder; oyun hissini ölçmezler.
+`Assets/Tests/PlayMode/`: `DashRulesTests`, `SwingRulesTests`, `SlingshotRulesTests`, `WallRulesTests`, `ToleranceRulesTests`, `AirEntryRulesTests`, `MovingNodeRulesTests`, `SpiralNodeRulesTests`. D3, `Assets/Tests/EditMode/PlayerStartStateTests` içinde. Süre bantları (W1'in ~6 sn'si) `PlayerStatsSanityTests`'te. Testler gerçek `NewScene`'i yükler, oyuncuyu odalardan uzak bir alana taşır ve girdiyi taklit eder; oyun hissini ölçmezler.
 
 ## Henüz kural olmayanlar
 

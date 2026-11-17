@@ -121,6 +121,20 @@ namespace New_Scripts.Player
         [Tooltip("Sıçramanın ne kadar süreceği (Bu süre bitince sarkaç başlar)")]
         public float SwingHopDuration = 0.15f;
         
+        [Header("Spiral Node")]
+        [Tooltip("Spiral yönünde, hedef hızın altındayken teğet ivme. |Gravity|'den büyük olmalı (tam tur garantisi).")]
+        public float SpiralDriveAccel = 60f;
+        [Tooltip("Spiralin tersine giderken hızın spiral yönüne çevrildiği ivme. |Gravity|'den büyük olmalı.")]
+        public float SpiralOpposeAccel = 45f;
+        [Tooltip("Stick hedef hızı en fazla bu oranda artırır/azaltır (0.4 = ±%40). 1'in altında kalmalı: dönüşü asla durdurmaz.")]
+        public float SpiralInputInfluence = 0.4f;
+        [Tooltip("Hedef hızın üstündeyken yavaşlama ivmesi. 0 = fazla hız korunur.")]
+        public float SpiralOverspeedDecay = 0f;
+        [Tooltip("Gerçekleşen teğet hız komutun bu oranının altındaysa adım takılmış sayılır.")]
+        public float SpiralBlockedRatio = 0.25f;
+        [Tooltip("Art arda bu kadar takılmış adımda kanca kopar.")]
+        public int SpiralBlockedSteps = 3;
+
         public float Gravity => -(2f * JumpHeight) / (TimeToApex * TimeToApex);
         public float JumpVelocity => Mathf.Abs(Gravity) * TimeToApex;
 

@@ -84,6 +84,7 @@ Yerdeyken kanca yalnızca **sağ tetikle** atılır. Bu bilinçli bir tercih; ik
 - **Çift kanca (dual swing).** İki farklı noktaya aynı anda tutunursan, yay gibi gerilen ve savrulan bir hareket elde edersin.
 - **Slingshot.** İki kancayı **aynı noktaya** bağlarsan karakter önce geri gerilir, sonra büyük bir hızla fırlar. Havada bir kez kullanılır; yere inince ya da özel bir toplanabilirle yenilenir.
 - **Dönen node.** Bazı noktalar etrafında tam 360° döndüğünde ödül verir (örneğin hız patlaması).
+- **Spiral node.** Tek kancayla tutununca oyuncuyu kendi yönünde döndürür; stick hızı değiştirir ama dönüşü durdurmaz. Doğru anda bırakmak fırlatır. Ters dönen türü her 360°'de yön değiştirir.
 
 **Duvar**
 - **Tırmanma.** Bumper'ı basılı tutarak duvara tutunur ve tırmanırsın. Dayanıklılık (stamina) sınırlıdır (~6 sn), azalırken uyarı verir, yere inince dolar.

@@ -1,6 +1,6 @@
-# Kanca ailesi: swing, dual swing, slingshot, dönen node
+# Kanca ailesi: swing, dual swing, slingshot, dönen node, spiral node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-17 (hareketli node: anchor node'u izler, taşır, bırakışta hızını verir).*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-17 (spiral node: tek kancada motor, takılınca kopma, ters dönen spiral).*
 
 ## Tasarım niyeti
 
@@ -85,19 +85,35 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
   - `SpeedBoostRotationEffect`: hızı bir kez ×1.2 yapar ve `boostDuration` (1.2 sn) boyunca `ActiveSpeedMultiplier`'ı 1.8 yapar. Bu çarpan yalnızca tek kancadaki `MaxSwingSpeed` sınırını yükseltir. Prefab'ı `Node-FullRotation` hiçbir odada kullanılmıyor.
   - `RotationEventTrigger`: UnityEvent. `Node-EventTrigger` prefab'ı oda 17'de bir kapının `Open`'ını çağırıyor.
 
+### Spiral node (`SpiralNode`)
+
+Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar SP1–SP7.
+
+- **Kontroller:** normal tek kanca gibi tutunulur. Stick spinin teğeti yönünde iterse hızlanır, tersine iterse yavaşlar (±`SpiralInputInfluence`, 0.4), ama dönüşü asla durdurmaz ya da çevirmez. Bırakış normal tek kanca bırakışıdır (H2: yükselirken 3×).
+- **Motor:** yalnızca tek kancada, hop bittikten sonra. Her adımda yerçekimi aynen eklenir, sonra `SwingingState` pompalama ve `MaxSwingSpeed` sınırı yerine node'a göre teğet hızı hedefe (`targetSpeed`, 18, × stick × `ActiveSpeedMultiplier`) yaklaştırır: spin yönünde altındaysa `SpiralDriveAccel` (60), tersine gidiyorsa `SpiralOpposeAccel` (45), üstündeyse fazla hız korunur (`SpiralOverspeedDecay` 0). İki ivme de |`Gravity`| (32) üstünde olduğu için spiral her ip boyunda tam tur attırır (`PlayerStatsSanityTests` korur). İp boyu tutunma anındaki mesafedir.
+- **Tersine tutunma:** oyuncu yavaşlar, durur ve spiral yönüne döner (−25 b/sn'den ~0.6 sn). Anlık değildir.
+- **Takılma:** tutunma çarpışması yalnızca radyal düzeltmeyi tarar; spiral oyuncuyu bir duvara bastırınca teğet hareket sessizce durur. Bu yüzden spiralde her adım gerçekleşen teğet hız komutla karşılaştırılır; art arda `SpiralBlockedSteps` (3) adım `SpiralBlockedRatio` (0.25) altında kalırsa kanca kopar (SP4).
+- **Çift kanca / slingshot:** motor çalışmaz. Spiral + normal node normal çift kancadır, aynı spirale iki kol normal slingshot'tır. Kol spiralde kalırsa görsel soluklaşır.
+- **Dönen node ile birlikte kullanılmaz:** spiral varken `FullRotationTracker` bağlanmaz; `SpiralNode.OnValidate` aynı node'da `FullRotationNode` görünce uyarır.
+- **Ters dönen spiral** (`reverseEveryDegrees` > 0, prefab'da 360): tutunurken spin yönünde biriken net açı (`SpiralReverseCounter`, geriye dönüş sayılmaz) eşiğe ulaşınca yön değişir, sayaç sıfırlanır ve tutundukça tekrarlar. Bırakınca, respawn'da ya da çift kancaya geçişte ilk yönüne döner. `Reversed` olayı ses, titreşim ve görseli tetikler.
+- **Sprite yönü:** motor çalışırken spinden gelir (CCW sağ, CW sol); stick ve hız dalı atlanır (`PlayerController.SpiralFacingSign`).
+- **Ses / titreşim:** tutununca döngü sesi (`spiralLoopCue`, sabit perde) ve `SpiralOrbit` sürekli titreşim; tersine tutunmada ve çevrilmede tek seferlik. Cue'lar şimdilik boş. Döngü sesinin durması için sahnedeki `PlayerAudioController.sfxStopChannel` atanmalı.
+- **Görsel:** `UI/SpiralNode` shader'ı (halftone kuyruklu kollar, dış halkada yön dişleri). Açı script'ten sürülür, hit-stop ve pause'da durur. Bağlı değilken `targetSpeed / idleReferenceRadius` (3) rad/sn döner.
+- **Level tasarımı:** dönüş diski ip boyu kadar yarıçaplıdır; tutunulabilecek en uzak mesafe `NodeDetector.detectionRadius` (NewScene'de 10, varsayılan 15) olduğundan yaklaşık 10.5 birimlik (varsayılanla 15.5) bir daire boş kalmalı, ya da duvarın kancayı koparması bilinçli olmalı.
+
 ## Tunable'lar (`PlayerStats.asset`)
 
 | Alan | Değer | Okuyan |
 |---|---|---|
-| `SwingForceMultiplier` | 20 | tek kanca |
-| `MaxSwingSpeed` | 25 | tek kanca |
+| `SwingForceMultiplier` | 28 | tek kanca |
+| `MaxSwingSpeed` | 28 | tek kanca (spiralde kullanılmaz) |
 | `SwingCollisionRadius` | 0.5 | hiçbir yer (ölü alan; tek kanca artık oyuncu kutusunu kullanıyor) |
 | `MaxWallAngle` | 45 | tek + çift kanca |
 | `SwingGravity` | 25 | **yalnızca** çift kanca |
 | `SwingInitialBoost` | 5 | hiçbir yer (ölü alan) |
 | `SwingHopForwardSpeed` / `UpwardSpeed` / `Duration` | 8 / 12 / 0.15 | yerden kanca |
 | `DualSpringStiffness` / `Damping` | 25 / 5 | çift kanca |
-| `DualSwingForceMultiplier` | 15 | çift kanca |
+| `DualSwingForceMultiplier` | 20 | çift kanca |
 | `DualSwingCollisionRadius` | 0.4 | çift kanca |
 | `NodeCoincidenceThreshold` | 0.5 | slingshot koşulu |
 | `MovingNodeLaunchMultiplier` | 1 | hareketli node bırakışında aktarılan hız oranı |
@@ -109,6 +125,12 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 | `SlingshotGrappleLockout` | 0.25 | çıkıştan sonra tekrar kanca atılamayan süre |
 | `SlingshotAnticipationDuration` / `Speed` | 0.1 / 10 | |
 | `HitStopDuration` | 0.2 | fırlatma anı (dash ile ortak) |
+| `SpiralDriveAccel` / `SpiralOpposeAccel` | 60 / 45 | spiral motoru; ikisi de \|`Gravity`\|'den büyük olmalı |
+| `SpiralInputInfluence` | 0.4 | stick'in hedef hızı değiştirme oranı (< 1) |
+| `SpiralOverspeedDecay` | 0 | hedefin üstündeyken yavaşlama; 0 = fazla hız korunur |
+| `SpiralBlockedRatio` / `SpiralBlockedSteps` | 0.25 / 3 | takılınca kopma |
+
+`SpiralNode` alanları: `direction`, `targetSpeed` (18), `reverseEveryDegrees` (0; ters dönen prefab'da 360), `idleReferenceRadius` (3), `visual`.
 
 Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 
@@ -117,6 +139,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 - `Player/NodeDetector.cs`, `Player/TargetVisualizer.cs`, `Player/GrappleVisualManager.cs`, `Player/ArmController.cs`
 - `Player/States/SwingingState.cs`, `DualSwingingState.cs`, `SlingshotState.cs`
 - Kanca girişleri: `NormalState.CheckGroundGrappleInput` (yerde), `NormalState.ProcessGrappleInput` (havada), `SwingingState.CheckOppositeGrappleCast`, `WallSlidingState` (kayarken). Hepsi node'u `PlayerController.AttachAnchor` ile bağlar.
+- `Player/Nodes/Spiral/`: `SpiralNode`, `SpiralDriveMath` ve `SpiralReverseCounter` (saf C#, testli); motor `SwingingState.DriveSpiral`, takılma `IsSpiralBlocked`. Shader `Assets/Shader/SpiralNode.shader`, prefab'lar `Node-Spiral`, `Node-SpiralReversing`.
 - `Player/Nodes/Rotation/`: `FullRotationNode`, `FullRotationTracker` (saf C#, testli), `SpeedBoostRotationEffect`, `RotationEventTrigger`
 - Prefab'lar: `Assets/Prefab/New/Node/` (hareketli: `Node-Moving.prefab`)
 - Oda 5'teki yavaş zaman tutorial'ı (`SwingTutorial`, ilk node): [`swing-tutorial.md`](swing-tutorial.md). `NodeDetector` kurallarını `PlayerController.TryCastGrapple` ile kullanır.
@@ -135,4 +158,4 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 
 ## Testler
 
-`FullRotationTrackerTests`, `SwingRulesTests`, `SlingshotRulesTests`, `MovingNodeRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).
+`FullRotationTrackerTests`, `SpiralDriveMathTests`, `SpiralReverseCounterTests`, `SwingRulesTests`, `SlingshotRulesTests`, `MovingNodeRulesTests`, `SpiralNodeRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).

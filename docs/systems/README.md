@@ -9,7 +9,7 @@ Yeni bir özellik üzerinde çalışmaya başlamadan önce ilgili dosyayı oku; 
 | Dosya | Kapsam | GDD |
 |---|---|---|
 | [`movement-core.md`](movement-core.md) | Koşma, zıplama, havaya giriş yoluna göre yerçekimi, coyote/buffer, dash, hit-stop | §5.1, §5.2 |
-| [`grapple.md`](grapple.md) | Hedef seçimi, yerden kanca, tek/çift kanca, slingshot, dönen node | §5.2 |
+| [`grapple.md`](grapple.md) | Hedef seçimi, yerden kanca, tek/çift kanca, slingshot, dönen node, spiral node | §5.2 |
 | [`wall-movement.md`](wall-movement.md) | Tırmanma, kenardan çıkma, kayma, duvar zıplaması | §5.2 |
 | [`death-respawn.md`](death-respawn.md) | Ölüm anı, respawn dizisi, neyin sıfırlandığı, checkpoint'ler | §5.3 |
 | [`platforms.md`](platforms.md) | Sürücü + strateji, taşıma, tetiklenen/kırılan/tek yönlü platform, launch pad, wrapping | §6.2 |

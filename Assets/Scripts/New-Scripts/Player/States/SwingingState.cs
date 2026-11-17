@@ -43,6 +43,8 @@ namespace New_Scripts.Player.States
         private Vector2 _spiralSampleTangent;
         private float _spiralSampleCommand;
         private int _spiralBlockedCount;
+        private bool _spiralMotorStarted;
+        private bool _spiralFeedbackStarted;
 
         public SwingingState(PlayerController context, ActiveArm swingingArm, bool wasGrounded = false)
         {
@@ -108,7 +110,9 @@ namespace New_Scripts.Player.States
             {
                 Transform node = ArmAnchorNode();
                 bool stillHeld = node != null && node.GetComponentInParent<SpiralNode>() == _spiral;
+                _spiral.Reversed -= OnSpiralReversed;
                 _spiral.Disconnect(stillHeld);
+                StopSpiralFeedback();
             }
 
             if (_fullRotationNode != null)
@@ -129,7 +133,42 @@ namespace New_Scripts.Player.States
             if (_spiral == null) return false;
 
             _spiral.Connect(_context);
+            _spiral.Reversed += OnSpiralReversed;
+            if (!_isHopping) _context.SpiralFacingSign = _spiral.SpinSign;
+
+            _spiralFeedbackStarted = true;
+            if (_context.Audio != null) _context.Audio.PlaySpiralLoop();
+            if (_context.VibrationSettings != null && HapticManager.Instance != null)
+                HapticManager.Instance.StartContinuousVibration(_context.VibrationSettings.SpiralOrbit);
             return true;
+        }
+
+        private void StopSpiralFeedback()
+        {
+            _context.SpiralFacingSign = 0;
+            if (!_spiralFeedbackStarted) return;
+            _spiralFeedbackStarted = false;
+
+            if (_context.Audio != null) _context.Audio.StopSpiralLoop();
+            if (HapticManager.Instance != null) HapticManager.Instance.StopContinuousVibration();
+        }
+
+        private void OnSpiralReversed()
+        {
+            if (_context.Audio != null) _context.Audio.PlaySpiralReverse();
+            if (_context.VibrationSettings != null && HapticManager.Instance != null)
+                HapticManager.Instance.Vibrate(_context.VibrationSettings.SpiralReverse);
+        }
+
+        /// <summary>Motorun ilk adımında: oyuncu spinin tersine geliyorsa mücadele sesi ve titreşimi.</summary>
+        private void OnSpiralMotorStart(float speedAlongTangent, int spinSign)
+        {
+            _spiralMotorStarted = true;
+            if (speedAlongTangent * spinSign >= -1f) return;
+
+            if (_context.Audio != null) _context.Audio.PlaySpiralOpposeGrab();
+            if (_context.VibrationSettings != null && HapticManager.Instance != null)
+                HapticManager.Instance.Vibrate(_context.VibrationSettings.SpiralOpposeGrab);
         }
 
         /// <summary>
@@ -159,6 +198,8 @@ namespace New_Scripts.Player.States
         {
             Vector2 stick = _swingingArm == ActiveArm.Left ? _context.Input.LeftStick : _context.Input.RightStick;
             int spinSign = _spiral.SpinSign;
+            _context.SpiralFacingSign = spinSign;
+            if (!_spiralMotorStarted) OnSpiralMotorStart(speedAlongTangent, spinSign);
             float input = Vector2.Dot(stick, tangent * spinSign);
             float target = SpiralDriveMath.EffectiveTarget(spinSign, _spiral.TargetSpeed, input,
                 _stats.SpiralInputInfluence, _context.ActiveSpeedMultiplier);

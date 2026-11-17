@@ -19,5 +19,13 @@ namespace New_Scripts.Player
         [Header("Continuous Wall Climb Profiles")]
         public ContinuousRumbleProfile WallClimbLeft;
         public ContinuousRumbleProfile WallClimbRight;
+
+        [Header("Spiral Node")]
+        [Tooltip("Spirale tutunurken sürekli titreşim.")]
+        public ContinuousRumbleProfile SpiralOrbit;
+        [Tooltip("Spirale tersine giderek tutunma anı.")]
+        public RumbleProfile SpiralOpposeGrab;
+        [Tooltip("Ters dönen spiral yön değiştirdiğinde.")]
+        public RumbleProfile SpiralReverse;
     }
 }

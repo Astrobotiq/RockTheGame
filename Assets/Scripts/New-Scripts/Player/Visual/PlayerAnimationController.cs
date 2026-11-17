@@ -92,6 +92,13 @@ namespace New_Scripts.Player.Visual
         {
             if (!flipSpriteBasedOnDirection || spriteRenderer == null) return;
 
+            // Spiral motoru çalışırken yön spinden gelir (CCW sağ, CW sol); stick ve hız turda sürekli dönerdi.
+            if (playerController.SpiralFacingSign != 0)
+            {
+                spriteRenderer.flipX = playerController.SpiralFacingSign < 0;
+                return;
+            }
+
             float horizontalInput = 0f;
             if (playerController.Input != null)
             {

@@ -133,6 +133,9 @@ namespace New_Scripts.Player
         
         public float ActiveSpeedMultiplier { get; set; } = 1f;
 
+        /// <summary>Spiral motoru çalışırken sprite'ın baktığı yön: +1 sağ (CCW), −1 sol (CW), 0 = kilit yok.</summary>
+        public int SpiralFacingSign { get; set; }
+
         // --- Hit Stop & Frame Pause ---
         private bool _isPaused;
         /// <summary>Respawn ya da hitstop sırasında true; oyuncu girdi ve fizik işlemez.</summary>

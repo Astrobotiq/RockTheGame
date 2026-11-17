@@ -388,6 +388,33 @@ namespace RockTheGame.Tests.PlayMode
             Assert.GreaterOrEqual(angle, 720f, "kurulum: en az iki tur donmeli");
         }
 
+        // ---- Sprite yonu (tasarim §8) ----
+
+        [UnityTest]
+        public IEnumerator SP_FacingLockedToSpin()
+        {
+            var animation = Player.GetComponentInChildren<New_Scripts.Player.Visual.PlayerAnimationController>();
+            Assert.IsNotNull(animation, "PlayerAnimationController bulunamadi");
+            var field = typeof(New_Scripts.Player.Visual.PlayerAnimationController).GetField("spriteRenderer",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var sprite = (SpriteRenderer)field.GetValue(animation);
+            Assert.IsNotNull(sprite);
+
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.Clockwise);
+            yield return GrabFromRestBelow(spiral);
+
+            // Tam bir turu kapsar: tepeden gecerken hiz saga dondugunde de sprite sola bakmali.
+            for (int i = 0; i < 150; i++)
+            {
+                yield return null;
+                Assert.IsTrue(sprite.flipX, $"frame {i}: CW spiralde sprite sola bakmali, hiz {Player.Velocity}");
+            }
+
+            Input.IsRightTriggerHeld = false;
+            yield return WaitForAir();
+            Assert.AreEqual(0, Player.SpiralFacingSign, "birakinca yon kilidi kalkmali");
+        }
+
         // ---- Dikkat edilecekler ----
 
         [UnityTest]

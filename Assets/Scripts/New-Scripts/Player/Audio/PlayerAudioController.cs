@@ -11,6 +11,8 @@ namespace New_Scripts.Player
     {
         [Header("Event Channels")]
         [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+        [Tooltip("Döngü seslerini (spiral) durdurmak için AudioManager'ın dinlediği SFX stop kanalı.")]
+        [SerializeField] private AudioCueStopEventChannelSO sfxStopChannel;
 
         [Header("Audio Data")]
         [SerializeField] private PlayerAudioDataSO audioData;
@@ -48,6 +50,28 @@ namespace New_Scripts.Player
         public void PlaySlingshotAnticipation()
         {
             PlaySound(audioData?.SlingshotAnticipationCue);
+        }
+
+        public void PlaySpiralLoop()
+        {
+            PlaySound(audioData?.SpiralLoopCue);
+        }
+
+        public void StopSpiralLoop()
+        {
+            AudioCueSO cue = audioData?.SpiralLoopCue;
+            if (sfxStopChannel != null && cue != null)
+                sfxStopChannel.RaiseStopEvent(cue);
+        }
+
+        public void PlaySpiralOpposeGrab()
+        {
+            PlaySound(audioData?.SpiralOpposeGrabCue);
+        }
+
+        public void PlaySpiralReverse()
+        {
+            PlaySound(audioData?.SpiralReverseCue);
         }
 
         private void PlaySound(AudioCueSO cue)

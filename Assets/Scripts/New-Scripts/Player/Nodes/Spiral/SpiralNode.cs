@@ -30,6 +30,7 @@ namespace New_Scripts.Player.Nodes.Spiral
         [SerializeField] private float idleReferenceRadius = 3f;
 
         private bool _flipped;
+        private SpiralReverseCounter _reverseCounter;
 
         public int SpinSign => (direction == SpinDirection.CounterClockwise ? 1 : -1) * (_flipped ? -1 : 1);
         public float TargetSpeed => targetSpeed;
@@ -42,10 +43,30 @@ namespace New_Scripts.Player.Nodes.Spiral
 
         protected PlayerController ConnectedPlayer { get; private set; }
 
+        /// <summary>Ters dönen spiral yön değiştirdiğinde (ses, titreşim, görsel).</summary>
+        public event System.Action Reversed;
+
+        /// <summary>Ters dönen spiralde bir sonraki çevrilmeye ilerleme (0..1); normal spiralde 0.</summary>
+        public float ReverseProgress => _reverseCounter != null ? _reverseCounter.Progress : 0f;
+
         public void Connect(PlayerController player)
         {
             ConnectedPlayer = player;
             IsConnected = true;
+            _reverseCounter = IsReversing ? new SpiralReverseCounter(reverseEveryDegrees) : null;
+        }
+
+        /// <summary>
+        /// Motorun çalıştığı her adımda çağrılır. Ters dönen spiralde spin yönünde reverseEveryDegrees birikince
+        /// yön değişir ve Reversed tetiklenir; sayaç sıfırlanıp tekrar saymaya başlar.
+        /// </summary>
+        public void TickReverse(Vector2 playerPos, Vector2 anchorPos)
+        {
+            if (!IsConnected || _reverseCounter == null) return;
+            if (!_reverseCounter.Tick(playerPos, anchorPos, SpinSign)) return;
+
+            Flip();
+            Reversed?.Invoke();
         }
 
         /// <param name="stillHeld">Kol node'da kaldı mı (örn. çift kancaya geçiş). Görsel için.</param>
@@ -53,6 +74,7 @@ namespace New_Scripts.Player.Nodes.Spiral
         {
             IsConnected = false;
             _flipped = false;
+            _reverseCounter = null;
             ReportedAngularSpeed = 0f;
         }
 

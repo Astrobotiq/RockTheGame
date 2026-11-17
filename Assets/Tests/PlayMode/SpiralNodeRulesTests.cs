@@ -276,6 +276,118 @@ namespace RockTheGame.Tests.PlayMode
             Assert.IsFalse(spiral.IsConnected);
         }
 
+        // ---- SP7 ----
+
+        /// <summary>Spin isareti degisene kadar bekler (en fazla maxSteps); o ana kadar biriken isaretli aciyi verir.</summary>
+        private IEnumerator WaitForFlip(SpiralNode spiral, int maxSteps, System.Action<float, bool> result)
+        {
+            int startSign = spiral.SpinSign;
+            Vector2 anchor = spiral.transform.position;
+            Vector2 previous = Player.PlayerRigidbody.position - anchor;
+            float total = 0f;
+            for (int i = 0; i < maxSteps; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                Vector2 current = Player.PlayerRigidbody.position - anchor;
+                total += Vector2.SignedAngle(previous, current);
+                previous = current;
+                if (spiral.SpinSign != startSign)
+                {
+                    result(total, true);
+                    yield break;
+                }
+            }
+            result(total, false);
+        }
+
+        [UnityTest]
+        public IEnumerator SP7_Reversing_FlipsAfter360AndRepeats()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise, 360f);
+            Vector2 anchor = spiral.transform.position;
+            int reversedEvents = 0;
+            spiral.Reversed += () => reversedEvents++;
+            yield return GrabFromRestBelow(spiral);
+            Assert.AreEqual(1, spiral.SpinSign);
+
+            float angle = 0f;
+            bool flipped = false;
+            yield return WaitForFlip(spiral, 300, (a, f) => { angle = a; flipped = f; });
+            Assert.IsTrue(flipped, $"6 sn icinde yon degismedi, aci {angle}");
+            Assert.AreEqual(-1, spiral.SpinSign);
+            Assert.AreEqual(360f, angle, 10f, "ilk 360° CCW birikince cevrilmeli");
+            Assert.AreEqual(1, reversedEvents, "Reversed olayi bir kez");
+
+            int steps = 0;
+            while (TangentialSpeed(anchor) > -1f && steps < 150)
+            {
+                yield return new WaitForFixedUpdate();
+                steps++;
+            }
+            Assert.Less(steps, 150, "cevrildikten sonra 3 sn icinde CW donmeye baslamadi");
+
+            yield return WaitForFlip(spiral, 450, (a, f) => { angle = a; flipped = f; });
+            Assert.IsTrue(flipped, "tutundukca ikinci kez cevrilmeli");
+            Assert.AreEqual(1, spiral.SpinSign);
+            Assert.AreEqual(2, reversedEvents);
+            Assert.IsInstanceOf<SwingingState>(Player.CurrentState);
+        }
+
+        private IEnumerator GrabReversingAndFlipOnce(System.Action<SpiralNode> onFlipped)
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise, 360f);
+            yield return GrabFromRestBelow(spiral);
+            bool flipped = false;
+            yield return WaitForFlip(spiral, 300, (a, f) => flipped = f);
+            Assert.IsTrue(flipped, "kurulum: spiral cevrilmeli");
+            Assert.AreEqual(-1, spiral.SpinSign);
+            onFlipped(spiral);
+        }
+
+        [UnityTest]
+        public IEnumerator SP7b_Release_RestoresInitialDirection()
+        {
+            SpiralNode spiral = null;
+            yield return GrabReversingAndFlipOnce(s => spiral = s);
+
+            Input.IsRightTriggerHeld = false;
+            yield return WaitForAir();
+
+            Assert.AreEqual(1, spiral.SpinSign, "birakinca ilk yonune donmeli");
+            Assert.IsFalse(spiral.IsConnected);
+            Assert.AreEqual(0f, spiral.ReverseProgress, 0.0001f);
+        }
+
+        [UnityTest]
+        public IEnumerator SP7c_Respawn_RestoresInitialDirection()
+        {
+            SpiralNode spiral = null;
+            yield return GrabReversingAndFlipOnce(s => spiral = s);
+
+            // Respawn yolu (ResetPlayerAt ile ayni) ama frame beklemeden: tetik hala basili, oyuncu bir sonraki
+            // frame'de yakindaki spirale yeniden tutunabilir.
+            Player.OnStartRespawn();
+            Teleport(Origin);
+            Player.OnEndRespawn();
+
+            Assert.AreEqual(1, spiral.SpinSign, "respawn'da ilk yonune donmeli");
+            Assert.IsFalse(spiral.IsConnected);
+        }
+
+        [UnityTest]
+        public IEnumerator SP7d_NormalSpiral_NeverFlips()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            yield return GrabFromRestBelow(spiral);
+
+            float angle = 0f;
+            bool flipped = false;
+            yield return WaitForFlip(spiral, 500, (a, f) => { angle = a; flipped = f; });
+
+            Assert.IsFalse(flipped, "normal spiral hic yon degistirmemeli");
+            Assert.GreaterOrEqual(angle, 720f, "kurulum: en az iki tur donmeli");
+        }
+
         // ---- Dikkat edilecekler ----
 
         [UnityTest]

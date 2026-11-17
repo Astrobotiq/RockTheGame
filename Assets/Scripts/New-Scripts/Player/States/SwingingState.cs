@@ -95,6 +95,10 @@ namespace New_Scripts.Player.States
             {
                 ApplyArcadePendulum();
                 TickRotationTracker(); // Hop bitmeden önce saymaya başlama
+
+                // Ters dönen spiral: yalnızca motor çalışırken (bu adımda kanca kopmadıysa) sayar.
+                if (_spiral != null && _context.CurrentState == this)
+                    _spiral.TickReverse(_context.PlayerRigidbody.position, _anchorPoint);
             }
         }
 

@@ -77,12 +77,32 @@ namespace RockTheGame.Tests.PlayMode
             GameObject node = null;
             yield return GrabNodeAbove(NodeStart, n => node = n);
 
-            // 10 birim/sn, 25 adim = 5 birim
+            float ropeLength = Vector2.Distance(Player.PlayerRigidbody.position, node.transform.position);
+            float startX = Player.PlayerRigidbody.position.x;
+
+            // 10 birim/sn, 25 adim = 5 birim. Atalet oyuncuyu sallar (M6), ama ip boyu korunur ve oyuncu node'la ilerler.
             yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 25);
             yield return WaitFixedSteps(1);
 
             Assert.IsInstanceOf<SwingingState>(Player.CurrentState);
-            Assert.Less(Mathf.Abs(Player.PlayerRigidbody.position.x - node.transform.position.x), 0.3f);
+            Assert.AreEqual(ropeLength, Vector2.Distance(Player.PlayerRigidbody.position, node.transform.position), 0.15f,
+                "Ip boyu korunmali");
+            Assert.Greater(Player.PlayerRigidbody.position.x - startX, 2.5f, "Oyuncu node'la birlikte ilerlemeli");
+        }
+
+        [UnityTest]
+        public IEnumerator M6_NodeStartingToMove_PlayerLagsBehind()
+        {
+            GameObject node = null;
+            yield return GrabNodeAbove(NodeStart, n => node = n);
+
+            // Duran node aniden 10 b/sn ile kalkar: atalet oyuncuyu geride birakir, ip salinim baslatir
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 12);
+            yield return WaitFixedSteps(1);
+
+            Assert.IsInstanceOf<SwingingState>(Player.CurrentState);
+            Assert.Less(Player.PlayerRigidbody.position.x - node.transform.position.x, -0.3f,
+                "Node kalkinca oyuncu geride kalmali (node'un ivmesi salinima gecer)");
         }
 
         [UnityTest]
@@ -107,13 +127,14 @@ namespace RockTheGame.Tests.PlayMode
             yield return GrabNodeAbove(NodeStart, n => node = n);
 
             yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 10);
-            // Birakis: node hala hareket ederken
+            // Birakis: node hala hareket ederken. Sallanirken Velocity node'a gore hizdir; birakinca node hizi ustune eklenir.
+            float swingVelocityX = Player.Velocity.x;
             Input.IsRightTriggerHeld = false;
             yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 1);
             yield return WaitForAir();
             yield return WaitFixedSteps(1);
 
-            Assert.Greater(Player.Velocity.x, 8f);
+            Assert.Greater(Player.Velocity.x - swingVelocityX, 8f);
         }
 
         /// <summary>Sol kolla sol node'a, sonra sag kolla sag node'a tutunur.</summary>

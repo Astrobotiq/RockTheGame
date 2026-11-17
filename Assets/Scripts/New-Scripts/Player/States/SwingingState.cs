@@ -22,6 +22,9 @@ namespace New_Scripts.Player.States
         private float _ropeLength;
         private Vector2 _currentVelocity;
 
+        // Hareketli node ataleti: sınırlı ivmeyle yumuşatılmış node hızı (docs/hareketli-node-tasarimi.md)
+        private Vector2 _pivotVelocity;
+
         // Hop (Sıçrama) aşaması değişkenleri
         private bool _isHopping;
         private float _hopTimer;
@@ -176,6 +179,8 @@ namespace New_Scripts.Player.States
         {
             _ropeLength = Vector2.Distance(_context.PlayerRigidbody.position, _anchorPoint);
             _currentVelocity = _context.Velocity;
+            // Sıfırdan başlar: hareket eden node'a tutununca ip oyuncuyu node'un hızına doğru çeker.
+            _pivotVelocity = Vector2.zero;
         }
 
         private void ApplyArcadePendulum()
@@ -185,6 +190,9 @@ namespace New_Scripts.Player.States
                 : _context.Input.RightStick.x;
 
             _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
+
+            // Hareketli node: node'un ivmesi ters yönde salınıma geçer (radyal kısmı aşağıdaki izdüşüm atar).
+            ApplyNodeInertia();
 
             // Hareketli node: oyuncu node'un kaymasıyla taşınır, sarkaç node'a göre çalışır.
             RefreshAnchorPoint();
@@ -213,6 +221,16 @@ namespace New_Scripts.Player.States
         }
 
         // --- YARDIMCI METOTLAR (Değişmedi) ---
+
+        /// <summary>Node hızının (sınırlı ivmeyle yumuşatılmış) bu adımdaki değişimi × atalet, node'a göre hızdan çıkarılır.
+        /// Sabit node'da hız hep 0, etkisi yok.</summary>
+        private void ApplyNodeInertia()
+        {
+            Vector2 previous = _pivotVelocity;
+            _pivotVelocity = Vector2.MoveTowards(_pivotVelocity, _context.AnchorVelocity(_swingingArm),
+                _stats.MovingNodeMaxPivotAccel * Time.fixedDeltaTime);
+            _currentVelocity -= (_pivotVelocity - previous) * _stats.MovingNodeInertia;
+        }
 
         /// <summary>Anchor hareketli node'u izliyorsa güncel konumu alır.</summary>
         private void RefreshAnchorPoint()

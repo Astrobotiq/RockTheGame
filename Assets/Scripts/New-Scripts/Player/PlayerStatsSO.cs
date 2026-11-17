@@ -50,6 +50,10 @@ namespace New_Scripts.Player
         [Header("Moving Node")]
         [Tooltip("Hareketli node'dan bırakınca node hızının oyuncuya aktarılan oranı (docs/hareketli-node-tasarimi.md).")]
         public float MovingNodeLaunchMultiplier = 1f;
+        [Tooltip("Node'un ivmesinin salınıma geçen oranı: 0 = node yalnızca taşır, 1 = tam fizik (pivot ivmesinin ters kuvveti).")]
+        public float MovingNodeInertia = 0.6f;
+        [Tooltip("Ataletin hesaplandığı node hızının bir saniyede en fazla ne kadar değişebileceği (b/sn²). Ani dönüşlerin darbesini birkaç adıma yayar.")]
+        public float MovingNodeMaxPivotAccel = 60f;
 
         [Header("Slingshot")]
         public float MaxSlingshotSpeed = 40f;

@@ -178,5 +178,54 @@ namespace RockTheGame.Tests
             for (float t = 0f; t < 4f; t += 0.37f)
                 Assert.AreEqual(5f, Vector2.Distance(center, s.GetPositionAtTime(t)), 0.001f);
         }
+
+        // ---- SinePingPongStrategy ----
+
+        private SinePingPongStrategy CreateSine(float period, float phaseOffset = 0f)
+        {
+            var s = Create<SinePingPongStrategy>(Vector3.zero);
+            Set(s, "startPoint", new Vector2(0f, 0f));
+            Set(s, "endPoint", new Vector2(10f, 0f));
+            Set(s, "period", period);
+            Set(s, "phaseOffset", phaseOffset);
+            return s;
+        }
+
+        [Test]
+        public void Sine_StartsAtStart_ReachesEndAtHalfPeriod_MidpointAtQuarter()
+        {
+            var s = CreateSine(period: 4f);
+
+            AssertVector(new Vector2(0f, 0f), s.GetPositionAtTime(0f));
+            AssertVector(new Vector2(5f, 0f), s.GetPositionAtTime(1f));
+            AssertVector(new Vector2(10f, 0f), s.GetPositionAtTime(2f));
+            AssertVector(new Vector2(0f, 0f), s.GetPositionAtTime(4f));
+        }
+
+        [Test]
+        public void Sine_SlowsToZeroAtEnds_FastestInMiddle()
+        {
+            var s = CreateSine(period: 4f);
+            const float dt = 0.01f;
+
+            float speedAtStart = (s.GetPositionAtTime(dt) - s.GetPositionAtTime(0f)).magnitude / dt;
+            float speedAtEnd = (s.GetPositionAtTime(2f + dt) - s.GetPositionAtTime(2f - dt)).magnitude / (2f * dt);
+            float speedMiddle = (s.GetPositionAtTime(1f + dt) - s.GetPositionAtTime(1f - dt)).magnitude / (2f * dt);
+
+            Assert.Less(speedAtStart, 0.1f);
+            Assert.Less(speedAtEnd, 0.1f);
+            // Tepe hiz pi * mesafe / periyot = pi * 10 / 4
+            Assert.AreEqual(Mathf.PI * 10f / 4f, speedMiddle, 0.05f);
+        }
+
+        [Test]
+        public void Sine_PhaseOffset_ShiftsTime_AndBoundsCoverPath()
+        {
+            var s = CreateSine(period: 4f, phaseOffset: 1f);
+
+            AssertVector(new Vector2(10f, 0f), s.GetPositionAtTime(1f));
+            Assert.IsTrue(s.TryGetPathBounds(out Rect bounds));
+            Assert.AreEqual(Rect.MinMaxRect(0f, 0f, 10f, 0f), bounds);
+        }
     }
 }

@@ -128,13 +128,6 @@ namespace RockTheGame.Tests.PlayMode
             return node;
         }
 
-        private static void SetField(object target, string name, object value)
-        {
-            var f = target.GetType().GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            Assert.IsNotNull(f, name);
-            f.SetValue(target, value);
-        }
-
         [UnityTest]
         public IEnumerator M7_GrabbingMovingNode_KeepsWorldVelocity()
         {

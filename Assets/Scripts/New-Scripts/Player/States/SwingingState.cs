@@ -1,4 +1,5 @@
 using New_Scripts.Player.Nodes.Rotation;
+using New_Scripts.Player.Nodes.Spiral;
 using UnityEngine;
 
 namespace New_Scripts.Player.States
@@ -33,6 +34,9 @@ namespace New_Scripts.Player.States
         private FullRotationTracker _rotationTracker;
         private FullRotationNode _fullRotationNode;
 
+        // --- Spiral node (docs/spiral-node-tasarimi.md) ---
+        private SpiralNode _spiral;
+
         public SwingingState(PlayerController context, ActiveArm swingingArm, bool wasGrounded = false)
         {
             _context = context;
@@ -62,8 +66,10 @@ namespace New_Scripts.Player.States
                 StartHopPhase();
             else
                 InitializePendulum();
-            
-            TryBindFullRotationNode();
+
+            // Spiral varsa dönüş sayacı bağlanmaz (aynı node'da ikisi birlikte kullanılmaz).
+            if (!TryBindSpiralNode())
+                TryBindFullRotationNode();
         }
 
         public void UpdateState()
@@ -87,10 +93,52 @@ namespace New_Scripts.Player.States
 
         public void ExitState()
         {
+            if (_spiral != null)
+            {
+                Transform node = ArmAnchorNode();
+                bool stillHeld = node != null && node.GetComponentInParent<SpiralNode>() == _spiral;
+                _spiral.Disconnect(stillHeld);
+            }
+
             if (_fullRotationNode != null)
             {
                 _fullRotationNode.OnConnectionLost();
             }
+        }
+
+        // --- SPİRAL NODE ---
+
+        private Transform ArmAnchorNode() =>
+            _swingingArm == ActiveArm.Left ? _context.LeftAnchorNode : _context.RightAnchorNode;
+
+        private bool TryBindSpiralNode()
+        {
+            Transform node = ArmAnchorNode();
+            _spiral = node != null ? node.GetComponentInParent<SpiralNode>() : null;
+            if (_spiral == null) return false;
+
+            _spiral.Connect(_context);
+            return true;
+        }
+
+        /// <summary>
+        /// Spiral motoru: node'a göre teğet hızı hedef hıza sınırlı ivmeyle yaklaştırır (yerçekimi zaten eklendi).
+        /// Stick hedefi spin yönünde ±SpiralInputInfluence oranında değiştirir, işaretini asla çevirmez.
+        /// </summary>
+        private float DriveSpiral(float speedAlongTangent, Vector2 tangent)
+        {
+            Vector2 stick = _swingingArm == ActiveArm.Left ? _context.Input.LeftStick : _context.Input.RightStick;
+            int spinSign = _spiral.SpinSign;
+            float input = Vector2.Dot(stick, tangent * spinSign);
+            float target = SpiralDriveMath.EffectiveTarget(spinSign, _spiral.TargetSpeed, input,
+                _stats.SpiralInputInfluence, _context.ActiveSpeedMultiplier);
+
+            float speed = SpiralDriveMath.StepTangentialSpeed(speedAlongTangent, target, _stats.SpiralDriveAccel,
+                _stats.SpiralOpposeAccel, _stats.SpiralOverspeedDecay, Time.fixedDeltaTime);
+
+            if (_ropeLength > 0.001f)
+                _spiral.ReportAngularSpeed(speed / _ropeLength * Mathf.Rad2Deg);
+            return speed;
         }
 
         // --- 360 DÖNÜŞ METOTLARI ---
@@ -203,12 +251,21 @@ namespace New_Scripts.Player.States
             Vector2 tangent = new Vector2(directionToAnchor.y, -directionToAnchor.x);
 
             float speedAlongTangent = Vector2.Dot(_currentVelocity, tangent);
-            float inputForce = playerInputX * _stats.SwingForceMultiplier * Time.fixedDeltaTime;
 
-            float currentMaxSpeed = _stats.MaxSwingSpeed * _context.ActiveSpeedMultiplier;
+            if (_spiral != null)
+            {
+                // Spiral pompalamanın ve MaxSwingSpeed sınırının yerine geçer.
+                speedAlongTangent = DriveSpiral(speedAlongTangent, tangent);
+            }
+            else
+            {
+                float inputForce = playerInputX * _stats.SwingForceMultiplier * Time.fixedDeltaTime;
 
-            if (Mathf.Abs(speedAlongTangent + inputForce) < currentMaxSpeed)
-                speedAlongTangent += inputForce;
+                float currentMaxSpeed = _stats.MaxSwingSpeed * _context.ActiveSpeedMultiplier;
+
+                if (Mathf.Abs(speedAlongTangent + inputForce) < currentMaxSpeed)
+                    speedAlongTangent += inputForce;
+            }
 
             _currentVelocity = tangent * speedAlongTangent;
 

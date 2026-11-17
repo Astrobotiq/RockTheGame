@@ -202,6 +202,37 @@ namespace RockTheGame.Tests.PlayMode
             yield return WaitForState<New_Scripts.Player.States.SwingingState>();
         }
 
+        /// <summary>Var olan node'a sag kolla gercek cast: node spawn etmez.</summary>
+        protected IEnumerator GrabExistingWithRight(GameObject node)
+        {
+            Input.RightStick = ((Vector2)node.transform.position - Player.PlayerRigidbody.position).normalized;
+            Input.IsRightTriggerHeld = true;
+            yield return WaitForState<New_Scripts.Player.States.SwingingState>();
+        }
+
+        /// <summary>Var olan node'a sol kolla gercek cast: node spawn etmez.</summary>
+        protected IEnumerator GrabExistingWithLeft(GameObject node)
+        {
+            Input.LeftStick = ((Vector2)node.transform.position - Player.PlayerRigidbody.position).normalized;
+            Input.IsLeftTriggerHeld = true;
+            yield return WaitForState<New_Scripts.Player.States.SwingingState>();
+        }
+
+        /// <summary>Oyuncunun anchor etrafinda <paramref name="steps"/> fizik adiminda biriktirdigi isaretli aci (CCW pozitif).</summary>
+        protected IEnumerator MeasureRotation(Vector2 anchor, int steps, System.Action<float> result)
+        {
+            Vector2 previous = Player.PlayerRigidbody.position - anchor;
+            float total = 0f;
+            for (int i = 0; i < steps; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                Vector2 current = Player.PlayerRigidbody.position - anchor;
+                total += Vector2.SignedAngle(previous, current);
+                previous = current;
+            }
+            result(total);
+        }
+
         /// <summary>Oyuncu tepki vermeden ipe tutunmus olarak baslar: oyuncu hemen durumuna gecer.</summary>
         protected void StartSwingFrom(Vector2 anchor)
         {
@@ -285,6 +316,13 @@ namespace RockTheGame.Tests.PlayMode
             _spawned.Add(go);
             Physics2D.SyncTransforms();
             return go;
+        }
+
+        protected static void SetField(object target, string name, object value)
+        {
+            var f = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(f, name);
+            f.SetValue(target, value);
         }
 
         protected sealed class FakeInput : IInputReader

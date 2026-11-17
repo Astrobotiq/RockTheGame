@@ -116,6 +116,12 @@ namespace New_Scripts.Player
         private Vector2? _rightAnchor;
         private Vector2 _leftAnchorDelta;
         private Vector2 _rightAnchorDelta;
+        // Node'un fizik gövdesi ve gövdeye göre konumu: interpolation açık node'un Transform'u adımlar arasında
+        // düzgün değişmez, gürültülü kayma ataletle büyüyüp titreme yapar; konum gövdenin fizik pozundan okunur.
+        private Rigidbody2D _leftNodeBody;
+        private Rigidbody2D _rightNodeBody;
+        private Vector2 _leftNodeLocal;
+        private Vector2 _rightNodeLocal;
 
         public bool HasDashCharge { get; private set; } = true;
         public bool CanSlingshot { get; private set; } = true;
@@ -217,17 +223,23 @@ namespace New_Scripts.Player
             // Node'un o anki hızı: tutunma anında da AnchorVelocity geçerli olsun (dünya → node'a göre hız dönüşümü).
             var surface = node != null ? node.GetComponentInParent<New_Scripts.Platform.IMovingSurface>() : null;
             Vector2 delta = surface != null ? surface.DeltaPosition : Vector2.zero;
+            Rigidbody2D body = BindNodeBody(node, out Vector2 local);
+            if (body != null) point = body.GetRelativePoint(local);
             if (arm == ActiveArm.Left)
             {
                 LeftAnchor = point;
                 LeftAnchorNode = node;
                 _leftAnchorDelta = delta;
+                _leftNodeBody = body;
+                _leftNodeLocal = local;
             }
             else
             {
                 RightAnchor = point;
                 RightAnchorNode = node;
                 _rightAnchorDelta = delta;
+                _rightNodeBody = body;
+                _rightNodeLocal = local;
             }
         }
 
@@ -240,14 +252,25 @@ namespace New_Scripts.Player
         /// <summary>Durumdan önce: izlenen node'lar kaydıysa anchor'ı yeniler. Pasif ya da yok olmuş node'da anchor son konumda kalır.</summary>
         private void RefreshMovingAnchors()
         {
-            _leftAnchorDelta = FollowNode(LeftAnchorNode, ref _leftAnchor);
-            _rightAnchorDelta = FollowNode(RightAnchorNode, ref _rightAnchor);
+            _leftAnchorDelta = FollowNode(LeftAnchorNode, _leftNodeBody, _leftNodeLocal, ref _leftAnchor);
+            _rightAnchorDelta = FollowNode(RightAnchorNode, _rightNodeBody, _rightNodeLocal, ref _rightAnchor);
         }
 
-        private static Vector2 FollowNode(Transform node, ref Vector2? anchor)
+        /// <summary>Node'u taşıyan Rigidbody2D ve node'un gövdeye göre (ölçeksiz) konumu; gövde yoksa null.</summary>
+        private static Rigidbody2D BindNodeBody(Transform node, out Vector2 local)
+        {
+            local = Vector2.zero;
+            Rigidbody2D body = node != null ? node.GetComponentInParent<Rigidbody2D>() : null;
+            if (body == null) return null;
+            Transform bodyTransform = body.transform;
+            local = Quaternion.Inverse(bodyTransform.rotation) * (node.position - bodyTransform.position);
+            return body;
+        }
+
+        private static Vector2 FollowNode(Transform node, Rigidbody2D body, Vector2 local, ref Vector2? anchor)
         {
             if (node == null || !anchor.HasValue || !node.gameObject.activeInHierarchy) return Vector2.zero;
-            Vector2 current = node.position;
+            Vector2 current = body != null ? body.GetRelativePoint(local) : (Vector2)node.position;
             Vector2 delta = current - anchor.Value;
             anchor = current;
             return delta;

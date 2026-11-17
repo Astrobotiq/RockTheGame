@@ -111,7 +111,9 @@ namespace RockTheGame.Tests.PlayMode
             var root = new GameObject("MovingNodeRoot");
             root.SetActive(false);
             root.transform.position = start;
-            root.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+            var body = root.AddComponent<Rigidbody2D>();
+            body.bodyType = RigidbodyType2D.Kinematic;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate; // Node-Moving prefab'indaki gibi
             var strategy = root.AddComponent<New_Scripts.Platform.LinearPingPongStrategy>();
             SetField(strategy, "startPoint", start);
             SetField(strategy, "endPoint", end);
@@ -150,6 +152,32 @@ namespace RockTheGame.Tests.PlayMode
 
             Assert.Less(Player.PlayerRigidbody.position.x - grabX, 0.3f,
                 "Hareketli node'u yakalayan oyuncu node'un hizini aninda almamali");
+        }
+
+        [UnityTest]
+        public IEnumerator M8_PlatformNode_AnchorDeltaIsSteady()
+        {
+            // Sabit 10 b/sn giden gercek node (interpolation acik): anchor her adim ayni kaymayi gormeli.
+            // Gurultulu kayma ataletle buyur ve salinimda titreme olarak gorunur.
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            GameObject node = SpawnPlatformNode(NodeStart + new Vector2(-1f, 0f), NodeStart + new Vector2(39f, 0f), 8f);
+            yield return WaitFixedSteps(3);
+            Input.RightStick = ((Vector2)node.transform.position - Player.PlayerRigidbody.position).normalized;
+            Input.IsRightTriggerHeld = true;
+            yield return WaitForState<SwingingState>();
+            yield return WaitFixedSteps(2);
+
+            float expected = 10f * Time.fixedDeltaTime, min = float.MaxValue, max = float.MinValue;
+            for (int i = 0; i < 20; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                float dx = Player.AnchorDelta(New_Scripts.Player.ActiveArm.Right).x;
+                min = Mathf.Min(min, dx);
+                max = Mathf.Max(max, dx);
+            }
+
+            Assert.AreEqual(expected, min, expected * 0.1f, $"en kucuk adim kaymasi {min}, en buyuk {max}");
+            Assert.AreEqual(expected, max, expected * 0.1f, $"en kucuk adim kaymasi {min}, en buyuk {max}");
         }
 
         [UnityTest]

@@ -47,6 +47,10 @@ namespace New_Scripts.Player
         public float DashEndMomentumMultiplier = 0.15f;
         public float DashSpeed => DashDistance / DashDuration;
 
+        [Header("Moving Node")]
+        [Tooltip("Hareketli node'dan bırakınca node hızının oyuncuya aktarılan oranı (docs/hareketli-node-tasarimi.md).")]
+        public float MovingNodeLaunchMultiplier = 1f;
+
         [Header("Slingshot")]
         public float MaxSlingshotSpeed = 40f;
         public float SlingshotLaunchDuration = 0.2f;

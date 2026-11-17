@@ -34,6 +34,7 @@ MonoBehaviour:
   DashDuration: 0.16
   DashImpactMultiplier: 0.5
   DashEndMomentumMultiplier: 0.28
+  MovingNodeLaunchMultiplier: 1
   MaxSlingshotSpeed: 65
   SlingshotLaunchDuration: 0.01
   SlingshotGrappleLockout: 0.25

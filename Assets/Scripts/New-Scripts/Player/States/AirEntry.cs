@@ -69,8 +69,10 @@ namespace New_Scripts.Player.States
         public static AirEntry ClimbJump(bool boostedSurface, Vector2 carriedVelocity) =>
             JumpRule(boostedSurface, wallClimbLockout: 0.2f, carriedVelocity: carriedVelocity);
 
-        /// <summary>Tek kancayı bırakma (H2): yükselirken 3×, düşerken 1.5×, tuştan bağımsız.</summary>
-        public static AirEntry SwingRelease() => new AirEntry(true, bypassJumpGravity: true);
+        /// <summary>Tek kancayı bırakma (H2): yükselirken 3×, düşerken 1.5×, tuştan bağımsız.
+        /// Hareketli node'dan bırakınca node'un hızı <paramref name="carriedVelocity"/> ile taşınır.</summary>
+        public static AirEntry SwingRelease(Vector2 carriedVelocity = default) =>
+            new AirEntry(true, bypassJumpGravity: true, carriedVelocity: carriedVelocity);
 
         /// <summary>Slingshot fırlatışının sonu ya da erken bırakma (L5): SwingRelease kuralı + kanca kilidi.</summary>
         public static AirEntry SlingshotLaunch(float grappleLockout) =>

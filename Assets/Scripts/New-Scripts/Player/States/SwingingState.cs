@@ -157,6 +157,7 @@ namespace New_Scripts.Player.States
 
         private void ApplyHopPhysics()
         {
+            RefreshAnchorPoint();
             _hopTimer -= Time.fixedDeltaTime;
 
             _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
@@ -185,8 +186,11 @@ namespace New_Scripts.Player.States
 
             _currentVelocity.y += _stats.Gravity * Time.fixedDeltaTime;
 
+            // Hareketli node: oyuncu node'un kaymasıyla taşınır, sarkaç node'a göre çalışır.
+            RefreshAnchorPoint();
             Vector2 playerPos = _context.PlayerRigidbody.position;
-            Vector2 directionToAnchor = (_anchorPoint - playerPos).normalized;
+            Vector2 carriedPos = playerPos + _context.AnchorDelta(_swingingArm);
+            Vector2 directionToAnchor = (_anchorPoint - carriedPos).normalized;
             Vector2 tangent = new Vector2(directionToAnchor.y, -directionToAnchor.x);
 
             float speedAlongTangent = Vector2.Dot(_currentVelocity, tangent);
@@ -209,6 +213,13 @@ namespace New_Scripts.Player.States
         }
 
         // --- YARDIMCI METOTLAR (Değişmedi) ---
+
+        /// <summary>Anchor hareketli node'u izliyorsa güncel konumu alır.</summary>
+        private void RefreshAnchorPoint()
+        {
+            Vector2? anchor = _swingingArm == ActiveArm.Left ? _context.LeftAnchor : _context.RightAnchor;
+            if (anchor.HasValue) _anchorPoint = anchor.Value;
+        }
 
         private bool TrySetAnchorPoint()
         {
@@ -248,9 +259,10 @@ namespace New_Scripts.Player.States
 
             if (!activeTriggerHeld)
             {
+                Vector2 nodeVelocity = _context.AnchorVelocity(_swingingArm) * _stats.MovingNodeLaunchMultiplier;
                 ReleaseAnchor();
 
-                _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease()));
+                _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease(nodeVelocity)));
                 return;
             }
 

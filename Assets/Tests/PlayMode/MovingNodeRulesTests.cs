@@ -71,6 +71,51 @@ namespace RockTheGame.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator M2_SwingingPlayerIsCarried()
+        {
+            GameObject node = null;
+            yield return GrabNodeAbove(NodeStart, n => node = n);
+
+            // 10 birim/sn, 25 adim = 5 birim
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 25);
+            yield return WaitFixedSteps(1);
+
+            Assert.IsInstanceOf<SwingingState>(Player.CurrentState);
+            Assert.Less(Mathf.Abs(Player.PlayerRigidbody.position.x - node.transform.position.x), 0.3f);
+        }
+
+        [UnityTest]
+        public IEnumerator M2b_CarriedIntoWall_BreaksTheHook()
+        {
+            GameObject node = null;
+            yield return GrabNodeAbove(NodeStart, n => node = n);
+            SpawnWall(Origin.x + 2f);
+            Player.UseDash(); // yere inmek hakki yenilerdi: harcanmis kalirsa karakter inmemis demektir
+
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 20);
+            yield return WaitWhileState<SwingingState>();
+
+            AssertInAir();
+            Assert.IsNull(Player.RightAnchor);
+        }
+
+        [UnityTest]
+        public IEnumerator M3_ReleaseFromMovingNode_InheritsNodeVelocity()
+        {
+            GameObject node = null;
+            yield return GrabNodeAbove(NodeStart, n => node = n);
+
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 10);
+            // Birakis: node hala hareket ederken
+            Input.IsRightTriggerHeld = false;
+            yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 1);
+            yield return WaitForAir();
+            yield return WaitFixedSteps(1);
+
+            Assert.Greater(Player.Velocity.x, 8f);
+        }
+
+        [UnityTest]
         public IEnumerator M1d_RawAnchorAssignment_IsStatic()
         {
             GameObject node = SpawnNode(NodeStart);

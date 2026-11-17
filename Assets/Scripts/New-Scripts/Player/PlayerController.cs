@@ -101,12 +101,12 @@ namespace New_Scripts.Player
         public Vector2? LeftAnchor
         {
             get => _leftAnchor;
-            set { _leftAnchor = value; LeftAnchorNode = null; _leftAnchorDelta = Vector2.zero; }
+            set { _leftAnchor = value; LeftAnchorNode = null; _leftAnchorDelta = Vector2.zero; _leftSimulatedVelocity = Vector2.zero; }
         }
         public Vector2? RightAnchor
         {
             get => _rightAnchor;
-            set { _rightAnchor = value; RightAnchorNode = null; _rightAnchorDelta = Vector2.zero; }
+            set { _rightAnchor = value; RightAnchorNode = null; _rightAnchorDelta = Vector2.zero; _rightSimulatedVelocity = Vector2.zero; }
         }
         /// <summary>Anchor'ın izlediği node; sabit anchor'da null.</summary>
         public Transform LeftAnchorNode { get; private set; }
@@ -122,6 +122,9 @@ namespace New_Scripts.Player
         private Rigidbody2D _rightNodeBody;
         private Vector2 _leftNodeLocal;
         private Vector2 _rightNodeLocal;
+        // Test/tasarım aracı: yerinde duran node'un bırakışta verdiği sahte hız (Nodes.SimulatedNodeVelocity)
+        private Vector2 _leftSimulatedVelocity;
+        private Vector2 _rightSimulatedVelocity;
 
         public bool HasDashCharge { get; private set; } = true;
         public bool CanSlingshot { get; private set; } = true;
@@ -223,6 +226,8 @@ namespace New_Scripts.Player
             // Node'un o anki hızı: tutunma anında da AnchorVelocity geçerli olsun (dünya → node'a göre hız dönüşümü).
             var surface = node != null ? node.GetComponentInParent<New_Scripts.Platform.IMovingSurface>() : null;
             Vector2 delta = surface != null ? surface.DeltaPosition : Vector2.zero;
+            var simulatedNode = node != null ? node.GetComponentInParent<Nodes.SimulatedNodeVelocity>() : null;
+            Vector2 simulated = simulatedNode != null ? simulatedNode.Velocity : Vector2.zero;
             Rigidbody2D body = BindNodeBody(node, out Vector2 local);
             if (body != null) point = body.GetRelativePoint(local);
             if (arm == ActiveArm.Left)
@@ -232,6 +237,7 @@ namespace New_Scripts.Player
                 _leftAnchorDelta = delta;
                 _leftNodeBody = body;
                 _leftNodeLocal = local;
+                _leftSimulatedVelocity = simulated;
             }
             else
             {
@@ -240,6 +246,7 @@ namespace New_Scripts.Player
                 _rightAnchorDelta = delta;
                 _rightNodeBody = body;
                 _rightNodeLocal = local;
+                _rightSimulatedVelocity = simulated;
             }
         }
 
@@ -248,6 +255,10 @@ namespace New_Scripts.Player
 
         /// <summary>Kolun node'unun bu fizik adımındaki hızı (<c>AnchorDelta / fixedDeltaTime</c>).</summary>
         public Vector2 AnchorVelocity(ActiveArm arm) => AnchorDelta(arm) / Time.fixedDeltaTime;
+
+        /// <summary>Bırakışta aktarılacak node hızı: gerçek hız + (varsa) <see cref="Nodes.SimulatedNodeVelocity"/>.</summary>
+        public Vector2 AnchorReleaseVelocity(ActiveArm arm) =>
+            AnchorVelocity(arm) + (arm == ActiveArm.Left ? _leftSimulatedVelocity : _rightSimulatedVelocity);
 
         /// <summary>Durumdan önce: izlenen node'lar kaydıysa anchor'ı yeniler. Pasif ya da yok olmuş node'da anchor son konumda kalır.</summary>
         private void RefreshMovingAnchors()

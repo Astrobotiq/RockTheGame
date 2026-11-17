@@ -136,7 +136,7 @@ namespace New_Scripts.Player.States
         private void Exit()
         {
             Vector2 relativeVelocity = context.Velocity - CarryVelocity();
-            Vector2 nodeVelocity = (context.AnchorVelocity(ActiveArm.Left) + context.AnchorVelocity(ActiveArm.Right))
+            Vector2 nodeVelocity = (context.AnchorReleaseVelocity(ActiveArm.Left) + context.AnchorReleaseVelocity(ActiveArm.Right))
                                    * (0.5f * stats.MovingNodeLaunchMultiplier);
             context.LeftAnchor = null;
             context.RightAnchor = null;

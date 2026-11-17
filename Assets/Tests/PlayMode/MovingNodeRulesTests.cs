@@ -234,6 +234,60 @@ namespace RockTheGame.Tests.PlayMode
             Assert.Less(Mathf.Abs(Player.Velocity.x), 2f, $"Tasinan yatay hiz {decay} sn icinde sonmeli");
         }
 
+        [UnityTest]
+        public IEnumerator M10_SimulatedNodeVelocity_OnlyAffectsRelease()
+        {
+            // Yerinde duran node, bırakışta +X'te 10 b/sn hareket ediyormus gibi davranir (test/tasarim araci).
+            GameObject node = SpawnNode(NodeStart);
+            var simulated = node.AddComponent<New_Scripts.Player.Nodes.SimulatedNodeVelocity>();
+            SetField(simulated, "velocity", new Vector2(10f, 0f));
+
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            Vector2 aim = (NodeStart - Player.PlayerRigidbody.position).normalized;
+            Input.LeftStick = aim;
+            Input.IsLeftTriggerHeld = true;
+            yield return WaitForState<SwingingState>();
+            Input.RightStick = aim;
+            Input.IsRightTriggerHeld = true;
+            yield return WaitForState<SlingshotState>();
+            yield return WaitWhileState<SlingshotState>();
+            float exitX = Player.PlayerRigidbody.position.x;
+            yield return WaitForHitStopEnd();
+            yield return WaitFixedSteps(1);
+
+            Assert.AreEqual(NodeStart, (Vector2)node.transform.position, "Node yerinde durmali");
+            Assert.Less(Mathf.Abs(exitX - Origin.x), 0.5f, "Slingshot sirasinda oyuncu tasinmamali");
+            AssertInAir();
+            Assert.Greater(Player.Velocity.x, 8f, "Birakista sahte node hizi aktarilmali");
+        }
+
+        [UnityTest]
+        public IEnumerator T1_LandingMarker_DropsAfterSlingshotLanding()
+        {
+            var room = new GameObject("MarkerRoom");
+            Track(room);
+            room.AddComponent<New_Scripts.Player.Nodes.SlingshotLandingMarkers>();
+            GameObject node = SpawnNode(NodeStart);
+            node.transform.SetParent(room.transform, true);
+            SpawnFloor(Origin.y - 0.5f);
+
+            EnterAir(Vector2.zero, AirEntry.Fall());
+            Vector2 aim = (NodeStart - Player.PlayerRigidbody.position).normalized;
+            Input.LeftStick = Input.RightStick = aim;
+            Input.IsLeftTriggerHeld = true;
+            yield return WaitForState<SwingingState>();
+            Input.IsRightTriggerHeld = true;
+            yield return WaitForState<SlingshotState>();
+            yield return WaitWhileState<SlingshotState>();
+            Input.IsLeftTriggerHeld = Input.IsRightTriggerHeld = false;
+            yield return WaitForGround();
+            yield return null;
+
+            var marker = room.transform.Find("Landing Node");
+            Assert.IsNotNull(marker, "Inis isaretcisi olusmali");
+            Assert.IsNotNull(marker.GetComponent<LineRenderer>(), "Isaretcinin diregi olmali");
+        }
+
         /// <summary>Sol kolla sol node'a, sonra sag kolla sag node'a tutunur.</summary>
         private IEnumerator GrabTwoNodes(Vector2 leftPos, Vector2 rightPos)
         {

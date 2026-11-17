@@ -278,7 +278,7 @@ namespace New_Scripts.Player.States
 
             if (!activeTriggerHeld)
             {
-                Vector2 nodeVelocity = _context.AnchorVelocity(_swingingArm) * _stats.MovingNodeLaunchMultiplier;
+                Vector2 nodeVelocity = _context.AnchorReleaseVelocity(_swingingArm) * _stats.MovingNodeLaunchMultiplier;
                 ReleaseAnchor();
 
                 _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease(nodeVelocity, _stats.MovingNodeCarryDecayTime)));

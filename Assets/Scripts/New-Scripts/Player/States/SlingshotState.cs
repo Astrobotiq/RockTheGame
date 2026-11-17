@@ -15,8 +15,6 @@ namespace New_Scripts.Player.States
         private Vector2 midpoint;
         private Vector2 initialLaunchVelocity;
         private Vector2 cachedLaunchDirection;
-        /// <summary>Node'a göre hız (taşıma hariç); çıkışta NormalState'e bu verilir, node hızı ayrıca taşınır.</summary>
-        private Vector2 relativeVelocity;
 
         private SlingshotPhase currentPhase;
         private float stateTimer;
@@ -92,8 +90,7 @@ namespace New_Scripts.Player.States
 
         private void ApplyAnticipationPhysics()
         {
-            relativeVelocity = -cachedLaunchDirection * stats.SlingshotAnticipationSpeed;
-            context.Velocity = relativeVelocity + CarryVelocity();
+            context.Velocity = -cachedLaunchDirection * stats.SlingshotAnticipationSpeed + CarryVelocity();
 
             if (stateTimer >= stats.SlingshotAnticipationDuration)
             {
@@ -107,8 +104,7 @@ namespace New_Scripts.Player.States
                 }
                 
                 initialLaunchVelocity = Vector2.zero;
-                relativeVelocity = initialLaunchVelocity;
-                context.Velocity = relativeVelocity + CarryVelocity();
+                context.Velocity = initialLaunchVelocity + CarryVelocity();
 
                 context.NotifyImpact(cachedLaunchDirection);
             }
@@ -121,8 +117,7 @@ namespace New_Scripts.Player.States
             float easeOutT = 1f - ((1f - t) * (1f - t));
 
             Vector2 targetVelocity = cachedLaunchDirection * stats.MaxSlingshotSpeed;
-            relativeVelocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, easeOutT);
-            context.Velocity = relativeVelocity + CarryVelocity();
+            context.Velocity = Vector2.Lerp(initialLaunchVelocity, targetVelocity, easeOutT) + CarryVelocity();
 
             Vector2 currentDirectionToMidpoint = midpoint - context.PlayerRigidbody.position;
             bool hasPassedMidpoint = Vector2.Dot(cachedLaunchDirection, currentDirectionToMidpoint) < 0f;
@@ -137,9 +132,10 @@ namespace New_Scripts.Player.States
         private Vector2 CarryVelocity() =>
             (context.AnchorDelta(ActiveArm.Left) + context.AnchorDelta(ActiveArm.Right)) * 0.5f / Time.fixedDeltaTime;
 
-        /// <summary>Fırlatma sonu ya da erken bırakma: node'a göre hız + taşınan node hızı.</summary>
+        /// <summary>Fırlatma sonu ya da erken bırakma: node'a göre hız (taşıma çıkarılır, çift sayılmasın) + taşınan node hızı.</summary>
         private void Exit()
         {
+            Vector2 relativeVelocity = context.Velocity - CarryVelocity();
             Vector2 nodeVelocity = (context.AnchorVelocity(ActiveArm.Left) + context.AnchorVelocity(ActiveArm.Right))
                                    * (0.5f * stats.MovingNodeLaunchMultiplier);
             context.LeftAnchor = null;

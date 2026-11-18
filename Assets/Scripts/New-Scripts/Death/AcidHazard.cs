@@ -28,6 +28,9 @@ namespace New_Scripts.Death
         private MaterialPropertyBlock _propBlock;
         private bool _isInitialized;
 
+        /// <summary>Shader'a son yazılan piksel ızgarası boyutu (dünya boyutu × referencePPU).</summary>
+        public Vector2 PixelScale { get; private set; } = Vector2.one;
+
         private void Awake()
         {
             ConfigureComponents();
@@ -125,6 +128,7 @@ namespace New_Scripts.Death
             float pixelY = worldHeight * referencePPU;
 
             // Shader'a gönder
+            PixelScale = new Vector2(pixelX, pixelY);
             _propBlock.SetVector("_PixelScale", new Vector4(pixelX, pixelY, 0f, 0f));
             _spriteRenderer.SetPropertyBlock(_propBlock);
         }

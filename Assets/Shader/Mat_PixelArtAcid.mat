@@ -33,18 +33,34 @@ Material:
     - PixelSnap: 1
     - _AcidLevel: 0.9
     - _AlphaSplitEnabled: 0
+    - _BoilRadius: 60
+    - _BoilThreshold: 0.4
     - _BubbleDensity: 8
     - _BubbleSpeed: 10
     - _BubbleThreshold: 0.9
+    - _CraterDepth: 10
+    - _CraterRecover: 3
+    - _CraterWidth: 12
     - _FPS: 8
+    - _FlashRadius: 20
+    - _FlashTime: 0.5
     - _FoamThickness: 1
+    - _ImpactDuration: 4
+    - _ImpactFPS: 12
+    - _RippleAmp: 9
+    - _RippleDecay: 0.3
+    - _RippleFalloff: 300
+    - _RippleSpeed: 60
+    - _RippleWavelength: 22
     - _WaveAmplitude: 2
     - _WaveFrequency: 128
     - _WaveSpeed: 0.5
     m_Colors:
     - _AcidColor: {r: 0.12, g: 0.73, b: 0.16, a: 1}
+    - _AcidImpact: {r: 0, g: 0, b: 0, a: 0}
     - _BubbleColor: {r: 0.35, g: 0.88, b: 0.28, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _FlashColor: {r: 0.957, g: 1, b: 0.878, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 0}
     - _FoamColor: {r: 0.78, g: 1, b: 0.44, a: 1}
     - _PixelScale: {r: 32, g: 32, b: 0, a: 0}

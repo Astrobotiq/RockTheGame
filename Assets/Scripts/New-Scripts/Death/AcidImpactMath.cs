@@ -30,6 +30,14 @@ namespace New_Scripts.Death
             return new Vector2(ClampToPixels(px, pixelScale.x), ClampToPixels(py, pixelScale.y));
         }
 
+        /// <summary>LocalToPixel'in tersi: piksel ızgarasındaki noktayı asidin yerel uzayına çevirir.</summary>
+        public static Vector2 PixelToLocal(Vector2 pixel, Rect spriteLocalRect, Vector2 pixelScale)
+        {
+            float sx = Mathf.Max(pixelScale.x, 1e-5f), sy = Mathf.Max(pixelScale.y, 1e-5f);
+            return new Vector2(spriteLocalRect.xMin + pixel.x / sx * spriteLocalRect.width,
+                               spriteLocalRect.yMin + pixel.y / sy * spriteLocalRect.height);
+        }
+
         /// <summary>Yüzeyli asitte temas, yüzey satırına kilitlenir; yüzeysizde (akan asit) dokunulmaz.</summary>
         public static Vector2 SurfaceContact(Vector2 pixel, float acidLevel, float pixelScaleY, bool hasSurface)
         {

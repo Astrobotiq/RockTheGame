@@ -48,6 +48,18 @@ namespace RockTheGame.Tests
         }
 
         [Test]
+        public void PixelToLocal_InvertsLocalToPixel()
+        {
+            var scale = new Vector2(1200f, 160f);
+            Vector2 local = new Vector2(0.123f, 0.4f);
+            Vector2 back = AcidImpactMath.PixelToLocal(AcidImpactMath.LocalToPixel(local, UnitRect, scale), UnitRect, scale);
+            Assert.That(back.x, Is.EqualTo(local.x).Within(1e-4f));
+            Assert.That(back.y, Is.EqualTo(local.y).Within(1e-4f));
+            // Yüzey satırı (144 px) yerel 0.4'e döner
+            Assert.That(AcidImpactMath.PixelToLocal(new Vector2(600f, 144f), UnitRect, scale).y, Is.EqualTo(0.4f).Within(1e-5f));
+        }
+
+        [Test]
         public void SurfaceContact_LocksToSurfaceRow()
         {
             Vector2 p = AcidImpactMath.SurfaceContact(new Vector2(10f, 40f), 0.9f, 64f, true);

@@ -182,6 +182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e854ef50e0c224d4fa2edb07e389e129, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidReaction
+  settings: {fileID: 11400000, guid: a8684490a390f464e89d78d0a654cef8, type: 2}
+  impactFxPrefab: {fileID: 8021177916568766521, guid: 4c99958c8b239b74a844031218ebac16, type: 3}
   hasSurface: 1
 --- !u!1001 &4245358466077616991
 PrefabInstance:

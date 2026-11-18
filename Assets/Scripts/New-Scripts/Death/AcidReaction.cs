@@ -20,10 +20,10 @@ namespace New_Scripts.Death
         private static readonly int AcidLevelId = Shader.PropertyToID("_AcidLevel");
 
         private const float DefaultImpactDuration = 0.6f;
-        private const float MinSpeed = 4f;
-        private const float MaxSpeed = 40f;
-        private const float StrengthFloor = 0.35f;
 
+        [SerializeField] private AcidReactionSettingsSO settings;
+        [Tooltip("Damla parçacık sistemi (FX_AcidImpact). İlk temasta bu asidin child'ı olarak bir kez oluşturulur.")]
+        [SerializeField] private ParticleSystem impactFxPrefab;
         [Tooltip("Yüzeyi olan asit (PixelArtAcid). Akan asitte (FlowingPixelAcid) kapalı: temas yüzeye kilitlenmez.")]
         [SerializeField] private bool hasSurface = true;
 
@@ -32,6 +32,7 @@ namespace New_Scripts.Death
         private Collider2D _collider;
         private AcidHazard _hazard;
         private MaterialPropertyBlock _block;
+        private ParticleSystem _fx;
 
         private Vector4 _impact;   // (x px, y px, yaş, güç)
         private float _duration = DefaultImpactDuration;
@@ -50,6 +51,8 @@ namespace New_Scripts.Death
             _deathZone.Killing += OnKilling;
             if (LevelResetManager.Instance != null) LevelResetManager.Instance.Register(this);
             ClearImpact();
+            // Oda uyanınca donmuş damla kalmasın
+            if (_fx != null) _fx.Clear();
         }
 
         private void OnDisable()
@@ -58,10 +61,11 @@ namespace New_Scripts.Death
             if (LevelResetManager.Instance != null) LevelResetManager.Instance.Unregister(this);
         }
 
-        /// <summary>Ölüm sıfırlaması (iris kapalıyken): yuva temizlenir.</summary>
+        /// <summary>Ölüm sıfırlaması (iris kapalıyken): yuva ve damlalar temizlenir.</summary>
         public void ResetToDefault()
         {
             ClearImpact();
+            if (_fx != null) _fx.Clear();
         }
 
         private void OnKilling(Collider2D other)
@@ -73,19 +77,62 @@ namespace New_Scripts.Death
             Vector2 previous = AcidImpactMath.BacktrackPoint(position, velocity, Time.fixedDeltaTime);
             Vector2 world = _collider.OverlapPoint(previous) ? position : _collider.ClosestPoint(previous);
 
-            float strength = AcidImpactMath.Strength(velocity.magnitude, MinSpeed, MaxSpeed, StrengthFloor);
-            StartImpact(transform.InverseTransformPoint(world), strength, 0f);
+            float strength = settings != null
+                ? AcidImpactMath.Strength(velocity.magnitude, settings.minSpeed, settings.maxSpeed, settings.strengthFloor)
+                : 1f;
+            TriggerImpact(transform.InverseTransformPoint(world), strength, 0f, velocity);
         }
 
-        private void StartImpact(Vector2 localPoint, float strength, float age)
+        private void TriggerImpact(Vector2 localPoint, float strength, float age, Vector2 playerVelocity)
         {
             Vector2 pixelScale = _hazard.PixelScale;
-            Vector2 pixel = AcidImpactMath.LocalToPixel(localPoint, SpriteLocalRect(), pixelScale);
+            Rect rect = SpriteLocalRect();
+            Vector2 pixel = AcidImpactMath.LocalToPixel(localPoint, rect, pixelScale);
             pixel = AcidImpactMath.SurfaceContact(pixel, AcidLevel(), pixelScale.y, hasSurface);
 
             _duration = ImpactDuration();
             _impact = new Vector4(pixel.x, pixel.y, age, strength);
             WriteImpact();
+
+            Vector2 contactLocal = AcidImpactMath.PixelToLocal(pixel, rect, pixelScale);
+            EmitDroplets(transform.TransformPoint(contactLocal), contactLocal, strength, playerVelocity);
+        }
+
+        private void EmitDroplets(Vector3 worldPoint, Vector2 contactLocal, float strength, Vector2 playerVelocity)
+        {
+            if (settings == null || impactFxPrefab == null) return;
+            if (_fx == null) _fx = Instantiate(impactFxPrefab, transform);
+
+            // Yüzeyli asitte yüzey normali; akan asitte merkezden temas noktasına
+            Vector2 normal = hasSurface
+                ? (Vector2)transform.up
+                : (Vector2)transform.TransformDirection(contactLocal.sqrMagnitude > 1e-6f ? contactLocal.normalized : Vector2.up);
+
+            int small = Mathf.RoundToInt(Mathf.Lerp(settings.dropletCount.x, settings.dropletCount.y, strength));
+            int big = Mathf.RoundToInt(Mathf.Lerp(settings.bigDropletCount.x, settings.bigDropletCount.y, strength));
+            EmitBatch(worldPoint, normal, small, settings.dropletSpeed, settings.dropletSizePx, strength, playerVelocity);
+            EmitBatch(worldPoint, normal, big, settings.bigDropletSpeed, settings.bigDropletSizePx, strength, playerVelocity);
+        }
+
+        private void EmitBatch(Vector3 worldPoint, Vector2 normal, int count, Vector2 speedRange, int sizePx,
+            float strength, Vector2 playerVelocity)
+        {
+            var emit = new ParticleSystem.EmitParams
+            {
+                startSize = sizePx / settings.pixelsPerUnit,
+                applyShapeToPosition = false
+            };
+            for (int i = 0; i < count; i++)
+            {
+                // Taç şekli: koninin ortasına yakın damlalar daha hızlı (uzun sütunlar), kenarlar kısa
+                float r = Random.value;
+                float centreBias = 1f - Mathf.Abs(r - 0.5f) * 0.8f;
+                float speed = Random.Range(speedRange.x, speedRange.y) * centreBias;
+                emit.position = worldPoint;
+                emit.velocity = AcidImpactMath.SplashVelocity(normal, settings.coneDeg, r, speed, strength,
+                    playerVelocity, settings.inheritX, settings.inheritY, settings.maxDropletSpeed);
+                _fx.Emit(emit, 1);
+            }
         }
 
         private void Update()
@@ -141,8 +188,19 @@ namespace New_Scripts.Death
         /// </summary>
         public void DebugImpact(Vector2 localPoint, float age)
         {
+            DebugImpact(localPoint, age, Vector2.zero);
+        }
+
+        /// <summary>Oyuncu hızıyla (damla yönü için). Damlalar age kadar ileri simüle edilir.</summary>
+        public void DebugImpact(Vector2 localPoint, float age, Vector2 playerVelocity)
+        {
             if (!Application.isPlaying) return;
-            StartImpact(localPoint, 1f, age);
+            float strength = settings != null
+                ? AcidImpactMath.Strength(playerVelocity.magnitude, settings.minSpeed, settings.maxSpeed, settings.strengthFloor)
+                : 1f;
+            if (_fx != null) _fx.Clear();
+            TriggerImpact(localPoint, strength, age, playerVelocity);
+            if (_fx != null && age > 0f) _fx.Simulate(age, true, false);
         }
 
         [ContextMenu("Test Impact (center top)")]

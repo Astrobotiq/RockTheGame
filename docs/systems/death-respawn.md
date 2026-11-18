@@ -1,6 +1,6 @@
 # Ölüm ve yeniden doğma
 
-*GDD §2 (sütun 3), §5.3. Son kod doğrulaması: 2026-11-16 (yer/hava tek durum: `NormalState`).*
+*GDD §2 (sütun 3), §5.3. Son kod doğrulaması: 2026-11-18 (`DeathZone.Killing`/`Killed`).*
 
 ## Tasarım niyeti
 
@@ -9,6 +9,8 @@ Can barı yok, tek temas öldürür. Ölüm hızlı ve ucuz olmalı ki "bir daha
 ## Ölüm anı
 
 1. Oyuncu bir **trigger** collider'a girer ve o collider'da `DeathZone` vardır. `DeathZone`, girenin `IKillable` olup olmadığına bakar; oyuncuda bu `PlayerHealth`'tir.
+   - Önce `DeathZone.Killing` yayınlanır: oyuncunun hızı ve konumu hâlâ geçerli (asit tepkisi burada okur, [`hazards.md`](hazards.md)). Dinleyici hata atsa da `Kill()` çağrılır (`try/finally`).
+   - `Kill()`'den sonra `DeathZone.Killed` yayınlanır (asit titreşimi genel `Death` titreşimini burada ezer).
 2. `PlayerHealth.Kill()`: `Death` titreşimi, ölüm partikülü, oyuncu objesi **devre dışı** (`SetActive(false)`), `OnDeath` olayı.
 3. `OnDeath`'i dinleyenler **hemen**, iris kapanmadan önce çalışır:
    - `RespawnManager`: respawn dizisini başlatır.

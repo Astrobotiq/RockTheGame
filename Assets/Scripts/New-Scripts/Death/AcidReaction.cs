@@ -1,3 +1,4 @@
+using New_Scripts.Audio;
 using New_Scripts.Player;
 using UnityEngine;
 
@@ -26,6 +27,8 @@ namespace New_Scripts.Death
         [SerializeField] private ParticleSystem impactFxPrefab;
         [Tooltip("Yüzeyi olan asit (PixelArtAcid). Akan asitte (FlowingPixelAcid) kapalı: temas yüzeye kilitlenmez.")]
         [SerializeField] private bool hasSurface = true;
+        [Tooltip("SFX-Play kanalı. Asit sesleri 2D çalar (kamera uzak, 3D neredeyse duyulmaz).")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
 
         private DeathZone _deathZone;
         private SpriteRenderer _renderer;
@@ -49,6 +52,7 @@ namespace New_Scripts.Death
         private void OnEnable()
         {
             _deathZone.Killing += OnKilling;
+            _deathZone.Killed += OnKilled;
             if (LevelResetManager.Instance != null) LevelResetManager.Instance.Register(this);
             ClearImpact();
             // Oda uyanınca donmuş damla kalmasın
@@ -58,6 +62,7 @@ namespace New_Scripts.Death
         private void OnDisable()
         {
             _deathZone.Killing -= OnKilling;
+            _deathZone.Killed -= OnKilled;
             if (LevelResetManager.Instance != null) LevelResetManager.Instance.Unregister(this);
         }
 
@@ -81,6 +86,28 @@ namespace New_Scripts.Death
                 ? AcidImpactMath.Strength(velocity.magnitude, settings.minSpeed, settings.maxSpeed, settings.strengthFloor)
                 : 1f;
             TriggerImpact(transform.InverseTransformPoint(world), strength, 0f, velocity);
+        }
+
+        /// <summary>
+        /// Kill()'den sonra: asit titreşimi genel Death titreşimini ezer (HapticManager çalanı keser),
+        /// sesler 2D çalar. Ayar ya da cue boşsa sessiz geçer.
+        /// </summary>
+        private void OnKilled(Collider2D other)
+        {
+            if (settings == null) return;
+            if (HapticManager.Instance != null) HapticManager.Instance.Vibrate(settings.acidDeathRumble);
+            float strength = _impact.w > 0f ? _impact.w : settings.strengthFloor;
+            PlayCue(settings.splashCue, strength);
+            PlayCue(settings.sizzleCue, strength);
+        }
+
+        private void PlayCue(AudioCueSO cue, float strength)
+        {
+            if (sfxPlayChannel == null || cue == null || cue.AudioClips == null || cue.AudioClips.Length == 0) return;
+            var p = AudioCuePlayParams.Default;
+            p.VolumeMultiplier = Mathf.Lerp(0.75f, 1f, strength);
+            p.PitchMultiplier = Mathf.Lerp(1.05f, 0.95f, strength);   // ağır temas daha pes
+            sfxPlayChannel.RaisePlayEvent(cue, p);
         }
 
         private void TriggerImpact(Vector2 localPoint, float strength, float age, Vector2 playerVelocity)

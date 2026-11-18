@@ -185,6 +185,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: a8684490a390f464e89d78d0a654cef8, type: 2}
   impactFxPrefab: {fileID: 8021177916568766521, guid: 4c99958c8b239b74a844031218ebac16, type: 3}
   hasSurface: 1
+  sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
 --- !u!1001 &4245358466077616991
 PrefabInstance:
   m_ObjectHideFlags: 0

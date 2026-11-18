@@ -1,6 +1,6 @@
 # Tehlikeler
 
-*GDD §2 (sütun 3), §5.3, §6.2 "Tehlikeler". Son kod doğrulaması: 2026-11-15.*
+*GDD §2 (sütun 3), §5.3, §6.2 "Tehlikeler". Son kod doğrulaması: 2026-11-18 (asit temas tepkisi).*
 
 ## Tasarım niyeti
 
@@ -33,6 +33,34 @@ Yalnızca görsel ve kurulum yardımcısı:
 - Collider'ı otomatik trigger yapar (`autoConfigureCollider`).
 - Asit materyalini atar ve objenin dünya boyutuna göre shader'a `_PixelScale` gönderir. Böylece asit hangi boyuta çekilirse çekilsin pikselleri kare ve `referencePPU` (16) ölçeğinde kalır.
 - `[ExecuteAlways]`: editörde ölçek değişince kendini günceller.
+- Shader'a son yazdığı ızgara boyutunu `PixelScale` olarak verir (`AcidReaction` okur).
+
+### Temas tepkisi (`AcidReaction`, 18 Kasım 2026)
+
+Oyuncu sabit asite değdiğinde asit temas noktasında tepki verir. Plan ve araştırma: [`../asit-tepki-plani.md`](../asit-tepki-plani.md). Şu an yalnızca `Acid.prefab`'da; akan asit ve hareketli tehlike kabuğu planın B aşamasında.
+
+**Olay sırası.** `DeathZone` iki C# olayı yayınlar:
+- `Killing`: `Kill()`'den **önce**. Oyuncunun hızı ve konumu burada okunur, çünkü `OnDeath` içinde `RespawnManager` `Velocity`'yi sıfırlar.
+- `Killed`: `Kill()`'den **sonra**. Asit titreşimi burada verilir; `HapticManager.Vibrate` çalanı kestiği için genel `Death` titreşimini bilerek ezer.
+
+`Kill()` `try/finally` içinde: dinleyici hata atsa da oyuncu ölür. EventChannelSO yerine C# olayı, çünkü sinyal aynı objedeki bileşenler arasında, örnek başına ve `Kill()`'den önce senkron çalışmalı. SO kanal her ölümü her asite yayınlar ve göndereni filtrelemek gerekirdi.
+
+**Temas noktası.** Trigger fizik adımından sonra gelir; oyuncu merkezi çoğu zaman zaten asidin içindedir ve `ClosestPoint` içerideki noktayı aynen döndürür. Bu yüzden konum bir adım (`Velocity × fixedDeltaTime`) geri sarılır, en yakın sınır noktası alınır, yüzey satırına (`_AcidLevel`) kilitlenir.
+
+**Shader.** Tek darbe yuvası `_AcidImpact` = (x px, y px, yaş, güç), `MaterialPropertyBlock` ile; `AcidHazard`'ın `_PixelScale`'i korunur (önce Get). Ortak kod `Assets/Shader/AcidImpact.cginc`: temas sütununda çöken ve toparlanan çukur, temas çevresinde 0.1 sn parlama. Darbe kendi 12 FPS'ine kesilir, ortam dalgası materyaldeki 8 FPS'te kalır. Ayarlar `Mat_PixelArtAcid` üzerinde (`_ImpactDuration` 0.6, `_CraterDepth` 3 px, `_FlashRadius` 6 px …).
+- **Yaşı CPU sayar** (`Update`'te `Time.deltaTime`). Shader `_Time` kullanmaz: URP'de `_Time` sahne yüklemede sıfırlanmaz, `timeSinceLevelLoad` ile karşılaştırılsaydı ana menüden gelince tepki hiç görünmezdi.
+- Yuva canlı değilse shader fonksiyonları tam 0 döndürür: darbe yokken görüntü eskisiyle aynı (donmuş zamanla ölçüldü, eşik üstünde 0 piksel fark).
+- Bir asitte aynı anda tek canlı darbe olur (respawn ≈1.3 sn > tepki 0.6 sn), o yüzden dizi yok.
+
+**Damlalar.** `FX_AcidImpact` (`Assets/Prefab/New/VFX/`), ilk temasta asidin child'ı olarak bir kez oluşturulur; `EmitParams` ile 2 px ve 3 px kare damlalar, oyuncunun hızına göre eğilir. Materyal `M_FX_AcidPixel` (Sprite-Unlit; 2D Renderer Particles/* shader'larını desteklemez). En küçük damla 2 px, çünkü CRT ekranı 480×360'a indiriyor ve 1 px titrer. Oda uyanınca ve ölüm sıfırlamasında (`IResettable`) temizlenir.
+
+**Ayarlar.** `New-Scripts/Death/SO/AcidReactionSettings.asset`: güç (hız 4 → 40, taban 0.35), damla sayısı/hızı/boyu, koni 55°, oyuncu hızından pay, damla hız tavanı 9 (iris dairesinden kaçmasın), `acidDeathRumble` (0.35 sn), `splashCue`/`sizzleCue`. Sesler 2D çalar; cue boşsa ya da klibi yoksa sessiz geçer. Ses dosyaları henüz yok.
+
+**İris penceresi.** İris yarıçapı `maxRadius`'tan −1'e lerp ettiği için görünen daire ≈0.33 sn'de kapanır. Tepkinin bütün değerleri ilk 0.25 sn'de okunacak şekilde seçildi.
+
+**Doğrulama.** `AcidReaction.DebugImpact(localPoint, age, velocity)` yalnızca Play Mode'da çalışır: `Time.timeScale = 0` iken yaş ilerlemez, kare deterministik olur. Kareler `docs/ui-research/acid-reaction/`.
+
+**Kapsam dışı.** Çok oyunculu rakip (`GhostView`) collider'sız; ölümünde tepki yok.
 
 ## Hareketli tehlikelerin görünüşü
 
@@ -51,7 +79,7 @@ Hareketli tehlikeler `PlatformController` / `WrappingPlatformManager` üzerinden
 
 ## Kod
 
-- `Death/DeathZone.cs`, `Death/AcidHazard.cs`, `Death/IKillable.cs`, `Death/PlayerHealth.cs`, `Death/HazardCoreVisual.cs`
+- `Death/DeathZone.cs`, `Death/AcidHazard.cs`, `Death/AcidReaction.cs`, `Death/AcidImpactMath.cs`, `Death/AcidReactionSettingsSO.cs`, `Death/IKillable.cs`, `Death/PlayerHealth.cs`, `Death/HazardCoreVisual.cs`
 - Görünüş: `Assets/Shader/HazardAcid.shader`, `Assets/Shader/HazardCore.shader`, `Assets/Sprites/Hazard/`, `Assets/Prefab/New/Death/HazardCore/`
 - Hareket: `Platform/PlatformController.cs`, `WrappingPlatformManager.cs`, stratejiler
 - Prefab'lar: `Assets/Prefab/New/Death/`, diken Tilemap'i `Assets/Prefab/New/Room/RoomNew.prefab`

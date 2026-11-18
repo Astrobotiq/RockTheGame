@@ -27,6 +27,17 @@ Shader "Sprites/Custom/PixelArtAcid"
         _BubbleDensity ("Bubble Spacing (Pixels)", Float) = 8.0
         _BubbleSpeed ("Bubble Speed (Pixels/Sec)", Float) = 15.0
         _BubbleThreshold ("Bubble Density Control (0-1)", Range(0, 1)) = 0.85
+
+        [Header(Impact Reaction)]
+        [HideInInspector] _AcidImpact ("Impact (x px, y px, age, strength)", Vector) = (0, 0, 0, 0)
+        _ImpactFPS ("Impact FPS", Float) = 12.0
+        _ImpactDuration ("Impact Duration (s)", Float) = 0.6
+        _CraterDepth ("Crater Depth (Pixels)", Float) = 3.0
+        _CraterWidth ("Crater Width (Pixels)", Float) = 4.0
+        _CraterRecover ("Crater Recover (1/s)", Float) = 12.0
+        _FlashColor ("Flash Color", Color) = (0.957, 1.0, 0.878, 1)
+        _FlashRadius ("Flash Radius (Pixels)", Float) = 6.0
+        _FlashTime ("Flash Time (s)", Float) = 0.1
     }
 
     SubShader
@@ -50,11 +61,12 @@ Shader "Sprites/Custom/PixelArtAcid"
         CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma target 2.0
+            #pragma target 3.0
             #pragma multi_compile_instancing
             #pragma multi_compile_local _ PIXELSNAP_ON
             #pragma multi_compile _ ETC1_EXTERNAL_ALPHA
             #include "UnityCG.cginc"
+            #include "AcidImpact.cginc"
 
             struct appdata_t
             {
@@ -144,7 +156,9 @@ Shader "Sprites/Custom/PixelArtAcid"
                 
                 // Base height of the acid level in pixel units
                 float baseAcidHeight = _AcidLevel * pixelScale.y;
-                float surfaceHeight = baseAcidHeight + wave;
+                // Temas tepkisi: çukur (negatif). Tepe payı, ileride eklenecek dalga tepesini quad içinde tutar.
+                float headroom = max(pixelScale.y * (1.0 - _AcidLevel) - _WaveAmplitude - 1.0, 0.0);
+                float surfaceHeight = baseAcidHeight + wave + min(AcidCrater(pixelCoords.x), headroom);
 
                 // 5. Sample the sprite texture
                 fixed4 spriteCol = SampleSpriteTexture(snappedUV);
@@ -161,9 +175,11 @@ Shader "Sprites/Custom/PixelArtAcid"
                 // 6. Foam (Surface line in pixel coordinates)
                 float foamLimit = surfaceHeight - _FoamThickness;
                 
+                float flash = AcidFlash(pixelCoords);
+
                 if (pixelCoords.y > foamLimit)
                 {
-                    finalColor = _FoamColor;
+                    finalColor = lerp(_FoamColor, _FlashColor, flash);
                 }
                 else
                 {
@@ -189,6 +205,9 @@ Shader "Sprites/Custom/PixelArtAcid"
                             finalColor = _BubbleColor;
                         }
                     }
+
+                    // Temas parlaması yüzeyin hemen altına da taşar
+                    finalColor = lerp(finalColor, _FlashColor, flash * 0.6);
                 }
 
                 // Combine with Sprite Renderer's Vertex Tint / Color

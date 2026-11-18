@@ -38,6 +38,13 @@ Shader "Sprites/Custom/PixelArtAcid"
         _FlashColor ("Flash Color", Color) = (0.957, 1.0, 0.878, 1)
         _FlashRadius ("Flash Radius (Pixels)", Float) = 6.0
         _FlashTime ("Flash Time (s)", Float) = 0.1
+        _RippleAmp ("Ripple Amplitude (Pixels)", Float) = 3.0
+        _RippleSpeed ("Ripple Speed (Pixels/Sec)", Float) = 24.0
+        _RippleWavelength ("Ripple Wavelength (Pixels)", Float) = 14.0
+        _RippleDecay ("Ripple Decay (1/s)", Float) = 0.8
+        _RippleFalloff ("Ripple Falloff (Pixels)", Float) = 120.0
+        _BoilRadius ("Boil Radius (Pixels)", Float) = 40.0
+        _BoilThreshold ("Boil Bubble Threshold", Range(0, 1)) = 0.6
     }
 
     SubShader
@@ -156,9 +163,10 @@ Shader "Sprites/Custom/PixelArtAcid"
                 
                 // Base height of the acid level in pixel units
                 float baseAcidHeight = _AcidLevel * pixelScale.y;
-                // Temas tepkisi: çukur (negatif). Tepe payı, ileride eklenecek dalga tepesini quad içinde tutar.
+                // Temas tepkisi: çukur + yayılan dalga. Tepe payı dalga tepesini quad içinde tutar (çukur kırpılmaz).
                 float headroom = max(pixelScale.y * (1.0 - _AcidLevel) - _WaveAmplitude - 1.0, 0.0);
-                float surfaceHeight = baseAcidHeight + wave + min(AcidCrater(pixelCoords.x), headroom);
+                float impactOffset = AcidCrater(pixelCoords.x) + AcidRipple(pixelCoords.x);
+                float surfaceHeight = baseAcidHeight + wave + min(impactOffset, headroom);
 
                 // 5. Sample the sprite texture
                 fixed4 spriteCol = SampleSpriteTexture(snappedUV);
@@ -194,7 +202,8 @@ Shader "Sprites/Custom/PixelArtAcid"
                     float2 bubbleCell = floor(bubbleGridUV);
                     float h = hash(bubbleCell);
                     
-                    if (h > _BubbleThreshold)
+                    // Temas çevresinde kaynama: eşik düşer, daha çok kabarcık
+                    if (h > lerp(_BubbleThreshold, _BoilThreshold, AcidBoil(pixelCoords)))
                     {
                         // Draw a pixelated circle inside the bubble grid cell
                         float2 cellFrac = frac(bubbleGridUV);

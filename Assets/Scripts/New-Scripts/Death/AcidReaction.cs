@@ -66,10 +66,12 @@ namespace New_Scripts.Death
             if (LevelResetManager.Instance != null) LevelResetManager.Instance.Unregister(this);
         }
 
-        /// <summary>Ölüm sıfırlaması (iris kapalıyken): yuva ve damlalar temizlenir.</summary>
+        /// <summary>
+        /// Ölüm sıfırlaması (iris kapalıyken): yalnızca damlalar temizlenir. Darbe yuvası bilerek kalır:
+        /// iris açıldığında yüzeyde süren dalgalar "biraz önce burada öldün" der, süresi dolunca kendiliğinden söner.
+        /// </summary>
         public void ResetToDefault()
         {
-            ClearImpact();
             if (_fx != null) _fx.Clear();
         }
 

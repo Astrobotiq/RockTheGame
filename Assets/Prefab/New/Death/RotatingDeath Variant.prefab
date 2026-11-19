@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8567228768319829006}
   - component: {fileID: 304824369837179350}
   - component: {fileID: 74061506002118690}
+  - component: {fileID: 5364501965662986661}
   m_Layer: 8
   m_Name: Circle (2)
   m_TagString: Untagged
@@ -156,6 +157,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.HazardCoreVisual
   core: {fileID: 8231530571770466146}
+--- !u!114 &5364501965662986661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2842644127100557771}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 1
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1 &6373622127074270675
 GameObject:
   m_ObjectHideFlags: 0
@@ -169,6 +184,7 @@ GameObject:
   - component: {fileID: 9169018585441352571}
   - component: {fileID: 781848516730472963}
   - component: {fileID: 7002734323123813675}
+  - component: {fileID: 1664713287082503242}
   m_Layer: 8
   m_Name: Circle
   m_TagString: Untagged
@@ -312,6 +328,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.HazardCoreVisual
   core: {fileID: 8745438736128370853}
+--- !u!114 &1664713287082503242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6373622127074270675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 1
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1 &8835460984818985793
 GameObject:
   m_ObjectHideFlags: 0
@@ -325,6 +355,7 @@ GameObject:
   - component: {fileID: 7744682659374115247}
   - component: {fileID: 4429713540273600384}
   - component: {fileID: 6320786776547074368}
+  - component: {fileID: 8146054588362981650}
   m_Layer: 8
   m_Name: Circle (1)
   m_TagString: Untagged
@@ -468,6 +499,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.HazardCoreVisual
   core: {fileID: 3029600134178536484}
+--- !u!114 &8146054588362981650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8835460984818985793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 1
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1001 &3626287550654344800
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1076254635691782033}
   - component: {fileID: 1342253344001586028}
   - component: {fileID: 9136833846190269066}
+  - component: {fileID: 6104222828096681955}
   m_Layer: 8
   m_Name: Acid
   m_TagString: Untagged
@@ -186,6 +187,20 @@ MonoBehaviour:
   impactFxPrefab: {fileID: 8021177916568766521, guid: 4c99958c8b239b74a844031218ebac16, type: 3}
   hasSurface: 1
   sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+--- !u!114 &6104222828096681955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2483780737110080470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 0
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1001 &4245358466077616991
 PrefabInstance:
   m_ObjectHideFlags: 0

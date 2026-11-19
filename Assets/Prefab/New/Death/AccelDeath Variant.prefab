@@ -110,3 +110,7 @@ MonoBehaviour:
   returnDuration: 2
   endDelay: 1
   phaseOffset: 0
+  jumpBoostMultiplier: 1.5
+  playerStats: {fileID: 0}
+  trajectorySteps: 60
+  stepDeltaTime: 0.02

@@ -125042,6 +125042,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::New_Scripts.Death.PlayerHealth
   deathParticlePrefab: {fileID: 1801322133150058574, guid: f990fa7e6c4497846b0e9d04d9b0f58e, type: 3}
+  burstSettings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!4 &7601003582664402935
 Transform:
   m_ObjectHideFlags: 0

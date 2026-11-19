@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Death Particle v2 - Kendi Pikselleri</title>
+<style>
+  :root{--bg:#14121a;--fg:#eee;--mut:#9a95a8;--acc:#ff4fa3;--line:#2e2a3a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,Segoe UI,sans-serif;padding:16px}
+  h1{font-size:18px;margin:0 0 4px}
+  p.sub{margin:0 0 12px;color:var(--mut)}
+  .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+  canvas{image-rendering:pixelated;border:2px solid var(--line);max-width:100%;height:auto;background:#71BAEA}
+  .panel{min-width:260px;flex:1;max-width:340px}
+  .row{display:flex;align-items:center;gap:8px;margin:7px 0}
+  .row label{flex:0 0 118px;color:var(--mut)}
+  .row input[type=range]{flex:1}
+  .row output{flex:0 0 52px;text-align:right;font-variant-numeric:tabular-nums}
+  select,button{background:#241f30;color:var(--fg);border:1px solid var(--line);padding:6px 10px;font:inherit;cursor:pointer}
+  button.main{background:var(--acc);border-color:var(--acc);font-weight:700;color:#14121a}
+  .chk{display:flex;align-items:center;gap:6px;margin:6px 0;color:var(--mut)}
+  .note{margin-top:12px;color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);padding-top:10px}
+  .cnt{color:var(--fg);font-weight:700}
+</style>
+</head>
+<body>
+<h1>Karakterin kendi pikselleri + asitte kalan kafa</h1>
+<p class="sub">Gerçek karakter sprite'ı (28×51 piksel, 889 dolu piksel). Kısa beyaz flaş, sonra karakterin kendi renkleri parçacık olur. Kafa şimdilik pembe daire.</p>
+<div class="wrap">
+  <canvas id="c" width="908" height="512"></canvas>
+  <div class="panel">
+    <div class="row"><button class="main" id="play">Oynat (Boşluk)</button><button id="stress">20 ölüm testi</button><button id="clear">Temizle</button></div>
+    <div class="row"><label>Kafa sayısı</label><span class="cnt" id="count">0</span> <span style="color:var(--mut)">parçacık: <span class="cnt" id="pcount">0</span></span></div>
+    <div class="row"><label>Sahne</label>
+      <select id="scene">
+        <option value="static" selected>Asit havuzuna düşme</option>
+        <option value="moving">Hareketli asit çarpar</option>
+        <option value="ground">Diğer (diken vb.)</option>
+      </select></div>
+    <div class="row"><label>Zoom</label>
+      <select id="zoom"><option value="2" selected>2x (gerçek ölçek)</option><option value="4">4x</option></select></div>
+    <div class="row"><label>Ölüm hızı</label>
+      <select id="dir">
+        <option value="0,0">Durağan</option>
+        <option value="1,0.2" selected>Sağa koşarken</option>
+        <option value="-1,0.2">Sola koşarken</option>
+        <option value="0,1">Yukarı</option>
+        <option value="0.7,-1">Aşağı düşerken</option>
+      </select></div>
+    <div class="row"><label>Parça (piksel)</label><input id="cell" type="range" min="1" max="5" step="1" value="3"><output id="cellO"></output></div>
+    <div class="row"><label>Yayılma (birim)</label><input id="spread" type="range" min="1" max="4" step="0.1" value="2"><output id="spreadO"></output></div>
+    <div class="row"><label>Süre (ms)</label><input id="dur" type="range" min="300" max="1000" step="25" value="600"><output id="durO"></output></div>
+    <div class="row"><label>Flaş (kare)</label><input id="flash" type="range" min="0" max="4" step="1" value="2"><output id="flashO"></output></div>
+    <div class="row"><label>Hitstop (ms)</label><input id="hs" type="range" min="0" max="150" step="5" value="60"><output id="hsO"></output></div>
+    <div class="row"><label>Sarsıntı (px)</label><input id="sh" type="range" min="0" max="6" step="1" value="2"><output id="shO"></output></div>
+    <div class="row"><label>Yön etkisi %</label><input id="bias" type="range" min="0" max="60" step="5" value="30"><output id="biasO"></output></div>
+    <div class="row"><label>Max kafa</label><input id="cap" type="range" min="5" max="15" step="1" value="12"><output id="capO"></output></div>
+    <div class="row"><label>Havuz derinliği</label><input id="depth" type="range" min="1.5" max="6" step="0.5" value="3"><output id="depthO"></output></div>
+    <label class="chk"><input type="checkbox" id="irisclose"> İris kapanmasını simüle et (tahmini, 0,5 sn)</label>
+    <label class="chk"><input type="checkbox" id="loop"> Otomatik tekrar</label>
+    <div class="note">
+      <b>Parça (piksel):</b> karakterin kaç piksellik karelerinin tek parçacık olacağı. 3 piksel = 2 sanat pikseli (0,125 birim). Projede CRT filtresi ekranı 480×360'a indirdiği için 1 piksellik parçacık titrer (asit damlalarında böyle bulundu); 1 değerini önizlemede deneyebilirsin ama oyunda riskli.<br>
+      Parçacıklar dönmez, şekil bozulmaz; her biri o bölgenin gerçek rengini taşır (taç sarı, gövde pembe, etek turuncu). Sönerken yanıp sönüp kaybolur.<br>
+      Asit sahnelerinde kafa (placeholder) asitte kalır ve birikir; efekt asit olmayan ölümle aynı.
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const SPRITE='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAzCAYAAACE92h3AAACfUlEQVRYCd2WsS8EQRTG9y4qkUgUGioaoqERCeWpVKIg8QfIVTr/kUKlUlG6RIPraFCgQ0gkSCTrvr28yduZeW9m9vYak9ztzJs332+/tzN7l2VDaKcnq7kk25QmhhWvHXjTbYnuYKIAaiUgp/nHdo4Pjatem6kiWn7IHW6y2Rg/arTWpjO4jHGKRRoU81orSkpQJMaCq0JLmwZOqXG3kjjilBdTTmgbIFwiwKEYh1pqfgEhUe7k7PyJwsGbuH14NbnozC+elXT5pHGIILlEP/XOsQbt6fmr3xG+R4R4Ea4K1TRLDpHIXWoLq845wEGgoXJC2wscBLq+0RE3jApMhca4g6a6aQjKjwtidnvfb2djJtgxPV9Htc8X5Jv34i/Fxdt1kdr9vMsWx2YzXNHalweOvhMoMq0vDUapHEoxXG2oCowBcfEYqAhMhRE4BPUCB4URnJ4ljVHeWoEQJocEsaHiwacFqdeViSWzhHatCfQ6tQO5Q35ECOqUtOrzI0FcORRjXtahOrRhGNcO5M8QAJSVt9qBWjkBrh34vx2Gyll7SXk5fYcerzbnGTaOZ5yzyXeZ1ucOfYcea0Xx1BcAh0GYH3aM6XfRcYjJKs0up6QhOsSCFJfk0HYGHXKHvgpEQgw0Fga94L+2bHIHeWqbGv0p5ru3uyaPuzLBXicM5NmB/sbcYfby/dvPuvQnq5sm31sW/xr65AysN3m1teBdqwJ9onbs8bNfTjsujUVgqjsfwOdSBPoE7FiqO6z3AutwRzdnu/QCKVm7VnEHPQcY4y4Vxl06QM0V5iQYPxKaRgkY404T0+bIZQmoLcCc5C60js+bl3eMOwkYW06A/wCKSy/pKibjwgAAAABJRU5ErkJggg==';
+  const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+  ctx.imageSmoothingEnabled=false;
+  const $=id=>document.getElementById(id);
+  const U=16, TX=16/24;
+  const ACID=[89,224,71], ACID_L=[199,255,112], ACID_D=[31,186,41], PINK=[255,79,163];
+  const HEAD_R=0.35, ACID_R=0.75, ACID_X0=-3.5, ACID_V=3, DROP_G=25, DROP_Y0=2.5;
+  const POOL_X0=-4.0, POOL_X1=4.4, HEAD_Y=0.55, CAMY=0.45, K=3;
+  const SPR={w:28,h:51,cx:-0.04,bottom:-0.525};
+  function bind(id,fmt){const e=$(id),o=$(id+'O');const f=()=>{o.textContent=fmt(e.value)};e.addEventListener('input',f);f();}
+  bind('cell',v=>v+'px');bind('spread',v=>(+v).toFixed(1));bind('dur',v=>v);bind('flash',v=>v);bind('hs',v=>v);bind('sh',v=>v);bind('bias',v=>v+'%');bind('cap',v=>v);bind('depth',v=>(+v).toFixed(1));
+
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const clamp01=v=>Math.min(1,Math.max(0,v));
+  const lerp=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+  const rgb=c=>'rgb('+c[0]+','+c[1]+','+c[2]+')';
+  function hash(i,j){let h=(i*374761393+j*668265263)|0;h=(h^(h>>13))*1274126177|0;return ((h^(h>>16))>>>0)/4294967295;}
+
+  const img=new Image(); let texels=null, silhouette=null, ready=false;
+  img.onload=()=>{
+    const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+    const x=c.getContext('2d');x.drawImage(img,0,0);
+    const d=x.getImageData(0,0,img.width,img.height).data;
+    texels=[];for(let y=0;y<img.height;y++)for(let xx=0;xx<img.width;xx++){const i=(y*img.width+xx)*4;if(d[i+3]>25)texels.push({x:xx,y:y,c:[d[i],d[i+1],d[i+2]]});}
+    const s=document.createElement('canvas');s.width=img.width;s.height=img.height;const sx=s.getContext('2d');
+    sx.drawImage(img,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#fff';sx.fillRect(0,0,s.width,s.height);
+    silhouette=s;ready=true;
+  };
+  img.src=SPRITE;
+
+  function buildParticles(cellPx){
+    const cells=new Map();
+    texels.forEach(t=>{const gx=Math.floor(t.x/cellPx),gy=Math.floor(t.y/cellPx),key=gx+','+gy;let e=cells.get(key);
+      if(!e){e={xs:0,ys:0,n:0,r:0,g:0,b:0};cells.set(key,e);}
+      e.xs+=t.x;e.ys+=t.y;e.n++;e.r+=t.c[0];e.g+=t.c[1];e.b+=t.c[2];});
+    const out=[];cells.forEach(e=>{
+      const tx=e.xs/e.n+0.5, ty=e.ys/e.n+0.5;
+      out.push({ox:SPR.cx+(tx-SPR.w/2)/24, oy:SPR.bottom+(SPR.h-ty)/24, col:[Math.round(e.r/e.n),Math.round(e.g/e.n),Math.round(e.b/e.n)]});
+    });
+    return out;
+  }
+
+  let parts=[],head=null,t0=0,running=false,hitMs=60,durMs=600,flashMs=33,shakePx=2,shakeDir=[1,0],stressLeft=0,cellPx=3,spreadV=2;
+  let scene='static',deathAt=0,dv=[0,0],settled=[];
+  const SLOT_DX=0.45;
+  const liveCount=()=>settled.filter(h=>h.dyingAt==null).length;
+  const HP=[];(function(){const n=Math.ceil(HEAD_R*U);for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++)if(Math.hypot(i,j)<=HEAD_R*U)HP.push({i,j,r:Math.random()});})();
+
+  function start(){
+    if(!ready)return;
+    const ns=$('scene').value;if(ns!==scene)settled=[];scene=ns;
+    spreadV=+$('spread').value;durMs=+$('dur').value;hitMs=+$('hs').value;flashMs=+$('flash').value*16.7;shakePx=+$('sh').value;cellPx=+$('cell').value;
+    const bias=+$('bias').value/100,cap=+$('cap').value;
+    if(scene==='static'){deathAt=Math.sqrt(2*DROP_Y0/DROP_G)*1000;dv=[0,-9];shakeDir=[0,-1];}
+    else if(scene==='moving'){deathAt=(-0.5-ACID_R-ACID_X0)/ACID_V*1000;dv=[9,0];shakeDir=[1,0];}
+    else{deathAt=0;const d=$('dir').value.split(',').map(Number);dv=[d[0]*9,d[1]*9];shakeDir=(d[0]===0&&d[1]===0)?[1,0]:[Math.sign(d[0])||0,Math.sign(d[1])||0];}
+    const base=buildParticles(cellPx), cy=SPR.bottom+SPR.h/48;
+    parts=base.map(p=>{
+      const rx=p.ox-SPR.cx, ry=p.oy-cy;
+      const ang=Math.atan2(ry,rx)+rnd(-0.4,0.4); const dist=Math.min(1,Math.hypot(rx,ry/1.6)/0.6);
+      const v0=spreadV*K*(0.5+0.5*dist)*rnd(0.75,1.15);
+      return {x:p.ox,y:p.oy,vx:Math.cos(ang)*v0+dv[0]*bias,vy:Math.sin(ang)*v0+dv[1]*bias,col:p.col,vanish:rnd(0.5,1.0)};
+    });
+    $('pcount').textContent=parts.length;
+    const ha=rnd(0.9,2.2);
+    head={vx:Math.cos(ha)*spreadV*K*0.55+dv[0]*bias,vy:Math.sin(ha)*spreadV*K*0.55+dv[1]*bias,x0:0,y0:HEAD_Y,seed:Math.random(),slot:0,off:{x:0,y:0},fr:rnd(0.35,0.65)};
+    if(scene==='static'||scene==='moving'){
+      const live=settled.filter(h=>h.dyingAt==null);if(live.length>=cap)live[0].dyingAt=performance.now();
+      if(scene==='static'){const used=new Set(settled.map(h=>h.slot));const order=[0];for(let k=1;k<=8;k++)order.push(k,-k);const f=order.find(k=>!used.has(k));head.slot=(f===undefined)?0:f;}
+      else{const a=rnd(0,6.28),r=Math.sqrt(Math.random())*0.38;head.off={x:Math.cos(a)*r+0.1,y:Math.sin(a)*r*0.8+0.3};}
+    }
+    t0=performance.now();running=true;
+  }
+
+  const acidX=(tG,tMs)=>ACID_X0+ACID_V*(tG-Math.min(Math.max(tMs,0),hitMs))/1000;
+
+  function draw(now){
+    const S=+$('zoom').value,W=cv.width,H=cv.height;
+    const tG=running?now-t0:0;const tMs=running?tG-deathAt:-1;const pre=!running||tMs<0;const sc=scene,depth=+$('depth').value;
+    let ox=0,oy=0;
+    if(running&&!pre&&shakePx>0){const fr=Math.floor((tMs-hitMs)/16.7);
+      if(tMs>=hitMs&&fr>=0&&fr<3){const s=(fr%2===0)?1:-1,m=fr===2?0.5:1;ox=shakeDir[0]*shakePx*s*m;oy=-shakeDir[1]*shakePx*s*m;if(!shakeDir[0]&&!shakeDir[1])ox=shakePx*s;}}
+    const X=u=>Math.round(W/2+u*U*S+ox),Y=u=>Math.round(H/2-(u-CAMY)*U*S+oy);
+    ctx.fillStyle='#71BAEA';ctx.fillRect(0,0,W,H);
+    const gy=Y(-0.5);ctx.fillStyle='#E8943A';ctx.fillRect(0,gy,W,H-gy);ctx.fillStyle='#F2B56A';ctx.fillRect(0,gy,W,Math.max(2,S*2));
+    const px1=(ux,uy,col)=>{ctx.fillStyle=rgb(col);ctx.fillRect(X(ux)-S/2,Y(uy)-S/2,S,S);};
+    function drawHead(cx,cy,colFn){const sx=Math.round(cx*U)/U,sy=Math.round(cy*U)/U;HP.forEach(p=>{const c=colFn(p);if(c)px1(sx+p.i/U,sy+p.j/U,c);});}
+    function drawAcidDisc(cx,cy,tt){const sx=Math.round(cx*U)/U,sy=Math.round(cy*U)/U,n=Math.ceil(ACID_R*U);
+      for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++){const d=Math.hypot(i,j);if(d>ACID_R*U)continue;let c=ACID;if(d>ACID_R*U-2)c=ACID_L;else if(hash(i+Math.floor(tt*6),j)>0.86)c=ACID_D;px1(sx+i/U,sy+j/U,c);}}
+    function drawPool(tt){const x0=X(POOL_X0),x1=X(POOL_X1),y0=Y(-0.5),yb=Y(-0.5-depth);
+      ctx.fillStyle=rgb(ACID);ctx.fillRect(x0,y0,x1-x0,yb-y0);ctx.fillStyle=rgb(ACID_L);ctx.fillRect(x0,y0,x1-x0,2*S);ctx.fillStyle=rgb(ACID_D);ctx.fillRect(x0,yb-2*S,x1-x0,2*S);
+      for(let r=0;r<60;r++){const yy=y0+(6+r*7)*S;if(yy>yb-3*S)break;for(let c=0;c<64;c++){if(hash(c,r+Math.floor(tt*3))>0.9)ctx.fillRect(x0+c*7*S,yy,4*S,S);}}}
+    function drawSprite(offY,white){
+      const w=SPR.w*TX*S,h=SPR.h*TX*S;
+      ctx.drawImage(white?silhouette:img,Math.round(X(SPR.cx)-w/2),Math.round(Y(SPR.bottom+offY)-h),Math.round(w),Math.round(h));
+    }
+    function drawSettled(acidNow){
+      for(let k=settled.length-1;k>=0;k--){const h=settled[k];if(h.dyingAt!=null&&(now-h.dyingAt)/500>=1)settled.splice(k,1);}
+      settled.forEach(h=>{const bob=Math.round(Math.sin(now/600+h.phase))/U;let cx,cy,tintH;
+        if(sc==='static'){const e=Math.exp(-3.2*(now-h.at)/1000),restY=-0.5-depth*h.fr,sx=h.slot*SLOT_DX;cx=sx+(h.xAt-sx)*e;cy=restY+(h.yAt-restY)*e+bob;tintH=0.3+0.5*h.fr;}
+        else{cx=acidNow+h.off.x;cy=h.off.y+bob;tintH=0.2;}
+        const d=h.dyingAt!=null?(now-h.dyingAt)/500:-1;const blink=d>=0&&Math.floor(d*12)%2===1;
+        const col=lerp(PINK,ACID,tintH);if(!blink)drawHead(cx,cy,p=>((p.r+h.seed)%1)<d?null:col);});
+    }
+    $('count').textContent=liveCount();
+    const tIdle=(running?tG:now)/1000;
+    const acidNow=(sc==='moving')?(running?(pre?ACID_X0+ACID_V*tG/1000:acidX(tG,tMs)):ACID_X0):ACID_X0;
+
+    if(!ready){requestAnimationFrame(draw);return;}
+    if(pre){
+      let py=0;if(sc==='static')py=running?DROP_Y0-0.5*DROP_G*(tG/1000)**2:DROP_Y0;
+      if(sc==='static'){drawPool(tIdle);drawSprite(py,false);drawSettled(0);}
+      else if(sc==='moving'){drawSprite(0,false);drawAcidDisc(acidNow,0,tIdle);drawSettled(acidNow);}
+      else drawSprite(0,false);
+      if(!running){ctx.fillStyle='rgba(0,0,0,.55)';ctx.font='14px system-ui';ctx.fillText('Boşluk: oynat',14,24);}
+    }else{
+      const T=clamp01((tMs-hitMs)/(durMs-hitMs)),tt=Math.max(0,tMs-hitMs)/1000;
+      if(sc==='static')drawPool(tIdle);
+      const flash=tMs<flashMs;
+      const f=(1-Math.exp(-K*tt))/K,gt=Math.max(0,tt-0.12);
+      const sz=Math.max(1,Math.round(cellPx*TX*S));
+      if(flash){drawSprite(0,true);}
+      else{
+        parts.forEach(p=>{
+          const vis=clamp01((T-p.vanish*0.85)/(1-p.vanish*0.85+1e-6));
+          if(T>=1||vis>=1)return;
+          if(vis>0&&Math.floor(vis*10)%2===0)return;
+          let x=p.x+p.vx*f,y=p.y+p.vy*f-0.5*4.5*gt*gt;
+          if(sc==='ground'){const fl=-0.5+0.04;if(y<fl)y=fl;}
+          x=Math.round(x*U)/U;y=Math.round(y*U)/U;
+          ctx.fillStyle=rgb(p.col);ctx.fillRect(Math.round(X(x)-sz/2),Math.round(Y(y)-sz/2),sz,sz);
+        });
+      }
+      const finalTint=(sc==='moving')?0.2:0.3;let hx,hy,thr=-1,tint=0;
+      if(sc==='static'){const restY=-0.5-depth*head.fr;hx=head.slot*SLOT_DX*(1-Math.exp(-6*tt));hy=head.y0+(restY-head.y0)*(1-Math.exp(-3.2*tt));tint=(0.3+0.5*head.fr)*clamp01(tt/0.6);}
+      else if(sc==='moving'){const ax=acidX(tG,tMs),a=clamp01(tt/0.18),e=1-(1-a)*(1-a);const off0x=0-(ACID_X0+ACID_V*deathAt/1000);hx=ax+off0x+(head.off.x-off0x)*e;hy=head.y0+(head.off.y-head.y0)*e;tint=finalTint*clamp01(tt/0.6);}
+      else{hx=head.x0+head.vx*f;hy=head.y0+head.vy*f-0.5*4.5*gt*gt;const fl=-0.5+HEAD_R;if(hy<fl)hy=fl;thr=(T-0.55)/0.45;}
+      const col=lerp(PINK,ACID,tint);const done=(sc==='ground')&&T>=1;
+      if(sc==='static'){drawSettled(0);if(!flash)drawHead(hx,hy,p=>(done||p.r<thr)?null:col);}
+      else if(sc==='moving'){drawAcidDisc(acidNow,0,tIdle);drawSettled(acidNow);if(!flash)drawHead(hx,hy,p=>(done||p.r<thr)?null:col);}
+      else if(!flash)drawHead(hx,hy,p=>(done||p.r<thr)?null:col);
+      if($('irisclose').checked){const r=Math.max(0,1-tMs/500)*9*U*S;ctx.fillStyle='#000';ctx.beginPath();ctx.rect(0,0,W,H);ctx.arc(X(0),Y(HEAD_Y-0.3),r,0,6.283,true);ctx.fill('evenodd');}
+      if(tMs>=durMs+120){running=false;
+        if(sc==='static')settled.push({slot:head.slot,seed:head.seed,phase:rnd(0,6.28),dyingAt:null,fr:head.fr,xAt:hx,yAt:hy,at:now});
+        if(sc==='moving')settled.push({off:head.off,seed:head.seed,phase:rnd(0,6.28),dyingAt:null});
+        if(stressLeft>0||$('loop').checked){if(stressLeft>0)stressLeft--;setTimeout(start,350);}}
+    }
+    requestAnimationFrame(draw);
+  }
+  $('play').onclick=()=>{stressLeft=0;start();};
+  $('stress').onclick=()=>{stressLeft=19;start();};
+  $('clear').onclick=()=>{settled=[];};
+  document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();stressLeft=0;start();}});
+  ['dir','scene','cell'].forEach(id=>$(id).addEventListener('change',()=>{stressLeft=0;start();}));
+  scene=$('scene').value;
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

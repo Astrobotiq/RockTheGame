@@ -463,6 +463,12 @@ namespace New_Scripts.Player
             impulseSource.GenerateImpulseWithVelocity(velocity);
         }
 
+        /// <summary>Dışarıdan kısa kamera sarsıntısı (ölüm efekti). Yön ve şiddet velocity ile verilir.</summary>
+        public void ShakeImpulse(Vector3 velocity)
+        {
+            TriggerShake(velocity);
+        }
+
         private Vector2 transitionStartCameraPosition;
 
         public void PrepareForTransition()

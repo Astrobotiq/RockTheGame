@@ -81,6 +81,7 @@ Hareketli tehlikeler `PlatformController` / `WrappingPlatformManager` üzerinden
 
 ## Kod
 
+- Asitte kalan kafalar: `Death/AcidHeadHost.cs` (sabit asitte Pool, hareketli tehlikelerde Blob), `AcidHeadPool.cs`; ayrıntı [`death-respawn.md`](death-respawn.md)
 - `Death/DeathZone.cs`, `Death/AcidHazard.cs`, `Death/AcidReaction.cs`, `Death/AcidImpactMath.cs`, `Death/AcidReactionSettingsSO.cs`, `Death/IKillable.cs`, `Death/PlayerHealth.cs`, `Death/HazardCoreVisual.cs`
 - Görünüş: `Assets/Shader/HazardAcid.shader`, `Assets/Shader/HazardCore.shader`, `Assets/Sprites/Hazard/`, `Assets/Prefab/New/Death/HazardCore/`
 - Hareket: `Platform/PlatformController.cs`, `WrappingPlatformManager.cs`, stratejiler

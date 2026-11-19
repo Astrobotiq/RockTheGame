@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4269788313221510629}
   - component: {fileID: 9007113947574977487}
   - component: {fileID: 270248314794242022}
+  - component: {fileID: 2551937008631162570}
   m_Layer: 8
   m_Name: Death (2)
   m_TagString: Untagged
@@ -198,6 +199,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.HazardCoreVisual
   core: {fileID: 394795133426612098}
+--- !u!114 &2551937008631162570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130245286806949629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 1
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1 &7008046115436373877
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,6 +228,7 @@ GameObject:
   - component: {fileID: 5836891101478156888}
   - component: {fileID: 2640456191987358593}
   - component: {fileID: 2292362335381350439}
+  - component: {fileID: 1043596227599471707}
   m_Layer: 8
   m_Name: Death
   m_TagString: Untagged
@@ -396,6 +412,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.HazardCoreVisual
   core: {fileID: 4301169482352472712}
+--- !u!114 &1043596227599471707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7008046115436373877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 1
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1 &8023423904605251201
 GameObject:
   m_ObjectHideFlags: 0
@@ -411,6 +441,7 @@ GameObject:
   - component: {fileID: 1547790742231612147}
   - component: {fileID: 2802278235634521073}
   - component: {fileID: 4268257135388016318}
+  - component: {fileID: 7550759167058415709}
   m_Layer: 8
   m_Name: Death (1)
   m_TagString: Untagged
@@ -594,6 +625,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.HazardCoreVisual
   core: {fileID: 1614215290388862709}
+--- !u!114 &7550759167058415709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8023423904605251201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a3f66ab9afc5924c83558633d09ec06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.AcidHeadHost
+  mode: 1
+  settings: {fileID: 11400000, guid: 14a10761cb40f164cbf75435f4137b55, type: 2}
 --- !u!1001 &4978153468125238912
 PrefabInstance:
   m_ObjectHideFlags: 0

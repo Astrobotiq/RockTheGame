@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad4b42203ea0f1f42830ee6700ec1e6a, type: 3}
+  m_Name: DeathBurstSettings
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Death.DeathBurstSettingsSO
+  hitstopSeconds: 0.09
+  duration: 0.6
+  flashFrames: 2
+  cellTexels: 2
+  pixelsPerUnit: 16
+  spread: 2.5
+  drag: 3
+  gravity: 4.5
+  gravityDelay: 0.12
+  velocityInherit: 0.3
+  maxInheritSpeed: 4
+  alphaMin: 25
+  shakeForce: 15
+  headSprite: {fileID: 21300000, guid: 2ad5f4c47d69b3e488dd5a622c055359, type: 3}
+  headThrowFactor: 0.55
+  headStartOffsetY: 0.55
+  maxGroundHeads: 12
+  headCollisionMask:
+    serializedVersion: 2
+    m_Bits: 2112
+  headGravityScale: 2
+  headDamping: 0.3
+  headAngularDamping: 2
+  headBounciness: 0.25
+  headFriction: 0.6
+  headPushSpeed: 3.5
+  headPushInherit: 0.3
+  headPushMaxSpeed: 7
+  headPushInterval: 0.12
+  maxHeads: 12
+  headRestFraction: {x: 0.35, y: 0.65}
+  headSlotSpacing: 0.45
+  headSinkRate: 3.2
+  headSlideRate: 6
+  headBobSeconds: 0.6
+  headDissolveSeconds: 0.5
+  blobEnterSeconds: 0.18
+  blobRadiusFactor: 0.5
+  headTint: {r: 0.6, g: 1, b: 0.5, a: 1}
+  headTintShallow: 0.3
+  headTintDeep: 0.8
+  headTintSettleSeconds: 0.6

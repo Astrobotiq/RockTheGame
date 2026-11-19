@@ -84,7 +84,9 @@ namespace New_Scripts.Player
         {
             bool shouldTrail = (playerContext.CurrentState is SwingingState || 
                                 playerContext.CurrentState is DualSwingingState || 
-                                playerContext.CurrentState is DashState);
+                                playerContext.CurrentState is DashState ||
+                                // Spiral çıkışı (SP8): fren tutma süresince iz kesilmez, hızlanmanın sebebi görünür kalır.
+                                playerContext.CurrentState is NormalState { IsInAirBrakeHold: true });
             
             if (movementTrail.emitting != shouldTrail)
             {

@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node, spiral node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-17 (spiral node: tek kancada motor, takılınca kopma, ters dönen spiral).*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-20 (spiral çıkış hızı, SP8).*
 
 ## Tasarım niyeti
 
@@ -87,9 +87,10 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 
 ### Spiral node (`SpiralNode`)
 
-Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar SP1–SP7.
+Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar SP1–SP8. Çıkış hızı: [`../spiral-cikis-hizi.md`](../spiral-cikis-hizi.md).
 
-- **Kontroller:** normal tek kanca gibi tutunulur. Stick spinin teğeti yönünde iterse hızlanır, tersine iterse yavaşlar (±`SpiralInputInfluence`, 0.4), ama dönüşü asla durdurmaz ya da çevirmez. Bırakış normal tek kanca bırakışıdır (H2: yükselirken 3×).
+- **Kontroller:** normal tek kanca gibi tutunulur. Stick spinin teğeti yönünde iterse hızlanır, tersine iterse yavaşlar (±`SpiralInputInfluence`, 0.4), ama dönüşü asla durdurmaz ya da çevirmez.
+- **Bırakış (SP5, SP8):** tetik bırakılınca, motor çalışmışsa, node etkinse ve oyuncu spin yönünde en az `SpiralExitMinSpeedRatio` (0.5) × hedef hızla gidiyorsa: teğete `SpiralExitBoost` (6) eklenir ve `AirEntry.SpiralRelease` ile havaya geçilir; `SpiralExitHoldTime` (0.45 sn) boyunca `AirDrag`/`AirOverspeedReduce` uygulanmaz (stick'le hızlanma ve ters basma çalışır), yerçekimi H2 ile aynı. Aynı anda iz açık kalır (`NormalState.IsInAirBrakeHold`), spiral `_Glow` darbesi, `SpiralRelease` titreşimi (0.12 sn) ve `spiralReleaseCue` (boş). Kapılar tutmazsa (hop, spinin tersi, yavaş) normal `SwingRelease`. Kopma, çarpışma, çift kanca ve respawn bu yoldan geçmez.
 - **Motor:** yalnızca tek kancada, hop bittikten sonra. Her adımda yerçekimi aynen eklenir, sonra `SwingingState` pompalama ve `MaxSwingSpeed` sınırı yerine node'a göre teğet hızı hedefe (`targetSpeed`, 32, × stick × `ActiveSpeedMultiplier`) yaklaştırır: spin yönünde altındaysa `SpiralDriveAccel` (60), tersine gidiyorsa `SpiralOpposeAccel` (45), üstündeyse fazla hız korunur (`SpiralOverspeedDecay` 0). İki ivme de |`Gravity`| (32) üstünde olduğu için spiral her ip boyunda tam tur attırır (`PlayerStatsSanityTests` korur). İp boyu tutunma anındaki mesafedir.
 - **Tersine tutunma:** oyuncu yavaşlar, durur ve spiral yönüne döner (−25 b/sn'den ~0.6 sn). Anlık değildir.
 - **Takılma:** tutunma çarpışması yalnızca radyal düzeltmeyi tarar; spiral oyuncuyu bir duvara bastırınca teğet hareket sessizce durur. Bu yüzden spiralde her adım gerçekleşen teğet hız komutla karşılaştırılır; art arda `SpiralBlockedSteps` (3) adım `SpiralBlockedRatio` (0.25) altında kalırsa kanca kopar (SP4).
@@ -98,8 +99,8 @@ Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar S
 - **Ters dönen spiral** (`reverseEveryDegrees` > 0, prefab'da 360): tutunurken spin yönünde biriken net açı (`SpiralReverseCounter`, geriye dönüş sayılmaz) eşiğe ulaşınca yön değişir, sayaç sıfırlanır ve tutundukça tekrarlar. Bırakınca, respawn'da ya da çift kancaya geçişte ilk yönüne döner. `Reversed` olayı ses, titreşim ve görseli tetikler.
 - **Sprite yönü:** motor çalışırken spinden gelir (CCW sağ, CW sol); stick ve hız dalı atlanır (`PlayerController.SpiralFacingSign`).
 - **Ses / titreşim:** tutununca döngü sesi (`spiralLoopCue`, sabit perde) ve `SpiralOrbit` sürekli titreşim; tersine tutunmada ve çevrilmede tek seferlik. Cue'lar şimdilik boş. Döngü sesinin durması için sahnedeki `PlayerAudioController.sfxStopChannel` atanmalı.
-- **Görsel:** `UI/SpiralNode` shader'ı (halftone kuyruklu kollar, dış halkada yön dişleri). Açı script'ten sürülür, hit-stop ve pause'da durur. Bağlı değilken `targetSpeed / idleReferenceRadius` (3) rad/sn döner.
-- **Test odası:** `RoomNew-SpiralTest` (roomId 97, NewScene'de x −480, slingshot test odasının yanında): kaldırıcı, duvar kopması, fırlatıcı, zıt yönlü zincir, tersine tutunma, ters dönen spiral. Hepsi yerden tutunulur (zeminden 8 birim). Oraya başlamak için `LevelBootstrapper.startingRoom`.
+- **Görsel:** `UI/SpiralNode` shader'ı (merkez nokta + tek Arşimet çizgisi, 3 tur). Ters dönen spiral (`Node-SpiralReversing`) ayrı görsel kullanır: `UI/SpiralNodeReversing` / `Mat_SpiralNodeReversing`, A2 "Vasarely Kanatları" (5 burulmuş kanat, #04586c / #f1e6c7). Orada `_Curl` = 1 − `ReverseProgress`: tutundukça kanatlar düzleşir, çevrilmede düz kanatlardır, sonra `rewindDuration` (0.4 sn) içinde ters yöne sarılır; bırakınca da aynı hızla sarılır. Açı script'ten sürülür, hit-stop ve pause'da durur. Bağlı değilken `targetSpeed / idleReferenceRadius` (3) rad/sn döner.
+- **Test odası:** `RoomNew-SpiralTest` (roomId 97, NewScene'de x −480, slingshot test odasının yanında): kaldırıcı, duvar kopması, fırlatıcı, zıt yönlü zincir, tersine tutunma, ters dönen spiral; karşılaştırma için fırlatıcı ile zincir arasında bir normal node (x −2). Hepsi yerden tutunulur (zeminden 8 birim). Oraya başlamak için `LevelBootstrapper.startingRoom`.
 - **Level tasarımı:** dönüş diski ip boyu kadar yarıçaplıdır; tutunulabilecek en uzak mesafe `NodeDetector.detectionRadius` (NewScene'de 10, varsayılan 15) olduğundan yaklaşık 10.5 birimlik (varsayılanla 15.5) bir daire boş kalmalı, ya da duvarın kancayı koparması bilinçli olmalı.
 
 ## Tunable'lar (`PlayerStats.asset`)
@@ -129,6 +130,7 @@ Tasarım: [`../spiral-node-tasarimi.md`](../spiral-node-tasarimi.md). Kurallar S
 | `SpiralDriveAccel` / `SpiralOpposeAccel` | 60 / 45 | spiral motoru; ikisi de \|`Gravity`\|'den büyük olmalı |
 | `SpiralInputInfluence` | 0.4 | stick'in hedef hızı değiştirme oranı (< 1) |
 | `SpiralOverspeedDecay` | 0 | hedefin üstündeyken yavaşlama; 0 = fazla hız korunur |
+| `SpiralExitBoost` / `SpiralExitHoldTime` / `SpiralExitMinSpeedRatio` | 6 / 0.45 / 0.5 | spiral çıkışı (SP8; 2026-11-20 gamepad: 4 / 0.3 yavaş kaldı): teğet itme, frensiz süre, eşik |
 | `SpiralBlockedRatio` / `SpiralBlockedSteps` | 0.25 / 3 | takılınca kopma |
 
 `SpiralNode` alanları: `direction`, `targetSpeed` (32), `reverseEveryDegrees` (0; ters dönen prefab'da 360), `idleReferenceRadius` (3), `visual`.

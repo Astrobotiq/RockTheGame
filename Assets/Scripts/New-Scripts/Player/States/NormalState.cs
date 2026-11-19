@@ -15,6 +15,9 @@ namespace New_Scripts.Player.States
 
         public bool IsOnGround { get; private set; }
 
+        /// <summary>Spiral çıkışının fren tutma süresi sürüyor mu (SP8); iz efekti bunu okur.</summary>
+        public bool IsInAirBrakeHold => !IsOnGround && _airBrakeHoldTimer > 0f;
+
         // ---- Hava alanları: her havaya girişte BeginAir sıfırlar ----
         private Vector2 _currentVelocity;
         private float _grappleLockoutTimer;
@@ -32,6 +35,8 @@ namespace New_Scripts.Player.States
         // Taşınan yatay hızın saniyedeki sönme miktarı (AirEntry.CarriedDecayTime); 0 = sönmez.
         private float _carriedDecayRate;
         private WallSpeedRetention _wallSpeedRetention;
+        // Spiral çıkışı (SP8): kalan süre boyunca havadaki fren uygulanmaz (AirEntry.AirBrakeHoldTime).
+        private float _airBrakeHoldTimer;
         // Celeste değişken zıplaması (PlayerStatsSO.CelesteVariableJump): tuş basılıyken bu süre boyunca yukarı hız sabit.
         private bool _holdJump;
         private float _varJumpTimer;
@@ -134,6 +139,7 @@ namespace New_Scripts.Player.States
             _bypassApexHangGravity = false;
             _endEarlyGravityMultiplier = Mathf.Clamp01(entry.EndEarlyGravityMultiplier);
             _wallSpeedRetention = default;
+            _airBrakeHoldTimer = entry.AirBrakeHoldTime;
             _holdJump = false;
             _varJumpTimer = 0f;
             _varJumpSpeed = 0f;
@@ -306,6 +312,7 @@ namespace New_Scripts.Player.States
             if (_grappleLockoutTimer > 0f) _grappleLockoutTimer -= dt;
             if (_wallClimbLockoutTimer > 0f) _wallClimbLockoutTimer -= dt;
             if (_varJumpTimer > 0f) _varJumpTimer -= dt;
+            if (_airBrakeHoldTimer > 0f) _airBrakeHoldTimer -= dt;
         }
 
         private void HandleAirArmRouting()
@@ -422,12 +429,17 @@ namespace New_Scripts.Player.States
             float maxX = _stats.MoveSpeed * _stats.AirControlMultiplier;
             bool hasInput = Mathf.Abs(moveInput) >= 0.05f;
             float accel = !hasInput ? _stats.AirDrag : _stats.AirAcceleration;
+            bool braking = !hasInput;
 
             // Celeste RunReduce: sinirin ustundeyken ayni yone basmak momentumu daha yavas sondurur (3.4 #3).
             if (hasInput && Mathf.Abs(_currentVelocity.x) > maxX && Mathf.Sign(_currentVelocity.x) == Mathf.Sign(moveInput))
             {
                 accel = _stats.AirOverspeedReduce;
+                braking = true;
             }
+
+            // Spiral çıkışı (SP8): tutma süresinde fren yok; stick'le hızlanma ve ters yöne basma çalışır.
+            if (braking && _airBrakeHoldTimer > 0f) return;
 
             _currentVelocity.x = Mathf.MoveTowards(_currentVelocity.x, targetX, accel * Time.fixedDeltaTime);
         }

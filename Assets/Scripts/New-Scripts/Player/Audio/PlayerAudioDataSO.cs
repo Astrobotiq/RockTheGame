@@ -28,6 +28,8 @@ namespace New_Scripts.Player
         [SerializeField] private AudioCueSO spiralOpposeGrabCue;
         [Tooltip("Ters dönen spiral yön değiştirdiğinde.")]
         [SerializeField] private AudioCueSO spiralReverseCue;
+        [Tooltip("Spiralden tetiği bırakarak hızlı çıkış (SP8): kısa, tek seferlik kırbaç. Boşsa sessiz.")]
+        [SerializeField] private AudioCueSO spiralReleaseCue;
 
         public AudioCueSO JumpCue => jumpCue;
         public AudioCueSO LandCue => landCue;
@@ -39,5 +41,6 @@ namespace New_Scripts.Player
         public AudioCueSO SpiralLoopCue => spiralLoopCue;
         public AudioCueSO SpiralOpposeGrabCue => spiralOpposeGrabCue;
         public AudioCueSO SpiralReverseCue => spiralReverseCue;
+        public AudioCueSO SpiralReleaseCue => spiralReleaseCue;
     }
 }

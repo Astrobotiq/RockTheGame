@@ -83,3 +83,6 @@ MonoBehaviour:
   SpiralOverspeedDecay: 0
   SpiralBlockedRatio: 0.25
   SpiralBlockedSteps: 3
+  SpiralExitBoost: 6
+  SpiralExitHoldTime: 0.45
+  SpiralExitMinSpeedRatio: 0.5

@@ -134,6 +134,12 @@ namespace New_Scripts.Player
         public float SpiralBlockedRatio = 0.25f;
         [Tooltip("Art arda bu kadar takılmış adımda kanca kopar.")]
         public int SpiralBlockedSteps = 3;
+        [Tooltip("Spiralden tetiği bırakınca spin teğeti yönünde eklenen hız (b/sn). SP8, docs/spiral-cikis-hizi.md.")]
+        public float SpiralExitBoost = 6f;
+        [Tooltip("Spiral bırakışından sonra havadaki frenin (AirDrag, AirOverspeedReduce) uygulanmadığı süre (sn). Yerçekimi değişmez.")]
+        public float SpiralExitHoldTime = 0.45f;
+        [Tooltip("Teğet hız / hedef hız bu oranın altındaysa (ya da spinin tersineyse) çıkış hızı verilmez.")]
+        public float SpiralExitMinSpeedRatio = 0.5f;
 
         public float Gravity => -(2f * JumpHeight) / (TimeToApex * TimeToApex);
         public float JumpVelocity => Mathf.Abs(Gravity) * TimeToApex;

@@ -27,5 +27,7 @@ namespace New_Scripts.Player
         public RumbleProfile SpiralOpposeGrab;
         [Tooltip("Ters dönen spiral yön değiştirdiğinde.")]
         public RumbleProfile SpiralReverse;
+        [Tooltip("Spiralden tetiği bırakarak hızlı çıkış (SP8). Kısa, HighImpact'ten hafif.")]
+        public RumbleProfile SpiralRelease;
     }
 }

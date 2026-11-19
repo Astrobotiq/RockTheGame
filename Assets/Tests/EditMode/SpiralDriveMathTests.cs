@@ -109,5 +109,31 @@ namespace RockTheGame.Tests
             Assert.IsFalse(SpiralDriveMath.IsBlocked(0.2f, 0f, 0.25f));
             Assert.IsTrue(SpiralDriveMath.IsBlocked(-18f, -2f, 0.25f));
         }
+
+        // ---- Çıkış itmesi (docs/spiral-cikis-hizi.md, SP8) ----
+
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void ExitBoost_WithSpinAboveMin_PushesInSpinDirection(int spinSign)
+        {
+            Assert.AreEqual(spinSign * 4f, SpiralDriveMath.ExitBoost(spinSign * 32f, spinSign, 32f, 0.5f, 4f), 0.0001f);
+            Assert.AreEqual(spinSign * 4f, SpiralDriveMath.ExitBoost(spinSign * 16f, spinSign, 32f, 0.5f, 4f), 0.0001f,
+                "tam eşikte verilir");
+        }
+
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void ExitBoost_AgainstSpinOrSlow_IsZero(int spinSign)
+        {
+            Assert.AreEqual(0f, SpiralDriveMath.ExitBoost(-spinSign * 20f, spinSign, 32f, 0.5f, 4f), "spinin tersine");
+            Assert.AreEqual(0f, SpiralDriveMath.ExitBoost(spinSign * 15.9f, spinSign, 32f, 0.5f, 4f), "hedefin yarısının altında");
+            Assert.AreEqual(0f, SpiralDriveMath.ExitBoost(0f, spinSign, 32f, 0.5f, 4f), "durgun");
+        }
+
+        [Test]
+        public void ExitBoost_ZeroBoost_IsZero()
+        {
+            Assert.AreEqual(0f, SpiralDriveMath.ExitBoost(32f, 1, 32f, 0.5f, 0f));
+        }
     }
 }

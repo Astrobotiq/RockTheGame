@@ -8,7 +8,7 @@ using UnityEngine.TestTools;
 
 namespace RockTheGame.Tests.PlayMode
 {
-    /// <summary>docs/bozulmamali-davranislar.md "Spiral node" (SP1-SP7). Tasarim: docs/spiral-node-tasarimi.md.</summary>
+    /// <summary>docs/bozulmamali-davranislar.md "Spiral node" (SP1-SP8). Tasarim: docs/spiral-node-tasarimi.md.</summary>
     public class SpiralNodeRulesTests : PlayerRuleTestBase
     {
         private const float Rope = 4f;
@@ -175,31 +175,46 @@ namespace RockTheGame.Tests.PlayMode
             Assert.Greater(withSpin, neutral * 1.15f, $"nötr {neutral}, spin yönünde {withSpin}");
         }
 
-        // ---- SP5 ----
+        // ---- SP5 / SP8 (docs/spiral-cikis-hizi.md) ----
 
-        [UnityTest]
-        public IEnumerator SP5_Release_IsNormalSwingRelease()
+        /// <summary>Spirale durgun tutunur, 1.5 sn sonra kosul saglaninca birakir. Birakis anindaki hizi ve spin tegetini verir.</summary>
+        private IEnumerator ReleaseWhen(SpiralNode spiral, System.Func<Vector2, bool> condition, System.Action<Vector2, Vector2> result)
         {
-            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
             Vector2 anchor = spiral.transform.position;
-            Input.IsJumpHeld = true;
             yield return GrabFromRestBelow(spiral);
             yield return WaitFixedSteps(75);
 
-            // CCW: sag tarafta yukselirken birak (H2 ile ayni nokta).
             int guard = 0;
-            while (!(Player.PlayerRigidbody.position.x > anchor.x && Player.Velocity.y > 2f * Player.Stats.ApexThreshold) && guard++ < 300)
+            while (!condition(anchor) && guard++ < 300)
                 yield return new WaitForFixedUpdate();
             Assert.IsInstanceOf<SwingingState>(Player.CurrentState, $"birakma noktasina varilmadi, hiz {Player.Velocity}");
 
             Vector2 releaseVelocity = Player.Velocity;
+            Vector2 tangent = SpinTangent(anchor, spiral.SpinSign);
             Input.IsRightTriggerHeld = false;
             yield return null;
             AssertInAir("birakinca normal havaya gecmeli");
-            Assert.AreEqual(releaseVelocity.x, Player.Velocity.x, 0.5f, "birakista yatay hiz korunmali");
-            Assert.AreEqual(releaseVelocity.y, Player.Velocity.y, 0.5f, "birakista dikey hiz korunmali");
+            result(releaseVelocity, tangent);
+        }
 
-            // H2: tus basili olsa da yukselis kesik (JumpEndEarlyGravityMultiplier).
+        // CCW: sag tarafta yukselirken (H2 ile ayni nokta).
+        private bool RisingOnRight(Vector2 anchor) =>
+            Player.PlayerRigidbody.position.x > anchor.x && Player.Velocity.y > 2f * Player.Stats.ApexThreshold;
+
+        // CCW: tabanda saga giderken; hiz neredeyse tamamen yatay.
+        private bool AtBottomMovingRight(Vector2 anchor) =>
+            Player.PlayerRigidbody.position.y < anchor.y - Rope * 0.97f && Player.Velocity.x > 0f;
+
+        private bool InAirBrakeHold => Player.CurrentState is NormalState { IsInAirBrakeHold: true };
+
+        [UnityTest]
+        public IEnumerator SP5_Release_KeepsH2Gravity()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            Input.IsJumpHeld = true;
+            yield return ReleaseWhen(spiral, RisingOnRight, (v, t) => { });
+
+            // H2: tus basili olsa da yukselis kesik (JumpEndEarlyGravityMultiplier); SP8 yercekimini degistirmez.
             float baseStep = Player.Stats.Gravity * Time.fixedDeltaTime;
             float before = Player.Velocity.y;
             float multiplier = float.NaN;
@@ -215,6 +230,79 @@ namespace RockTheGame.Tests.PlayMode
                 before = now;
             }
             Assert.AreEqual(Player.Stats.JumpEndEarlyGravityMultiplier, multiplier, 0.01f, "spiral birakisi H2 gibi kesik yukselmeli");
+        }
+
+        [UnityTest]
+        public IEnumerator SP8a_Release_AddsBoostAlongSpinTangent()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            Vector2 release = default, tangent = default;
+            yield return ReleaseWhen(spiral, RisingOnRight, (v, t) => { release = v; tangent = t; });
+
+            float boost = Player.Stats.SpiralExitBoost;
+            Assert.Greater(boost, 0f, "kurulum: SpiralExitBoost > 0");
+            Assert.GreaterOrEqual(Player.Velocity.magnitude, release.magnitude + boost - 0.5f,
+                $"cikis hizi birakis + itme olmali; birakis {release}, simdi {Player.Velocity}");
+            Assert.AreEqual(boost, Vector2.Dot(Player.Velocity - release, tangent), 0.5f, "itme spin tegetinde olmali");
+            Assert.IsTrue(InAirBrakeHold, "spiral cikisinda fren tutma suresi baslamali");
+        }
+
+        [UnityTest]
+        public IEnumerator SP8b_HoldKeepsHorizontalSpeed_ThenBrakeReturns()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            yield return ReleaseWhen(spiral, AtBottomMovingRight, (v, t) => { });
+
+            float startX = Player.Velocity.x;
+            Assert.Greater(startX, Player.Stats.MoveSpeed * Player.Stats.AirControlMultiplier, "kurulum: hava sinirinin ustunde");
+
+            int holdSteps = Mathf.FloorToInt(Player.Stats.SpiralExitHoldTime / Time.fixedDeltaTime) - 2;
+            for (int i = 0; i < holdSteps; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                Assert.AreEqual(startX, Player.Velocity.x, 0.01f, $"adim {i}: tutma suresinde stick notrken yatay hiz korunmali");
+            }
+
+            yield return WaitFixedSteps(4);
+            Assert.IsFalse(InAirBrakeHold, "tutma suresi bitmeli");
+            Assert.Less(Player.Velocity.x, startX - 0.5f, "tutma bitince hava freni geri gelmeli");
+        }
+
+        [UnityTest]
+        public IEnumerator SP8c_ReleaseAgainstSpin_NoBoost()
+        {
+            var spiral = SpawnSpiral(Origin + new Vector2(0f, Rope), SpinDirection.CounterClockwise);
+            EnterAir(new Vector2(-12f, 0f), AirEntry.Fall());
+            yield return GrabExistingWithRight(spiral.gameObject);
+            yield return WaitFixedSteps(2);
+            Assert.Less(TangentialSpeed(spiral.transform.position), 0f, "kurulum: hala spinin tersine");
+
+            Vector2 release = Player.Velocity;
+            Input.IsRightTriggerHeld = false;
+            yield return null;
+            AssertInAir();
+            Assert.AreEqual(release.x, Player.Velocity.x, 0.5f, "spinin tersine birakista itme olmamali");
+            Assert.AreEqual(release.y, Player.Velocity.y, 0.5f);
+            Assert.IsFalse(InAirBrakeHold, "spinin tersine birakista fren tutma olmamali");
+        }
+
+        [UnityTest]
+        public IEnumerator SP8d_NormalNodeRelease_Unchanged()
+        {
+            GameObject node = SpawnNode(Origin + new Vector2(0f, Rope));
+            Teleport(Origin + new Vector2(-2f, 0f));
+            EnterAir(new Vector2(12f, 0f), AirEntry.Fall());
+            yield return GrabExistingWithRight(node);
+            yield return WaitFixedSteps(10);
+            Assert.IsInstanceOf<SwingingState>(Player.CurrentState);
+
+            Vector2 release = Player.Velocity;
+            Input.IsRightTriggerHeld = false;
+            yield return null;
+            AssertInAir();
+            Assert.AreEqual(release.x, Player.Velocity.x, 0.5f, "normal node birakisi degismemeli");
+            Assert.AreEqual(release.y, Player.Velocity.y, 0.5f);
+            Assert.IsFalse(InAirBrakeHold, "normal node birakisinda fren tutma olmamali");
         }
 
         // ---- SP4 ----
@@ -236,6 +324,7 @@ namespace RockTheGame.Tests.PlayMode
             Assert.IsFalse(Player.CurrentState is SwingingState,
                 $"1.5 sn icinde kanca kopmadi, oyuncu duvarda takili; konum {Player.PlayerRigidbody.position - Origin}");
             Assert.IsNull(Player.RightAnchor, "kopunca anchor silinmeli");
+            Assert.IsFalse(InAirBrakeHold, "kopmada spiral cikis hizi verilmemeli (SP8)");
 
             Input.IsRightTriggerHeld = false;
             for (int i = 0; i < 25; i++)

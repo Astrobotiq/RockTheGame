@@ -43,5 +43,16 @@ namespace New_Scripts.Player.Nodes.Spiral
             float magnitude = Mathf.Abs(commandedSpeed);
             return magnitude > 0.5f && actualSpeed * Mathf.Sign(commandedSpeed) < ratio * magnitude;
         }
+
+        /// <summary>
+        /// Gönüllü bırakışta teğete eklenecek işaretli hız (SP8, docs/spiral-cikis-hizi.md). Spin yönünde ve
+        /// hız ≥ minSpeedRatio × targetSpeed ise spinSign × boost; spinin tersine ya da yavaşken 0.
+        /// </summary>
+        public static float ExitBoost(float speedAlongTangent, int spinSign, float targetSpeed, float minSpeedRatio, float boost)
+        {
+            float withSpin = speedAlongTangent * spinSign;
+            if (boost <= 0f || withSpin <= 0f || withSpin < minSpeedRatio * Mathf.Abs(targetSpeed)) return 0f;
+            return spinSign * boost;
+        }
     }
 }

@@ -1,6 +1,6 @@
 # Temel hareket: koşma, zıplama, dash
 
-*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-17 (`AirOverspeedReduce` 20; dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri; yer/hava tek durum `NormalState`).*
+*GDD §5.1, §5.2 "Temel hareket" ve "His". Son kod doğrulaması: 2026-11-20 (spiral çıkışı `SpiralRelease`, SP8; `AirOverspeedReduce` 20; dash süresi fizik adımında; hit-stop platformları durdurur; havada duvar çarpması; köşe düzeltmesi; havaya giriş `AirEntry` profilleri; yer/hava tek durum `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -43,6 +43,7 @@ Bu çarpanlar yalnızca `IsJumping` profilleriyle girilen havada uygulanır. Hav
 | Kenardan yürüyerek düşme ve coyote zıplaması | `WalkOff` | Tam kural, coyote açık | H1 |
 | Duvar zıplaması (kayarken, havadan) / tırmanırken dikey zıplama | `WallJump` / `ClimbJump` | Tam kural; boost'lu duvarda alttaki satır | W5 |
 | Swing bırakma, slingshot çıkışı (16 Kasım 2026'dan beri), launch pad | `SwingRelease`, `SlingshotLaunch`, `LaunchPad` | Yükselirken hep 3×, düşerken 1.5×, apex hang yok; tuştan bağımsız | H2, L5 |
+| Spiral node'dan gönüllü bırakış (20 Kasım 2026) | `SpiralRelease` | `SwingRelease` ile aynı; ayrıca `SpiralExitHoldTime` boyunca havada fren yok | SP5, SP8 |
 | `JumpBoostMultiplier > 0` olan hareketli zeminden/duvardan zıplama | `Jump(true)`, `WallJump`/`ClimbJump` (`boostedSurface`) | Aynısı ama yükselirken 1.5× (`EndEarlyGravityMultiplier` 0.5). Coyote ile yapılırsa yalnızca apex hang kapanır. | H3 |
 | Dash sonu, dual swing bırakma, kanca kopması, oda geçişi, respawn | `Fall` | Sabit 1× (düşüş bile hızlanmaz) | H4 |
 | Duvardan bırakma, kayma süresi bitmesi, dayanıklılık bitmesi | `WallDrop` | Sabit 1×; taşıyan duvarın hızı, duvar kilidi; coyote yok (hemen zıplamayı havadan duvar zıplaması karşılar, W9) | — |

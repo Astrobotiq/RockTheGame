@@ -21,6 +21,10 @@
 - [x] **Spiral 7: test odası ve dokümanlar** #level - `RoomNew-SpiralTest` (id 97, x −480, slingshot odasının yanı); NewScene kaydedildi ama commit'lenmedi (plan Task 7), due 2026-11-17
 - [ ] **Spiral gamepad testi** #test - tutunma çeşitleri, stick, bırakış zamanlaması, zincir, ters dönen, duvar kopması, sprite/ses/titreşim, shader okunurluğu; değişiklikler `feel-notlari.md`'ye (plan Task 8). Önce: NewScene'de `Player/Audio` → `PlayerAudioController.sfxStopChannel` = `Assets/Audio/SO/Play-StopEvents/SFX-Stop.asset` (atanmadan loop cue verilirse ses hiç durmaz); `spiralLoopCue` 2D ve loop olmalı. Hit-stop'ta spiral görselinin durduğuna bak, due 2026-11-17
 
+### Spiral çıkış hızı (docs/spiral-cikis-hizi.md; yalnızca spiral bırakışı, slingshot/swing/dönen node değişmez)
+
+- [ ] **Çıkış gamepad testi** #test - spiral test odasında 45°/yatay/dik bırakış, mesafe ve "garip görünüyor mu"; `SpiralExitBoost` 4–6, tutma süresi ayarı; değişiklikler `feel-notlari.md`'ye, due 2026-11-20
+
 ### Asit temas tepkisi (docs/asit-tepki-plani.md, branch `feature/acid-reaction`)
 
 - [ ] **Asit A0: çift Kill koruması** #code - AK7 onayına bağlı; `PlayerHealth.Kill` başına `activeSelf` koruması + PlayMode testi (sen onaylarsın), `bozulmamali-davranislar.md`'ye ölüm kuralı (plan Task A0), due 2026-11-18
@@ -111,6 +115,8 @@
 - [ ] **Teleport platformlar** #code - DK Bananza'daki gibi; platform parçalarına dokunup onları örneğin alevli kapının üstüne ışınlayarak barikat kurmak
 
 ## Done
+
+- [x] ~~**Spiral çıkış hızı, Çıkış 1–3** #code~~ (2026-11-20) - SP5 yeni metni, SP8, H2 notu; `SpiralDriveMath.ExitBoost`; `PlayerStatsSO` `SpiralExitBoost` 4 / `SpiralExitHoldTime` 0.3 / `SpiralExitMinSpeedRatio` 0.5; `AirEntry.SpiralRelease` (frensiz tutma); iz tutma süresinde açık, `_Glow` darbesi, `SpiralRelease` titreşimi (0.12 sn), `spiralReleaseCue` alanı (klip boş). EditMode 511/511, PlayMode 107/107 (SP5, SP8a–d). İzin hafifçe uzaması yapılmadı. Gamepad ilk tur: yavaş → `SpiralExitBoost` 4→6, `SpiralExitHoldTime` 0.3→0.45; spiral test odasına karşılaştırma için normal node (x −2). Commit yok, branch `feature/acid-reaction`
 
 - [x] ~~**Hareketli node 1–4** #code~~ (2026-11-17) - anchor node'u izler (`AttachAnchor`, `RefreshMovingAnchors`); tek/çift kanca ve slingshot taşır, bırakışta node hızı × `MovingNodeLaunchMultiplier` (1) geçer; `Node-Moving` prefab'ı, dokümanlar. PlayMode 67/67 (M1–M5 dahil), EditMode 441/441. Branch `feature/moving-nodes`, commit'li, push yok
 

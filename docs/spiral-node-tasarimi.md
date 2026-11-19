@@ -21,7 +21,7 @@ Kullanıcının odalarda düşündüğü kullanımlar (hepsi):
 - **Hedef değil:** hareketli spiral node. Kullanıcı: "bunu hareketli node'larla kullanmayı düşünmüyorum, bu ayrı bir node türü." Motor node'a göre hızda çalıştığı için teoride birleşir, ama prefab, test ve destek yok.
 - **Hedef değil:** çift kancada ya da slingshot'ta motor.
 - **Hedef değil:** spiral + dönen node (`FullRotationNode`) aynı node'da.
-- **Hedef değil:** spirale özel hava profili ya da bırakış boost'u.
+- **Hedef değil:** ~~spirale özel hava profili ya da bırakış boost'u.~~ 2026-11-20'de geri alındı: çıkış hızı `docs/spiral-cikis-hizi.md` (SP8).
 - **Hedef değil:** gerçek odalara yerleştirme (test odası hariç). Ayrı level işi.
 - **Anti-hedef:** oyuncu spiral tarafından bir duvara bastırılıp takılı kalırsa; spiral "binek"e dönüşüp oyuncu kontrolü kaybettiğini hissederse; shader'ın gösterdiği yön ya da hız hareketle çelişirse; durağan bir karede dönme yönü okunamazsa; normal node'un hissi değişirse, iş başarısızdır.
 
@@ -34,7 +34,7 @@ Kullanıcının odalarda düşündüğü kullanımlar (hepsi):
 | Ters yönde gelerek tutunma | **Yavaş mücadele:** motor oyuncuyu yavaş yavaş durdurup çevirir (~0.6–1 sn, yaklaşık yarım tur). |
 | Spiralden hızlı gelerek tutunma | Fazla hız **korunur** (yalnızca ters yönde motor fren yapar). |
 | Stick | Hedef hızı **±%30–50** değiştirir (dönüş yönüne basınca hızlanır, tersine basınca yavaşlar). Asla durdurmaz, çevirmez. |
-| Bırakış | **Normal tek kanca bırakışı** (`AirEntry.SwingRelease`, H2). Ek hız yok. |
+| Bırakış | ~~Normal tek kanca bırakışı, ek hız yok.~~ 2026-11-20: spin teğetinde itme + kısa süre havada fren yok (`AirEntry.SpiralRelease`, SP8, `docs/spiral-cikis-hizi.md`). |
 | Çift kanca / slingshot | Motor **yalnızca tek kancada**. Spiral + başka node = normal çift kanca; tek kancaya dönünce motor geri gelir. Aynı spirale iki kol = normal slingshot. |
 | Dönen node ile aynı node | **Hayır**, editör uyarısı. |
 | Hareketli spiral | Kapsam dışı. |
@@ -108,7 +108,7 @@ Level tasarımı notu (`grapple.md`'ye girer): spiralin etrafındaki dönüş di
 
 ### 5. Bırakış ve kopma
 
-- Tetik bırakılınca bugünkü yol: `AirEntry.SwingRelease(...)`, hız o anki teğet hız. Ek boost yok.
+- Tetik bırakılınca: 2026-11-20'den beri `AirEntry.SpiralRelease(...)`, teğet hız + `SpiralExitBoost`, `SpiralExitHoldTime` boyunca havada fren yok (SP8, `docs/spiral-cikis-hizi.md`). Kapılar karşılanmazsa eski yol (`SwingRelease`).
 - Kopma (S1 iniş, S2 duvar, takılma) bugünkü gibi.
 - `ExitState`: spirale "bağlantı bitti" bildirilir (görsel, ses ve titreşim durur).
 
@@ -166,7 +166,8 @@ Bugün `PlayerAnimationController.cs:102-108` önce **sol stick**'in X'ine (sağ
 | SP2 | Spiralin tersine giderek tutunan oyuncu yavaşlar, durur ve spiral yönüne döner; dönüş anlık değildir. |
 | SP3 | Stick spiralin hızını değiştirir ama dönüşü durdurmaz, çevirmez. |
 | SP4 | Spiral oyuncuyu bir yüzeye bastırırsa kanca kopar; oyuncu takılı kalmaz. |
-| SP5 | Spiralden bırakış normal tek kanca bırakışıdır (H2). |
+| SP5 | Spiralden tek kancayı bırakınca oyuncu, SP8 dışında normal tek kanca bırakışıyla (H2) havaya geçer. |
+| SP8 | Spiralden tetiği bırakarak çıkış, bırakış hızından hızlıdır (`docs/spiral-cikis-hizi.md`). |
 | SP6 | Çift kancada motor çalışmaz; aynı spirale iki kol normal slingshot'tır. |
 | SP7 | Ters dönen spiral, tutunurken kendi yönünde `reverseEveryDegrees` (360°) dönünce yön değiştirir ve tutundukça her seferinde tekrarlar; bırakınca ilk yönüne döner. Normal spiral hiç yön değiştirmez. *(SP1–SP6 onaylandı; SP7 kullanıcının 2026-11-17 tarifiyle yeniden yazıldı.)* |
 

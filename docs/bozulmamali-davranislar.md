@@ -60,7 +60,7 @@ Yerçekimi çarpanları `PlayerStats.asset`'ten okunur; korunan şey hangi giri�
 | ID | Kural |
 |---|---|
 | H1 | Yerden zıplamada yükseklik tuşa bağlıdır: basılı tutmak tam zıplama ve tepede kısa asılı kalma verir, erken bırakmak yükselişi keser. Düşüş hızlıdır. *(16 Kasım 2026)* |
-| H2 | Tek kanca bırakınca ve launch pad'den fırlayınca yükseliş zıplama tuşundan bağımsız olarak kesik, düşüş hızlıdır; tepede asılı kalma yoktur. *(16 Kasım 2026)* |
+| H2 | Tek kanca bırakınca ve launch pad'den fırlayınca yükseliş zıplama tuşundan bağımsız olarak kesik, düşüş hızlıdır; tepede asılı kalma yoktur (spiral node hariç: SP5, SP8). *(16 Kasım 2026)* |
 | H3 | Zıplama boost'u olan hareketli yüzeyden zıplamada yükseliş tuştan bağımsızdır ve H2'dekinden yumuşaktır; tepede asılı kalma yoktur. *(16 Kasım 2026)* |
 | H4 | Dash bitince yerçekimi sabittir: tuş, yükseliş ya da düşüş fark etmez, düşüş de hızlanmaz. *(16 Kasım 2026)* |
 
@@ -87,9 +87,10 @@ Yerçekimi çarpanları `PlayerStats.asset`'ten okunur; korunan şey hangi giri�
 | SP2 | Spiralin tersine giderek tutunan oyuncu yavaşlar, durur ve spiral yönüne döner; dönüş anlık değildir. *(17 Kasım 2026)* |
 | SP3 | Stick spiralin hızını değiştirir ama dönüşü durdurmaz, çevirmez. *(17 Kasım 2026)* |
 | SP4 | Spiral oyuncuyu bir yüzeye bastırırsa kanca kopar; oyuncu takılı kalmaz. *(17 Kasım 2026)* |
-| SP5 | Spiralden bırakış normal tek kanca bırakışıdır (H2). *(17 Kasım 2026)* |
+| SP5 | Spiralden tek kancayı bırakınca oyuncu, SP8 dışında normal tek kanca bırakışıyla (H2) havaya geçer. *(20 Kasım 2026)* |
 | SP6 | Çift kancada motor çalışmaz; aynı spirale iki kol normal slingshot'tır. *(17 Kasım 2026)* |
 | SP7 | Ters dönen spiral, tutunurken kendi yönünde `reverseEveryDegrees` (360°) dönünce yön değiştirir ve tutundukça her seferinde tekrarlar; bırakınca ilk yönüne döner. Normal spiral hiç yön değiştirmez. *(17 Kasım 2026)* |
+| SP8 | Spiralden tetiği bırakarak çıkış, bırakış hızından hızlıdır (spin teğetinde itme + kısa süre havada fren yok). Yalnızca spiral node'a özel; kopma, çift kanca, slingshot ve respawn'da verilmez; spinin tersine ya da çok yavaşken verilmez. *(20 Kasım 2026)* |
 
 ## Düzeltilen sapmalar
 

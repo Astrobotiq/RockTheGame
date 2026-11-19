@@ -74,6 +74,11 @@ namespace New_Scripts.Player
             PlaySound(audioData?.SpiralReverseCue);
         }
 
+        public void PlaySpiralRelease()
+        {
+            PlaySound(audioData?.SpiralReleaseCue);
+        }
+
         private void PlaySound(AudioCueSO cue)
         {
             if (sfxPlayChannel != null && cue != null)

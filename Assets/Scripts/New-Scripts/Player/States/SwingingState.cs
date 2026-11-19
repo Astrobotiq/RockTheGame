@@ -212,6 +212,33 @@ namespace New_Scripts.Player.States
             return speed;
         }
 
+        /// <summary>
+        /// Gönüllü bırakışta spin teğeti yönünde SpiralExitBoost ekler (SP8, docs/spiral-cikis-hizi.md). Yalnızca motor
+        /// çalışmışken, node etkinken, spin yönünde ve yeterince hızlıyken; aksi halde normal bırakış (SP5).
+        /// Kopma, çarpışma, çift kanca ve respawn bu yoldan geçmez.
+        /// </summary>
+        private bool TryApplySpiralExitBoost()
+        {
+            if (_spiral == null || _isHopping || !_spiralMotorStarted || !_spiral.isActiveAndEnabled) return false;
+
+            Vector2 directionToAnchor = (_anchorPoint - _context.PlayerRigidbody.position).normalized;
+            Vector2 tangent = new Vector2(directionToAnchor.y, -directionToAnchor.x);
+            float boost = SpiralDriveMath.ExitBoost(Vector2.Dot(_currentVelocity, tangent), _spiral.SpinSign,
+                _spiral.TargetSpeed * _context.ActiveSpeedMultiplier, _stats.SpiralExitMinSpeedRatio, _stats.SpiralExitBoost);
+            if (boost == 0f) return false;
+
+            _currentVelocity += tangent * boost;
+            _spiral.PulseGlow();
+            return true;
+        }
+
+        private void PlaySpiralExitFeedback()
+        {
+            if (_context.Audio != null) _context.Audio.PlaySpiralRelease();
+            if (_context.VibrationSettings != null && HapticManager.Instance != null)
+                HapticManager.Instance.Vibrate(_context.VibrationSettings.SpiralRelease);
+        }
+
         // --- 360 DÖNÜŞ METOTLARI ---
 
         private void TryBindFullRotationNode()
@@ -420,9 +447,15 @@ namespace New_Scripts.Player.States
             if (!activeTriggerHeld)
             {
                 Vector2 nodeVelocity = _context.AnchorReleaseVelocity(_swingingArm) * _stats.MovingNodeLaunchMultiplier;
+                bool spiralExit = TryApplySpiralExitBoost();
                 ReleaseAnchor();
 
-                _context.TransitionToState(new NormalState(_context, _currentVelocity, AirEntry.SwingRelease(nodeVelocity, _stats.MovingNodeCarryDecayTime)));
+                AirEntry entry = spiralExit
+                    ? AirEntry.SpiralRelease(nodeVelocity, _stats.MovingNodeCarryDecayTime, _stats.SpiralExitHoldTime)
+                    : AirEntry.SwingRelease(nodeVelocity, _stats.MovingNodeCarryDecayTime);
+                _context.TransitionToState(new NormalState(_context, _currentVelocity, entry));
+                // ExitState döngü sesini ve sürekli titreşimi kapattıktan sonra: tek seferlik çıkış geri bildirimi.
+                if (spiralExit) PlaySpiralExitFeedback();
                 return;
             }
 

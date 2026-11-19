@@ -12,6 +12,7 @@ namespace New_Scripts.Player.States
     /// | Jump, WalkOff     | tam kural (tuşa bağlı, apex hang)                                | H1    |
     /// | WallJump, ClimbJump | tam kural; boost'lu yüzeyde H3                                 | W5    |
     /// | SwingRelease, SlingshotLaunch, LaunchPad | yükselirken 3×, düşerken 1.5×, tuştan bağımsız | H2, L5 |
+    /// | SpiralRelease     | SwingRelease kuralı; AirBrakeHoldTime boyunca havada fren yok    | SP5, SP8 |
     /// | Jump(boosted)     | yükselirken 1.5×, tuştan bağımsız                                | H3    |
     /// | Fall, WallDrop    | sabit 1×                                                         | H4    |
     ///
@@ -32,13 +33,15 @@ namespace New_Scripts.Player.States
         public readonly float CarriedDecayTime;
         /// <summary>Oyuncunun kendi zıplaması: CelesteVariableJump açıkken tuş basılı tutma süresi bu profillerde işler.</summary>
         public readonly bool VariableJump;
+        /// <summary>Bu süre (sn) boyunca havadaki fren (AirDrag, AirOverspeedReduce) uygulanmaz; yalnızca spiral çıkışı verir (SP8).</summary>
+        public readonly float AirBrakeHoldTime;
 
         /// <summary>Boost'lu yüzeyden zıplamada yükseliş çarpanı 3× yerine 1.5× (H3).</summary>
         private const float BoostedEndEarlyMultiplier = 0.5f;
 
         private AirEntry(bool isJumping, bool bypassJumpGravity = false, float endEarlyGravityMultiplier = 1f,
             float grappleLockout = 0f, float wallClimbLockout = 0f, float coyote = 0f, float horizontalLockout = 0f,
-            Vector2 carriedVelocity = default, bool variableJump = false, float carriedDecayTime = 0f)
+            Vector2 carriedVelocity = default, bool variableJump = false, float carriedDecayTime = 0f, float airBrakeHoldTime = 0f)
         {
             IsJumping = isJumping;
             BypassJumpGravity = bypassJumpGravity;
@@ -50,6 +53,7 @@ namespace New_Scripts.Player.States
             CarriedVelocity = carriedVelocity;
             VariableJump = variableJump;
             CarriedDecayTime = carriedDecayTime;
+            AirBrakeHoldTime = airBrakeHoldTime;
         }
 
         private static AirEntry JumpRule(bool boostedSurface, float wallClimbLockout = 0f, float horizontalLockout = 0f,
@@ -77,6 +81,12 @@ namespace New_Scripts.Player.States
         /// Hareketli node'dan bırakınca node'un hızı <paramref name="carriedVelocity"/> ile taşınır.</summary>
         public static AirEntry SwingRelease(Vector2 carriedVelocity = default, float carriedDecayTime = 0f) =>
             new AirEntry(true, bypassJumpGravity: true, carriedVelocity: carriedVelocity, carriedDecayTime: carriedDecayTime);
+
+        /// <summary>Spiral node'dan gönüllü bırakış (SP8, docs/spiral-cikis-hizi.md): SwingRelease kuralı, ayrıca
+        /// <paramref name="airBrakeHoldTime"/> boyunca havada fren yok. Yerçekimi değişmez.</summary>
+        public static AirEntry SpiralRelease(Vector2 carriedVelocity, float carriedDecayTime, float airBrakeHoldTime) =>
+            new AirEntry(true, bypassJumpGravity: true, carriedVelocity: carriedVelocity, carriedDecayTime: carriedDecayTime,
+                airBrakeHoldTime: airBrakeHoldTime);
 
         /// <summary>Slingshot fırlatışının sonu ya da erken bırakma (L5): SwingRelease kuralı + kanca kilidi.</summary>
         public static AirEntry SlingshotLaunch(float grappleLockout, Vector2 carriedVelocity = default, float carriedDecayTime = 0f) =>

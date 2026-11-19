@@ -6,7 +6,31 @@
 
 ## Active
 
-- [ ] **Aşama 2 testi** #test - EditMode + PlayMode yeşil (yapıldı); gamepad turu: zıplama, iniş, üç kanca çıkışı, duvar, launch pad, dash'in yerde bitmesi (bir adımlık hava farkı korundu, aynı hissetmeli). Branch `feature/normal-state`, due 2026-11-16
+### Hareketli node'lar (docs/hareketli-node-plani.md, branch `feature/moving-nodes`)
+
+- [ ] **Hareketli node gamepad testi** #test - `Node-Moving` prefab'ını bir odaya koy (startPoint/endPoint dünya koordinatı); taşıma, üç bırakış, yerden hop, duvara taşınma; çarpan 1 ve taşınan X'in sönmemesi hissi, due 2026-11-19
+
+### Spiral node'lar (docs/spiral-node-tasarimi.md + spiral-node-plani.md, branch `feature/spiral-nodes`)
+
+- [x] **Spiral 1: motor matematiği ve kurallar** #code - `SpiralDriveMath`, `SpiralReverseCounter`, `PlayerStatsSO` Spiral* alanları, SP1–SP7 `bozulmamali-davranislar.md`'ye, EditMode testleri (plan Task 1), due 2026-11-17
+- [x] **Spiral 2: SwingingState motoru** #code - `SpiralNode`, motor, test yardımcıları (`GrabExistingWithRight`, `SetField` tabana), SP1/SP2/SP3/SP5 PlayMode (plan Task 2), due 2026-11-17
+- [x] **Spiral 3: duvar kopması ve kombinasyonlar** #code - takılma kontrolü (SP4), çift kanca/slingshot (SP6), dönen node dışlaması, pasif node (plan Task 3), due 2026-11-17
+- [x] **Spiral 4: ters dönen spiral** #code - `reverseEveryDegrees` 360, her turda çevrilir, bırakınca ilk yön (SP7) (plan Task 4), due 2026-11-17
+- [x] **Spiral 5: sprite yönü, ses ve titreşim** #code - `SpiralFacingSign`, döngü sesi + stop kanalı, `SpiralOrbit`/`SpiralOpposeGrab`/`SpiralReverse` titreşimleri (plan Task 5), due 2026-11-17
+- [x] **Spiral 6: spiral shader ve prefab'lar** #art - `UI/SpiralNode`, yön dişleri, script'ten sürülen açı (hit-stop'ta durur), `Node-Spiral` + `Node-SpiralReversing`, ekran görüntüleri (plan Task 6), due 2026-11-17
+- [x] **Spiral 7: test odası ve dokümanlar** #level - `RoomNew-SpiralTest` (id 97, x −480, slingshot odasının yanı); NewScene kaydedildi ama commit'lenmedi (plan Task 7), due 2026-11-17
+- [ ] **Spiral gamepad testi** #test - tutunma çeşitleri, stick, bırakış zamanlaması, zincir, ters dönen, duvar kopması, sprite/ses/titreşim, shader okunurluğu; değişiklikler `feel-notlari.md`'ye (plan Task 8). Önce: NewScene'de `Player/Audio` → `PlayerAudioController.sfxStopChannel` = `Assets/Audio/SO/Play-StopEvents/SFX-Stop.asset` (atanmadan loop cue verilirse ses hiç durmaz); `spiralLoopCue` 2D ve loop olmalı. Hit-stop'ta spiral görselinin durduğuna bak, due 2026-11-17
+
+### Asit temas tepkisi (docs/asit-tepki-plani.md, branch `feature/acid-reaction`)
+
+- [ ] **Asit A0: çift Kill koruması** #code - AK7 onayına bağlı; `PlayerHealth.Kill` başına `activeSelf` koruması + PlayMode testi (sen onaylarsın), `bozulmamali-davranislar.md`'ye ölüm kuralı (plan Task A0), due 2026-11-18
+- [x] **Asit A1: kanca ve saf hesap** #code - `DeathZone.Killing`/`Killed` (try/finally), `AcidHazard.PixelScale` getter, `AcidImpactMath` + EditMode testleri (plan Task A1), due 2026-11-18
+- [x] **Asit A2: shader parlama ve çukur** #code - `AcidImpact.cginc`, `PixelArtAcid`'e `_AcidImpact` tek yuva, target 3.0; darbe yokken kare aynı (plan Task A2), due 2026-11-18
+- [x] **Asit A3: AcidReaction bileşeni** #code - temas noktası (geri sarma), CPU yaş sayacı, `IResettable`, `DebugImpact`, `Acid.prefab`'a ekle; ana menüden gelince de çalışmalı (plan Task A3), due 2026-11-18
+- [x] **Asit A4: damla materyali ve FX prefab'ı** #art - `Px4.png`, `M_FX_AcidPixel` (Sprite-Unlit), `FX_AcidImpact` (World, Local scaling, VFX katmanı, min 2 px) (plan Task A4), due 2026-11-18
+- [x] **Asit A5: emit ve ayar SO'su** #code - `AcidReactionSettingsSO`, lazy FX, hıza göre yönlü kare damlalar, `Clear` reset'te (plan Task A5), due 2026-11-18
+- [x] **Asit A6: titreşim, ses kancası, dokümanlar** #code - `Killed`'de `AcidDeath` titreşimi, 2D ses kancası (boş cue sessiz), `hazards.md` + `death-respawn.md` (plan Task A6; `FX_PlayerDeath` VFX katmanına taşıma AK6 onayını bekliyor, yapılmadı), due 2026-11-18
+- [ ] **Asit A7: gamepad testi** #test - oda 2, 3, 5, 12, 18, 22; düşüş/koşu/swing/dash/slingshot, ana menüden gelerek; AK1/AK4/AK5/AK6 ve B aşaması kararları, değerler `feel-notlari.md`'ye (plan Task A7), due 2026-11-18
 
 ### Kamera çerçeve bölgesi (oda 4)
 
@@ -50,11 +74,6 @@
 - [ ] **DontDestroyOnLoad uyarısını düzelt** #code - Play Mode'da "only works for root GameObjects" çıkıyor; aday AudioManager.cs:72 ya da HapticManager.cs:26, kaynağı doğrula ve düzelt (6 Kasım'da multiplayer için ertelendi)
 - [ ] **PhysicsTest sahneleri ve M_CRTFilter.mat gürültüsü** #code - takipsiz sahneleri commit'le ya da sil; `_CrtTime` izini kes
 
-### Oda 16 ve level düzeltmeleri
-
-- [ ] **Oda 16 kamera uzaklığı** #level - ortho 22'de zemindeki dikenler noktalı çizgi gibi, oyuncu çok küçük; oda kamera ayarını yakınlaştır ya da dikenleri büyüt (docs/systems/hazards.md) (6 Kasım'da multiplayer için ertelendi)
-- [ ] **Ezici bloklar node'ları örtüyor** #level - oda 16'da beyaz `MovingDeath` blokları node'ların önünden geçerken onları tamamen gizliyor; ikisi de Default/0, node'ları öne al (docs/systems/hazards.md) (6 Kasım'da multiplayer için ertelendi)
-
 ### Tasarım ve görsel kararlar
 
 - [ ] **PPU standardı kararı** #art - 5 Kasım'da ertelendi; ölçüm kalan-isler §1.4'te (zemin/diken/boru 16, oyuncu 24/32, büyütülmüş meyve/trambolin 5–14)
@@ -66,7 +85,6 @@
 ### Asset ve sanat üretimi
 
 - [ ] **Telifli müzikleri değiştir** #art - örn. "The Skeleton Dance"; yayın öncesi
-- [ ] **Spiral node'lar** #art - mekanik yükü az, shader üretmek gerekiyor
 - [ ] **İleri zıplama animasyonu** #art - şu anki animasyon yerinde zıplama gibi duruyor
 - [ ] **Bounce pad asset'leri** #art - kodda `LaunchPad` olan pedler için görsel üretimi
 
@@ -90,11 +108,13 @@
 ### Yeni mekanik ve sistemler
 
 - [ ] **Yalnızca odayı gösterme araştırması** #code - Celeste gibi; bazı seviyelerde yan oda görünmesin, gösterilmek istenmeyen yerler karanlık kalsın (komşu odalar şu an aktif kalıyor)
-- [ ] **Hareketli node'lar** #code - hareketli platform gibi oyuncuyu taşıyan, fırlatan node'lar (anchor'lar şu an sabit `Vector2?`, node'u takip etmesi gerekir)
 - [ ] **Teleport platformlar** #code - DK Bananza'daki gibi; platform parçalarına dokunup onları örneğin alevli kapının üstüne ışınlayarak barikat kurmak
 
 ## Done
 
+- [x] ~~**Hareketli node 1–4** #code~~ (2026-11-17) - anchor node'u izler (`AttachAnchor`, `RefreshMovingAnchors`); tek/çift kanca ve slingshot taşır, bırakışta node hızı × `MovingNodeLaunchMultiplier` (1) geçer; `Node-Moving` prefab'ı, dokümanlar. PlayMode 67/67 (M1–M5 dahil), EditMode 441/441. Branch `feature/moving-nodes`, commit'li, push yok
+
+- [x] ~~**Aşama 2 testi** #test~~ (2026-11-17) - EditMode 441/441, PlayMode 57/57; gamepad turu geliştirici tarafından onaylandı. Branch `feature/normal-state` (push edildi)
 - [x] ~~**`NormalState`: çağrı yerleri ve dış kod** #code~~ (2026-11-16) - 30 çağrı yeri `new NormalState(...)`, `GroundedState`/`AirborneState` silindi; köşe düzeltmesi ve `SwingTutorial` `PlayerController.IsInNormalAir`'e soruyor; sistem dokümanları ve CLAUDE.md güncellendi. EditMode 441/441, PlayMode 57/57
 - [x] ~~**`NormalState` iskeleti** #code~~ (2026-11-16) - yer + hava tek sınıf: `IsOnGround`, `OnLand()` (iniş yan etkileri aynı sırayla), `LeaveGround`/`OnLeaveGround()` (`AirEntry.WalkOff`); aynı karedeki geçiş sırası da korundu; dash'in yerde bitince bir adım havası bilerek kaldı
 - [x] ~~**Testleri durum tipinden ayır** #test~~ (2026-11-16) - `PlayerRuleTestBase`: `WaitForGround`/`WaitForAir`/`AssertOnGround`/`AssertInAir`/`EnterAir`; soru `PlayerController.IsInNormalGround`/`IsInNormalAir`'e. PlayMode 57/57

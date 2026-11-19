@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spiral: 10 renk</title>
+<style>
+:root{--paper:#F1E6C7;--paper2:#FAF4E2;--ink:#140C1C;--sky:#71BAEA;--red:#FC1E00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+h1{font:800 32px/1.1 system-ui,sans-serif;margin:0 0 8px}
+p{margin:6px 0 12px;max-width:75ch}
+.bar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;border:3px solid var(--ink);background:var(--paper2);padding:10px 14px;margin:14px 0}
+.bar label{font:600 11px monospace;text-transform:uppercase;display:block;margin-bottom:3px}
+.seg{display:flex;gap:3px}
+button{font:600 12px monospace;border:2px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 9px;cursor:pointer}
+button.on{background:var(--ink);color:var(--paper)}
+input[type=range]{width:160px;accent-color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.card{border:3px solid var(--ink);background:var(--paper2)}
+.stage{background:var(--sky);display:grid;place-items:center;padding:10px;border-bottom:3px solid var(--ink)}
+.stage canvas{width:230px;height:230px}
+.body{padding:10px 12px}
+.body h3{margin:0 0 4px;font-size:17px}
+.body p{font-size:13.5px;margin:0 0 8px}
+.minis{display:flex;gap:8px;align-items:center}
+.minis .m{background:var(--sky);border:2px solid var(--ink);padding:3px;line-height:0}
+.minis canvas{width:64px;height:64px}
+.minis small{font:600 10px monospace;text-transform:uppercase;color:#4E4A4E}
+.sw{display:flex;gap:3px;margin-top:8px}
+.sw i{width:18px;height:18px;border:2px solid var(--ink);display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Spiral: normal node'un 10 rengi</h1>
+<p>Tek dolu disk. Boşluk yok, siyah yok, yeni renk yok. Normal node'un <b>10 rengi = 10 kol</b>. Kollar merkezde ince bir noktada birleşiyor, dışa doğru kıvrılarak açılıyor ve kalınlaşıyor.</p>
+<p><b>Dikkat, titreşim:</b> 10 kol en çok tekrar eden desen. Bir noktadan saniyede geçen kol sayısı = 10 × °/s ÷ 360. 150°/s'de 4/s; üstüne çıkınca gözü yorar. Bu yüzden hız çubuğunu 540'a kadar bıraktım ama güvenli saydığım aralık ~150°/s'ye kadar.</p>
+
+<div class="bar">
+  <div><label>Dönüş yönü</label><div class="seg" id="segDir"><button data-v="1" class="on">⟲ Saat tersi</button><button data-v="-1">⟳ Saat yönü</button></div></div>
+  <div><label>Hız <span id="rd"></span></label><input type="range" id="speed" min="0" max="540" step="10" value="120"></div>
+  <div><label>Sarı çekirdek (node'un kendisi)</label><div class="seg" id="segCore"><button data-v="0" class="on">Yok</button><button data-v="1">Var</button></div></div>
+  <button id="pause">Duraklat</button>
+</div>
+
+<div class="grid" id="grid"></div>
+</div>
+<script>
+(function(){
+'use strict';
+var TAU=Math.PI*2;
+var RAMP=['#f1e6c7','#ff5104','#fcae04','#888c03','#289aa4','#eeeac7','#04586c','#fc1e00','#ee7284','#362d70'];
+function hex(h){return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];}
+var RGB=RAMP.map(hex);
+
+// Dolu disk: logaritmik sarmal şerit. g = bir turda şeridin büyüme çarpanı (merkezde ince, dışta kalın).
+// u = ln(r/r0)/ln(g) + aci/2pi ; m = floor(u) = kaçıncı tur ; şerit boyunca konum T = m - aci/2pi (yalnız tur ve açıya bağlı,
+// yani renk geçişleri şerit boyunca radyal kesiklerle olur, halka gibi görünmez).
+function prerender(twist, size){
+  // 10 kol, her renk bir kol. Merkezde hepsi tek noktada birleşir (ince), dışa doğru kıvrılarak açılır (kalın).
+  // Kolun geriye kıvrılma miktarı: merkezden kenara 'twist' tur. Dolu disk, boşluk yok.
+  var c=document.createElement('canvas'); c.width=c.height=size;
+  var x=c.getContext('2d'), im=x.createImageData(size,size), d=im.data;
+  var R=size/2;
+  var ss=[[.25,.25],[.75,.25],[.25,.75],[.75,.75]];
+  for(var py=0;py<size;py++)for(var px=0;px<size;px++){
+    var R0=0,G0=0,B0=0,A0=0;
+    for(var s=0;s<4;s++){
+      var dx=(px+ss[s][0]-R)/R, dy=-(py+ss[s][1]-R)/R, r=Math.sqrt(dx*dx+dy*dy);
+      if(r>1) continue;
+      var th=Math.atan2(dy,dx);
+      var p=th/TAU + twist*r;               // arm içindeki konum (dönüş yönünün arkasında kıvrılır)
+      p-=Math.floor(p);
+      var idx=Math.min(9,Math.floor(p*10));
+      var col=RGB[idx]; R0+=col[0];G0+=col[1];B0+=col[2];A0++;
+    }
+    var o=(py*size+px)*4;
+    if(A0){d[o]=R0/A0;d[o+1]=G0/A0;d[o+2]=B0/A0;d[o+3]=A0*63.75;}
+  }
+  x.putImageData(im,0,0); return c;
+}
+
+var VARS=[
+  {id:'J1',name:'Hafif kıvrım',g:0.6,note:'10 kol, her renk bir kol. Merkezden kenara 0,6 tur kıvrılır. Kollar daha dik, daha az "dönen" görünür.'},
+  {id:'J2',name:'Orta kıvrım',g:1.0,note:'10 kol, 1 tur kıvrım. Kollar merkezden çıkıp dışa doğru açılıyor, kalınlaşıyor.'},
+  {id:'J3',name:'Güçlü kıvrım',g:1.7,note:'10 kol, 1,7 tur kıvrım. En çok "girdap" gibi; kenara yakın kollar çok yatık.'}
+];
+VARS.forEach(function(v){v.img=prerender(v.g,520);});
+
+var S={dir:1,speed:120,core:0,angle:0,paused:false};
+function fit(c,w,h){var dpr=Math.min(2,window.devicePixelRatio||1);c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';return x;}
+function draw(ctx,v,cx,cy,R,angle,dir){
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(-angle);if(dir<0)ctx.scale(-1,1);
+  ctx.drawImage(v.img,-R,-R,R*2,R*2);ctx.restore();
+  if(S.core){ctx.beginPath();ctx.arc(cx,cy,R*0.17,0,TAU);ctx.fillStyle='#F0D420';ctx.fill();ctx.lineWidth=R*0.025;ctx.strokeStyle='#140C1C';ctx.stroke();}
+}
+var grid=document.getElementById('grid'), cards=[];
+VARS.forEach(function(v){
+  var el=document.createElement('div');el.className='card';
+  el.innerHTML='<div class="stage"><canvas></canvas></div><div class="body"><h3>'+v.id+' · '+v.name+'</h3><p>'+v.note+'</p><div class="minis"><div class="m"><canvas></canvas></div><div class="m"><canvas></canvas></div><small>dönmeyen kare<br>⟲ &nbsp; ⟳</small></div><div class="sw">'+RAMP.map(function(c){return '<i style="background:'+c+'"></i>';}).join('')+'</div></div>';
+  grid.appendChild(el);
+  var cs=el.querySelectorAll('canvas');
+  cards.push({v:v,big:fit(cs[0],230,230),a:fit(cs[1],64,64),b:fit(cs[2],64,64)});
+});
+function statics(){cards.forEach(function(c){[[c.a,1],[c.b,-1]].forEach(function(p){p[0].clearRect(0,0,64,64);draw(p[0],c.v,32,32,29,0,p[1]);});});}
+function bind(id,fn){var s=document.getElementById(id);s.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;s.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});fn(b.dataset.v);});}
+bind('segDir',function(v){S.dir=+v;});
+bind('segCore',function(v){S.core=+v;statics();});
+var sp=document.getElementById('speed');function rd(){document.getElementById('rd').textContent=S.speed+'°/s';}
+sp.addEventListener('input',function(){S.speed=+sp.value;rd();});
+document.getElementById('pause').onclick=function(){S.paused=!S.paused;this.textContent=S.paused?'Devam':'Duraklat';this.classList.toggle('on',S.paused);};
+rd();statics();
+var last=performance.now();
+function frame(n){var dt=Math.min(.05,(n-last)/1000);last=n;if(!S.paused)S.angle+=S.dir*S.speed*Math.PI/180*dt;
+  cards.forEach(function(c){c.big.clearRect(0,0,230,230);draw(c.big,c.v,115,115,108,S.angle,S.dir);});
+  requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

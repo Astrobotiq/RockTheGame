@@ -1,0 +1,1552 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spiral Node Yönleri</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F1E6C7; --paper2:#FAF4E2; --ink:#140C1C; --mut:#4E4A4E;
+  --red:#FC1E00; --yel:#FCAE04; --blue:#597DCE; --pink:#FF51DE; --sky:#71BAEA;
+  --stage:#71BAEA;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 16px 90px}
+h1{font:400 clamp(30px,5vw,54px)/1 "Archivo Black",sans-serif;margin:0 0 8px;letter-spacing:-.01em}
+h1 span{background:var(--ink);color:var(--paper);padding:0 .2em;display:inline-block;transform:rotate(-1.5deg)}
+h2{font:400 24px/1.1 "Archivo Black",sans-serif;margin:48px 0 10px;display:flex;gap:10px;align-items:center}
+h2 .n{background:var(--red);color:#fff;width:34px;height:34px;flex:none;display:grid;place-items:center;clip-path:polygon(0 8%,100% 0,92% 100%,6% 92%);font-size:18px}
+h3{font:600 14px/1.2 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px}
+p{margin:6px 0 10px;max-width:80ch}
+.lede{font-size:17px;max-width:72ch}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+code{font:12.5px "IBM Plex Mono",monospace;background:#fff;border:1px solid #d8cfb4;padding:0 4px}
+a{color:var(--ink)}
+.hint{font-size:13px;color:var(--mut)}
+
+/* kontrol çubuğu */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper2);border:3px solid var(--ink);margin:18px 0 0;padding:10px 14px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;box-shadow:5px 5px 0 var(--ink)}
+.bar label{font:600 11px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px}
+.seg{display:flex;gap:3px}
+.seg button,.btn{font:600 12px "IBM Plex Mono",monospace;border:2px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 9px;cursor:pointer}
+.seg button.on,.btn.on{background:var(--ink);color:var(--paper)}
+.seg button:hover:not(.on),.btn:hover:not(.on){background:#fff}
+input[type=range]{width:170px;accent-color:var(--red)}
+.bar .rd{font:600 12px "IBM Plex Mono",monospace;min-width:76px;display:inline-block}
+
+/* referans */
+.refs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.ref{border:3px solid var(--ink);background:var(--paper2);padding:10px 12px}
+.ref.bad{border-color:var(--red)}
+.ref .stage{border:3px solid var(--ink);background:var(--stage);display:grid;place-items:center;min-height:200px;overflow:hidden}
+.ref img{max-width:100%;display:block}
+.ref h3{margin-top:0}
+
+/* galeri */
+.group{margin:26px 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.group b{font:400 20px "Archivo Black",sans-serif}
+.group span{font-size:13.5px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.card{border:3px solid var(--ink);background:var(--paper2);display:flex;flex-direction:column;cursor:pointer;transition:transform .12s, box-shadow .12s;position:relative}
+.card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+.card.sel{border-color:var(--red);box-shadow:6px 6px 0 var(--red)}
+.card.lead{border-color:var(--pink)}
+.card .stage{background:var(--stage);border-bottom:3px solid var(--ink);display:grid;place-items:center;padding:6px 0}
+.card canvas.big{width:220px;height:220px;display:block}
+.card .body{padding:10px 12px 12px}
+.card .id{position:absolute;left:8px;top:8px;background:var(--ink);color:var(--paper);font:700 12px "IBM Plex Mono",monospace;padding:2px 7px;z-index:2}
+.card .tag{position:absolute;right:8px;top:8px;background:var(--pink);color:var(--ink);font:700 11px "IBM Plex Mono",monospace;padding:2px 7px;z-index:2}
+.card h4{font:400 17px/1.15 "Archivo Black",sans-serif;margin:0 0 4px}
+.card .idea{font-size:13.5px;margin:0 0 8px;color:#2c2630}
+.minis{display:flex;gap:8px;align-items:center;margin:6px 0}
+.minis .m{background:var(--stage);border:2px solid var(--ink);padding:3px;line-height:0}
+.minis canvas{width:64px;height:64px}
+.minis small{font:600 10px "IBM Plex Mono",monospace;color:var(--mut);text-transform:uppercase;line-height:1.2}
+.sw{display:flex;gap:4px;margin-top:6px}
+.sw i{width:18px;height:18px;border:2px solid var(--ink);display:block}
+.tags{font:600 10.5px "IBM Plex Mono",monospace;color:var(--mut);margin-top:6px}
+.err{color:#fff;background:var(--red);font:12px "IBM Plex Mono",monospace;padding:6px;max-width:210px}
+
+/* sahne */
+.scenewrap{border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);background:var(--stage)}
+#scene{display:block;width:100%;height:360px}
+
+/* notlar */
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.note{border:3px solid var(--ink);background:var(--paper2);padding:12px 14px}
+.note h3{margin-top:0}
+.note ul{margin:6px 0;padding-left:18px}
+.note li{margin:3px 0;font-size:14px}
+.note .src{font-size:12px;color:var(--mut)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:8px 0}
+th,td{border:2px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--ink);color:var(--paper);font:600 11.5px "IBM Plex Mono",monospace;text-transform:uppercase}
+.q{counter-reset:q;list-style:none;padding:0}
+.q li{counter-increment:q;padding-left:38px;position:relative;margin:10px 0}
+.q li::before{content:counter(q);position:absolute;left:0;top:-2px;width:28px;height:28px;background:var(--yel);border:2px solid var(--ink);display:grid;place-items:center;font:700 13px "IBM Plex Mono",monospace}
+.pick{border:3px dashed var(--ink);padding:10px 14px;background:#fff;font-size:14px;margin-top:14px}
+@media (max-width:640px){.card canvas.big{width:200px;height:200px}input[type=range]{width:120px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Spiral node: <span>sadelik</span></h1>
+<p class="lede">Şimdiki spiral (turuncu halftone noktalar + sarı diş halkası + siyah kollar + sarı göbek) çamur olmuş: hipnotize eden tek şey yok, her şey birbirinin üstüne binmiş. Burada altı farklı bakış açısıyla araştırdım: her biri bir sanat ya da algı fikrini <b>en aza indirip</b> 2 renkli, düz dolgulu bir spirale çevirdi. Üstteki çubuktan yönü ve hızı değiştir, bir karta tıkla, aşağıdaki sahnede oyun ölçeğinde gör.</p>
+
+<div class="bar" id="bar">
+  <div><label>Dönüş yönü</label><div class="seg" id="segDir"><button data-v="1" class="on">⟲ Saat tersi</button><button data-v="-1">⟳ Saat yönü</button></div></div>
+  <div><label>Hız <span class="rd" id="rdSpeed"></span></label><input type="range" id="speed" min="0" max="720" step="10" value="240"></div>
+  <div><label>Hız hazırı</label><div class="seg" id="segPreset"><button data-v="0">Dur</button><button data-v="120">120</button><button data-v="360">360</button><button data-v="610" title="targetSpeed 32 / 3 birim">Oyun ≈610°/s</button></div></div>
+  <div><label>Oyuncu tutunuyor</label><div class="seg" id="segHeld"><button data-v="0" class="on">Hayır</button><button data-v="1">Evet</button></div></div>
+  <div><label>Zemin</label><div class="seg" id="segBg"><button data-v="#71BAEA" class="on">Gökyüzü</button><button data-v="#F1E6C7">Krem</button><button data-v="#362d70">Koyu</button></div></div>
+  <button class="btn" id="btnPause">Duraklat</button>
+</div>
+<p class="hint" style="margin-top:8px">Işığa duyarlılık: hız çubuğu en çok 720°/s. 60 fps'te 610°/s kare başına ~10°. Tekrar sayısı çok olan desenler bu hızda "vagon tekerleği" etkisiyle titrer; kartlarda bunu ayrıca not ettim.</p>
+
+<h2><span class="n">1</span>Neyle kıyaslıyoruz</h2>
+<div class="refs">
+  <div class="ref bad"><h3>Şimdiki (reddedilen)</h3><div class="stage"><img src="spiral_v2.png" alt="Şimdiki spiral node"></div><p class="hint">Dört ayrı fikir üst üste: halftone nokta, kıvrık kol, diş halkası, göbek. Gözün kilitleneceği tek şey yok.</p></div>
+  <div class="ref"><h3>Normal node</h3><div class="stage"><canvas id="refNormal" width="400" height="400" style="width:200px;height:200px"></canvas></div><p class="hint">Küçük sarı disk (1 birim) + etrafında 10 halka, dışa doğru sönen halo. Spiral bu ailenin kuzeni gibi durmalı.</p></div>
+</div>
+
+<h2><span class="n">2</span>Tasarımlar</h2>
+<p>Her kart canlı. Altındaki iki küçük kare dönmeyen kare: soldaki saat tersi, sağdaki saat yönü. Yön o karede okunuyor mu diye bak. Karta tıklayınca aşağıdaki sahnede seçilir.</p>
+<div id="gallery"></div>
+
+<h2><span class="n">3</span>Oyun ölçeğinde sahne</h2>
+<p>Spiral görseli oyunda ~3 birim, oyuncu ~1 birim. Seçili tasarım, yanında normal node ve ip boyu 3 birimle dönen oyuncuyla. Hız çubuğu burayı da sürüyor.</p>
+<div class="scenewrap"><canvas id="scene"></canvas></div>
+<p class="hint" id="sceneLabel"></p>
+
+<h2><span class="n">4</span>Araştırma özeti</h2>
+<div class="cols" id="notes"></div>
+
+<h2><span class="n">5</span>Benim önerim</h2>
+<div id="lead"></div>
+
+<h2><span class="n">6</span>Karar için</h2>
+<ol class="q" id="decide"></ol>
+
+</div>
+
+<script>
+// Op Art / Kinetik Sanat lensi: Spiral Node tasarimlari (A1-A3)
+// Konvansiyon: st.angle POZITIF = ekranda saat yonu tersi (CCW). Canvas y asagi oldugundan
+// matematiksel aciyi (cx + r cos a, cy - r sin a) ile ciziyoruz.
+// Kollar "iz birakir" (trailing): CCW donen node'da kol disa dogru saat yonunde kivrilir
+// (pervane / galaksi gibi). Boylece donus -> disa dogru genisleme algisi uretir.
+// dir=-1 ayna goruntusudur: a = angle - dir*(burulma) formulu kendiliginden aynalar.
+(function () {
+  'use strict';
+  var TAU = Math.PI * 2;
+
+  function disc(ctx, cx, cy, R, fill) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TAU);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+  function pt(cx, cy, r, a) {
+    return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+  }
+  function sgn(d) { return d < 0 ? -1 : 1; }
+  function clamp01(v) { v = +v || 0; return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+
+  // ---------------------------------------------------------------------------
+  // A1: Duchamp Diski. Iki kollu Arsimet sarmali, iki duz renk. Kollar ile aralari
+  // esit genislikte: sarmal donerken halkalar merkezden disa dogru "akar".
+  // ---------------------------------------------------------------------------
+  var A1_BG = '#fcae04', A1_FG = '#362d70';
+  window.SPIRAL_VARIANTS.push({
+    id: 'A1',
+    name: 'Duchamp Diski',
+    movement: 'Op Art',
+    colors: [A1_FG, A1_BG],
+    draw: function (ctx, cx, cy, R, st) {
+      var dir = sgn(st.dir), held = clamp01(st.held);
+      var N = 2;
+      var spacing = R / 3.1;               // iki komsu kol arasi radyal mesafe
+      var pitch = spacing * N;             // bir tam turda radyal ilerleme
+      var w = spacing * (0.5 + 0.06 * held);
+      var uMax = (R + w) / pitch;          // tur sayisi (kol disari tasana dek)
+      var steps = Math.ceil(uMax * 72);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, TAU);
+      ctx.clip();
+      disc(ctx, cx, cy, R, A1_BG);
+      ctx.strokeStyle = A1_FG;
+      ctx.lineWidth = w;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (var k = 0; k < N; k++) {
+        ctx.beginPath();
+        for (var i = 0; i <= steps; i++) {
+          var u = uMax * i / steps;
+          var a = st.angle - dir * TAU * u + TAU * k / N;
+          var p = pt(cx, cy, pitch * u, a);
+          if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // A2: Vasarely Kanatlari. 5 kalin kanat, hafif burulmus (tek tur degil, ~110 derece).
+  // Kanatlar merkezde tek noktada bulusur; disa dogru acilir (kama).
+  // ---------------------------------------------------------------------------
+  var A2_BG = '#f1e6c7', A2_FG = '#04586c';
+  window.SPIRAL_VARIANTS.push({
+    id: 'A2',
+    name: 'Vasarely Kanatlari',
+    movement: 'Op Art',
+    colors: [A2_FG, A2_BG],
+    draw: function (ctx, cx, cy, R, st) {
+      var dir = sgn(st.dir), held = clamp01(st.held);
+      var N = 5;
+      var tw = 1.95;                       // yaricap boyunca burulma (rad)
+      var delta = (Math.PI / N) * (1 + 0.1 * held); // kanat acisal genisligi
+      var steps = 32;
+      var Rr = R * 1.03;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, TAU);
+      ctx.clip();
+      disc(ctx, cx, cy, R, A2_BG);
+      ctx.fillStyle = A2_FG;
+      for (var k = 0; k < N; k++) {
+        var base = st.angle + TAU * k / N;
+        ctx.beginPath();
+        var i, r, a, p;
+        for (i = 0; i <= steps; i++) {
+          r = Rr * i / steps;
+          a = base - dir * tw * (r / R);
+          p = pt(cx, cy, r, a);
+          if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+        }
+        for (i = steps; i >= 0; i--) {
+          r = Rr * i / steps;
+          a = base - dir * tw * (r / R) + delta;
+          p = pt(cx, cy, r, a);
+          ctx.lineTo(p[0], p[1]);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // A3: Vasarely Boncuklari. En sade: iki kolda 4 buyuyen daire + merkez noktasi.
+  // Boyut gradyani (Vasarely kabarmasi) + donus = disa kayan, buyuyen toplar.
+  // ---------------------------------------------------------------------------
+  var A3_BG = '#362d70', A3_FG = '#ee7284';
+  window.SPIRAL_VARIANTS.push({
+    id: 'A3',
+    name: 'Vasarely Boncuklari',
+    movement: 'Op Art',
+    colors: [A3_FG, A3_BG],
+    draw: function (ctx, cx, cy, R, st) {
+      var dir = sgn(st.dir), held = clamp01(st.held);
+      var arms = 2, dots = 4;
+      var g = 1.42;                        // her topun yaricap carpani
+      var alpha = 1.25;                    // ardisik toplar arasi aci (rad)
+      var grow = 1 + 0.08 * held;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, TAU);
+      ctx.clip();
+      disc(ctx, cx, cy, R, A3_BG);
+      ctx.fillStyle = A3_FG;
+      // merkez noktasi (hedef alani)
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.09 * grow, 0, TAU);
+      ctx.fill();
+      for (var k = 0; k < arms; k++) {
+        for (var i = 0; i < dots; i++) {
+          var r = R * 0.2 * Math.pow(g, i);
+          var rho = R * (0.06 + 0.13 * (r / R)) * grow;
+          var a = st.angle - dir * alpha * i + Math.PI * k;
+          var p = pt(cx, cy, r, a);
+          ctx.beginPath();
+          ctx.arc(p[0], p[1], rho, 0, TAU);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+  });
+})();
+
+</script>
+<script>
+// Bauhaus / Constructivism / Suprematism / Swiss lens -- spiral node variants.
+// Convention: all drawing happens in a "math" frame (y up, +angle = CCW on screen),
+// clipped to the node circle. dir = -1 mirrors the whole design, so CW and CCW
+// are exact mirror images. st.angle already carries the sign of dir (page does angle += dir*speed*dt).
+(function () {
+  var TAU = Math.PI * 2;
+
+  function frame(ctx, cx, cy, R, st, fn) {
+    var d = st.dir < 0 ? -1 : 1;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TAU);
+    ctx.clip();
+    ctx.translate(cx, cy);
+    ctx.scale(1, -1);          // y up
+    ctx.scale(d, 1);           // mirror for CW
+    ctx.rotate(st.angle * d);  // mirror * rotate(angle*d) == rotate(angle) in the mirrored frame
+    fn(ctx);
+    ctx.restore();
+  }
+
+  function disc(ctx, x, y, r, col) {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, TAU);
+    ctx.fill();
+  }
+
+  // ---------------------------------------------------------------- B1
+  // Uc kollu girdap: 3 equal arms, 50/50 coverage, constant angular width (60 deg).
+  // Arms trail backwards (outer end lags the rotation) -> pattern reads as "flowing out".
+  var B1_IND = '#362d70', B1_YEL = '#fcae04';
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push({
+    id: 'B1',
+    name: 'Uc Kollu Girdap',
+    movement: 'Bauhaus',
+    colors: [B1_IND, B1_YEL],
+    draw: function (ctx, cx, cy, R, st) {
+      var h = st.held || 0;
+      frame(ctx, cx, cy, R, st, function (c) {
+        var N = 3, K = 2.1, W = Math.PI / N, STEPS = 40, RR = R * 1.06;
+        disc(c, 0, 0, R * 1.01, B1_YEL);
+        c.fillStyle = B1_IND;
+        for (var j = 0; j < N; j++) {
+          var a0 = TAU * j / N, i, u;
+          c.beginPath();
+          c.moveTo(0, 0);
+          for (i = 1; i <= STEPS; i++) {
+            u = i / STEPS;
+            c.lineTo(RR * u * Math.cos(a0 - K * u), RR * u * Math.sin(a0 - K * u));
+          }
+          c.arc(0, 0, RR, a0 - K, a0 - K + W, false);
+          for (i = STEPS; i >= 1; i--) {
+            u = i / STEPS;
+            c.lineTo(RR * u * Math.cos(a0 + W - K * u), RR * u * Math.sin(a0 + W - K * u));
+          }
+          c.closePath();
+          c.fill();
+        }
+        disc(c, 0, 0, R * (0.15 + 0.03 * h), B1_IND);
+        disc(c, 0, 0, R * (0.062 + 0.02 * h), B1_YEL);
+      });
+    }
+  });
+
+  // -------------------- B3 (Albers eccentric stack)
+  // Albers: "Homage to the Circle". Six nested flat circles, two colors alternating,
+  // each one nudged off its parent so the crescents curl into a spiral.
+  // Centers are chained (each child stays inside its parent) and the 5 steps are spread
+  // over a full turn so the innermost disc lands ~at the node center.
+  var B2_PAP = '#f1e6c7', B2_TEA = '#04586c';
+  var B2_RAD = [1, 0.80, 0.61, 0.44, 0.29, 0.15];
+  window.SPIRAL_VARIANTS.push({
+    id: 'B3',
+    name: 'Albers Ic Ice Daireler',
+    movement: 'Bauhaus',
+    colors: [B2_PAP, B2_TEA],
+    draw: function (ctx, cx, cy, R, st) {
+      frame(ctx, cx, cy, R, st, function (c) {
+        var x = 0, y = 0, i, g, th;
+        var step = TAU / 5;
+        disc(c, 0, 0, R * 1.01, B2_PAP);
+        for (i = 1; i < B2_RAD.length; i++) {
+          g = (B2_RAD[i - 1] - B2_RAD[i]) * 0.62 * R;
+          th = -i * step;                    // negative: centers wind clockwise inward
+          x += g * Math.cos(th);
+          y += g * Math.sin(th);
+          disc(c, x, y, B2_RAD[i] * R, (i % 2) ? B2_TEA : B2_PAP);
+        }
+      });
+    }
+  });
+
+  // -------------------- B2 (Kandinsky single line)
+  // Kandinsky, Point and Line to Plane: the line is the trace of a moving point.
+  // One point in the middle, one Archimedean line of constant width, 3 turns. Nothing else.
+  var B3_PAP = '#eeeac7', B3_ORA = '#ff5104';
+  window.SPIRAL_VARIANTS.push({
+    id: 'B2',
+    name: 'Nokta ve Cizgi',
+    movement: 'Bauhaus',
+    colors: [B3_PAP, B3_ORA],
+    draw: function (ctx, cx, cy, R, st) {
+      var h = st.held || 0;
+      frame(ctx, cx, cy, R, st, function (c) {
+        var TURNS = 3, pitch = R / TURNS, lw = pitch * (0.5 + 0.06 * h);
+        var maxPhi = TAU * TURNS * 1.08, STEPS = 220, i, p, r;
+        disc(c, 0, 0, R * 1.01, B3_PAP);
+        c.strokeStyle = B3_ORA;
+        c.lineWidth = lw;
+        c.lineCap = 'butt';
+        c.lineJoin = 'round';
+        c.beginPath();
+        for (i = 0; i <= STEPS; i++) {
+          p = maxPhi * i / STEPS;
+          r = pitch * p / TAU;
+          // trailing: outward travel goes clockwise (angle decreases)
+          if (i === 0) c.moveTo(r * Math.cos(-p), r * Math.sin(-p));
+          else c.lineTo(r * Math.cos(-p), r * Math.sin(-p));
+        }
+        c.stroke();
+        disc(c, 0, 0, R * (0.12 + 0.02 * h), B3_ORA);
+      });
+    }
+  });
+})();
+
+</script>
+<script>
+// C-folk.js - Halk / Dogu spiral gelenekleri: sadece geometri ilkeleri.
+// C1 Mitsudomoe (3 virgul), C2 Tek cizgi (Ege/Newgrange tek sarmal), C3 Koru (tek sekil).
+// Kural: angle pozitif = ekranda saat yonunun tersi (CCW), dir=+1 CCW donus.
+// Kollar dir=+1 iken merkezden disari SAAT YONUNDE kivrilir (kuyruk geride kalir),
+// dir=-1 iken ayna goruntusu. Canvas'ta aci artisi ekranda saat yonudur.
+(function () {
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  var TAU = Math.PI * 2;
+
+  // Ortak kurulum: daireye kirp, deseni dondur, dir'e gore aynala.
+  function begin(ctx, cx, cy, R, st) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, TAU);
+    ctx.clip();
+    ctx.rotate(-st.angle);
+    ctx.scale(st.dir >= 0 ? 1 : -1, 1);
+  }
+  function disc(ctx, R, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, R + 0.5, 0, TAU);
+    ctx.fill();
+  }
+  function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
+
+  // ---------------------------------------------------------------- C1
+  // Mitsudomoe: 3 virgul. Yuvarlak bas onde, sivri kuyruk kenar boyunca geride.
+  var C1_SAMPLES = 40;
+  function commaPath(ctx, R, grow) {
+    var rh = 0.36 * R + grow;          // bas yaricapi
+    var hc = 0.50 * R;                 // bas merkezi yaricapi
+    var Ro0 = hc + rh;                 // basin dis kenari
+    var Ro1 = 0.95 * R;                // kuyrugun dis kenari (kenar halkasi)
+    var sweep = 105 * Math.PI / 180;
+    // bas
+    ctx.moveTo(hc + rh, 0);
+    ctx.arc(hc, 0, rh, 0, TAU);
+    ctx.closePath();
+    // kuyruk seridi: dis kenar -> uc -> ic kenar
+    var i, s, w, ro, a, outer = [], inner = [];
+    for (i = 0; i <= C1_SAMPLES; i++) {
+      s = i / C1_SAMPLES;
+      w = rh * Math.pow(1 - s, 1.25);
+      ro = Ro0 + (Ro1 - Ro0) * smooth(s / 0.4);
+      a = sweep * s;
+      outer.push([ro * Math.cos(a), ro * Math.sin(a)]);
+      inner.push([(ro - 2 * w) * Math.cos(a), (ro - 2 * w) * Math.sin(a)]);
+    }
+    ctx.moveTo(outer[0][0], outer[0][1]);
+    for (i = 1; i <= C1_SAMPLES; i++) ctx.lineTo(outer[i][0], outer[i][1]);
+    for (i = C1_SAMPLES; i >= 0; i--) ctx.lineTo(inner[i][0], inner[i][1]);
+    ctx.closePath();
+  }
+  window.SPIRAL_VARIANTS.push({
+    id: 'C1',
+    name: 'Mitsudomoe (uc virgul)',
+    movement: 'Halk / Dogu',
+    colors: ['#04586c', '#f1e6c7'],
+    draw: function (ctx, cx, cy, R, st) {
+      begin(ctx, cx, cy, R, st);
+      disc(ctx, R, '#04586c');
+      var grow = 0.02 * R * (st.held || 0);
+      ctx.fillStyle = '#f1e6c7';
+      for (var k = 0; k < 3; k++) {
+        ctx.save();
+        ctx.rotate(k * TAU / 3);
+        ctx.beginPath();
+        commaPath(ctx, R, grow);
+        ctx.fill('nonzero');
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------- C2
+  // Tek surekli cizgi: Arsimet sarmali, cizgi kalinligi = bosluk (%50 doluluk).
+  window.SPIRAL_VARIANTS.push({
+    id: 'C2',
+    name: 'Tek cizgi sarmal',
+    movement: 'Halk / Dogu',
+    colors: ['#362d70', '#fcae04'],
+    draw: function (ctx, cx, cy, R, st) {
+      begin(ctx, cx, cy, R, st);
+      disc(ctx, R, '#362d70');
+      var pitch = 0.40 * R;
+      var h = 0.10 * R + 0.012 * R * (st.held || 0);   // yarim cizgi kalinligi
+      var phiMax = TAU * (R + h) / pitch;
+      ctx.strokeStyle = '#fcae04';
+      ctx.lineWidth = 2 * h;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      var step = 0.06;
+      for (var p = step; p <= phiMax; p += step) {
+        var r = pitch * p / TAU;
+        ctx.lineTo(r * Math.cos(p), r * Math.sin(p));
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------- C3
+  // Koru: merkezde top, ondan disari tek kivrim, kuyruk kenarda sivrilir.
+  var C3_SAMPLES = 90;
+  window.SPIRAL_VARIANTS.push({
+    id: 'C3',
+    name: 'Koru (tek sekil)',
+    movement: 'Halk / Dogu',
+    colors: ['#f1e6c7', '#362d70'],
+    draw: function (ctx, cx, cy, R, st) {
+      begin(ctx, cx, cy, R, st);
+      disc(ctx, R, '#f1e6c7');
+      var held = st.held || 0;
+      var r0 = 0.20 * R, r1 = 0.97 * R;
+      var wMax = 0.22 * R + 0.015 * R * held;
+      var Phi = TAU * 1.30;
+      var i, s, a, r, w, outer = [], inner = [];
+      for (i = 0; i <= C3_SAMPLES; i++) {
+        s = i / C3_SAMPLES;
+        a = Phi * s;
+        r = r0 + (r1 - r0) * s;
+        w = wMax * Math.pow(1 - s, 0.85);
+        outer.push([(r + w) * Math.cos(a), (r + w) * Math.sin(a)]);
+        inner.push([Math.max(r - w, 0) * Math.cos(a), Math.max(r - w, 0) * Math.sin(a)]);
+      }
+      ctx.fillStyle = '#362d70';
+      ctx.beginPath();
+      ctx.arc(0, 0, r0 + 0.04 * R + 0.015 * R * held, 0, TAU);   // top
+      ctx.moveTo(outer[0][0], outer[0][1]);
+      for (i = 1; i <= C3_SAMPLES; i++) ctx.lineTo(outer[i][0], outer[i][1]);
+      for (i = C3_SAMPLES; i >= 0; i--) ctx.lineTo(inner[i][0], inner[i][1]);
+      ctx.closePath();
+      ctx.fill('nonzero');
+      ctx.restore();
+    }
+  });
+})();
+
+</script>
+<script>
+// D-motion.js - Hareketli grafik / oyun gorsel dili lensi: 3 minimal sarmal dugum tasarimi.
+// st.angle: +CCW (ekranda), st.dir: +1 CCW / -1 CW. Kollar dir'e gore aynalanir.
+// Ortak kural: canvas acisi = dir*phi + rot, rot = -st.angle (canvas y asagi, + aci = saat yonu).
+(function () {
+  'use strict';
+  var TAU = Math.PI * 2;
+  var PAPER = '#f1e6c7', TEAL = '#04586c', YELLOW = '#fcae04', INDIGO = '#362d70';
+
+  function sgn(d) { return d < 0 ? -1 : 1; }
+  function clipDisc(ctx, cx, cy, R) {
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+  }
+  function disc(ctx, x, y, r, col) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = col; ctx.fill();
+  }
+
+  // ---------------------------------------------------------------- D1
+  // Bass/Whitney: tek sekil = iki kollu Arsimet sarmali, %50 dolu / %50 bos.
+  // Koyu teal zemin, kagit renkli iki kol. Kollar merkezden disa dogru
+  // donus yonunun tersine sarilir (arkada iz birakir) -> donerken disa akis hissi.
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push({
+    id: 'D1',
+    name: 'Bass sarmali (iki kol)',
+    movement: 'Hareketli grafik / oyun',
+    colors: [TEAL, PAPER],
+    draw: function (ctx, cx, cy, R, st) {
+      var dir = sgn(st.dir), rot = -st.angle, held = st.held || 0;
+      var T = 2;                       // her kolun tur sayisi
+      var spacing = R / (2 * T);       // komsu bantlar arasi radyal aralik
+      var w = spacing * (0.5 + 0.06 * held);
+      var n = 120, phiMax = TAU * T * 0.93;   // kol kenara varmadan biter: koyu kenar siluet verir
+      ctx.save();
+      clipDisc(ctx, cx, cy, R);
+      disc(ctx, cx, cy, R, TEAL);
+      ctx.strokeStyle = PAPER; ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.lineCap = 'butt';
+      for (var a = 0; a < 2; a++) {
+        ctx.beginPath();
+        for (var i = 0; i <= n; i++) {
+          var phi = phiMax * i / n;
+          var r = (R / T) * phi / TAU;
+          var ang = dir * phi + rot + a * Math.PI;
+          var x = cx + r * Math.cos(ang), y = cy + r * Math.sin(ang);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      disc(ctx, cx, cy, w * (0.85 + 0.1 * held), PAPER);  // net merkez noktasi
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------- D2
+  // Duchamp Rotorelief: ic ice daireler, her biri bir oncekine ictenteget.
+  // Teget noktasi halka basina 75 derece doner -> daire zincirinden sarmal cikar;
+  // donerken ince-kalin hilal darbesi. Sadece 4 daire + merkez nokta.
+  window.SPIRAL_VARIANTS.push({
+    id: 'D2',
+    name: 'Rotorelief (ice teget daireler)',
+    movement: 'Hareketli grafik / oyun',
+    colors: [INDIGO, YELLOW],
+    draw: function (ctx, cx, cy, R, st) {
+      var dir = sgn(st.dir), rot = -st.angle, held = st.held || 0;
+      var rad = [1, 0.8, 0.6, 0.42, 0.26, 0.13 + 0.02 * held];   // son eleman = merkez nokta
+      var cols = [INDIGO, YELLOW, INDIGO, YELLOW, INDIGO, YELLOW];
+      var lam = 0.95, step = 60 * Math.PI / 180, N = 5, i;
+      var px = [0], py = [0];
+      for (i = 1; i <= N; i++) {
+        var ang = dir * (i - 1) * step + rot, d = (rad[i - 1] - rad[i]) * lam;
+        px.push(px[i - 1] + d * Math.cos(ang)); py.push(py[i - 1] + d * Math.sin(ang));
+      }
+      ctx.save();
+      clipDisc(ctx, cx, cy, R);
+      for (i = 0; i <= N; i++) {   // zincirin basi ve sonu tam merkezde olsun: dogrusal duzeltme
+        var f = i / N;
+        disc(ctx, cx + (px[i] - f * px[N]) * R, cy + (py[i] - f * py[N]) * R, rad[i] * R, cols[i]);
+      }
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------- D3
+  // Super Hexagon + Bass indirgemesi: uc kavisli kanat, bir renk + bir nokta.
+  // Zemin yok (seffaf); kanatlar merkezde sivri, kenarda genis -> disa buyume.
+  window.SPIRAL_VARIANTS.push({
+    id: 'D3',
+    name: 'Uc kanat (turbin)',
+    movement: 'Hareketli grafik / oyun',
+    colors: [INDIGO, PAPER],
+    draw: function (ctx, cx, cy, R, st) {
+      var dir = sgn(st.dir), rot = -st.angle, held = st.held || 0;
+      var N = 3, sweep = 130 * Math.PI / 180, seg = TAU / N, n = 45, U = 1.5;   // U: uc kenarin disina tasar, clip keser
+      ctx.save();
+      clipDisc(ctx, cx, cy, R);
+      ctx.fillStyle = INDIGO;
+      for (var b = 0; b < N; b++) {
+        var base = b * seg, i, u, ang;
+        ctx.beginPath();
+        for (i = 0; i <= n; i++) {            // on kenar, icten disa
+          u = U * i / n;
+          ang = rot + dir * (base + sweep * u);
+          ctx.lineTo(cx + u * R * Math.cos(ang), cy + u * R * Math.sin(ang));
+        }
+        for (i = n; i >= 0; i--) {            // arka kenar, distan ice
+          u = U * i / n;
+          ang = rot + dir * (base + sweep * u + seg * (0.3 + 0.4 * Math.min(u, 1)));
+          ctx.lineTo(cx + u * R * Math.cos(ang), cy + u * R * Math.sin(ang));
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      disc(ctx, cx, cy, R * (0.14 + 0.02 * held), PAPER);
+      ctx.restore();
+    }
+  });
+})();
+
+</script>
+<script>
+// E-perception.js : Algi bilimi merceginden 3 sarmal dugum tasarimi.
+// Ortak kural: kollar "arkada kalan" (trailing) kavisli; desen donerken kenarlar disa dogru akar
+// (gorsel genisleme illuzyonu). FLOW = -1 yapilirsa kollar one kavislenir, akis ice (daralma) olur.
+(function () {
+  'use strict';
+  var TAU = Math.PI * 2;
+  var FLOW = 1;
+
+  function pt(ctx, cx, cy, r, th) {
+    return [cx + r * Math.cos(th), cy - r * Math.sin(th)]; // y asagi, th pozitif = saat yonunun tersi
+  }
+
+  // Log-sarmal kol kenari: theta(r) = angle + base - dir*FLOW*k*ln(r/r0) + dir*u
+  function edgeTheta(angle, dir, k, r, r0, base, u) {
+    return angle + base - dir * FLOW * k * Math.log(r / r0) + dir * u;
+  }
+
+  // Tek bir kolun [u0,u1] (radyan, tangensiyel) dilimini doldurur.
+  function wedge(ctx, cx, cy, R, r0, angle, dir, k, base, u0, u1) {
+    var S = 28, rMax = R * 1.04, ratio = rMax / r0, j, r, p;
+    ctx.beginPath();
+    for (j = 0; j <= S; j++) {
+      r = r0 * Math.pow(ratio, j / S);
+      p = pt(ctx, cx, cy, r, edgeTheta(angle, dir, k, r, r0, base, u0));
+      if (j === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+    }
+    var a0 = edgeTheta(angle, dir, k, rMax, r0, base, u0), a1 = edgeTheta(angle, dir, k, rMax, r0, base, u1);
+    for (j = 1; j < 12; j++) { // dis kenar: yay (kiris degil), yoksa genis kolda daire icine sarkar
+      p = pt(ctx, cx, cy, rMax, a0 + (a1 - a0) * j / 12);
+      ctx.lineTo(p[0], p[1]);
+    }
+    for (j = S; j >= 0; j--) {
+      r = r0 * Math.pow(ratio, j / S);
+      p = pt(ctx, cx, cy, r, edgeTheta(angle, dir, k, r, r0, base, u1));
+      ctx.lineTo(p[0], p[1]);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function disc(ctx, cx, cy, r, col) {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TAU);
+    ctx.fill();
+  }
+
+  function clipCircle(ctx, cx, cy, R) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TAU);
+    ctx.clip();
+  }
+
+  // ---------------------------------------------------------------- E1
+  // Iki kanat: N=2, kol/bosluk 50/50, sabit egimli (log) kavis, 2 renk.
+  var E1_N = 2, E1_K = 1.25, E1_R0 = 0.17;
+  var E1_A = '#362d70', E1_B = '#f1e6c7';
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push({
+    id: 'E1',
+    name: 'Iki kanat',
+    movement: 'Algi bilimi',
+    colors: [E1_A, E1_B],
+    draw: function (ctx, cx, cy, R, st) {
+      var i, r0 = R * E1_R0 * (1 + 0.12 * (st.held || 0));
+      ctx.save();
+      clipCircle(ctx, cx, cy, R);
+      disc(ctx, cx, cy, R, E1_B);
+      ctx.fillStyle = E1_A;
+      for (i = 0; i < E1_N; i++) {
+        wedge(ctx, cx, cy, R, R * E1_R0, st.angle, st.dir, E1_K, i * TAU / E1_N, 0, Math.PI / E1_N);
+      }
+      disc(ctx, cx, cy, r0, E1_A);
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------- E2
+  // Tek cizgi sarmal: Arsimet, N=1, ince cizgi (~%30), ~2 tur. "5 yasindaki cizer".
+  var E2_A = '#04586c', E2_B = '#fcae04';
+  window.SPIRAL_VARIANTS.push({
+    id: 'E2',
+    name: 'Tek cizgi',
+    movement: 'Algi bilimi',
+    colors: [E2_A, E2_B],
+    draw: function (ctx, cx, cy, R, st) {
+      var pitch = R * 0.5, w = pitch * 0.34, hub = R * 0.17 * (1 + 0.12 * (st.held || 0));
+      var tEnd = (R * 1.1 - hub * 0.4) / (pitch / TAU), S = Math.ceil(tEnd * 12), j, t, r, th, p;
+      ctx.save();
+      clipCircle(ctx, cx, cy, R);
+      disc(ctx, cx, cy, R, E2_B);
+      ctx.strokeStyle = E2_A;
+      ctx.lineWidth = w;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (j = 0; j <= S; j++) {
+        t = tEnd * j / S;
+        r = hub * 0.4 + t * pitch / TAU;
+        th = st.angle - st.dir * FLOW * t;
+        p = pt(ctx, cx, cy, r, th);
+        if (j === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+      }
+      ctx.stroke();
+      disc(ctx, cx, cy, hub, E2_A);
+      ctx.restore();
+    }
+  });
+
+  // ---------------------------------------------------------------- E3
+  // Parlaklik merdiveni: N=2, her kol koyu -> orta -> acik 3 duz basamak (asimetrik parlaklik,
+  // Kitaoka/Pinna-Brelstaff'tan: statik karede bile yonlu "akis" ipucu). 3. renk bu yuzden.
+  var E3_D = '#362d70', E3_M = '#ee7284', E3_L = '#f1e6c7';
+  var E3_N = 2, E3_K = 1.0, E3_R0 = 0.16, E3_STAIR = 1; // E3_STAIR=-1: basamak sirasini ters cevir
+  window.SPIRAL_VARIANTS.push({
+    id: 'E3',
+    name: 'Parlaklik merdiveni',
+    movement: 'Algi bilimi',
+    colors: [E3_D, E3_M, E3_L],
+    draw: function (ctx, cx, cy, R, st) {
+      var i, P = TAU / E3_N, s = E3_STAIR, r0 = R * E3_R0 * (1 + 0.12 * (st.held || 0));
+      ctx.save();
+      clipCircle(ctx, cx, cy, R);
+      disc(ctx, cx, cy, R, E3_L);
+      for (i = 0; i < E3_N; i++) {
+        ctx.fillStyle = E3_M;
+        wedge(ctx, cx, cy, R, R * E3_R0, st.angle, st.dir, E3_K, i * P, 0, s * P * 0.68);
+        ctx.fillStyle = E3_D;
+        wedge(ctx, cx, cy, R, R * E3_R0, st.angle, st.dir, E3_K, i * P, 0, s * P * 0.30);
+      }
+      disc(ctx, cx, cy, r0, E3_D);
+      ctx.restore();
+    }
+  });
+})();
+
+</script>
+<script>
+/* F-nodepalette.js - Spiral node tasarimlari: SADECE normal node'un halka rampasindan.
+ * Per-pixel analitik AA (kenarlarda 0.8 px yumusatma), onbellekli polar izgara.
+ * Yon: st.angle + = ekranda saat yonunun tersi (CCW). dir=+1 -> node CCW doner.
+ * Kol egimi "pervane" kuralina uyar: kollar donusun ARKASINDA kalir
+ * (dir=+1 iken kol disa dogru saat yonune kivrilir). Ters istenirse TRAIL = -1.
+ * Her iki yon birbirinin ayna goruntusudur.
+ */
+(function () {
+  'use strict';
+
+  var TAU = Math.PI * 2;
+  var TRAIL = 1;          // -1 yaparsan tum tasarimlarda egim yonu tersine doner
+  var MAX_RPX = 150;      // render yaricapi tavani (DPR yuksekse hizi korur)
+
+  // Normal node rampasi (CircularRings, ic -> dis)
+  var PAPER  = [0xf1, 0xe6, 0xc7];
+  var ORANGE = [0xff, 0x51, 0x04];
+  var YELLOW = [0xfc, 0xae, 0x04];
+  var TEAL   = [0x28, 0x9a, 0xa4];
+  var DTEAL  = [0x04, 0x58, 0x6c];
+
+  // Normal node'un merkezden kenara solma kurali (OuterFadeStart / Power)
+  function fadeAlpha(u, start, pw) {
+    if (start >= 1) return 1;                 // solma yok: sadece disk kenari AA (build'de)
+    if (u >= 1) return 0;
+    if (u <= start) return 1;
+    var t = (u - start) / (1 - start + 0.0001);
+    return Math.pow(1 - t, pw);
+  }
+
+  function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+
+  // Kenar yumusatma: d = kenara px mesafe (kendi tarafinda >= 0). Komsu renk agirligi (0..0.5)
+  function edgeW(d) {
+    var w = 0.5 * (1 - d / 0.8);
+    return w > 0 ? w : 0;
+  }
+
+  /* Ortak iskelet: shade(u, th, s, out) -> out[0..2]=rgb, out[3]=kapsama(0..1)
+   * th = piksel acisi - st.angle (CCW +). s = yon isareti * TRAIL. */
+  function makeRenderer(opts) {
+    var fadeStart = opts.fadeStart, fadePow = opts.fadePow;
+    var grid = null;      // {Rpx, D, u, ang, fa, canvas, img}
+    var out = [0, 0, 0, 0];
+
+    function build(Rpx) {
+      var D = 2 * Math.ceil(Rpx) + 2, half = D / 2;
+      var n = D * D;
+      var u = new Float32Array(n), ang = new Float32Array(n), fa = new Float32Array(n);
+      var ax = new Float32Array(n);
+      for (var y = 0; y < D; y++) {
+        for (var x = 0; x < D; x++) {
+          var dx = x + 0.5 - half, dy = y + 0.5 - half;
+          var i = y * D + x;
+          var uu = Math.sqrt(dx * dx + dy * dy) / Rpx;
+          u[i] = uu;
+          ang[i] = Math.atan2(-dy, dx);
+          var edge = clamp01(0.5 + (1 - uu) * Rpx);   // disk kenari kapsamasi
+          fa[i] = fadeAlpha(uu, fadeStart, fadePow) * edge;
+          ax[i] = opts.aux ? opts.aux(uu, Rpx) : 0;
+        }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = D; canvas.height = D;
+      var c2 = canvas.getContext('2d');
+      grid = { Rpx: Rpx, D: D, u: u, ang: ang, fa: fa, ax: ax, canvas: canvas,
+               c2: c2, img: c2.createImageData(D, D) };
+    }
+
+    return function draw(ctx, cx, cy, R, st) {
+      var m = ctx.getTransform ? ctx.getTransform() : null;
+      var sc = m ? (Math.hypot(m.a, m.b) || 1) : 1;
+      var Rpx = Math.min(R * sc, MAX_RPX);
+      Rpx = Math.max(8, Math.round(Rpx * 2) / 2);
+      if (!grid || grid.Rpx !== Rpx) build(Rpx);
+
+      var g = grid, D = g.D, n = D * D, data = g.img.data;
+      var s = (st.dir < 0 ? -1 : 1) * TRAIL;
+      var rot = st.angle || 0;
+      var u = g.u, ang = g.ang, fa = g.fa, ax = g.ax;
+      opts.begin && opts.begin(Rpx, s);
+      for (var i = 0; i < n; i++) {
+        var a = fa[i], o = i * 4;
+        if (a <= 0) { data[o + 3] = 0; continue; }
+        opts.shade(u[i], ang[i] - rot, s, out, ax[i]);
+        data[o] = out[0]; data[o + 1] = out[1]; data[o + 2] = out[2];
+        data[o + 3] = Math.round(255 * a * out[3]);
+      }
+      g.c2.putImageData(g.img, 0, 0);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, TAU);
+      ctx.clip();
+      var side = (D / Rpx) * R; // D piksel = side birim
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(g.canvas, cx - side / 2, cy - side / 2, side, side);
+      ctx.restore();
+    };
+  }
+
+  function mix3(out, A, B, w) { // w = B agirligi
+    out[0] = A[0] + (B[0] - A[0]) * w;
+    out[1] = A[1] + (B[1] - A[1]) * w;
+    out[2] = A[2] + (B[2] - A[2]) * w;
+  }
+
+  // Gercek node: kucuk sari cekirdek disk (cap 1 birim, collider r=0.5) + buyuk halka halesi.
+  // Varsayim: spiral node gorseli 3 birimlik daire (R = 1.5 birim) -> cekirdek u = 1/3 (tutma hedefi).
+  // Halka bandi cekirdekten kenara kalan 1 birimde (u 1/3..1); normal node'daki 1 birimlik halka
+  // kalinligi burada ~0.25-0.33 birime sikistirilmistir (aksi halde tek halka sigar).
+  var CORE = 1 / 3, CORE_COL = [0xf0, 0xd4, 0x20];
+  var FS = 1, FP = 1;        // solma yok: normal node'un 4 birimlik solmasi bu 1.5 birimlik dairede gorunmez, kenar sert
+  var VSPAN = 1 - CORE;
+  function sq(x) { return x * x; }
+
+  // Cekirdek disk (kenari AA). Dondurur: true -> piksel tamamen cekirdekte, shade bitti.
+  function core(out, u, Rpx) {
+    var dh = (u - CORE) * Rpx;               // + = cekirdek disinda
+    if (dh <= -1) { out[0] = CORE_COL[0]; out[1] = CORE_COL[1]; out[2] = CORE_COL[2]; out[3] = 1; return true; }
+    return false;
+  }
+  function coreEdge(out, u, Rpx) {
+    var dh = (u - CORE) * Rpx;
+    if (dh < 0.8) mix3(out, out, CORE_COL, clamp01(0.5 - dh / 1.6));
+    out[3] = 1;
+  }
+
+  /* ---------- F1: Sarili seritli sarmal (a)+(d) ---------------------------------
+   * Cekirdegin etrafinda normal node'un 3 halka rengi (turuncu, sari, kagit) halka yerine
+   * 3 esit sarmal kol olarak sarilir. v = (u-CORE)/(1-CORE), f = NB*v + s*K*theta/2pi,
+   * renk = rampa[floor(f) mod 3]. K=3 (renk sayisinin kati) -> dikis cizgisi yok. */
+  var F1_NB = 3, F1_K = 3;
+  var f1cols = [ORANGE, YELLOW, PAPER];
+  var f1Rpx = 100;
+  var F1 = makeRenderer({
+    fadeStart: FS, fadePow: FP,
+    begin: function (Rpx) { f1Rpx = Rpx; },
+    aux: function (u, Rpx) {                     // f'nin piksel basina degisimi (1/gr)
+      var uu = u < CORE ? CORE : u;
+      return Rpx / Math.sqrt(sq(F1_NB / VSPAN) + sq(F1_K / (TAU * uu)));
+    },
+    shade: function (u, th, s, out, inv) {
+      if (core(out, u, f1Rpx)) return;
+      var f = F1_NB * (u - CORE) / VSPAN + s * F1_K * th / TAU;
+      var fl = Math.floor(f), p = f - fl;
+      var idx = ((fl % 3) + 3) % 3;
+      var d = (p < 0.5 ? p : 1 - p) * inv;       // px
+      var nb = p < 0.5 ? (idx + 2) % 3 : (idx + 1) % 3;
+      mix3(out, f1cols[idx], f1cols[nb], edgeW(d));
+      coreEdge(out, u, f1Rpx);
+    }
+  });
+
+  /* ---------- F2: Kaymis diskler (c) --------------------------------------------
+   * Normal node gibi ic ice halkalar, ama her halka bir oncekine gore biraz kaydirilmis
+   * ic ice daireler (dis -> ic: turuncu, kagit, sari, kagit, turuncu). Merkezler bir sarmal
+   * uzerinde doner -> ay-kesitleri sarmal bir merdiven olusturur. Cekirdek tam ortada sabit.
+   * Vektor: sadece 5 dolu daire + cekirdek. */
+  var F2_RHO = [1, 0.84, 0.70, 0.57, 0.45];     // yaricap (R cinsinden)
+  var F2_OFF = [0, 0.14, 0.2, 0.18, 0.10];     // merkez kaymasi (R cinsinden)
+  var F2_DEG = 70 * Math.PI / 180;              // halka basina aci adimi
+  var F2_COL = ['#ff5104', '#f1e6c7', '#fcae04', '#f1e6c7', '#ff5104'];
+  var CORE_HEX = '#f0d420';
+  function F2(ctx, cx, cy, R, st) {
+    var s = (st.dir < 0 ? -1 : 1) * TRAIL;
+    var rot = st.angle || 0;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+    for (var k = 0; k < F2_RHO.length; k++) {
+      // dis halka disa dogru: aci s ile azalir (kollar donusun arkasinda)
+      var a = rot - s * k * F2_DEG;
+      var x = cx + Math.cos(a) * F2_OFF[k] * R, y = cy - Math.sin(a) * F2_OFF[k] * R;
+      ctx.fillStyle = F2_COL[k];
+      ctx.beginPath(); ctx.arc(x, y, F2_RHO[k] * R, 0, TAU); ctx.fill();
+    }
+    ctx.fillStyle = CORE_HEX;
+    ctx.beginPath(); ctx.arc(cx, cy, R * CORE, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------- F3: Tek kol (e) ---------------------------------------------------
+   * Kagit zemin, sari cekirdek ve uzerinde TEK kalin turuncu kol: 1 baslangicli Arsimet
+   * sarmali, kol periyodun %46'si. 2 renk (turuncu + kagit) + cekirdek. */
+  var F3_T = 1.25, F3_DUTY = 0.46;
+  var f3Rpx = 100;
+  var F3 = makeRenderer({
+    fadeStart: FS, fadePow: FP,
+    begin: function (Rpx) { f3Rpx = Rpx; },
+    aux: function (u, Rpx) {
+      var uu = u < CORE ? CORE : u;
+      return Rpx / Math.sqrt(sq(F3_T / VSPAN) + sq(1 / (TAU * uu)));
+    },
+    shade: function (u, th, s, out, inv) {
+      if (core(out, u, f3Rpx)) return;
+      var f = F3_T * (u - CORE) / VSPAN + s * th / TAU;
+      var p = f - Math.floor(f);
+      var d = p, e = Math.abs(p - F3_DUTY), e2 = 1 - p;
+      if (e < d) d = e; if (e2 < d) d = e2;
+      var w = edgeW(d * inv);
+      if (p < F3_DUTY) mix3(out, ORANGE, PAPER, w); else mix3(out, PAPER, ORANGE, w);
+      coreEdge(out, u, f3Rpx);
+    }
+  });
+
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push({
+    id: 'F1', name: 'Sarili seritli sarmal', movement: 'Node paleti',
+    colors: ['#ff5104', '#fcae04', '#f1e6c7'],
+    draw: F1
+  });
+  window.SPIRAL_VARIANTS.push({
+    id: 'F2', name: 'Kaymis diskler', movement: 'Node paleti',
+    colors: ['#ff5104', '#fcae04', '#f1e6c7'],
+    draw: F2
+  });
+  window.SPIRAL_VARIANTS.push({
+    id: 'F3', name: 'Tek kalin kol', movement: 'Node paleti',
+    colors: ['#ff5104', '#f1e6c7'],
+    draw: F3
+  });
+})();
+
+</script>
+<script>
+// G: benim önerilerim. Ajanların ortak bulgusundan türetildi: 2 kol, düz iki renk, kollar dönüşün arkasında,
+// 50/50 kaplama. Üstüne tek ekleme: ortada normal node'un sarı diski ("bu bir node"). Arşimet (sabit aralık) sarmal:
+// iki renk dönerken dışa akar, dış kenarda bile kolların okunur kalır.
+(function(){
+  var TAU = Math.PI*2, CORE = '#F0D420', INK = '#140C1C';
+  function arms(ctx, cx, cy, R, st, o){
+    var dir = st.dir >= 0 ? 1 : -1, held = st.held || 0;
+    var N = o.n, r0 = R*0.17, steps = 48;
+    var turn = (R*1.1 - r0) / o.turns;                 // 1 tam tur burulma için radyal mesafe
+    var w = (TAU/N) * o.fill * (1 + 0.05*held);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+    if(o.disc){ ctx.fillStyle = o.disc; ctx.fillRect(cx-R, cy-R, R*2, R*2); }
+    ctx.fillStyle = o.arm;
+    function P(r, th){ return [cx + r*Math.cos(th), cy - r*Math.sin(th)]; } // ekranda saat tersi = +th
+    for(var j=0;j<N;j++){
+      var base = st.angle + j*TAU/N;
+      ctx.beginPath();
+      for(var i=0;i<=steps;i++){
+        var r = r0*0.6 + (R*1.1 - r0*0.6)*i/steps;
+        var th = base - dir*TAU*(r - r0)/turn;
+        var p = P(r, th); if(i===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]);
+      }
+      for(var i2=steps;i2>=0;i2--){
+        var r2 = r0*0.6 + (R*1.1 - r0*0.6)*i2/steps;
+        var th2 = base + w - dir*TAU*(r2 - r0)/turn;
+        var q = P(r2, th2); ctx.lineTo(q[0], q[1]);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    // çekirdek: normal node'un sarı diski
+    var cr = R*0.17*(1+0.12*held);
+    ctx.beginPath(); ctx.arc(cx, cy, cr, 0, TAU); ctx.fillStyle = CORE; ctx.fill();
+    ctx.lineWidth = R*0.025; ctx.strokeStyle = INK; ctx.stroke();
+  }
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push({
+    id:'G1', name:'Düğüm + iki kol (dolu)', movement:'Benim önerim',
+    colors:['#ff5104','#f1e6c7','#F0D420'],
+    draw:function(ctx,cx,cy,R,st){ arms(ctx,cx,cy,R,st,{n:2,turns:1.6,fill:0.5,disc:'#f1e6c7',arm:'#ff5104'}); }
+  });
+  window.SPIRAL_VARIANTS.push({
+    id:'G2', name:'Düğüm + açık kol', movement:'Benim önerim',
+    colors:['#362d70','#F0D420'],
+    draw:function(ctx,cx,cy,R,st){ arms(ctx,cx,cy,R,st,{n:2,turns:1.6,fill:0.38,disc:null,arm:'#362d70'}); }
+  });
+  window.SPIRAL_VARIANTS.push({
+    id:'G3', name:'Düğüm + üç kol (dolu)', movement:'Benim önerim',
+    colors:['#362d70','#f1e6c7','#F0D420'],
+    draw:function(ctx,cx,cy,R,st){ arms(ctx,cx,cy,R,st,{n:3,turns:1.1,fill:0.5,disc:'#f1e6c7',arm:'#362d70'}); }
+  });
+})();
+
+</script>
+<script>
+// I: merkezden dışarı açılan, inceden kalına giden sarmal kol(lar). Renk = normal node'un 10 halkası:
+// kol şekli bir "maske", içinde node'un eş merkezli halka renkleri (yarıçapa göre ramp) görünür.
+// Arşimet sarmalı: kol merkezdeki çekirdekten çıkar, her turda dışa doğru aynı aralıkla açılır, kalınlık doğrusal artar.
+(function(){
+  var TAU = Math.PI*2;
+  var RAMP = ['#f1e6c7','#ff5104','#fcae04','#888c03','#289aa4','#eeeac7','#04586c','#fc1e00','#ee7284','#362d70'];
+  var CORE = '#F0D420', INK = '#140C1C';
+
+  function taper(ctx, cx, cy, R, st, o){
+    var dir = st.dir >= 0 ? 1 : -1, held = st.held || 0;
+    var N = o.n, r0 = R*0.17, span = R - r0, steps = 90;
+    var turn = span/o.turns;                       // bir arm'ın 1 tam turda dışa kat ettiği mesafe
+    var f0 = o.fillIn, f1 = o.fillOut*(1+0.04*held);
+    function P(r, th){ return [cx + r*Math.cos(th), cy - r*Math.sin(th)]; }
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+    if(o.bg){ ctx.fillStyle = o.bg; ctx.fillRect(cx-R, cy-R, R*2, R*2); }
+    for(var j=0;j<N;j++){
+      var base = st.angle + j*TAU/N;
+      ctx.save();
+      ctx.beginPath();
+      var i, u, r, th, p;
+      for(i=0;i<=steps;i++){                       // arm'ın ön kenarı
+        u = i/steps; r = r0*0.5 + (R*1.02 - r0*0.5)*u;
+        th = base - dir*TAU*(r - r0)/turn;
+        p = P(r, th); if(i===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]);
+      }
+      var rOut = R*1.02, thF = base - dir*TAU*(rOut - r0)/turn, wOut = (TAU/N)*f1;
+      for(i=1;i<=24;i++){                          // dış uçta düz çizgi yerine yay (kalın kolda düz kesik oluşmasın)
+        p = P(rOut, thF + wOut*i/24); ctx.lineTo(p[0],p[1]);
+      }
+      for(i=steps;i>=0;i--){                       // arka kenar: açısal genişlik merkezde ince, dışta kalın
+        u = i/steps; r = r0*0.5 + (R*1.02 - r0*0.5)*u;
+        var uu = Math.max(0, Math.min(1, (r - r0)/span));
+        var w = (TAU/N)*(f0 + (f1 - f0)*uu);
+        th = base + w - dir*TAU*(r - r0)/turn;
+        p = P(r, th); ctx.lineTo(p[0],p[1]);
+      }
+      ctx.closePath(); ctx.clip();
+      // maske içinde node'un halka renkleri (dıştan içe boya)
+      for(var k=9;k>=0;k--){
+        ctx.fillStyle = RAMP[k];
+        ctx.beginPath(); ctx.arc(cx, cy, r0 + span*(k+1)/10 + (k===9?R:0), 0, TAU); ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+    var cr = r0*(1+0.12*held);
+    ctx.beginPath(); ctx.arc(cx, cy, cr, 0, TAU); ctx.fillStyle = CORE; ctx.fill();
+    ctx.lineWidth = R*0.025; ctx.strokeStyle = INK; ctx.stroke();
+  }
+
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push({
+    id:'I1', name:'Tek kol, 3 tur', movement:'İnceden kalına',
+    colors:RAMP.slice(),
+    draw:function(ctx,cx,cy,R,st){ taper(ctx,cx,cy,R,st,{n:1,turns:3,fillIn:0.05,fillOut:0.86}); }
+  });
+  window.SPIRAL_VARIANTS.push({
+    id:'I2', name:'İki kol, 2 tur', movement:'İnceden kalına',
+    colors:RAMP.slice(),
+    draw:function(ctx,cx,cy,R,st){ taper(ctx,cx,cy,R,st,{n:2,turns:2.2,fillIn:0.06,fillOut:0.84}); }
+  });
+  window.SPIRAL_VARIANTS.push({
+    id:'I3', name:'Üç kol, 1,5 tur', movement:'İnceden kalına',
+    colors:RAMP.slice(),
+    draw:function(ctx,cx,cy,R,st){ taper(ctx,cx,cy,R,st,{n:3,turns:1.5,fillIn:0.06,fillOut:0.84}); }
+  });
+  window.SPIRAL_VARIANTS.push({
+    id:'I4', name:'Tek kol, koyu zemin', movement:'İnceden kalına',
+    colors:RAMP.slice().concat([INK]),
+    draw:function(ctx,cx,cy,R,st){ taper(ctx,cx,cy,R,st,{n:1,turns:3,fillIn:0.05,fillOut:0.86,bg:INK}); }
+  });
+})();
+
+</script>
+<script>
+// J: dolu disk, normal node'un 10 rengi = 10 kol. Kollar merkezde tek noktada birleşir (ince), dışa doğru kıvrılarak açılır (kalın).
+// Kıvrım miktarı = merkezden kenara kaç tur geriye döndüğü. Boşluk yok, siyah yok, yeni renk yok.
+// Desen sabit bir görüntü: bir kez çizilir (per-pixel, 2x2 AA), sonra döndürülür; dir=-1 ayna.
+(function(){
+  var TAU = Math.PI*2;
+  var RAMP = ['#f1e6c7','#ff5104','#fcae04','#888c03','#289aa4','#eeeac7','#04586c','#fc1e00','#ee7284','#362d70'];
+  var RGB = RAMP.map(function(h){ return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)]; });
+
+  function prerender(twist, size){
+    var c = document.createElement('canvas'); c.width = c.height = size;
+    var x = c.getContext('2d'), im = x.createImageData(size,size), d = im.data, R = size/2;
+    var ss = [[.25,.25],[.75,.25],[.25,.75],[.75,.75]];
+    for(var py=0;py<size;py++) for(var px=0;px<size;px++){
+      var r0=0,g0=0,b0=0,a0=0;
+      for(var s=0;s<4;s++){
+        var dx=(px+ss[s][0]-R)/R, dy=-(py+ss[s][1]-R)/R, r=Math.sqrt(dx*dx+dy*dy);
+        if(r>1) continue;
+        var p = Math.atan2(dy,dx)/TAU + twist*r; p -= Math.floor(p);   // dönüş yönünün arkasında kıvrılır
+        var col = RGB[Math.min(9,Math.floor(p*10))]; r0+=col[0]; g0+=col[1]; b0+=col[2]; a0++;
+      }
+      var o=(py*size+px)*4;
+      if(a0){ d[o]=r0/a0; d[o+1]=g0/a0; d[o+2]=b0/a0; d[o+3]=a0*63.75; }
+    }
+    x.putImageData(im,0,0); return c;
+  }
+
+  function make(id, name, twist){
+    var img = null;
+    return {
+      id:id, name:name, movement:'10 kol', colors:RAMP.slice(),
+      draw:function(ctx,cx,cy,R,st){
+        if(!img) img = prerender(twist, 520);
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(-st.angle); if(st.dir < 0) ctx.scale(-1,1);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img,-R,-R,R*2,R*2); ctx.restore();
+      }
+    };
+  }
+  window.SPIRAL_VARIANTS = window.SPIRAL_VARIANTS || [];
+  window.SPIRAL_VARIANTS.push(make('J1','10 kol, hafif kıvrım',0.6));
+  window.SPIRAL_VARIANTS.push(make('J2','10 kol, orta kıvrım',1.0));
+  window.SPIRAL_VARIANTS.push(make('J3','10 kol, güçlü kıvrım',1.7));
+})();
+
+</script>
+<script>
+window.SPIRAL_NOTES = {
+  groups: {
+    A: {title:'A · Op Art / Kinetik', blurb:'Duchamp, Vasarely, Riley: düz baskı, hareketi göze bırakır.'},
+    B: {title:'B · Bauhaus / Konstrüktivizm', blurb:'Kandinsky, Albers, Lissitzky: tek geometrik fikir, iki düz renk. Projenin UI zevkiyle akraba.'},
+    C: {title:'C · Halk / Doğu', blurb:'Tomoe, koru, tek çizgi: yalnızca eğri geometrisi, sembol kopyası yok.'},
+    D: {title:'D · Hareketli grafik / oyun dili', blurb:'Saul Bass, Whitney, Super Hexagon: tek şekle indirgeme.'},
+    E: {title:'E · Algı bilimi', blurb:'Dönen sarmalın neden hipnotik olduğu: parametreler buna göre seçildi.'},
+    F: {title:'F · Normal node paleti', blurb:'Kısıt öncelikli: yalnızca node halkalarının renkleri ve sarı çekirdek.'},
+    G: {title:'G · Benim önerim', blurb:'Altı araştırmanın ortak noktası: sarmal kollar, düz iki renk, node çekirdeği.'},
+    J: {title:'J · Node\'un 10 rengi = 10 kol', blurb:'Dolu disk, boşluk ve siyah yok. Her ramp rengi bir kol; kollar merkezde ince, dışa doğru kıvrılıp kalınlaşır. Kıvrım miktarı farkı: 0,6 / 1 / 1,7 tur. Dikkat: 10 kol çok tekrarlı, güvenli görsel hız ~150°/s.'},
+    I: {title:'I · İnceden kalına, node\'un 10 rengi', blurb:'Kol merkezdeki sarı diskten çıkar, dışa doğru açılır ve kalınlaşır. İçindeki renkler normal node\'un halka renkleri (yarıçapa göre). H denemesi sarmal gibi okunmadığı için kaldırıldı.'},
+    H: {title:'H · Normal node\'un 10 rengi', blurb:'Halkalar sarmala sarılır: ramp\'in tamamı, aynı bant kalınlığı mantığı. (F1 yalnızca 3 renk kullanıyordu, çünkü brifte "en çok 2–3 renk" demiştim.)'}
+  },
+  ideas: {
+    A1:'İki kollu Arşimet sarmalı, kol = boşluk. Duchamp diski: durağanken sadece daire, dönünce dışa akar.',
+    A2:'Beş burulmuş kanat. Vasarely tarzı kabarma; vantilatör gibi okunabilir.',
+    A3:'İki kolda büyüyen toplar. En sade ama yön ipucu en zayıf, halftone\'a kayıyor.',
+    B1:'Üç kollu pinwheel, 50/50. Yön ipucu güçlü, merkez net, projenin Bauhaus zevkine yakın.',
+    B2:'Kandinsky: merkez noktası + üç tur tek çizgi. En minimal, 96 px\'te çizgi ince.',
+    B3:'Albers: kaymış iç içe daireler. Yön zayıf ve normal node\'a karışır.',
+    C1:'Mitsudomoe: üç virgül birbirini kovalar. Kafa yuvarlak, kuyruk sivri; yön tek karede okunur.',
+    C2:'Tek sürekli çizgi, kalınlık = boşluk. En hipnotik ama en az özgün.',
+    C3:'Koru: ortada top, ondan açılan tek kıvrım. Salyangoz gibi okunabilir.',
+    D1:'Bass spirali: koyu teal disk üstünde iki krem kol, kenar boşluğu silueti verir.',
+    D2:'Rotorelief: içten teğet beş daire, nautilus gibi. Yön ince hilallere bağlı.',
+    D3:'Zemini olmayan üç kanat (turbin). Super Hexagon\'un kama dili.',
+    E1:'İki kalın kanat, sabit eğimli sarmal. Algı bulgularına göre en güvenli ve okunur.',
+    E2:'Tek renk tek kalem çizgisi. 600°/s\'de bile en düşük titreşim, kenarda halkaya benzer.',
+    E3:'Üç parlaklık basamağı: durağan karede bile yön hissi. Şeker gibi, pembe tehlikeye yakın.',
+    F1:'Halka renkleri (turuncu, sarı, kâğıt) üç kol olarak sarılır. Yeni renk yok.',
+    F2:'Normal node\'un iç içe halkaları, her biri kaymış. Aileye en yakın, yönü en zayıf.',
+    F3:'Kâğıt disk üstünde tek kalın turuncu kol. En sade, en az hipnotik.',
+    G1:'İki kollu Arşimet sarmalı, node paletinin turuncusu ve kreminde + normal node\'un sarı diski çekirdek. A1/B2\'nin node ailesine bağlanmış hali.',
+    G2:'Aynı sarmal ama zemin disk yok: indigo iki kol, aralar saydam. Daha hafif, çıkartma gibi durmaz.',
+    G3:'Üç kol, daha az tur. Yön daha net, pervane çağrışımı daha güçlü; hız tavanı 300°/s.',
+    J1:'10 kol, her renk bir kol. Merkezden kenara 0,6 tur kıvrılır: kollar dikçe, "dönen" görünümü en az.',
+    J2:'Aynı desen, 1 tur kıvrım. Kollar merkezden çıkıp açılıyor ve kalınlaşıyor.',
+    J3:'1,7 tur kıvrım: en çok girdap, kenara yakın kollar çok yatık.',
+    I1:'Tek kol, 3 tur: merkezde çizgi kadar ince, dışta kalın. Kolun içinde node\'un 10 halka rengi, aralar saydam. Açısal tekrar yok, titreşim riski en düşük.',
+    I2:'İki kol, 2 tur: daha dolu görünür, yön daha çabuk okunur. Hız tavanı ~360°/s.',
+    I3:'Üç kol, 1,5 tur: en kalın, en "pervane". Yön en net, hız tavanı ~300°/s.',
+    I4:'I1 ama aralar mürekkep siyahı (#140C1C): renkleri en çok parlatan, ama zeminden bağımsız bir disk olarak durur.',
+    H1:'Normal node\'un 10 halkası tek bir şeride açılır: 10 tur, her turda ramp\'te bir renk. Dikiş çizgisinde renk basamaklanır. Açısal tekrar yok, titreşim riski en düşük.',
+    H2:'İki şerit iç içe: biri çift, biri tek renkleri alır, 5 tur. H1\'den daha sıkı bir "kol" okuması.',
+    H3:'Üç şerit, ~3 tur: kollar daha kalın ve yön daha net, ama renk sıçramaları daha sık.',
+    H4:'G1\'in iki kolu, renk kolun boyunca 10 adımda ilerler. Deneme olarak bıraktım: renk karnavalı, çamura en yakın olan bu. Radyal sıralı H1–H3 daha temiz.',
+  },
+  tags: {
+    A1:'2 kol · yön ✓ · 100–600°/s güvenli',
+    A2:'5 kanat · yön ✓ · 600°/s hafif titrek',
+    A3:'9 daire · yön ✗ zayıf',
+    B1:'3 kol · yön ✓✓ · strobe yok',
+    B2:'1 çizgi · yön ✓ · ince',
+    B3:'daireler · yön ✗ · node\'a karışır',
+    C1:'3 virgül · yön ✓✓ · tanınır',
+    C2:'1 çizgi · yön ✓ · en hipnotik',
+    C3:'1 şekil · yön ✓ · 96 px\'te kuyruk kayboluyor',
+    D1:'2 kol · yön ✓ · silueti kendi taşır',
+    D2:'5 daire · yön ✗ zayıf',
+    D3:'3 kanat · yön ✓ · zeminsiz',
+    E1:'2 kol · yön ✓ · ≤360°/s önerilir',
+    E2:'1 kol · yön ✓ · ≤540°/s',
+    E3:'3 basamak · yön ? ekranda doğrula',
+    F1:'3 kol · yön ✓ · yeni renk yok',
+    F2:'5 daire · yön ✗ · node\'a en yakın',
+    F3:'1 kol · yön ✓ · ağır disk',
+    G1:'2 kol · yön ✓ · node paleti + çekirdek',
+    G2:'2 kol · yön ✓ · saydam aralık',
+    G3:'3 kol · yön ✓✓ · ≤300°/s',
+    J1:'10 renk · 10 kol · dolu · ≤150°/s',
+    J2:'10 renk · 10 kol · dolu · ≤150°/s',
+    J3:'10 renk · 10 kol · dolu · ≤150°/s',
+    I1:'10 renk · 1 kol · yön ✓ · aliasing yok',
+    I2:'10 renk · 2 kol · yön ✓ · ≤360°/s',
+    I3:'10 renk · 3 kol · yön ✓✓ · ≤300°/s',
+    I4:'10 renk + mürekkep · 1 kol · yön ✓',
+    H1:'10 renk · 1 şerit · yön ✓ · aliasing yok',
+    H2:'10 renk · 2 şerit · yön ✓ · ≤360°/s',
+    H3:'10 renk · 3 şerit · yön ✓✓ · ≤300°/s',
+    H4:'10 renk · 2 kol · yön ✓ · gürültülü'
+  },
+  lenses: [
+    {title:'Altı bakışın ortak sonucu',
+     idea:'Birbirinden habersiz çalışan altı ajan aynı yere vardı:',
+     points:[
+       '<b>1–3 kol.</b> Tekrar sayısı düşük olunca 600°/s\'de bile vagon tekerleği (yön ters okunması) yok. Kollar 12\'den fazla tekrar ederse titrer.',
+       '<b>İki düz renk, yarı yarıya.</b> %50 kol / %50 boşluk en güçlü kenar enerjisini verir. Gradyan, nokta, halka eklemek hipnozu azaltır.',
+       '<b>Kollar dönüşün arkasında kalır.</b> Dönerken desen dışa akıyor gibi görünür: "fırlatıyor" hissi, girdap/tehlike hissi değil. Yön, kolun el yönünden okunur; renk tek ipucu değil.',
+       '<b>Merkez net.</b> Kancanın vurduğu iç 1/3 yarıçap düz kalmalı.'
+     ], src:'Kaynak: ajanların .md notları, research/ klasöründe.'},
+    {title:'Işık ve titreşim uyarısı (önemli)',
+     idea:'Algı bilimi ajanının bulgusu bizim hızımızı doğrudan ilgilendiriyor.',
+     points:[
+       'Bir noktadan kol geçiş sıklığı = kol sayısı × °/s ÷ 360. Geniş alanda ~3 Hz üstü rahatsız edici olabilir.',
+       'Güvenli görsel hız: 1 kol ≤540, 2 kol ≤360, 3 kol ≤300°/s. Hipnotik bölge 90–250°/s.',
+       'Oyunda boştaki görsel hız şu an 350–610°/s olurdu (hedef hız 32 / ref. yarıçap 3). <b>Öneri:</b> yalnızca görseli yumuşakça ~360°/s ile sınırla (<code>360·tanh(ω/360)</code>), fizik aynen kalsın. Yön korunur.'
+     ], src:'Michael Bach (michaelbach.de), Wagon-wheel etkisi, Xbox erişilebilirlik ilkesi 118 (3 Hz).'},
+    {title:'A · Op Art',
+     idea:'Duchamp Rotoreliefs\'i plağa koyunca düz baskı derinlik veriyordu: resim durağanken sade, hareket optiği tamamlıyor.',
+     points:['Spiral aftereffect: dönen sarmal dışa genişliyor gibi görünür, süs gerekmez.','Seçilen: A1 (iki kol, indigo/sarı).'],
+     src:'Duchamp (toutfait.com, MASP), Riley (Art Basel), Spiral aftereffect (PMC5549815).'},
+    {title:'B · Bauhaus',
+     idea:'Kandinsky: çizgi, hareket eden noktanın izidir. Albers: tek şema, iki renk. Projenin UI zevkiyle aynı dil.',
+     points:['Seçilen: B1 (üç kollu pinwheel).','Normal node\'a en çok karışan B3 en sonda.'],
+     src:'Moholy-Nagy (MoMA), Albers (Toledo), Lissitzky (Smarthistory), Kandinsky 1926.'},
+    {title:'C · Halk / Doğu',
+     idea:'Tomoe\'de üç virgül birbirini kovalar; kafa yuvarlak, kuyruk sivri. Yön asimetriden okunur. Sadece geometri alındı, dini sembol olarak değil.',
+     points:['Seçilen: C1 mitsudomoe. Kamon çağrışımı var, kuyruk daha sivri ve kafalar ayrık tutuldu.','Koru (C3) 96 px\'te kuyruğu kaybediyor.'],
+     src:'Tomoe (Wikipedia, JAANUS), Triskelion, Koru, Hokusai / Hiroshige.'},
+    {title:'D · Hareketli grafik / oyun',
+     idea:'Saul Bass tek şekle indirger; Whitney sarmalları elle değil matematikle çizdi. Super Hexagon aynı dili hızlı döndürür.',
+     points:['Gözün kilitlenmesi için minimum: simetriyi bozan bir işaret + iki zıt ton + az tekrar.','Seçilen: D1 (koyu teal disk, krem kollar; disk kenarı kendi siluetini verir).'],
+     src:'Art of the Title (Vertigo), Rhizome, Time Extension (Super Hexagon), Game Developer (Thumper).'},
+    {title:'E · Algı bilimi',
+     idea:'Logaritmik sarmal her yarıçapta aynı oranda akar (Arşimet dış kenarda halkaya benzer, Fraser illüzyonu riski).',
+     points:['Seçilen: E1, iki kalın log kol.','Eş parlak renkler hareket algısını zayıflatır: koyu/açık çift seç.'],
+     src:'Bach: spiral aftereffect, Pinna-Brelstaff, Rotating Snakes; Fraser spiral.'},
+    {title:'F · Normal node paleti',
+     idea:'Kısıt öncelikli yol: yeni hiçbir şey eklemeden halka renklerini sarmala çevirmek.',
+     points:['F1, shader\'da halka satırına yalnızca bir açı terimi eklemek demek: en ucuz uygulama.','Dezavantaj: turuncu/sarı/kâğıt yan yana kontrastı orta.'],
+     src:'CircularRings.shader ve UI_CircularRings.mat okunarak.'}
+  ],
+  lead:
+    '<div class="note"><h3>G1, G2, G3: sarmal kollar + node çekirdeği</h3>' +
+    '<p>Altı araştırmanın kesiştiği yer: <b>1–3 sarmal kol, düz iki renk, dönüşün arkasında kıvrılan uçlar</b>. Üstüne tek bir şey ekledim: ortadaki sarı disk normal node\'unki (1 birim, collider r=0.5). Böylece oyuncu "bu bir node, ama sarılıyor" diye okur; vurma alanı da çizimde zaten belli. İlk denemem (log sarmal, kalın kollar) yin-yang gibi kaldı, hipnotik değildi; Arşimet\'e (sabit aralık) çevirince A1 ve B2\'nin gücüne geldi.</p>' +
+    '<ul><li><b>G1 (önerdiğim):</b> turuncu + krem, iki kol, dolu disk. Renkler zaten node rampasından, yani yeni renk eklemiyor. Her zeminde silüet verir.</li>' +
+    '<li><b>G2:</b> aynı sarmal, zemin yok, indigo kollar. Daha hafif; riski zemin rengine bağımlı olması (koyu odada indigo kaybolur).</li>' +
+    '<li><b>G3:</b> üç kol, yön en net, ama hız tavanı daha düşük (300°/s) ve pervane gibi okunabilir.</li>' +
+    '<li><b>Shader maliyeti:</b> tek satır: <code>f = fract(r/pitch − dir·(atan2(y,x) − angle)/TAU · N); kol = f &lt; 0.5</code> ve ortada düz disk. Mevcut shader\'ın halftone, diş halkası ve ilerleme halkası kodu tamamen silinir.</li></ul>' +
+    '<p>Beğenmezsen sırayla yedeğim: <b>A1</b> (Duchamp diski, indigo/sarı: en saf hipnoz), <b>C1</b> (mitsudomoe: yön tek karede en net okunan), <b>B1</b> (projenin Bauhaus zevkine en yakın), <b>F1</b> (yalnızca halka renkleri).</p></div>',
+  questions: [
+    '<b>Zemin disk mi, açık kanat mı?</b> Dolu disk (G1, D1, A1) çıkartma gibi okunur ve her zeminde net; açık kanat (G2, D3) daha hafif ama zemine bağımlı.',
+    '<b>Renk:</b> node rampasının turuncu/kremi (F1, B2, G1) mi, yeni bir çift (indigo + sarı ya da krem: A1, B1, E1, G2) mi? Sahne mavisinde ikisi de iyi; koyu odalarda indigo kaybolabilir.',
+    '<b>Kol sayısı:</b> 2 (daha hipnotik, daha az titrek) mi, 3 (yön daha net, pervane çağrışımı) mı?',
+    '<b>Görsel hız tavanı ~360°/s</b> (yalnızca görsel, fizik değişmez) olur mu? Titreşim bulgusuna göre öneriyorum.',
+    '<b>Ters dönen spiral</b> (360°\'de yön değiştiren tür) bu tasarımdan nasıl ayrılsın? Şimdilik aynı iki kollu şekil ama kollardan biri farklı renk ya da iki kolun ucunda küçük bir işaret düşünüyorum; ilk önce ana spiral seçilsin, sonra buna bakarız.'
+  ]
+};
+
+</script>
+<script>
+(function(){
+'use strict';
+const TAU = Math.PI*2;
+const RAMP = ['#f1e6c7','#ff5104','#fcae04','#888c03','#289aa4','#eeeac7','#04586c','#fc1e00','#ee7284','#362d70'];
+const NOTES = window.SPIRAL_NOTES || {groups:{}, lenses:[], lead:'', questions:[], ideas:{}, tags:{}};
+const VARS = (window.SPIRAL_VARIANTS||[]).slice().sort((a,b)=> (a.id<b.id?-1:1));
+
+const S = {dir:1, speed:240, held:0, heldSm:0, bg:'#71BAEA', paused: matchMedia('(prefers-reduced-motion: reduce)').matches, angle:0, sel:null, t:0};
+
+/* ---------- normal node (referans) ---------- */
+const nodeCache = {};
+function drawNormal(ctx, cx, cy, R){
+  // 20 birimlik halka halo'sunun sönen kısmı + 1 birimlik sarı disk, burada R = halo yarıçapı gösterimi.
+  const key = Math.round(R);
+  if(!nodeCache[key]){
+    const d = key*2, off = document.createElement('canvas'); off.width = off.height = d;
+    const c = off.getContext('2d'), im = c.createImageData(d,d);
+    for(let y=0;y<d;y++)for(let x=0;x<d;x++){
+      const dx=(x+.5-key)/key, dy=(y+.5-key)/key, nr=Math.hypot(dx,dy);
+      if(nr>1) continue;
+      const idx=Math.min(9,Math.floor(nr*10));
+      let a=1; if(nr>0.4){ a=Math.pow(1-(nr-0.4)/0.6,0.96); }
+      const col=RAMP[idx]; const o=(y*d+x)*4;
+      im.data[o]=parseInt(col.substr(1,2),16);im.data[o+1]=parseInt(col.substr(3,2),16);im.data[o+2]=parseInt(col.substr(5,2),16);im.data[o+3]=Math.round(255*a);
+    }
+    c.putImageData(im,0,0); nodeCache[key]=off;
+  }
+  ctx.drawImage(nodeCache[key], cx-key, cy-key);
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.1,0,TAU); ctx.fillStyle='#F0D420'; ctx.fill();
+  ctx.lineWidth=Math.max(1,R*0.012); ctx.strokeStyle='#140C1C'; ctx.stroke();
+}
+
+/* ---------- yardımcılar ---------- */
+function fit(canvas, cssW, cssH){
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  canvas.width = Math.round(cssW*dpr); canvas.height = Math.round(cssH*dpr);
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return ctx;
+}
+function safeDraw(v, ctx, cx, cy, R, st, errBox){
+  try{ ctx.save(); v.draw(ctx,cx,cy,R,st); ctx.restore(); if(errBox) errBox.textContent=''; }
+  catch(e){ ctx.restore(); if(errBox) errBox.textContent = v.id+': '+e.message; }
+}
+
+/* ---------- galeri ---------- */
+const gallery = document.getElementById('gallery');
+const cards = [];
+const groupsOrder = [];
+VARS.forEach(v=>{ const g=v.id[0]; if(!groupsOrder.includes(g)) groupsOrder.push(g); });
+
+groupsOrder.forEach(g=>{
+  const meta = (NOTES.groups||{})[g] || {title:g, blurb:''};
+  const head = document.createElement('div'); head.className='group';
+  head.innerHTML = '<b>'+meta.title+'</b><span>'+meta.blurb+'</span>';
+  gallery.appendChild(head);
+  const grid = document.createElement('div'); grid.className='grid'; gallery.appendChild(grid);
+  VARS.filter(v=>v.id[0]===g).forEach(v=>{
+    const el = document.createElement('div'); el.className='card'+(g==='G'?' lead':''); el.dataset.id=v.id;
+    el.innerHTML =
+      '<span class="id">'+v.id+'</span>'+(g==='G'?'<span class="tag">benim önerim</span>':'')+
+      '<div class="stage"><canvas class="big"></canvas></div>'+
+      '<div class="body"><h4>'+v.name+'</h4>'+
+      '<p class="idea">'+((NOTES.ideas||{})[v.id]||'')+'</p>'+
+      '<div class="minis"><div class="m"><canvas></canvas></div><div class="m"><canvas></canvas></div><small>dönmeyen kare<br>⟲ &nbsp; ⟳</small></div>'+
+      '<div class="sw">'+(v.colors||[]).map(c=>'<i style="background:'+c+'" title="'+c+'"></i>').join('')+'</div>'+
+      '<div class="tags">'+((NOTES.tags||{})[v.id]||'')+'</div>'+
+      '<div class="err"></div></div>';
+    grid.appendChild(el);
+    const [cBig,cA,cB] = el.querySelectorAll('canvas');
+    const errBox = el.querySelector('.err'); errBox.style.display='none';
+    const card = {v, el, big: fit(cBig,220,220), a: fit(cA,64,64), b: fit(cB,64,64), errBox, visible:true};
+    cards.push(card);
+    el.addEventListener('click',()=>select(v.id));
+  });
+});
+if('IntersectionObserver' in window){
+  const io = new IntersectionObserver(es=>es.forEach(e=>{ const c=cards.find(c=>c.el===e.target); if(c) c.visible=e.isIntersecting; }),{rootMargin:'120px'});
+  cards.forEach(c=>io.observe(c.el));
+}
+function select(id){
+  S.sel = id; cards.forEach(c=>c.el.classList.toggle('sel', c.v.id===id));
+  const v = VARS.find(v=>v.id===id); document.getElementById('sceneLabel').textContent = v ? ('Sahnede: '+v.id+' · '+v.name) : '';
+}
+function paintStatic(card){
+  const rr = 29;
+  [[card.a,1],[card.b,-1]].forEach(([ctx,d])=>{
+    ctx.clearRect(0,0,64,64); ctx.fillStyle=S.bg; ctx.fillRect(0,0,64,64);
+    safeDraw(card.v, ctx, 32,32, rr, {angle:0, dir:d, held:0, t:0}, null);
+  });
+}
+
+/* ---------- referans normal node ---------- */
+(function(){ const c=document.getElementById('refNormal'); const ctx=fit(c,200,200); c._ctx=ctx; })();
+function paintRef(){
+  const c=document.getElementById('refNormal'), ctx=c._ctx; ctx.clearRect(0,0,200,200); ctx.fillStyle=S.bg; ctx.fillRect(0,0,200,200);
+  drawNormal(ctx,100,100,98);
+}
+
+/* ---------- sahne ---------- */
+const sceneC = document.getElementById('scene'); let sctx, SW=0, SH=0;
+function sizeScene(){ const r=sceneC.getBoundingClientRect(); SW=r.width; SH=r.height; sctx=fit(sceneC,SW,SH); }
+addEventListener('resize', ()=>{ sizeScene(); });
+function drawScene(){
+  const ppu = Math.min(62, SW/16); // 1 birim = ppu px
+  sctx.clearRect(0,0,SW,SH);
+  sctx.fillStyle=S.bg; sctx.fillRect(0,0,SW,SH);
+  const ground = SH-46;
+  sctx.fillStyle = '#EE9B5E'; sctx.fillRect(0,ground,SW,46);
+  sctx.fillStyle = '#FF51DE'; sctx.fillRect(0,ground,SW,4);
+  // tavan
+  sctx.fillStyle = '#EE9B5E'; sctx.fillRect(0,0,SW,26); sctx.fillStyle='#FF51DE'; sctx.fillRect(0,22,SW,4);
+
+  const cy = SH*0.46;
+  // normal node (yarı ölçek halo, 1 birimlik disk)
+  const nx = SW*0.22;
+  sctx.save(); sctx.beginPath(); sctx.arc(nx,cy,ppu*2.6,0,TAU); sctx.clip();
+  drawNormal(sctx, nx, cy, ppu*4);
+  sctx.restore();
+  sctx.beginPath(); sctx.arc(nx,cy,ppu*0.5,0,TAU); sctx.fillStyle='#F0D420'; sctx.fill(); sctx.lineWidth=2; sctx.strokeStyle='#140C1C'; sctx.stroke();
+  label(nx, cy+ppu*2.9, 'normal node');
+
+  // seçili spiral
+  const sx = SW*0.62; const v = VARS.find(v=>v.id===S.sel);
+  if(v){
+    safeDraw(v, sctx, sx, cy, ppu*1.5, {angle:S.angle, dir:S.dir, held:S.heldSm, t:S.t}, null);
+    // hook hit alanı (r=0.5)
+    sctx.beginPath(); sctx.arc(sx,cy,ppu*0.5,0,TAU); sctx.setLineDash([3,3]); sctx.strokeStyle='rgba(20,12,28,.55)'; sctx.lineWidth=1.5; sctx.stroke(); sctx.setLineDash([]);
+    // oyuncu: ip boyu 3 birim, spiral yönünde dönüyor (açı görsel dönüşle aynı)
+    const pa = S.angle*0.9 + Math.PI*0.5;  // CCW pozitif
+    const rope = 3*ppu; const px = sx + Math.cos(pa)*rope, py = cy - Math.sin(pa)*rope;
+    sctx.beginPath(); sctx.moveTo(sx,cy); sctx.lineTo(px,py); sctx.strokeStyle='#140C1C'; sctx.lineWidth=2; sctx.stroke();
+    sctx.fillStyle='#140C1C'; sctx.fillRect(px-ppu*0.5,py-ppu*0.5,ppu,ppu);
+    sctx.fillStyle='#FFF'; sctx.fillRect(px-ppu*0.2,py-ppu*0.15,ppu*0.14,ppu*0.14); sctx.fillRect(px+ppu*0.06,py-ppu*0.15,ppu*0.14,ppu*0.14);
+    label(sx, cy+ppu*3.9, v.id+' · '+v.name);
+  } else {
+    sctx.fillStyle='#140C1C'; sctx.font='600 13px "IBM Plex Mono",monospace'; sctx.textAlign='center'; sctx.fillText('Bir karta tıkla', sx, cy);
+  }
+}
+function label(x,y,t){ sctx.fillStyle='#140C1C'; sctx.font='600 12px "IBM Plex Mono",monospace'; sctx.textAlign='center'; sctx.fillText(t,x,y); }
+
+/* ---------- notlar / öneri / sorular ---------- */
+(function(){
+  const notes=document.getElementById('notes');
+  (NOTES.lenses||[]).forEach(l=>{
+    const d=document.createElement('div'); d.className='note';
+    d.innerHTML='<h3>'+l.title+'</h3><p style="margin:0 0 6px">'+l.idea+'</p><ul>'+(l.points||[]).map(p=>'<li>'+p+'</li>').join('')+'</ul><div class="src">'+(l.src||'')+'</div>';
+    notes.appendChild(d);
+  });
+  document.getElementById('lead').innerHTML = NOTES.lead||'';
+  document.getElementById('decide').innerHTML = (NOTES.questions||[]).map(q=>'<li>'+q+'</li>').join('');
+})();
+
+/* ---------- kontroller ---------- */
+function bindSeg(id, fn){ const seg=document.getElementById(id); seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); fn(b.dataset.v); }); }
+bindSeg('segDir', v=>{S.dir=+v; cards.forEach(paintStatic);});
+bindSeg('segHeld', v=>{S.held=+v;});
+bindSeg('segBg', v=>{S.bg=v; document.documentElement.style.setProperty('--stage', v); cards.forEach(paintStatic); paintRef();});
+bindSeg('segPreset', v=>{ document.getElementById('speed').value=v; S.speed=+v; rd(); document.querySelectorAll('#segPreset button').forEach(b=>b.classList.toggle('on', b.dataset.v===v)); });
+const speedEl=document.getElementById('speed'); function rd(){ document.getElementById('rdSpeed').textContent = S.speed+'°/s'; }
+speedEl.addEventListener('input',()=>{S.speed=+speedEl.value; rd(); document.querySelectorAll('#segPreset button').forEach(b=>b.classList.remove('on'));});
+const pbtn=document.getElementById('btnPause'); function syncPause(){ pbtn.textContent=S.paused?'Devam':'Duraklat'; pbtn.classList.toggle('on',S.paused);} pbtn.onclick=()=>{S.paused=!S.paused; syncPause();};
+S.speed=+speedEl.value; rd(); syncPause();
+
+/* ---------- döngü ---------- */
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(!S.paused){ S.angle += S.dir*S.speed*Math.PI/180*dt; S.t+=dt; }
+  S.heldSm += (S.held-S.heldSm)*Math.min(1,dt*10);
+  const st={angle:S.angle, dir:S.dir, held:S.heldSm, t:S.t};
+  for(const c of cards){
+    if(!c.visible) continue;
+    const ctx=c.big; ctx.clearRect(0,0,220,220);
+    safeDraw(c.v, ctx, 110,110, 100, st, c.errBox);
+    c.errBox.style.display = c.errBox.textContent ? 'block':'none';
+  }
+  drawScene();
+  requestAnimationFrame(frame);
+}
+sizeScene(); paintRef(); cards.forEach(paintStatic);
+if(VARS.length) select(((VARS.find(v=>v.id[0]==='G')||VARS[0]).id));
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

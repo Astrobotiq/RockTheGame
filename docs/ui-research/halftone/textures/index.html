@@ -1,0 +1,52 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Halftone doku sunumu</title><style>
+:root{--sky:#71BAEA;--ink:#140C1C;--paper:#F1E6C7}
+*{box-sizing:border-box}body{margin:0;padding:24px 16px 64px;background:var(--sky);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto}h1{font-size:28px;margin:0 0 4px}h2{margin:36px 0 12px;font-size:20px;border-bottom:3px solid var(--ink)}
+.card{background:rgba(241,230,199,.55);border:3px solid var(--ink);padding:12px;margin:14px 0;display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start}
+.card img.tile{width:200px;height:200px;display:block;border:2px solid var(--ink)}
+.name{font:700 15px ui-monospace,monospace}.desc{margin:2px 0 10px}
+.plat{width:100%;max-width:520px;aspect-ratio:4/1;border:5px solid var(--ink);border-radius:46px 38px 50px 40px / 42px 48px 40px 46px;background-size:512px 512px;background-position:0 0;box-shadow:5px 6px 0 rgba(20,12,28,.35)}
+.plat.b{background-size:340px 340px;margin-top:10px;max-width:520px}
+.sprites{display:flex;flex-wrap:wrap;gap:12px}.sprites figure{margin:0;text-align:center}.sprites img{width:128px;height:128px;display:block}
+.trail{display:flex;align-items:center;gap:0;margin:12px 0}.trail img{display:block}
+ul.src li{margin:6px 0}a{color:var(--ink);font-weight:600}
+@media(max-width:640px){.card{grid-template-columns:1fr}.card img.tile{width:100%;height:auto;aspect-ratio:1}}
+</style></head><body><main>
+<h1>Halftone / Ben-Day doku seti</h1>
+<p>Hepsi 1024x1024, 4x supersample ile çizilmiş, pürüzsüz (pixelated yok). Her kartta: karo önizleme (tekrarlanma sınırı görmek için ayrıca platform şeklinde iki ölçekte). Üretici: <code>generate_textures.py</code>.</p>
+<h2>Dokular</h2>
+<div class="card"><img class="tile" src="classic_benday_red_game.png" alt="classic_benday_red_game"><div><div class="name">classic_benday_red_game.png</div><p class="desc">Klasik Ben-Day, kırmızı #FC1E00 nokta, krem kağıt, 45°. Tileable.</p><div class="plat" style="background-image:url(classic_benday_red_game.png)"></div><div class="plat b" style="background-image:url(classic_benday_red_game.png)"></div></div></div>
+<div class="card"><img class="tile" src="classic_benday_pink_game.png" alt="classic_benday_pink_game"><div><div class="name">classic_benday_pink_game.png</div><p class="desc">Klasik Ben-Day, pembe #FF51DE nokta, krem kağıt, 45°. Tileable.</p><div class="plat" style="background-image:url(classic_benday_pink_game.png)"></div><div class="plat b" style="background-image:url(classic_benday_pink_game.png)"></div></div></div>
+<div class="card"><img class="tile" src="classic_benday_magenta_print.png" alt="classic_benday_magenta_print"><div><div class="name">classic_benday_magenta_print.png</div><p class="desc">Klasik Ben-Day, baskı magentası #EC008C, kağıt #FFFBEE, 45°. Tileable.</p><div class="plat" style="background-image:url(classic_benday_magenta_print.png)"></div><div class="plat b" style="background-image:url(classic_benday_magenta_print.png)"></div></div></div>
+<div class="card"><img class="tile" src="cmyk_sparse_game.png" alt="cmyk_sparse_game"><div><div class="name">cmyk_sparse_game.png</div><p class="desc">Referansın sol yarısı: büyük sarı (0°), küçük mavi (15°) / pembe (75°), minik siyah (45°), hafif kayık baskı, multiply. Oyun paleti. Tileable.</p><div class="plat" style="background-image:url(cmyk_sparse_game.png)"></div><div class="plat b" style="background-image:url(cmyk_sparse_game.png)"></div></div></div>
+<div class="card"><img class="tile" src="cmyk_sparse_print.png" alt="cmyk_sparse_print"><div><div class="name">cmyk_sparse_print.png</div><p class="desc">cmyk_sparse, gerçek baskı CMYK paleti. Tileable.</p><div class="plat" style="background-image:url(cmyk_sparse_print.png)"></div><div class="plat b" style="background-image:url(cmyk_sparse_print.png)"></div></div></div>
+<div class="card"><img class="tile" src="cmyk_dense_game.png" alt="cmyk_dense_game"><div><div class="name">cmyk_dense_game.png</div><p class="desc">Referansın sağ yarısı: iri, üst üste binen noktalar, overprint ile kırmızı/mor/yeşilimsi ikincil renkler, siyah noktalar. Oyun paleti. Tileable.</p><div class="plat" style="background-image:url(cmyk_dense_game.png)"></div><div class="plat b" style="background-image:url(cmyk_dense_game.png)"></div></div></div>
+<div class="card"><img class="tile" src="cmyk_dense_print.png" alt="cmyk_dense_print"><div><div class="name">cmyk_dense_print.png</div><p class="desc">cmyk_dense, gerçek baskı CMYK paleti (kırmızı/yeşil/mavi ikincil renkler belirgin). Tileable.</p><div class="plat" style="background-image:url(cmyk_dense_print.png)"></div><div class="plat b" style="background-image:url(cmyk_dense_print.png)"></div></div></div>
+<div class="card"><img class="tile" src="gradient_ramp_game.png" alt="gradient_ramp_game"><div><div class="name">gradient_ramp_game.png</div><p class="desc">Üstte seyrek, altta yoğun nokta: platform hacim gölgesi rampası. Oyun paleti. Yalnız YATAYDA tileable.</p><div class="plat" style="background-image:url(gradient_ramp_game.png)"></div><div class="plat b" style="background-image:url(gradient_ramp_game.png)"></div></div></div>
+<div class="card"><img class="tile" src="gradient_ramp_print.png" alt="gradient_ramp_print"><div><div class="name">gradient_ramp_print.png</div><p class="desc">gradient_ramp, baskı CMYK paleti. Yalnız yatayda tileable.</p><div class="plat" style="background-image:url(gradient_ramp_print.png)"></div><div class="plat b" style="background-image:url(gradient_ramp_print.png)"></div></div></div>
+<div class="card"><img class="tile" src="riso_grain_game.png" alt="riso_grain_game"><div><div class="name">riso_grain_game.png</div><p class="desc">Risograph: pembe #FF51DE + mavi #597DCE, mürekkepte tane, kayık baskı, güçlü kağıt tanesi. Tileable.</p><div class="plat" style="background-image:url(riso_grain_game.png)"></div><div class="plat b" style="background-image:url(riso_grain_game.png)"></div></div></div>
+<div class="card"><img class="tile" src="riso_grain_print.png" alt="riso_grain_print"><div><div class="name">riso_grain_print.png</div><p class="desc">riso_grain, magenta + cyan baskı paleti. Tileable.</p><div class="plat" style="background-image:url(riso_grain_print.png)"></div><div class="plat b" style="background-image:url(riso_grain_print.png)"></div></div></div>
+<h2>İz (trail) parçacık sprite'ları - 256x256 şeffaf</h2><div class="card" style="display:block"><div class="sprites">
+<figure><img src="trail_ink_dot.png" alt="trail_ink_dot"><figcaption class="name">trail_ink_dot</figcaption><div style="font-size:12px;max-width:150px">Tek yuvarlak mürekkep noktası, hafif sızma kenarı</div></figure>
+<figure><img src="trail_misreg_pair.png" alt="trail_misreg_pair"><figcaption class="name">trail_misreg_pair</figcaption><div style="font-size:12px;max-width:150px">İki renkli kayık baskı nokta çifti (kesişim multiply)</div></figure>
+<figure><img src="trail_dot_cluster.png" alt="trail_dot_cluster"><figcaption class="name">trail_dot_cluster</figcaption><div style="font-size:12px;max-width:150px">Küçük halftone nokta kümesi</div></figure>
+<figure><img src="trail_ink_splat.png" alt="trail_ink_splat"><figcaption class="name">trail_ink_splat</figcaption><div style="font-size:12px;max-width:150px">Yumuşak mürekkep sıçraması + uydu damlalar</div></figure>
+</div><p>Küçülen iz örneği:</p><div class="trail">
+<img src="trail_misreg_pair.png" width="96" height="96" style="opacity:1.00">
+<img src="trail_misreg_pair.png" width="76" height="76" style="opacity:0.86">
+<img src="trail_misreg_pair.png" width="60" height="60" style="opacity:0.72">
+<img src="trail_misreg_pair.png" width="46" height="46" style="opacity:0.58">
+<img src="trail_misreg_pair.png" width="34" height="34" style="opacity:0.44">
+<img src="trail_misreg_pair.png" width="24" height="24" style="opacity:0.30">
+<img src="trail_dot_cluster.png" width="96" style="margin-left:24px"><img src="trail_ink_splat.png" width="96"></div></div>
+<h2>Bulunan web kaynakları (dosya indirilmedi)</h2><ul class="src">
+<li><a href="https://opengameart.org/content/pattern-pack-extra-pattern003png-0" target="_blank" rel="noopener">Kenney Pattern Pack Extra (CC0)</a> - CC0. Halftone olduğu doğrulanmadı; 80+ PNG/SVG desen. Referansa uzak (büyük olasılıkla tek renk desenler).</li>
+<li><a href="https://www.graphicsfuel.com/16-free-halftone-seamless-patterns/" target="_blank" rel="noopener">Graphics Fuel - 16 Free Halftone Seamless Patterns</a> - 998x998, tileable, .PAT+.PNG, siyah-beyaz nokta rampaları. Ticari kullanım ücretli sürümde olabilir; lisans sayfada açık değil. Referansa orta-uzak (tek renk).</li>
+<li><a href="https://mikeliszarins.gumroad.com/l/HalftoneDotGrainTexture" target="_blank" rel="noopener">Free Halftone Dot + Grain Texture (Gumroad, mikeliszarins)</a> - Lisans doğrulanmadı. Overlay dokusu, tek renk.</li>
+<li><a href="https://aosmiles.itch.io/risograph-textures" target="_blank" rel="noopener">Risograph Textures (itch.io, aosmiles)</a> - Ücretli (min. 5 USD), lisans sayfada kontrol edilmeli. Taranmış riso doku, riso_grain için kıyas.</li>
+<li><a href="https://github.com/paper-design/shaders" target="_blank" rel="noopener">InstantGradient / paper-design shaders</a> - Apache-2.0 (ticari, atıf gerekmez; LICENSE/NOTICE korunmalı). Web shader'ları; CMYK halftone referansı olarak okunabilir.</li>
+<li><a href="https://github.com/daniel-ilett/shaders-halftone" target="_blank" rel="noopener">daniel-ilett/shaders-halftone</a> - MIT. Unity URP + Shader Graph halftone (diffuse ışığa bağlı nokta). CMYK yok.</li>
+<li><a href="https://godotshaders.com/shader/canvas-item-halftone-shader/" target="_blank" rel="noopener">Godot Shaders - CMYK Halftone (OskarGosbol)</a> - MIT (kod). Kanal başına açı, ofset (kayık baskı), süpersample AA. Teknik referans.</li>
+<li><a href="https://www.shadertoy.com/view/4dSSRG" target="_blank" rel="noopener">Shadertoy 4dSSRG</a> - Fetch 403; Shadertoy varsayılanı CC BY-NC-SA 3.0 (ticari DEĞİL). Yalnız teknik okuma, kod kopyalama.</li>
+</ul><p>Ayrıntı ve öneriler: <code>../texture-research.md</code></p></main></body></html>

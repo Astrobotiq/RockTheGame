@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halftone Platformlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F1E6C7; --paper2:#FAF4E2; --ink:#140C1C; --mut:#4E4A4E;
+  --red:#FC1E00; --yel:#FCAE04; --blue:#597DCE; --pink:#FF51DE; --sky:#71BAEA;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+h1{font:400 clamp(30px,5vw,54px)/1 "Archivo Black",sans-serif;margin:0 0 6px;letter-spacing:-.01em}
+h1 span{background:var(--ink);color:var(--paper);padding:0 .2em;display:inline-block;transform:rotate(-1.5deg)}
+h2{font:400 24px/1.1 "Archivo Black",sans-serif;margin:46px 0 10px;display:flex;gap:10px;align-items:center}
+h2 .n{background:var(--red);color:#fff;width:34px;height:34px;display:grid;place-items:center;clip-path:polygon(0 8%,100% 0,92% 100%,6% 92%);font-size:18px}
+h3{font:600 14px/1.2 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;margin:18px 0 6px}
+p{margin:6px 0 10px;max-width:78ch}
+.lede{font-size:17px;max-width:70ch}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:13px}
+.stage{border:4px solid var(--ink);background:var(--sky);position:relative;box-shadow:8px 8px 0 var(--ink)}
+canvas{display:block;width:100%}
+#scene{height:460px;image-rendering:pixelated}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 18px;margin-top:22px;padding:16px;border:3px solid var(--ink);background:var(--paper2)}
+.ctl label{display:block;font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{font:600 12px "IBM Plex Mono",monospace;border:2px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 8px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.seg button:hover:not(.on){background:#fff}
+input[type=range]{width:100%;accent-color:var(--red)}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;margin:3px 0;cursor:pointer}
+.chk input{accent-color:var(--red);width:16px;height:16px}
+.stage2{border-color:var(--pink)!important;background:#fff0fb!important}
+.badge{display:inline-block;font:600 11px "IBM Plex Mono",monospace;background:var(--pink);color:var(--ink);padding:2px 6px;margin-left:6px;vertical-align:middle}
+#grid{height:auto;background:var(--sky)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{border:3px solid var(--ink);background:var(--paper2);padding:14px 16px}
+.card.hot{border-color:var(--red)}
+.card h3{margin-top:0}
+ul{margin:6px 0 10px;padding-left:20px}
+li{margin:3px 0}
+code{font:13px "IBM Plex Mono",monospace;background:#fff;border:1px solid #d8cfb4;padding:0 4px}
+pre{font:12.5px/1.5 "IBM Plex Mono",monospace;background:var(--ink);color:var(--paper);padding:12px 14px;overflow:auto;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+th,td{border:2px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--ink);color:var(--paper);font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase}
+.hint{font-size:13px;color:var(--mut)}
+.q{counter-reset:q;list-style:none;padding:0}
+.q li{counter-increment:q;padding-left:38px;position:relative;margin:10px 0}
+.q li::before{content:counter(q);position:absolute;left:0;top:-2px;width:28px;height:28px;background:var(--yel);border:2px solid var(--ink);display:grid;place-items:center;font:700 13px "IBM Plex Mono",monospace}
+@media (max-width:640px){#scene{height:360px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Halftone <span>platformlar</span></h1>
+<p class="lede">Hareketli platformların baskı noktası (Ben-Day / halftone) görünümüne geçmesi için canlı önizleme. Sahnede dört farklı hareket var (yatay gidip gelme, hızlanan, dairesel, dikey). Hareket eden her platform arkasında renkli noktalar bırakıyor. Aşağıdaki ayarlarla şekli, dolguyu ve izi değiştir; beğendiğin kombinasyonu söyle.</p>
+
+<div class="stage"><canvas id="scene"></canvas></div>
+
+<div class="controls">
+  <div class="ctl"><label>Şekil</label>
+    <div class="seg" data-k="shape">
+      <button data-v="soft">Yumuşak kare</button>
+      <button data-v="squircle" class="on">Squircle</button>
+      <button data-v="skew">Eğik</button>
+      <button data-v="ink">Titrek mürekkep</button>
+    </div>
+  </div>
+  <div class="ctl"><label>Dolgu</label>
+    <div class="seg" data-k="fill">
+      <button data-v="sparse" class="on">Seyrek CMY</button>
+      <button data-v="dense">Yoğun baskı</button>
+      <button data-v="benday">Ben-Day tek renk</button>
+    </div>
+  </div>
+  <div class="ctl"><label>Renk</label>
+    <div class="seg" data-k="pal">
+      <button data-v="game" class="on">Oyun paleti</button>
+      <button data-v="cmyk">Baskı CMYK</button>
+    </div>
+  </div>
+  <div class="ctl"><label>İz davranışı</label>
+    <div class="seg" data-k="trail">
+      <button data-v="drift" class="on">Süzülen</button>
+      <button data-v="stamp">Damga</button>
+      <button data-v="fall">Dökülen</button>
+      <button data-v="off">Kapalı</button>
+    </div>
+  </div>
+  <div class="ctl"><label>Nokta aralığı <span class="mono" id="vSpace"></span></label><input type="range" id="space" min="9" max="24" value="15"></div>
+  <div class="ctl"><label>İz yoğunluğu <span class="mono" id="vRate"></span></label><input type="range" id="rate" min="2" max="40" value="20"></div>
+  <div class="ctl"><label>Görünüm</label>
+    <label class="chk"><input type="checkbox" id="pixel" checked> Piksel ızgarası (3×)</label>
+    <label class="chk"><input type="checkbox" id="flat" checked> Üst kenar düz</label>
+    <label class="chk"><input type="checkbox" id="boil"> Kenar kaynaması</label>
+    <label class="chk"><input type="checkbox" id="misreg" checked> Kayık baskı (renkler hafif kayık)</label>
+  </div>
+  <div class="ctl stage2" style="border:3px solid;padding:10px"><label>Aşama 2 <span class="badge">sadece fikir</span></label>
+    <label class="chk"><input type="checkbox" id="player"> Oyuncu büyük platformda</label>
+    <span class="hint">Açınca noktalar ~0.4 sn'de oyuncuya doğru toplanır, renk oyuncudan dışa geçer. Kapatınca yavaşça dağılır.</span>
+  </div>
+</div>
+
+<h2><span class="n">1</span>Varyantlar yan yana</h2>
+<p>Satır: dolgu. Sütun: şekil. Bir hücreye tıklayınca üstteki sahne o kombinasyona geçer.</p>
+<div class="stage"><canvas id="grid"></canvas></div>
+
+<h2><span class="n">2</span>Neye dikkat ettim</h2>
+<div class="cols">
+  <div class="card hot"><h3>Üst kenar düz kalmalı</h3>
+    <p>Platformun collider'ı dikdörtgen. Görsel üst köşeleri çok yuvarlarsa oyuncu "boşluğa" basıyor gibi görünür. Bu yüzden önerim: <b>üst kenar düz, köşeler hafif; alt köşeler ve yanlar yumuşak/titrek</b>. "Üst kenar düz" kutusunu kapatıp farkı görebilirsin.</p></div>
+  <div class="card"><h3>Halftone = gölge</h3>
+    <p>Noktalar rastgele değil, bir değer haritasına göre büyüyor: üstte açık, altta koyu. Böylece desen aynı zamanda platformu hacimli gösteriyor ve üst yüzey (basılan yer) en temiz, en okunaklı bölge oluyor. Referans görseldeki seyrekten yoğuna geçiş de bu.</p></div>
+  <div class="card"><h3>Desen platformla birlikte gider</h3>
+    <p>Noktalar platformun kendi koordinatında çiziliyor, dünyada sabit değil. Platform hareket edince desen kaymıyor, platformla taşınıyor; geride kalan izi ise ayrı parçacıklar oluşturuyor.</p></div>
+  <div class="card"><h3>Piksel art ile çatışma</h3>
+    <p>GDD §8 "basit pixel art" diyor; pürüzsüz vektör noktalar dünyadan kopuk durabilir. "Piksel ızgarası" açıkken her şey 3× piksele oturuyor, noktalar küçük piksel kümelerine dönüşüyor. Nokta aralığı piksel boyutunun tam katı olmalı, yoksa CRT çizgileriyle <b>moiré</b> (dalgalı girişim) oluşur.</p></div>
+</div>
+
+<h2><span class="n">3</span>Unity'de nasıl yapılır</h2>
+
+<h3>a) Şekil + doku: tek shader, platform başına ek obje yok</h3>
+<p>Mevcut <code>MovingPlatform.prefab</code> düz bir <code>SpriteRenderer</code> (Simple draw mode) + <code>BoxCollider2D</code>. Collider'a dokunmadan yalnızca materyal değişir:</p>
+<ul>
+  <li><b>Şekil SDF ile:</b> shader, sprite'ın UV'sini platformun dünya boyutuna çevirip (ölçekten ya da <code>_Size</code> parametresinden) bir "yuvarlatılmış kutu / squircle" mesafe fonksiyonu hesaplar. Dışı şeffaf, kenarında mürekkep çizgisi. Üst ve alt köşe yarıçapları ayrı parametre (<code>_RadiusTop</code>, <code>_RadiusBottom</code>). Titrek kenar için mesafeye düşük frekanslı gürültü eklenir; kaynama = gürültü tohumunu saniyede ~8 kez değiştirmek.</li>
+  <li><b>Halftone:</b> her renk kanalı için UV'yi bir açıyla döndür (Y 0°, C 15°, M 75°, K 45°), <code>frac</code> ile hücreye böl, hücre merkezine uzaklık &lt; yarıçap ise nokta. Yarıçap = değer haritası (üst açık, alt koyu). Kanallar çarpılarak (multiply) birleşir; C+Y üst üste gelince yeşil kendiliğinden çıkar.</li>
+  <li><b>Piksel:</b> UV önce sanat pikseline yuvarlanır (<code>floor(uv * ppu) / ppu</code>). Projede bu kalıp zaten var: <code>Assets/Shader/FlowingPixelAcid.shader</code> (<code>_PixelScale</code>). Yeni shader onun yanında el yazımı HLSL olur, Shader Graph'a gerek yok.</li>
+  <li>Sprite bir beyaz kare olur; tüm platformlar tek materyali paylaşır. Boyut ölçekten okunursa <code>MaterialPropertyBlock</code> bile gerekmez.</li>
+</ul>
+<pre>// özet (fragment)
+float2 p   = (uv - 0.5) * _Size;                 // platform yerel birim
+p          = floor(p * _ArtPixel) / _ArtPixel;   // piksel ızgarası
+float  d   = sdRoundBox(p, _Size*0.5, p.y > 0 ? _RadiusTop : _RadiusBottom);
+float  v   = saturate(0.5 - p.y / _Size.y);      // üst açık, alt koyu
+float3 col = _Paper;
+col *= dotLayer(p, _Spacing, 0,  v*0.6 + 0.4, _Yellow);
+col *= dotLayer(p + _Misreg, _Spacing, 15, v*0.8, _Cyan);
+col *= dotLayer(p - _Misreg, _Spacing, 75, v*0.8, _Magenta);
+col *= dotLayer(p, _Spacing, 45, smoothstep(0.7, 1, v), _Ink);
+col  = lerp(_Ink, col, step(_Outline, -d));      // mürekkep kenar
+clip(-d);</pre>
+
+<h3>b) Geride kalan noktalar: Particle System (VFX Graph değil)</h3>
+<table>
+<tr><th></th><th>Particle System (Shuriken)</th><th>VFX Graph</th></tr>
+<tr><td>Sadece hareket edince üret</td><td><b>Emission → Rate over Distance</b> hazır. Platform durunca iz kendiliğinden kesilir.</td><td>Spawn bloğu + hız hesabı elle kurulur.</td></tr>
+<tr><td>URP 2D sıralama</td><td>Sorting layer / order doğrudan.</td><td>Destekleniyor ama ayarı daha zahmetli, compute shader ister.</td></tr>
+<tr><td>Ölçek</td><td>Platform başına birkaç yüz parçacık, CPU'da sorun değil.</td><td>On binlerce parçacık için. Burada gereksiz.</td></tr>
+</table>
+<p><b>Önerim Shuriken.</b> Kurulum (her hareketli platform prefab'ına bir çocuk obje):</p>
+<ul>
+  <li><b>Simulation Space: World</b> (noktalar platformla gitmesin, geride kalsın). Emission: Rate over Time 0, Rate over Distance ~4–8 (sahnedeki "iz yoğunluğu").</li>
+  <li><b>Shape:</b> Box, platform boyutunda ve biraz içe; ya da yalnızca alt kenar boyunca Edge.</li>
+  <li><b>Start Color:</b> "Random Color" gradyanı, 4 sabit anahtar (sarı, mavi/cyan, pembe/magenta, mürekkep). Start Size 0.08–0.25 birim rastgele, Size over Lifetime 1 → 0.</li>
+  <li><b>Davranış:</b> Süzülen = hafif Inherit Velocity (−0.1) + Noise. Damga = hız 0, Color over Lifetime ile yavaş solma. Dökülen = Gravity Modifier 0.3–0.6.</li>
+  <li><b>Materyal:</b> daire sprite'ı, multiply ya da alfa karışımı. Piksel görünüm için parçacık shader'ında da konum sanat pikseline yuvarlanır.</li>
+  <li>Ölünce sıfırlama: <code>PlatformController.ResetState</code> sırasında <code>ps.Clear()</code>; yoksa ışınlanan platform ekranı boydan boya iz çizer. (Rate over Distance ışınlanmayı da "hareket" sayar; Clear'dan önce emission'ı bir kare kapatmak gerekebilir.)</li>
+</ul>
+
+<h3>c) Aşama 2: oyuncuya toplanan noktalar (şimdi değil)</h3>
+<ul>
+  <li>Shader'a iki parametre: <code>_PlayerLocal</code> (oyuncunun platform üzerindeki yerel konumu) ve <code>_Influence</code> (0–1).</li>
+  <li>Noktaların hücre merkezleri oyuncuya doğru çekilir (<code>p += (player - p) * pull * falloff</code>), yarıçap büyür, renk oyuncudan dışa doğru karışır. Sahnedeki "Aşama 2" kutusu bunu gösteriyor.</li>
+  <li><code>_Influence</code> anında 1 olmaz; küçük bir yay (spring) ya da <code>SmoothDamp</code> ile ~0.3–0.5 sn'de dolar, ayrılınca daha yavaş boşalır. Değer <code>MaterialPropertyBlock</code> ile platform başına verilir.</li>
+  <li>"Oyuncu bu platformda mı" bilgisi zaten var: <code>KinematicPhysicsHandler</code> üstünde durulan <code>IMovingSurface</code>'i biliyor. Yeni bir küçük bileşen bunu okuyup MPB'yi günceller.</li>
+</ul>
+
+<h2><span class="n">4</span>Karar vermen gerekenler</h2>
+<ol class="q">
+  <li><b>Şekil:</b> yumuşak kare, squircle, eğik ya da titrek mürekkep?</li>
+  <li><b>Dolgu:</b> seyrek CMY (referansın solu), yoğun baskı (referansın sağı) ya da tek renk Ben-Day?</li>
+  <li><b>Renk:</b> oyunun kendi paleti mi, gerçek baskı CMYK'sı mı? Oyun paleti dünyayla daha uyumlu, CMYK referansa daha sadık.</li>
+  <li><b>İz:</b> süzülen, damga ya da dökülen?</li>
+  <li><b>Piksel ızgarası:</b> açık mı (dünyayla uyumlu) kapalı mı (pürüzsüz vektör, CRT dışı UI gibi)?</li>
+  <li><b>Kapsam:</b> yalnızca hareketli platformlar mı, yoksa tetiklenen / tek yönlü / dönen platformlar da mı? Sabit zemin (turuncu) olduğu gibi kalırsa hareketli olanlar bir bakışta ayırt edilir; bu oynanış için iyi.</li>
+</ol>
+<p class="hint">Önizleme Canvas 2D ile çizildi; Unity'deki shader aynı mantığı GPU'da yapar. Renk ve ölçek oyun içinde CRT filtresinden geçince biraz değişir, kesin his ancak oyunda görülür.</p>
+
+</div>
+<script>
+(() => {
+const S = {shape:'squircle', fill:'sparse', pal:'game', trail:'drift', space:15, rate:20,
+           pixel:true, flat:true, boil:false, misreg:true, player:false};
+
+const PAL = {
+  game:{paper:'#FAF4E2', y:'#FCAE04', c:'#597DCE', m:'#FF51DE', k:'#140C1C', r:'#FC1E00', ink:'#140C1C', ben:'#FC1E00'},
+  cmyk:{paper:'#FFFBEE', y:'#FFE600', c:'#00A6E8', m:'#EC008C', k:'#231F20', r:'#E8192C', ink:'#231F20', ben:'#EC008C'}
+};
+const SKY='#71BAEA', GROUND='#E89A62', GROUND_TOP='#FF51DE';
+
+// ---------- noise ----------
+function hash(n){ n = Math.sin(n*127.1)*43758.5453; return n - Math.floor(n); }
+function vnoise(x, seed){ const i=Math.floor(x), f=x-i, u=f*f*(3-2*f);
+  return hash(i+seed*17.3)*(1-u) + hash(i+1+seed*17.3)*u; }
+
+// ---------- shape builder (local coords, centered) ----------
+function roundRectPts(w,h,rt,rb){
+  const pts=[], hw=w/2, hh=h/2, seg=8;
+  const corner=(cx,cy,r,a0)=>{ for(let i=0;i<=seg;i++){const a=a0+i/seg*Math.PI/2; pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]);} };
+  corner(hw-rb, hh-rb, rb, 0);            // bottom-right
+  corner(-hw+rb, hh-rb, rb, Math.PI/2);   // bottom-left
+  corner(-hw+rt, -hh+rt, rt, Math.PI);    // top-left
+  corner(hw-rt, -hh+rt, rt, Math.PI*1.5); // top-right
+  return pts;
+}
+function resample(pts, step){
+  const out=[]; const n=pts.length;
+  for(let i=0;i<n;i++){ const a=pts[i], b=pts[(i+1)%n]; const L=Math.hypot(b[0]-a[0],b[1]-a[1]); const k=Math.max(1,Math.ceil(L/step));
+    for(let j=0;j<k;j++){ const t=j/k; out.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]); } }
+  return out;
+}
+function buildShape(kind, w, h, seed, flat, t){
+  const m=Math.min(w,h);
+  if(kind==='soft') return flat ? roundRectPts(w,h,m*0.12,m*0.42) : roundRectPts(w,h,m*0.42,m*0.42);
+  if(kind==='squircle'){
+    const pts=[], N=72;
+    for(let i=0;i<N;i++){ const a=i/N*Math.PI*2, c=Math.cos(a), s=Math.sin(a);
+      const n = flat ? (s<0 ? 9 : 3.2) : 4;
+      // stretch: use rounded-rect-ish superellipse on corners only
+      const ex=2/n;
+      pts.push([Math.sign(c)*Math.pow(Math.abs(c),ex)*w/2, Math.sign(s)*Math.pow(Math.abs(s),ex)*h/2]); }
+    return pts;
+  }
+  if(kind==='skew'){
+    const sk=0.38;
+    return (flat ? roundRectPts(w*0.94,h,m*0.12,m*0.35) : roundRectPts(w*0.94,h,m*0.3,m*0.3)).map(([x,y])=>[x - y*sk, y]);
+  }
+  // ink: wobbly
+  const base = resample(flat ? roundRectPts(w,h,m*0.15,m*0.38) : roundRectPts(w,h,m*0.35,m*0.35), 4);
+  const bs = S.boil ? Math.floor(t*8)%3 : 0;
+  const n=base.length, out=[];
+  let s=0;
+  for(let i=0;i<n;i++){
+    const p=base[i], a=base[(i-1+n)%n], b=base[(i+1)%n];
+    let nx=b[1]-a[1], ny=-(b[0]-a[0]); const L=Math.hypot(nx,ny)||1; nx/=L; ny/=L;
+    s += Math.hypot(p[0]-a[0],p[1]-a[1]);
+    let amp = m*0.12;
+    if(flat && ny < -0.7) amp *= 0.12;
+    const d = (vnoise(s*0.045, seed+bs*7.1)-0.5)*2*amp + (vnoise(s*0.18, seed+3+bs)-0.5)*amp*0.35;
+    out.push([p[0]+nx*d, p[1]+ny*d]);
+  }
+  return out;
+}
+function pathPts(ctx, pts){ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]); ctx.closePath(); }
+
+// ---------- halftone ----------
+function mixHex(a,b,t){ const pa=parseInt(a.slice(1),16), pb=parseInt(b.slice(1),16);
+  const r=((pa>>16)&255)*(1-t)+((pb>>16)&255)*t, g=((pa>>8)&255)*(1-t)+((pb>>8)&255)*t, bl=(pa&255)*(1-t)+(pb&255)*t;
+  return `rgb(${r|0},${g|0},${bl|0})`; }
+
+function dotLayer(ctx, w, h, sp, angDeg, off, radiusFn, color, infl){
+  const a=angDeg*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a);
+  const hw=w/2+sp, hh=h/2+sp;
+  // bbox in grid frame
+  let umin=1e9,umax=-1e9,vmin=1e9,vmax=-1e9;
+  for(const [x,y] of [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]]){ const u=x*ca+y*sa, v=-x*sa+y*ca; umin=Math.min(umin,u);umax=Math.max(umax,u);vmin=Math.min(vmin,v);vmax=Math.max(vmax,v); }
+  for(let i=Math.floor(umin/sp); i<=Math.ceil(umax/sp); i++){
+    for(let j=Math.floor(vmin/sp); j<=Math.ceil(vmax/sp); j++){
+      const u=i*sp, v=j*sp;
+      let x=u*ca - v*sa + off[0], y=u*sa + v*ca + off[1];
+      if(x<-hw||x>hw||y<-hh||y>hh) continue;
+      let r = radiusFn(x,y);
+      let col = color;
+      if(infl && infl.k>0.001){
+        const dx=infl.x-x, dy=infl.y-y, d=Math.hypot(dx,dy);
+        const fall=Math.exp(-d/(w*0.28));
+        const ring = infl.ring>0 ? Math.exp(-Math.pow((d - infl.ring)/10,2))*infl.ringA : 0;
+        x += dx*0.42*fall*infl.k; y += dy*0.42*fall*infl.k*0.6;
+        r *= 1 + (0.7*fall + 0.5*ring)*infl.k;
+        col = mixHex(color, infl.col, Math.min(1, fall*1.15*infl.k));
+      }
+      if(r<0.35) continue;
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,Math.min(r,sp*0.95),0,Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function drawPlatform(ctx, pl, t, opts){
+  const {w,h}=pl, P=PAL[opts.pal], sp=opts.space;
+  const pts = buildShape(opts.shape, w, h, pl.seed, opts.flat, t);
+  ctx.save();
+  ctx.translate(pl.x, pl.y);
+  if(pl.rot) ctx.rotate(pl.rot);
+  // drop shadow (print offset)
+  ctx.save(); ctx.translate(3,4); pathPts(ctx,pts); ctx.fillStyle='rgba(20,12,28,.28)'; ctx.fill(); ctx.restore();
+  pathPts(ctx,pts); ctx.fillStyle=P.paper; ctx.fill();
+  ctx.save(); pathPts(ctx,pts); ctx.clip();
+  ctx.globalCompositeOperation='multiply';
+  const val=(x,y)=>{ const v=Math.min(1,Math.max(0, y/h+0.5)); return v; };
+  const mr = opts.misreg ? sp*0.18 : 0;
+  const infl = pl.infl;
+  if(opts.fill==='sparse'){
+    dotLayer(ctx,w,h,sp,0,[0,0],(x,y)=>sp*(0.20+0.10*val(x,y)),P.y,infl);
+    dotLayer(ctx,w,h,sp*0.82,15,[mr,-mr*0.5],(x,y)=>sp*(0.05+0.17*val(x,y)),P.c,infl);
+    dotLayer(ctx,w,h,sp*0.82,75,[-mr,mr*0.4],(x,y)=>sp*(0.04+0.16*val(x,y)),P.m,infl);
+    dotLayer(ctx,w,h,sp,45,[0,0],(x,y)=>{const v=val(x,y); return v>0.72 ? sp*(v-0.72)*1.1 : 0;},P.k,infl);
+  } else if(opts.fill==='dense'){
+    dotLayer(ctx,w,h,sp,0,[0,0],(x,y)=>sp*(0.42+0.1*val(x,y)),P.y,infl);
+    dotLayer(ctx,w,h,sp,15,[mr,0],(x,y)=>sp*(0.18+0.36*val(x,y))*(0.6+0.8*vnoise(x*0.03+y*0.02,pl.seed)),P.r,infl);
+    dotLayer(ctx,w,h,sp,75,[-mr,mr],(x,y)=>sp*(0.2+0.3*val(x,y)),P.m,infl);
+    dotLayer(ctx,w,h,sp,105,[0,-mr],(x,y)=>sp*0.4*vnoise(x*0.025,pl.seed+5)*(0.4+val(x,y)),P.c,infl);
+    dotLayer(ctx,w,h,sp*1.1,45,[0,0],(x,y)=>{const v=val(x,y); return sp*(0.08+0.42*v*v);},P.k,infl);
+  } else {
+    dotLayer(ctx,w,h,sp,45,[0,0],(x,y)=>sp*(0.16+0.26*val(x,y)),P.ben,infl);
+  }
+  ctx.restore();
+  // ink outline
+  pathPts(ctx,pts); ctx.lineWidth=3; ctx.strokeStyle=P.ink; ctx.lineJoin='round'; ctx.stroke();
+  ctx.restore();
+  return pts;
+}
+
+// ---------- scene ----------
+const scene=document.getElementById('scene'), sctx=scene.getContext('2d');
+const buf=document.createElement('canvas'), bctx=buf.getContext('2d');
+let W=0,H=0,dpr=1;
+function resize(){
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  const r=scene.getBoundingClientRect(); W=r.width; H=r.height;
+  scene.width=Math.round(W*dpr); scene.height=Math.round(H*dpr);
+  layoutPlatforms(); drawGrid();
+}
+let plats=[];
+function layoutPlatforms(){
+  const k=Math.max(0.62, Math.min(1.15, W/1000)), hh=Math.round(62*k);
+  plats=[
+    {id:'lin', w:250*k, h:hh, seed:1, motion:t=>{const p=(Math.sin(t*0.9)+1)/2; return [W*0.16+p*W*0.24, H*0.22];}},
+    {id:'acc', w:330*k, h:hh+6, seed:2, big:true, motion:t=>{ // accelerating ping-pong
+        const per=4.2, tt=t%per; let p;
+        if(tt<1.6) p=Math.pow(tt/1.6,2.2); else if(tt<2.1) p=1; else if(tt<3.9) {const q=(tt-2.1)/1.8; p=1-(1-Math.pow(1-q,2));} else p=0;
+        return [W*0.40+p*W*0.26, H*0.64]; }},
+    {id:'circ', w:200*k, h:hh, seed:3, motion:t=>[W*0.78+Math.cos(t*1.1)*W*0.08, H*0.28+Math.sin(t*1.1)*H*0.12]},
+    {id:'vert', w:160*k, h:hh, seed:4, motion:t=>[W*0.13, H*0.60+Math.sin(t*1.3)*H*0.14]},
+  ];
+  plats.forEach(p=>{const [x,y]=p.motion(0); p.x=p.px=x; p.y=p.py=y; p.acc=0; p.inflK=0; p.ring=-1;});
+}
+let parts=[];
+function emit(pl, dx, dy, P){
+  const L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
+  const cols=[P.y,P.c,P.m,P.k, S.fill==='dense'?P.r:P.y];
+  const sp=S.space;
+  // spawn along trailing half
+  const along=(Math.random()-0.5)*pl.w*0.9, across=(Math.random()-0.5)*pl.h*0.8;
+  let x=pl.x+along, y=pl.y+across;
+  x -= ux*pl.w*0.25*Math.random(); y -= uy*pl.h*0.25*Math.random();
+  const col = S.fill==='benday' ? (Math.random()<0.8?P.ben:P.k) : cols[(Math.random()*cols.length)|0];
+  const p={x,y,vx:0,vy:0,r:sp*(0.25+Math.random()*0.4),r0:0,life:0,max:0.8+Math.random()*0.9,col,
+           ghost: S.misreg && Math.random()<0.5 ? (Math.random()<0.5?P.c:P.m) : null};
+  p.r0=p.r;
+  if(S.trail==='drift'){ p.vx=-ux*18+(Math.random()-0.5)*16; p.vy=-uy*18+(Math.random()-0.5)*16; }
+  else if(S.trail==='stamp'){ p.max*=2.2; }
+  else if(S.trail==='fall'){ p.vx=(Math.random()-0.5)*30-ux*10; p.vy=-20-Math.random()*30; p.g=260; }
+  parts.push(p);
+}
+const player={lx:0, dir:1, k:0, target:0};
+let last=performance.now(), T=0;
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now; T+=dt;
+  const P=PAL[S.pal];
+  const scale = S.pixel ? 1/3 : dpr;
+  buf.width=Math.max(1,Math.round(W*scale)); buf.height=Math.max(1,Math.round(H*scale));
+  const c=bctx; c.setTransform(scale,0,0,scale,0,0);
+  c.fillStyle=SKY; c.fillRect(0,0,W,H);
+  // static ground for reference (unchanged look)
+  c.fillStyle=GROUND; c.fillRect(0,H-46,W,46); c.fillStyle=GROUND_TOP; c.fillRect(0,H-46,W,6);
+  c.fillStyle=GROUND; c.fillRect(W*0.88,H*0.55,W*0.12,H*0.45-46); c.fillStyle=GROUND_TOP; c.fillRect(W*0.88,H*0.55,W*0.12,5);
+  c.fillStyle='rgba(20,12,28,.55)'; c.font='600 12px "IBM Plex Mono", monospace';
+  c.fillText('sabit zemin (değişmiyor)', 12, H-16);
+
+  // move platforms
+  for(const pl of plats){
+    pl.px=pl.x; pl.py=pl.y; [pl.x,pl.y]=pl.motion(T);
+    const dx=pl.x-pl.px, dy=pl.y-pl.py, d=Math.hypot(dx,dy);
+    if(S.trail!=='off'){ pl.acc += d*S.rate/60; while(pl.acc>=1){ pl.acc-=1; emit(pl,dx,dy,P);} }
+  }
+  // particles (draw behind platforms)
+  c.save();
+  parts = parts.filter(p=>p.life<p.max);
+  for(const p of parts){
+    p.life+=dt; const q=p.life/p.max;
+    if(p.g) p.vy+=p.g*dt;
+    p.vx*=Math.pow(0.25,dt); if(!p.g) p.vy*=Math.pow(0.25,dt);
+    p.x+=p.vx*dt; p.y+=p.vy*dt;
+    const r = Math.max(0, S.trail==='stamp' ? p.r0*(1-q*0.45) : p.r0*(1-q));
+    c.globalAlpha = S.trail==='stamp' ? Math.min(1,(1-q)*1.6) : 1;
+    if(p.ghost){ c.fillStyle=p.ghost; c.beginPath(); c.arc(p.x+r*0.35,p.y-r*0.25,r,0,7); c.fill(); }
+    c.fillStyle=p.col; c.beginPath(); c.arc(p.x,p.y,r,0,7); c.fill();
+  }
+  c.restore(); c.globalAlpha=1;
+
+  // stage-2 player
+  const big=plats.find(p=>p.big);
+  player.target = S.player?1:0;
+  const prevK=player.k;
+  const rate = player.target>player.k ? 7 : 2.2;   // fills fast-ish, empties slower
+  player.k += (player.target-player.k)*(1-Math.exp(-rate*dt));
+  if(prevK<0.05 && player.target===1 && big.ring<0) big.ring=0;
+  if(big.ring>=0){ big.ring += dt*260; if(big.ring>big.w) big.ring=-1; }
+  player.lx += player.dir*dt*38; if(Math.abs(player.lx)>big.w*0.36){ player.dir*=-1; player.lx=Math.sign(player.lx)*big.w*0.36; }
+  for(const pl of plats) pl.infl=null;
+  if(player.k>0.001) big.infl={x:player.lx, y:-big.h/2, k:player.k, col:P.m, ring:big.ring, ringA:big.ring>=0?1-big.ring/big.w:0};
+
+  const opts={shape:S.shape, fill:S.fill, pal:S.pal, space:S.space, flat:S.flat, misreg:S.misreg};
+  for(const pl of plats) drawPlatform(c, pl, T, opts);
+
+  if(player.k>0.01){
+    const px=big.x+player.lx, py=big.y-big.h/2;
+    c.globalAlpha=Math.min(1,player.k*1.5);
+    c.fillStyle='#FF51DE'; c.strokeStyle=P.ink; c.lineWidth=2;
+    c.beginPath(); c.roundRect(px-9,py-26,18,26,5); c.fill(); c.stroke();
+    c.fillStyle=P.ink; c.fillRect(px+(player.dir>0?2:-6),py-20,4,4);
+    c.globalAlpha=1;
+  }
+
+  // blit
+  sctx.setTransform(1,0,0,1,0,0);
+  sctx.imageSmoothingEnabled=!S.pixel;
+  sctx.clearRect(0,0,scene.width,scene.height);
+  sctx.drawImage(buf,0,0,scene.width,scene.height);
+  requestAnimationFrame(frame);
+}
+
+// ---------- variant grid ----------
+const grid=document.getElementById('grid'), gctx=grid.getContext('2d');
+const SHAPES=[['soft','Yumuşak kare'],['squircle','Squircle'],['skew','Eğik'],['ink','Titrek mürekkep']];
+const FILLS=[['sparse','Seyrek CMY'],['dense','Yoğun baskı'],['benday','Ben-Day']];
+let cellW=0, cellH=130, headH=26, headW=110;
+function drawGrid(){
+  const r=grid.getBoundingClientRect(); const gw=r.width;
+  headW = gw<640 ? 0 : 110;
+  cellW=(gw-headW)/4;
+  const gh=headH+cellH*3; grid.style.height=gh+'px';
+  grid.width=Math.round(gw*dpr); grid.height=Math.round(gh*dpr);
+  const c=gctx; c.setTransform(dpr,0,0,dpr,0,0);
+  c.fillStyle=SKY; c.fillRect(0,0,gw,gh);
+  c.font='600 11px "IBM Plex Mono", monospace'; c.fillStyle='#140C1C'; c.textBaseline='middle';
+  SHAPES.forEach(([k,n],i)=>c.fillText(n.toUpperCase(), headW+i*cellW+10, headH/2));
+  FILLS.forEach(([fk,fn],j)=>{
+    if(headW) c.fillText(fn.toUpperCase(), 10, headH+j*cellH+cellH/2);
+    SHAPES.forEach(([sk],i)=>{
+      const cx=headW+i*cellW+cellW/2, cy=headH+j*cellH+cellH/2;
+      const sel = sk===S.shape && fk===S.fill;
+      if(sel){ c.fillStyle='rgba(255,255,255,.35)'; c.fillRect(headW+i*cellW+3, headH+j*cellH+3, cellW-6, cellH-6); }
+      drawPlatform(c, {x:cx,y:cy,w:Math.min(210,cellW*0.8),h:56,seed:i+j*4+1}, 0,
+        {shape:sk, fill:fk, pal:S.pal, space:S.space, flat:S.flat, misreg:S.misreg});
+      c.fillStyle='#140C1C';
+    });
+  });
+}
+grid.addEventListener('click',e=>{
+  const r=grid.getBoundingClientRect(); const x=e.clientX-r.left-headW, y=e.clientY-r.top-headH;
+  if(x<0||y<0) return; const i=Math.floor(x/cellW), j=Math.floor(y/cellH);
+  if(i<4&&j<3){ S.shape=SHAPES[i][0]; S.fill=FILLS[j][0]; syncButtons(); drawGrid(); window.scrollTo({top:0,behavior:'smooth'}); }
+});
+grid.style.cursor='pointer';
+
+// ---------- controls ----------
+function syncButtons(){
+  document.querySelectorAll('.seg').forEach(seg=>{
+    const k=seg.dataset.k; seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.v===S[k]));
+  });
+}
+document.querySelectorAll('.seg').forEach(seg=>{
+  seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    S[seg.dataset.k]=b.dataset.v; if(seg.dataset.k==='trail' && S.trail==='off') parts=[]; syncButtons(); drawGrid(); });
+});
+const space=document.getElementById('space'), rate=document.getElementById('rate');
+const upd=()=>{ S.space=+space.value; S.rate=+rate.value;
+  document.getElementById('vSpace').textContent=S.space+' px'; document.getElementById('vRate').textContent=S.rate; drawGrid(); };
+space.oninput=upd; rate.oninput=upd; upd();
+['pixel','flat','boil','misreg','player'].forEach(id=>{
+  const el=document.getElementById(id); el.checked=S[id];
+  el.onchange=()=>{ S[id]=el.checked; drawGrid(); };
+});
+window.addEventListener('resize', resize);
+resize(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

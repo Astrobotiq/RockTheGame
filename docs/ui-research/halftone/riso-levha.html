@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riso Levha</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F1E6C7;--paper2:#FAF4E2;--ink:#140C1C;--mut:#4E4A4E;--red:#FC1E00;--yel:#FCAE04;--pink:#FF51DE;--teal:#289AA4;--sky:#71BAEA}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 16px 80px}
+h1{font:400 clamp(28px,4.6vw,50px)/1 "Archivo Black",sans-serif;margin:0 0 8px}
+h1 span{background:var(--ink);color:var(--paper);padding:0 .2em;display:inline-block;transform:rotate(-1.5deg)}
+h2{font:400 22px "Archivo Black",sans-serif;margin:36px 0 8px}
+.lede{max-width:78ch;font-size:16px}
+.stage{border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);background:var(--sky)}
+canvas{display:block;width:100%;height:440px;image-rendering:pixelated}
+.bar{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin:20px 0;padding:12px 14px;border:3px solid var(--ink);background:var(--paper2)}
+.grp{display:flex;gap:8px;align-items:center;font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase}
+.seg{display:flex;gap:4px}
+.seg button{font:600 12px "IBM Plex Mono",monospace;border:2px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 8px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+input[type=range]{accent-color:var(--red);width:130px}
+input[type=checkbox]{accent-color:var(--red);width:16px;height:16px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px}
+.card{border:3px solid var(--ink);background:var(--paper2);padding:12px 14px;font-size:14px}
+.card h3{margin:0 0 4px;font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.05em}
+.card p{margin:4px 0}
+.swatch{display:inline-block;width:12px;height:12px;border:1.5px solid var(--ink);vertical-align:-1px;margin-right:4px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--paper2)}
+th,td{border:2px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--ink);color:var(--paper);font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase}
+code{font:13px "IBM Plex Mono",monospace;background:#fff;border:1px solid #d8cfb4;padding:0 4px}
+.hint{font-size:13px;color:var(--mut)}
+a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Riso <span>levha</span></h1>
+<p class="lede">B (risograph) ile D'nin (karma) birleşimi, supervisor'ın tarifine ve senin kararlarına göre. Kararların: CRT 960×540, çizgi <span class="swatch" style="background:#140C1C"></span>#140C1C, mavi kanal <span class="swatch" style="background:#289AA4"></span>teal, iz gecikmesi 0 / 0.06 / 0.12 sn. Sahne <b>oyunun gerçek ölçeğinde</b>: 1080p ekranın birebir kırpıntısı, kamera ortho 7, yani 1 birim ≈ 77 px. Platform boyutları prefab'lardaki gibi: 4×1 hızlanan, 2×1 hareketli, 2×1 dairesel, 3×0.2 tek yönlü ve kenardan kenara akan 2×1.</p>
+
+<div class="stage"><canvas id="cv"></canvas></div>
+
+<div class="bar">
+  <div class="grp">CRT benzetimi
+    <div class="seg" id="crt"><button data-v="0">Kapalı</button><button data-v="960" class="on">960×540</button><button data-v="480">480×360 (bugünkü)</button></div>
+  </div>
+  <div class="grp">Nokta aralığı P <input type="range" id="P" min="30" max="60" value="42"><span id="Pv">0.42</span></div>
+  <label class="grp"><input type="checkbox" id="slow"> Yavaş çekim</label>
+  <label class="grp"><input type="checkbox" id="still"> Platformları durdur</label>
+</div>
+<p class="hint">CRT benzetimi yalnızca ekranı hücre ızgarasına oturtmayı taklit ediyor (oyundaki <code>CRTFilter.shader</code> 3. adım). Tarama çizgisi, bükülme ve renk kanaması yok; oyunda görünüm biraz daha yumuşak olur. Canvas pikselleri 1080p pikselleriyle birebir. Ekranın HiDPI ise görüntü biraz ölçeklenir.</p>
+
+<h2>Nasıl kuruldu</h2>
+<div class="cols">
+  <div class="card"><h3>Şekil</h3><p>Kâğıt renkli levha. Üst kenar düz ve collider'a oturuyor. Üst köşe yarıçapı 0.22·h, alt köşe 0.5·h; altı hap gibi. Yanlarda ve altta 0.03·h genliğinde, içe doğru, durağan bir riso kenar sapması var. Ofset gölge yok, dünyada başka hiçbir nesnede yok.</p></div>
+  <div class="card"><h3>Çizgi</h3><p>#140C1C, kalınlığı <code>max(0.08, 0.08·h)</code> birim. Çizgi hiç kaymıyor; collider sınırını her zaman çizgi gösteriyor. Renk katmanları çizginin içinde kırpılıyor, dışarı taşamıyor.</p></div>
+  <div class="card"><h3>Dolgu</h3><p>Kâğıdın üstüne %90 opak, çarpılarak basılan üç mürekkep: <span class="swatch" style="background:#289AA4"></span>teal 15°, <span class="swatch" style="background:#FCAE04"></span>sarı 45°, <span class="swatch" style="background:#FF51DE"></span>pembe 75°. Hiçbiri 0°/90° değil, yoksa tarama çizgileriyle hizalanır. Üst şerit temiz. Yoğun bölge altta; kırmızı, yeşil ve mor bindirmeden kendiliğinden çıkıyor. Hızlanan platformda yoğun bölge daha geniş: "bu platform fırlatır" sinyali.</p></div>
+  <div class="card"><h3>Kayık baskı</h3><p>Durağan kayma: pembe ±0.04 birim, teal tersi yönde. Hıza bağlı kayma: teal hızın tersine, pembe hızın yönünde, en fazla 0.06 birim. Hızlanan platform uçta durunca kayma geri yaylanıyor; bu da "durdu" bilgisi veriyor.</p></div>
+  <div class="card"><h3>Gren</h3><p>Piksel gürültüsü değil. 0.25 birim ölçekli düşük frekanslı bir alan, nokta çapını ±%8 oynatıyor; mürekkep bazı yerlerde az geçmiş gibi duruyor. Platforma kilitli ve durağan.</p></div>
+  <div class="card"><h3>İz</h3><p>Her mürekkep, platformun gecikmeli bir kopyasından doğuyor: teal 0, sarı 0.06, pembe 0.12 sn. Noktalar gövdenin arka-alt kafes hücrelerinden kopuyor, konfeti gibi rastgele saçılmıyor. Gökyüzünde opak çiziliyor; kayık çiftin kesişimi çarpım rengi. Platform başına en fazla 54 parçacık var. Kenardan kenara akan platform ışınlanınca iz çizgisi bırakmıyor.</p></div>
+</div>
+
+<h2>Unity'ye geçince doğrulanacaklar</h2>
+<table>
+<tr><th>Konu</th><th>Ne</th></tr>
+<tr><td>CRT</td><td><code>M_CRTFilter.mat</code>'taki <code>_PixelResolution</code> şu an 480×360. Tek sahnede 960×540 dene. Tarama çizgisi sıklığı bu değere bağlı, bu yüzden ayrı bir parametre gerekebilir. Supervisor <code>DefaultVolumeProfile</code>'daki 320×240'ın da aynı değere çekilmesini öneriyor. Bu dünyanın tamamının görünümünü değiştirir, senin kararın.</td></tr>
+<tr><td>Ölçek</td><td>Kamera 2× ve 5× uzaktayken noktalar okunuyor mu? Tek yönlü 0.2 birimlik platformda nokta yok, düz kayık bantlar var.</td></tr>
+<tr><td>Teleport / ölüm</td><td>Ölünce, oda uyanınca ve wrap'te iz temizleniyor mu? Ekranı boydan boya çizen bir iz kalıyor mu?</td></tr>
+<tr><td>His</td><td>Gamepad ile oyna: iniş yüzeyi net mi, iz dikkat dağıtıyor mu, node'lar hâlâ baskın mı? Bu senin kararın.</td></tr>
+</table>
+<p class="hint">Kaynaklar: <a href="supervisor-review.md">supervisor-review.md</a> (tam tarif, puanlar), <a href="art-language-research.md">art-language-research.md</a>, <a href="texture-research.md">texture-research.md</a>, <a href="directions.html">directions.html</a> (A–D). Aşama 2 (oyuncuya toplanan noktalar) bu sayfada yok. Supervisor shader'a şimdiden boş parametre konmasını öneriyor.</p>
+</div>
+
+<script>
+(() => {
+const INK='#140C1C', PAPER='#F1E6C7', SKY='#71BAEA';
+const Y=[252,174,4], PK=[255,81,222], TL=[40,154,164];
+const U=77;                 // px per world unit at 1080p, ortho 7
+let P=0.42, crt=960, slow=false, still=false;
+
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const big=document.createElement('canvas'), b=big.getContext('2d');
+const small=document.createElement('canvas'), s=small.getContext('2d');
+let W=0,H=0;
+
+const rgb=a=>`rgb(${a[0]},${a[1]},${a[2]})`;
+const mul=(a,c)=>[a[0]*c[0]/255|0,a[1]*c[1]/255|0,a[2]*c[2]/255|0];
+function hash(n){ n=Math.sin(n*127.1)*43758.5453; return n-Math.floor(n); }
+function n2(x,y,seed){ // smooth value noise 2D
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  const h=(i,j)=>hash(i*157.31+j*91.7+seed*13.1);
+  return (h(xi,yi)*(1-u)+h(xi+1,yi)*u)*(1-v)+(h(xi,yi+1)*(1-u)+h(xi+1,yi+1)*u)*v;
+}
+
+// ---------- shape: rounded slab, top radius rt, bottom rb, riso wobble inward (not on top) ----------
+function slabPts(w,h,seed){
+  const rt=Math.max(0.06*U, 0.22*h), rb=Math.min(0.5*h, w/2), hw=w/2, hh=h/2, pts=[];
+  const arc=(cx,cy,r,a0,a1,n)=>{ for(let i=0;i<=n;i++){ const a=a0+(a1-a0)*i/n; pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r, a]); } };
+  // top edge (left->right) is implicit between arcs
+  arc(hw-rt,-hh+rt,rt,-Math.PI/2,0,8);          // top-right
+  // right side down to bottom-right
+  const side=(x,y0,y1,n)=>{ for(let i=1;i<n;i++) pts.push([x, y0+(y1-y0)*i/n, x>0?0:Math.PI]); };
+  side(hw,-hh+rt,hh-rb,6);
+  arc(hw-rb,hh-rb,rb,0,Math.PI/2,12);           // bottom-right
+  for(let i=1;i<24;i++) pts.push([hw-rb-(w-2*rb)*i/24, hh, Math.PI/2]);
+  arc(-hw+rb,hh-rb,rb,Math.PI/2,Math.PI,12);    // bottom-left
+  side(-hw,hh-rb,-hh+rt,6);
+  arc(-hw+rt,-hh+rt,rt,Math.PI,Math.PI*1.5,8);  // top-left
+  // wobble inward along normal angle, none on the top half-plane edge
+  const amp=0.03*h;
+  return pts.map(([x,y,a],i)=>{
+    const ny=Math.sin(a), nx=Math.cos(a);
+    if(ny<-0.5) return [x,y];
+    const d=n2(i*0.35,0,seed)*amp;               // 0..amp, inward
+    return [x-nx*d, y-ny*d];
+  });
+}
+function path(c,pts,ox=0,oy=0){ c.beginPath(); c.moveTo(pts[0][0]+ox,pts[0][1]+oy); for(let i=1;i<pts.length;i++) c.lineTo(pts[i][0]+ox,pts[i][1]+oy); c.closePath(); }
+
+// ---------- ink layer (lattice in platform-local space, world units) ----------
+const LAYERS=[ // order of printing: teal, yellow, pink
+  {key:'t', col:TL, ang:15, dia:(v)=> v<0.35?0:(0.24+0.34*v), off:[-0.04,0.03]},
+  {key:'y', col:Y,  ang:45, dia:(v)=> 0.50+0.35*v,              off:[0,0]},
+  {key:'p', col:PK, ang:75, dia:(v)=> v<0.2?0:(0.26+0.40*v),   off:[0.04,-0.03]},
+];
+function cellsOf(pl, L, ox, oy){
+  // returns lattice cells [x,y,d] in local px for this layer (cached per P)
+  const key=L.key+P;
+  if(pl.cache && pl.cache[key]) return pl.cache[key];
+  const {w,h}=pl, sp=P*U, a=L.ang*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a), hw=w/2+sp, hh=h/2+sp;
+  const clean=Math.max(0.18*U, 0.22*h), out=[];
+  let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+  for(const [x,y] of [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]]){ const u=x*ca+y*sa, v=-x*sa+y*ca; u0=Math.min(u0,u);u1=Math.max(u1,u);v0=Math.min(v0,v);v1=Math.max(v1,v); }
+  for(let i=Math.floor(u0/sp);i<=Math.ceil(u1/sp);i++) for(let j=Math.floor(v0/sp);j<=Math.ceil(v1/sp);j++){
+    const x=i*sp*ca-j*sp*sa, y=i*sp*sa+j*sp*ca;
+    if(x<-hw||x>hw||y<-hh||y>hh) continue;
+    if(y < -h/2+clean) continue;                                  // clean top band
+    let v=(y+h/2)/h; if(pl.accel) v=Math.min(1, v*1.18);          // wider dense zone on launcher
+    let d=L.dia(v)*sp; if(d<=0) continue;
+    d*=1+(n2(x/(0.25*U),y/(0.25*U),pl.seed+L.ang)-0.5)*0.16;      // riso grain ±8%
+    out.push([x,y,d,v]);
+  }
+  pl.cache=pl.cache||{}; pl.cache[key]=out; return out;
+}
+function drawInk(c,pl,L,ox,oy){
+  const dMin=0.14*U;
+  c.fillStyle=rgb(L.col);
+  for(const [x,y,d] of cellsOf(pl,L)){
+    let dd=d, a=0.9;
+    if(dd<dMin){ a*=dd/dMin; dd=dMin; }
+    c.globalAlpha=a; c.beginPath(); c.arc(x+ox,y+oy,dd/2,0,Math.PI*2); c.fill();
+  }
+  c.globalAlpha=1;
+}
+
+function drawPlatform(c,pl){
+  const {w,h}=pl;
+  if(!pl.pts) pl.pts=slabPts(w,h,pl.seed);
+  const lw=Math.max(0.08*U, 0.08*h);
+  // velocity-driven misregistration (smoothed velocity in units/s)
+  const sv=pl.sv, sl=Math.hypot(sv[0],sv[1]);
+  const k=0.012, cap=0.06;
+  let mx=0,my=0; if(sl>0.01){ const m=Math.min(cap, k*sl); mx=sv[0]/sl*m; my=sv[1]/sl*m; }
+  c.save(); c.translate(pl.x*U, pl.y*U);
+  path(c,pl.pts); c.fillStyle=PAPER; c.fill();
+  // paper mottling ±3%
+  c.save(); path(c,pl.pts); c.clip();
+  if(pl.thin){
+    c.globalCompositeOperation='multiply'; c.globalAlpha=0.9;
+    c.fillStyle=rgb(Y);  c.fillRect(-w/2,-h*0.05+0.03*U, w, h*0.6);
+    c.fillStyle=rgb(PK); c.fillRect(-w/2+0.04*U-mx*U, h*0.05-0.02*U, w, h*0.6);
+  } else {
+    c.globalCompositeOperation='multiply';
+    for(const L of LAYERS){
+      let ox=L.off[0], oy=L.off[1];
+      if(L.key==='t'){ ox-=2*mx; oy-=2*my; } else if(L.key==='p'){ ox+=mx; oy+=my; }
+      drawInk(c,pl,L,ox*U,oy*U);
+    }
+  }
+  c.restore();
+  path(c,pl.pts); c.lineWidth=lw; c.lineJoin='round'; c.strokeStyle=INK; c.stroke();
+  c.restore();
+}
+
+// ---------- trail ----------
+const DELAYS={t:0, y:0.06, p:0.12};
+function emitFrom(pl, L, snap){
+  if(pl.parts.length>=54) return;
+  const cells=cellsOf(pl,L).filter(([x,y,d,v])=>v>0.4);
+  // trailing 40% of the body, relative to motion direction
+  const vx=snap.vx, vy=snap.vy, vl=Math.hypot(vx,vy)||1, ux=vx/vl, uy=vy/vl;
+  const rear=cells.filter(([x,y])=> (x*ux+y*uy) < -0.1*pl.w*Math.abs(ux) - 0.1*pl.h*Math.abs(uy) );
+  const pool=rear.length?rear:cells; if(!pool.length) return;
+  const [x,y,d]=pool[(Math.random()*pool.length)|0];
+  const dia = Math.random()<0.15 ? 1.2*P*U : d;
+  const jit=(Math.random()-0.5)*0.4;
+  pl.parts.push({x:snap.x*U+x, y:snap.y*U+y, vx:(-0.15*vx - uy*jit)*U, vy:(-0.15*vy + ux*jit)*U, d:dia, life:0, max:0.7+Math.random()*0.4,
+    col:L.col, ghost:(L.key!=='y' && Math.random()<0.5) ? (L.key==='p'?TL:PK) : null, seed:Math.random()*99});
+}
+function drawParts(c,pl,dt){
+  const dMin=0.14*U;
+  pl.parts=pl.parts.filter(p=>p.life<p.max);
+  for(const p of pl.parts){
+    p.life+=dt; const q=p.life/p.max;
+    const drag=Math.exp(-3*dt); p.vx*=drag; p.vy*=drag; p.x+=p.vx*dt; p.y+=p.vy*dt;
+    let d=p.d, a=1;
+    if(q>0.4){ const t=(q-0.4)/0.6; d=p.d+(dMin-p.d)*Math.min(1,t*1.4); if(t>0.7) a=1-(t-0.7)/0.3; }
+    d=Math.max(dMin,d); const r=d/2;
+    c.globalAlpha=Math.max(0,a);
+    c.fillStyle=rgb(p.col); c.beginPath(); c.arc(p.x,p.y,r,0,Math.PI*2); c.fill();
+    if(p.ghost){
+      const gx=p.x+d*0.22, gy=p.y-d*0.15;
+      c.fillStyle=rgb(p.ghost); c.beginPath(); c.arc(gx,gy,r,0,Math.PI*2);
+      // ghost outside main, intersection = multiply colour
+      c.save(); c.beginPath(); c.arc(gx,gy,r,0,Math.PI*2); c.fill(); c.restore();
+      c.save(); c.beginPath(); c.arc(p.x,p.y,r,0,Math.PI*2); c.clip();
+      c.fillStyle=rgb(mul(p.col,p.ghost)); c.beginPath(); c.arc(gx,gy,r,0,Math.PI*2); c.fill(); c.restore();
+    }
+  }
+  c.globalAlpha=1;
+}
+
+// ---------- scene (world units; crop is W/U × H/U) ----------
+let plats=[];
+function setup(){
+  const r=cv.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height);
+  cv.width=W; cv.height=H; big.width=W; big.height=H;
+  const SW=W/U, SH=H/U;
+  const mk=(o)=>Object.assign({sv:[0,0],hist:[],acc:{t:0,y:0,p:0},parts:[],x:0,y:0},o);
+  plats=[
+    mk({id:'accel',w:4*U,h:1*U,seed:2,accel:true, motion:t=>{const per=4.2,tt=t%per;let p;
+      if(tt<1.5)p=Math.pow(tt/1.5,2.3);else if(tt<2)p=1;else if(tt<3.9){const q=(tt-2)/1.9;p=1-q*q*(3-2*q);}else p=0;
+      return [2.3+p*Math.max(2,SW-4.6), SH-1.45];}}),
+    mk({id:'move',w:2*U,h:1*U,seed:1, motion:t=>[1.4+(Math.sin(t*0.8)+1)*Math.min(1.6,SW*0.12), 2.05]}),
+    mk({id:'circ',w:2*U,h:1*U,seed:3, motion:t=>[SW-1.9+Math.cos(t*1.0)*0.8, 2.2+Math.sin(t*1.0)*0.6]}),
+    mk({id:'oneway',w:3*U,h:0.2*U,seed:4,thin:true, motion:t=>[SW*0.5+Math.sin(t*0.7+1)*Math.min(1.4,SW*0.08), 3.15]}),
+    mk({id:'wrap',w:2*U,h:1*U,seed:5, motion:t=>{const span=SW+3; const x=((t*2.2)%span)-1.5; return [x, 0.75];}}),
+  ];
+  plats.forEach(pl=>{ const [x,y]=pl.motion(0); pl.x=x; pl.y=y; pl.pts=null; pl.cache=null; });
+}
+function drawWorld(c,t){
+  c.fillStyle=SKY; c.fillRect(0,0,W,H);
+  // grapple node (rainbow rings) — the room's dominant element
+  const cx=W*0.5, cy=2.05*U, R0=0.75*U, rings=['#EE7284','#289AA4','#F1E6C7','#04586C','#888C03','#FCAE04','#FF5104','#FC1E00','#F1E6C7'];
+  rings.forEach((col,i)=>{ c.fillStyle=col; c.beginPath(); c.arc(cx,cy,R0*(1-i/rings.length),0,7); c.fill(); });
+  // ground: orange with pink frosting (static terrain stays as-is)
+  c.fillStyle='#E89A62'; c.fillRect(0,H-0.55*U,W,0.55*U); c.fillStyle='#FF51DE'; c.fillRect(0,H-0.55*U,W,0.09*U);
+}
+
+let last=performance.now(), T=0;
+function frame(now){
+  if(!W || !H || cv.getBoundingClientRect().width!==W){ setup(); if(!W||!H){ requestAnimationFrame(frame); return; } }
+  let dt=Math.min(0.05,(now-last)/1000); last=now; if(slow) dt*=0.35; if(!still) T+=dt;
+  const c=b; c.setTransform(1,0,0,1,0,0);
+  drawWorld(c,T);
+  for(const pl of plats){
+    const [nx,ny]=pl.motion(T), dx=nx-pl.x, dy=ny-pl.y, dist=Math.hypot(dx,dy);
+    const vx=dt&&!still?dx/dt:0, vy=dt&&!still?dy/dt:0;
+    pl.x=nx; pl.y=ny;
+    const e=1-Math.exp(-dt/0.1); pl.sv[0]+=(vx-pl.sv[0])*e; pl.sv[1]+=(vy-pl.sv[1])*e;
+    if(dist>1.5){ pl.hist=[]; pl.acc={t:0,y:0,p:0}; continue; }   // teleport guard (wrap)
+    pl.hist.push({t:T,x:nx,y:ny,vx,vy}); while(pl.hist.length&&pl.hist[0].t<T-0.3) pl.hist.shift();
+    if(pl.thin || still) continue;
+    const wf=Math.min(2,Math.max(1,(pl.w/U)/3)), rate=1.2*wf;
+    for(const L of LAYERS){
+      const dl=DELAYS[L.key];
+      const i=pl.hist.findIndex(h=>h.t>=T-dl); if(i<1) continue;
+      const cur=pl.hist[i], prev=pl.hist[i-1];
+      if(cur.t-dl < pl.hist[0].t) continue;
+      pl.acc[L.key]+=Math.hypot(cur.x-prev.x,cur.y-prev.y)*rate;
+      while(pl.acc[L.key]>=1){ pl.acc[L.key]-=1; emitFrom(pl,L,cur); }
+    }
+  }
+  for(const pl of plats) drawParts(c,pl,still?0:dt);
+  for(const pl of plats) drawPlatform(c,pl);
+
+  // CRT cell snap simulation (point-sample at cell centres, like CRTFilter step 3)
+  ctx.setTransform(1,0,0,1,0,0); ctx.imageSmoothingEnabled=false;
+  if(crt){
+    const gx=crt, gy=crt===960?540:360;            // cells over a full 1920x1080 frame
+    const cw=1920/gx, ch=1080/gy;                   // cell size in 1080p px
+    small.width=Math.max(1,Math.round(W/cw)); small.height=Math.max(1,Math.round(H/ch));
+    s.imageSmoothingEnabled=false; s.clearRect(0,0,small.width,small.height);
+    s.drawImage(big,0,0,small.width,small.height);
+    ctx.drawImage(small,0,0,W,H);
+  } else ctx.drawImage(big,0,0);
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('#crt button').forEach(bt=>bt.onclick=()=>{
+  crt=+bt.dataset.v; document.querySelectorAll('#crt button').forEach(x=>x.classList.toggle('on',x===bt)); });
+const Pin=document.getElementById('P'); Pin.oninput=()=>{ P=Pin.value/100; document.getElementById('Pv').textContent=P.toFixed(2); plats.forEach(p=>p.cache=null); };
+document.getElementById('slow').onchange=e=>slow=e.target.checked;
+document.getElementById('still').onchange=e=>still=e.target.checked;
+addEventListener('resize',setup);
+setup(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

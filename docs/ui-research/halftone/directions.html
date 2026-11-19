@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halftone Yönleri</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F1E6C7;--paper2:#FAF4E2;--ink:#140C1C;--mut:#4E4A4E;--red:#FC1E00;--yel:#FCAE04;--pink:#FF51DE;--sky:#71BAEA}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 16px 80px}
+h1{font:400 clamp(28px,4.6vw,50px)/1 "Archivo Black",sans-serif;margin:0 0 8px}
+h1 span{background:var(--ink);color:var(--paper);padding:0 .2em;display:inline-block;transform:rotate(-1.5deg)}
+.lede{max-width:76ch;font-size:16px}
+.bar{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:18px 0 22px;padding:12px 14px;border:3px solid var(--ink);background:var(--paper2)}
+.bar label{display:flex;gap:8px;align-items:center;font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase;cursor:pointer}
+.bar input[type=checkbox]{accent-color:var(--red);width:16px;height:16px}
+.bar input[type=range]{accent-color:var(--red);width:140px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:26px}
+.dir{border:4px solid var(--ink);background:var(--paper2);box-shadow:7px 7px 0 var(--ink)}
+.dir header{display:flex;gap:12px;align-items:baseline;padding:10px 14px;border-bottom:4px solid var(--ink)}
+.dir header b{font:400 30px/1 "Archivo Black",sans-serif}
+.dir header h2{margin:0;font:600 16px "IBM Plex Sans",sans-serif}
+.dir.rec{border-color:var(--red);box-shadow:7px 7px 0 var(--red)}
+.dir.rec header{border-color:var(--red)}
+.tag{font:600 11px "IBM Plex Mono",monospace;background:var(--red);color:#fff;padding:2px 6px;margin-left:auto;white-space:nowrap}
+canvas{display:block;width:100%;height:300px;background:var(--sky)}
+.body{padding:10px 14px 14px;font-size:14px}
+.body p{margin:4px 0 8px}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.pc div{font-size:13px}
+.pc h4{margin:0 0 2px;font:600 11px "IBM Plex Mono",monospace;text-transform:uppercase}
+.pc ul{margin:0;padding-left:16px}
+h3{font:400 22px "Archivo Black",sans-serif;margin:40px 0 8px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--paper2)}
+th,td{border:2px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--ink);color:var(--paper);font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase}
+a{color:var(--ink)}
+.hint{font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Halftone <span>yönleri</span></h1>
+<p class="lede">Araştırma agent'larının çıktısından dört yön. Hepsi pürüzsüz çiziliyor: piksel ızgarası yok, noktalar yuvarlak ve kenar yumuşatmalı. Her sahnede oyunun gerçek öğeleri de var (gökyüzü, turuncu zemin, halkalı kanca node'u). Böylece platformun dünyada nasıl durduğu ve node'la yarışıp yarışmadığı görülebiliyor. Kaynaklar: <a href="art-language-research.md">art-language-research.md</a>, <a href="texture-research.md">texture-research.md</a>, üretilen dokular <a href="textures/index.html">textures/index.html</a>.</p>
+
+<div class="bar">
+  <label><input type="checkbox" id="slow"> Yavaş çekim (0.35×)</label>
+  <label>Ölçek <input type="range" id="zoom" min="70" max="140" value="100"></label>
+  <label><input type="checkbox" id="node" checked> Kanca node'unu göster</label>
+  <span class="hint">Hızlanan platform (ortadaki) izi en iyi gösteren platform.</span>
+</div>
+
+<div class="grid">
+  <section class="dir"><header><b>A</b><h2>Pop-art panel</h2></header>
+    <canvas data-dir="A"></canvas>
+    <div class="body"><p>Kâğıt üstüne eşit boyutlu Ben-Day noktaları, kalın mürekkep çizgisi, UI'daki gibi sert ofset gölge. İz, dünyaya sabitlenmiş bir nokta ızgarasına oturuyor; yani arkada düzenli bir Ben-Day şeridi kalıyor.</p>
+      <div class="pc"><div><h4>Artı</h4><ul><li>UI (beton + boya) ile birebir aynı dil</li><li>Üst şerit temiz, okunur</li></ul></div><div><h4>Risk</h4><ul><li>Uzaktan düz renge dönüşebilir</li><li>En dekoratif yön, node ile yarışabilir</li></ul></div></div></div></section>
+
+  <section class="dir"><header><b>B</b><h2>Risograph zine</h2></header>
+    <canvas data-dir="B"></canvas>
+    <div class="body"><p>Çizgi yok. Üç şeffaf mürekkep katmanı (teal, sarı, pembe) çarpılarak üst üste basılıyor, aralarında hafif kayma ve kâğıt greni var. İzde her renk katmanı farklı bir gecikmeyle geride kalıyor ve hareket üç renk şeridine ayrılıyor.</p>
+      <div class="pc"><div><h4>Artı</h4><ul><li>En "basılı", en özgün doku</li><li>İzdeki renk ayrışması çok güçlü</li></ul></div><div><h4>Risk</h4><ul><li>Silüet zayıf, collider sınırı belirsiz</li><li>Mavi gökte renkler kararıyor</li></ul></div></div></div></section>
+
+  <section class="dir"><header><b>C</b><h2>Spider-Verse ofset</h2></header>
+    <canvas data-dir="C"></canvas>
+    <div class="body"><p>Düz sarı gövde, el çizimi hafif dalgalı mürekkep çizgisi. Renk dolgusu, hareketin tersine çizgiden birkaç piksel kayıyor. Noktalar yalnızca alt gölgede ve izde. İz noktaları saniyede 12 kez boyut değiştiriyor ("twos"), konumları akıcı kalıyor.</p>
+      <div class="pc"><div><h4>Artı</h4><ul><li>Dünyaya en uyumlu, en okunur</li><li>Hareket yönü bir bakışta görülüyor</li></ul></div><div><h4>Risk</h4><ul><li>Halftone hissi en zayıf</li><li>Referans görseldeki yoğun doku yok</li></ul></div></div></div></section>
+
+  <section class="dir rec"><header><b>D</b><h2>Karma: A dolgusu + C ofseti + iz</h2><span class="tag">ARAŞTIRMANIN ÖNERİSİ</span></header>
+    <canvas data-dir="D"></canvas>
+    <div class="body"><p>Referansındaki seyrek CMY deseni gövdede (büyük sarı, küçük mavi/pembe, alta doğru siyah). Üst şerit temiz kalıyor, kalın çizgi var. Dolgu hareketin tersine kayıyor (C'den). İzde boyutu mesafeyle küçülen noktalar ve kayık renk çiftleri var. Yoğun desen (referansın sağı) yalnızca gövdenin alt kenarında beliriyor.</p>
+      <div class="pc"><div><h4>Artı</h4><ul><li>Referansa en sadık, okunurluk korunuyor</li><li>Hem dolgu hem iz güçlü</li></ul></div><div><h4>Risk</h4><ul><li>En çok parametre: ayarı uzun sürer</li><li>Shader + iz sistemi birlikte gerekiyor</li></ul></div></div></div></section>
+</div>
+
+<h3>Ortak kararlar (her yönde geçerli)</h3>
+<table>
+<tr><th>Konu</th><th>Karar</th><th>Neden</th></tr>
+<tr><td>Desen uzayı</td><td>Platformun kendi koordinatı</td><td>Ekrana sabit desen hareketli nesnede "kayar", platform desenin içinde yüzüyor gibi görünür (Obra Dinn / Spider-Verse comp notları).</td></tr>
+<tr><td>Üst kenar</td><td>Düz ve temiz</td><td>Collider dikdörtgen. İniş yüzeyi her yönde en okunaklı bölge olmalı.</td></tr>
+<tr><td>Kenar yumuşatma</td><td>Shader'da <code>smoothstep</code> + <code>fwidth</code></td><td>Piksel hissi olmadan, her çözünürlükte keskin ama pürüzsüz nokta.</td></tr>
+<tr><td>Nokta alt sınırı</td><td>Ekranda ~6 px altına inmesin</td><td>Daha küçük nokta okunmuyor, gürültüye ve CRT ile moiré'ye dönüşüyor.</td></tr>
+<tr><td>İz</td><td>Particle System, Rate over Distance</td><td>Yalnızca hareket edince üretir. B'deki gecikmeli renk katmanları için 3 ayrı emitter.</td></tr>
+</table>
+<p class="hint">Bu önizleme Canvas 2D ile çizildi; renkler oyunda CRT filtresinden geçince biraz değişir. Kesin karar oyun içinde, CRT açıkken verilmeli.</p>
+</div>
+
+<script>
+(() => {
+const P = {paper:'#FAF4E2', y:'#FCAE04', c:'#597DCE', teal:'#289AA4', m:'#FF51DE', r:'#FC1E00', k:'#140C1C', navy:'#30346D', plum:'#97338A'};
+const SKY='#71BAEA';
+let slow=false, zoom=1, showNode=true;
+
+// ---- util ----
+function hash(n){ n=Math.sin(n*127.1)*43758.5453; return n-Math.floor(n); }
+function vnoise(x,seed){ const i=Math.floor(x), f=x-i, u=f*f*(3-2*f); return hash(i+seed*17.3)*(1-u)+hash(i+1+seed*17.3)*u; }
+const grain=(()=>{ const c=document.createElement('canvas'); c.width=c.height=160; const g=c.getContext('2d'); const d=g.createImageData(160,160);
+  for(let i=0;i<d.data.length;i+=4){ const v=200+Math.random()*55; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } g.putImageData(d,0,0); return c; })();
+
+function squircle(w,h,nTop,nBot){
+  const pts=[],N=96;
+  for(let i=0;i<N;i++){ const a=i/N*Math.PI*2, c=Math.cos(a), s=Math.sin(a), n=s<0?nTop:nBot, e=2/n;
+    pts.push([Math.sign(c)*Math.pow(Math.abs(c),e)*w/2, Math.sign(s)*Math.pow(Math.abs(s),e)*h/2]); }
+  return pts;
+}
+function wobble(pts,amp,seed,flatTop){
+  const n=pts.length; let s=0; const out=[];
+  for(let i=0;i<n;i++){ const p=pts[i], a=pts[(i-1+n)%n], b=pts[(i+1)%n];
+    let nx=b[1]-a[1], ny=-(b[0]-a[0]); const L=Math.hypot(nx,ny)||1; nx/=L; ny/=L;
+    s+=Math.hypot(p[0]-a[0],p[1]-a[1]);
+    let k=amp; if(flatTop && ny<-0.6) k*=0.15;
+    const d=(vnoise(s*0.04,seed)-0.5)*2*k;
+    out.push([p[0]+nx*d,p[1]+ny*d]); }
+  return out;
+}
+function path(ctx,pts,ox=0,oy=0){ ctx.beginPath(); ctx.moveTo(pts[0][0]+ox,pts[0][1]+oy); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0]+ox,pts[i][1]+oy); ctx.closePath(); }
+
+function dots(ctx,w,h,sp,ang,off,rFn,col){
+  const a=ang*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a), hw=w/2+sp, hh=h/2+sp;
+  let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+  for(const [x,y] of [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]]){ const u=x*ca+y*sa, v=-x*sa+y*ca; u0=Math.min(u0,u);u1=Math.max(u1,u);v0=Math.min(v0,v);v1=Math.max(v1,v); }
+  ctx.fillStyle=col;
+  for(let i=Math.floor(u0/sp);i<=Math.ceil(u1/sp);i++) for(let j=Math.floor(v0/sp);j<=Math.ceil(v1/sp);j++){
+    const u=i*sp, v=j*sp, x=u*ca-v*sa+off[0], y=u*sa+v*ca+off[1];
+    if(x<-hw||x>hw||y<-hh||y>hh) continue;
+    const r=rFn(x,y); if(r<0.4) continue;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); }
+}
+
+// ---- direction renderers: draw platform in local space ----
+const R = {
+  A(ctx,pl){
+    const {w,h}=pl, sp=h/4.2;
+    const pts=squircle(w,h,5,3.2);
+    ctx.save(); path(ctx,pts,6,6); ctx.fillStyle=P.k; ctx.fill(); ctx.restore();       // hard offset shadow
+    path(ctx,pts); ctx.fillStyle=P.paper; ctx.fill();
+    ctx.save(); path(ctx,pts); ctx.clip(); ctx.globalCompositeOperation='multiply';
+    const top=-h/2+h*0.24;
+    dots(ctx,w,h,sp,45,[0,0],(x,y)=>y<top?0:sp*0.36,P.r);
+    dots(ctx,w,h,sp*0.9,15,[2,1],(x,y)=>y<top+h*0.25?0:sp*0.14,P.c);
+    ctx.restore();
+    path(ctx,pts); ctx.lineWidth=4.5; ctx.lineJoin='round'; ctx.strokeStyle=P.k; ctx.stroke();
+  },
+  B(ctx,pl){
+    const {w,h}=pl, sp=h/5.2;
+    const base=wobble(squircle(w,h,5,2.6),h*0.07,pl.seed,true);
+    const vx=pl.vx, vy=pl.vy, vl=Math.hypot(vx,vy)||1;
+    const mis=Math.min(5, vl*0.035)+1.2, ox=-vx/vl*mis, oy=-vy/vl*mis;
+    const val=(x,y)=>Math.min(1,Math.max(0,y/h+0.5));
+    const layer=(col,ang,dx,dy,fn)=>{ ctx.save(); path(ctx,base,dx,dy); ctx.clip(); ctx.globalCompositeOperation='multiply';
+      ctx.globalAlpha=0.92; dots(ctx,w+20,h+20,sp,ang,[dx,dy],fn,col); ctx.restore(); };
+    // paper body (light) so sky doesn't darken the inks
+    path(ctx,base); ctx.fillStyle='#FBF3E4'; ctx.fill();
+    layer(P.teal,15, ox*2,oy*2,(x,y)=>sp*(0.12+0.38*val(x,y)));
+    layer(P.y,   75, 0,0,      (x,y)=>sp*(0.30+0.18*val(x,y)));
+    layer(P.m,   45,-ox,-oy,   (x,y)=>sp*(0.06+0.36*val(x,y)*val(x,y)));
+    ctx.save(); path(ctx,base); ctx.clip(); ctx.globalCompositeOperation='multiply'; ctx.globalAlpha=0.55;
+    ctx.fillStyle=ctx.createPattern(grain,'repeat'); ctx.fillRect(-w,-h,w*2,h*2); ctx.restore();
+    // single crisp line only on the walkable top edge
+    ctx.beginPath(); ctx.moveTo(-w*0.40,-h/2+1); ctx.lineTo(w*0.40,-h/2+1); ctx.lineWidth=2.5; ctx.strokeStyle=P.navy; ctx.lineCap='round'; ctx.stroke();
+  },
+  C(ctx,pl,t){
+    const {w,h}=pl, vx=pl.vx, vy=pl.vy, vl=Math.hypot(vx,vy);
+    const k=Math.min(1,vl/220), ox=vl? -vx/vl*(1.5+4*k):0, oy=vl? -vy/vl*(1.5+4*k):0;
+    const boil=Math.floor(t*8)%3;
+    const outline=wobble(squircle(w,h,5,3),h*0.05,pl.seed+boil*0.37,true);
+    const fill=squircle(w-4,h-4,5,3);
+    path(ctx,fill,ox,oy); ctx.fillStyle=P.y; ctx.fill();
+    ctx.save(); path(ctx,fill,ox,oy); ctx.clip();
+    const s0=h*0.05; // shadow halftone bottom 40%
+    dots(ctx,w,h,h/6,45,[ox,oy],(x,y)=>{ const q=(y-s0)/(h/2-s0); return q<=0?0:(h/6)*0.5*Math.min(1,q); },P.navy);
+    ctx.restore();
+    path(ctx,outline); ctx.lineWidth=4; ctx.lineJoin='round'; ctx.strokeStyle=P.k; ctx.stroke();
+  },
+  D(ctx,pl){
+    const {w,h}=pl, sp=h/4.6, vx=pl.vx, vy=pl.vy, vl=Math.hypot(vx,vy);
+    const k=Math.min(1,vl/220), ox=vl? -vx/vl*(1+3.5*k):0, oy=vl? -vy/vl*(1+3.5*k):0;
+    const pts=squircle(w,h,5,3);
+    const val=(x,y)=>Math.min(1,Math.max(0,(y+h*0.5)/h));
+    ctx.save(); path(ctx,pts,4,5); ctx.fillStyle='rgba(20,12,28,.35)'; ctx.fill(); ctx.restore();
+    path(ctx,pts,ox,oy); ctx.fillStyle=P.paper; ctx.fill();
+    ctx.save(); path(ctx,pts,ox,oy); ctx.clip(); ctx.globalCompositeOperation='multiply';
+    const top=-h/2+h*0.2;
+    dots(ctx,w,h,sp,0,[ox,oy],(x,y)=>y<top?0:sp*(0.27+0.14*val(x,y)),P.y);
+    dots(ctx,w,h,sp*0.85,15,[ox+2,oy-1],(x,y)=>y<top?0:sp*(0.05+0.26*val(x,y)),P.c);
+    dots(ctx,w,h,sp*0.85,75,[ox-2,oy+1],(x,y)=>y<top?0:sp*(0.04+0.25*val(x,y)),P.m);
+    dots(ctx,w,h,sp*0.9,45,[ox,oy],(x,y)=>{const v=val(x,y); return v<0.62?0:sp*(v-0.62)*1.15;},P.k);
+    dots(ctx,w,h,sp*0.95,105,[ox,oy],(x,y)=>{const v=val(x,y); return v<0.78?0:sp*(v-0.78)*1.6;},P.r);
+    ctx.restore();
+    path(ctx,pts); ctx.lineWidth=4; ctx.lineJoin='round'; ctx.strokeStyle=P.k; ctx.stroke();
+  }
+};
+
+// ---- trails ----
+function emitTrail(sc,pl,dir){
+  const vx=pl.vx, vy=pl.vy, vl=Math.hypot(vx,vy)||1, ux=vx/vl, uy=vy/vl;
+  const back=()=>{ // a point on the trailing half of the body
+    const a=(Math.random()-0.5)*pl.w*0.85, b=(Math.random()-0.5)*pl.h*0.7;
+    return [pl.x+a-ux*pl.w*0.12, pl.y+b-uy*pl.h*0.12]; };
+  if(dir==='A'){
+    const sp=pl.h/4.2; let [x,y]=back();
+    // snap to a world-space 45° lattice
+    const c=Math.SQRT1_2, u=(x*c+y*c)/sp, v=(-x*c+y*c)/sp, U=Math.round(u)*sp, V=Math.round(v)*sp;
+    x=U*c-V*c; y=U*c+V*c;
+    if(sc.parts.some(p=>p.life<0.15 && Math.abs(p.x-x)<1 && Math.abs(p.y-y)<1)) return;
+    const cols=[P.r,P.r,P.y,P.c];
+    sc.parts.push({x,y,vx:0,vy:0,r0:sp*0.36,life:0,max:0.9+Math.random()*0.5,col:cols[(Math.random()*4)|0],shift:P.c,mode:'A'});
+  } else if(dir==='B'){
+    // handled by delayed layer emitters
+  } else {
+    const [x,y]=back();
+    const big=pl.h*(0.13+Math.random()*0.15);
+    const cols = dir==='C' ? [P.navy,P.y,P.y,P.m] : [P.y,P.y,P.c,P.m,P.k,P.r];
+    const col=cols[(Math.random()*cols.length)|0];
+    const ghost = col===P.k||col===P.navy ? null : (col===P.c? P.m : P.c);
+    sc.parts.push({x,y,vx:-ux*30+(Math.random()-0.5)*14,vy:-uy*30+(Math.random()-0.5)*14,r0:big,life:0,max:0.8+Math.random()*0.8,col,ghost,
+      mode:dir, stepped:dir==='C'});
+  }
+}
+function drawParts(ctx,sc,dt){
+  sc.parts=sc.parts.filter(p=>p.life<p.max);
+  for(const p of sc.parts){
+    p.life+=dt; const q=Math.min(1,p.life/p.max);
+    p.vx*=Math.pow(0.2,dt); p.vy*=Math.pow(0.2,dt); p.x+=p.vx*dt; p.y+=p.vy*dt;
+    let qq = p.stepped ? Math.floor(q*12*p.max)/(12*p.max) : q;
+    const r=Math.max(0,p.r0*(1-qq));
+    if(r<0.3) continue;
+    if(p.mode==='A'){
+      ctx.fillStyle = q>0.5 ? p.shift : p.col;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7); ctx.fill();
+    } else if(p.mode==='B'){
+      ctx.save(); ctx.globalCompositeOperation='multiply'; ctx.globalAlpha=0.9*(1-q*0.4);
+      ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7); ctx.fill(); ctx.restore();
+    } else {
+      if(p.ghost){ ctx.save(); ctx.globalCompositeOperation='multiply'; ctx.fillStyle=p.ghost; ctx.beginPath(); ctx.arc(p.x+r*0.3,p.y-r*0.22,r,0,7); ctx.fill(); ctx.restore(); }
+      ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7); ctx.fill();
+    }
+  }
+}
+
+// ---- scenes ----
+const scenes=[...document.querySelectorAll('canvas[data-dir]')].map(cv=>({cv,ctx:cv.getContext('2d'),dir:cv.dataset.dir,parts:[],plats:[],W:0,H:0}));
+function layout(sc){
+  const dpr=Math.min(2,devicePixelRatio||1), r=sc.cv.getBoundingClientRect();
+  sc.W=r.width; sc.H=r.height; sc.dpr=dpr; sc.cv.width=Math.round(sc.W*dpr); sc.cv.height=Math.round(sc.H*dpr);
+  const W=sc.W,H=sc.H, z=zoom*Math.max(0.75,Math.min(1.25,W/620));
+  sc.plats=[
+    {seed:1,w:190*z,h:54*z,motion:t=>[W*0.2+Math.sin(t*0.9)*W*0.08, H*0.22]},
+    {seed:2,w:250*z,h:62*z,motion:t=>{const per=4.2,tt=t%per;let p;
+      if(tt<1.5)p=Math.pow(tt/1.5,2.3);else if(tt<2)p=1;else if(tt<3.9){const q=(tt-2)/1.9;p=1-q*q*(3-2*q);}else p=0;
+      return [W*0.28+p*W*0.42, H*0.62];}},
+    {seed:3,w:160*z,h:50*z,motion:t=>[W*0.82+Math.cos(t*1.2)*W*0.07, H*0.27+Math.sin(t*1.2)*H*0.10]},
+  ];
+  sc.plats.forEach(p=>{[p.x,p.y]=p.motion(0);p.vx=p.vy=0;p.acc=0;p.hist=[];p.accL=[0,0,0];});
+}
+function drawWorld(ctx,W,H,t){
+  ctx.fillStyle=SKY; ctx.fillRect(0,0,W,H);
+  if(showNode){ // rainbow-ring grapple node (game element) for hierarchy check
+    const cx=W*0.56, cy=H*0.22, rings=['#EE7284','#289AA4','#F1E6C7','#04586C','#888C03','#FCAE04','#FF5104','#FC1E00','#F1E6C7'];
+    const R0=Math.min(46, H*0.15);
+    rings.forEach((c,i)=>{ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(cx,cy,R0*(1-i/rings.length),0,7); ctx.fill(); });
+    ctx.fillStyle='#FAF7CD'; ctx.beginPath(); ctx.arc(cx,cy,R0*0.1,0,7); ctx.fill();
+  }
+  ctx.fillStyle='#E89A62'; ctx.fillRect(0,H-34,W,34); ctx.fillStyle='#FF51DE'; ctx.fillRect(0,H-34,W,5);
+}
+let last=performance.now(), T=0;
+function frame(now){
+  let dt=Math.min(0.05,(now-last)/1000); last=now; if(slow) dt*=0.35; T+=dt;
+  for(const sc of scenes){
+    const {ctx,W,H}=sc; ctx.setTransform(sc.dpr,0,0,sc.dpr,0,0);
+    drawWorld(ctx,W,H,T);
+    for(const pl of sc.plats){
+      const [nx,ny]=pl.motion(T); pl.vx=dt?(nx-pl.x)/dt:0; pl.vy=dt?(ny-pl.y)/dt:0;
+      const d=Math.hypot(nx-pl.x,ny-pl.y); pl.x=nx; pl.y=ny;
+      pl.hist.push([T,nx,ny]); while(pl.hist.length && pl.hist[0][0]<T-0.4) pl.hist.shift();
+      if(sc.dir==='B'){
+        // three ink layers, each emitted from a delayed copy of the platform
+        [[P.teal,0],[P.y,0.08],[P.m,0.16]].forEach(([col,delay],li)=>{
+          const h=pl.hist.find(e=>e[0]>=T-delay)||pl.hist[0]; const prev=pl.hist.find(e=>e[0]>=T-delay-dt)||h;
+          pl.accL[li]+=Math.hypot(h[1]-prev[1],h[2]-prev[2])*0.36;
+          while(pl.accL[li]>=1){ pl.accL[li]-=1;
+            const a=(Math.random()-0.5)*pl.w*0.8, b=(Math.random()-0.5)*pl.h*0.6;
+            sc.parts.push({x:h[1]+a,y:h[2]+b,vx:0,vy:0,r0:pl.h*(0.10+Math.random()*0.10),life:0,max:0.9+Math.random()*0.6,col,mode:'B'}); }
+        });
+      } else {
+        pl.acc+=d*(sc.dir==='A'?0.4:0.34); while(pl.acc>=1){ pl.acc-=1; emitTrail(sc,pl,sc.dir); }
+      }
+    }
+    drawParts(ctx,sc,dt);
+    for(const pl of sc.plats){ ctx.save(); ctx.translate(pl.x,pl.y); R[sc.dir](ctx,pl,T); ctx.restore(); }
+  }
+  requestAnimationFrame(frame);
+}
+function relayout(){ scenes.forEach(sc=>{sc.parts=[]; layout(sc);}); }
+document.getElementById('slow').onchange=e=>slow=e.target.checked;
+document.getElementById('node').onchange=e=>showNode=e.target.checked;
+document.getElementById('zoom').oninput=e=>{zoom=e.target.value/100; relayout();};
+addEventListener('resize',relayout);
+relayout(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

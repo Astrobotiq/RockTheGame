@@ -35,10 +35,12 @@ namespace New_Scripts.Player.Nodes.Spiral
         [Tooltip("UI/SpiralNode materyalli renderer. Açı script'ten sürülür: hit-stop ve pause'da durur.")]
         [SerializeField] private Renderer visual;
 
+        [Tooltip("Ters dönen spiral: çevrildikten (ya da bırakıldıktan) sonra düz koldan tam kıvrıma sarılma süresi (sn).")]
+        [SerializeField] private float rewindDuration = 0.4f;
+
         private static readonly int AngleId = Shader.PropertyToID("_Angle");
         private static readonly int DirectionId = Shader.PropertyToID("_Direction");
-        private static readonly int ProgressId = Shader.PropertyToID("_Progress");
-        private static readonly int ReversingId = Shader.PropertyToID("_Reversing");
+        private static readonly int CurlId = Shader.PropertyToID("_Curl");
         private static readonly int GlowId = Shader.PropertyToID("_Glow");
         private const float DimGlow = -0.6f;
 
@@ -46,6 +48,9 @@ namespace New_Scripts.Player.Nodes.Spiral
         private float _visualAngle;
         private float _glow;
         private bool _dimmed;
+        // Görsel kıvrım: 1 = tam spiral, 0 = düz kol. Ters dönen spiralde 1 − ReverseProgress'i izler.
+        private float _curl = 1f;
+        private int _visualSign;
 
         private bool _flipped;
         private SpiralReverseCounter _reverseCounter;
@@ -101,6 +106,12 @@ namespace New_Scripts.Player.Nodes.Spiral
             ReportedAngularSpeed = 0f;
         }
 
+        /// <summary>Parlama darbesi (tutunmadaki ile aynı); spiral çıkışında (SP8) çağrılır.</summary>
+        public void PulseGlow()
+        {
+            _glow = 1f;
+        }
+
         public void Flip()
         {
             _flipped = !_flipped;
@@ -121,6 +132,17 @@ namespace New_Scripts.Player.Nodes.Spiral
                     ? ReportedAngularSpeed * Mathf.Deg2Rad
                     : SpinSign * targetSpeed / Mathf.Max(idleReferenceRadius, 0.1f);
                 _visualAngle = Mathf.Repeat(_visualAngle + radiansPerSecond * Time.deltaTime, Mathf.PI * 2f);
+
+                // Yön değişince desen aynalanır; düz kol yerinde kalsın diye açı yarım tur kayar.
+                if (_visualSign != 0 && _visualSign != SpinSign)
+                    _visualAngle = Mathf.Repeat(_visualAngle + Mathf.PI, Mathf.PI * 2f);
+                _visualSign = SpinSign;
+
+                // Açılma sayacı birebir izler; yeniden sarılma (çevrilme, bırakış) rewindDuration içinde.
+                float targetCurl = IsReversing && IsConnected ? 1f - ReverseProgress : 1f;
+                _curl = targetCurl < _curl
+                    ? targetCurl
+                    : Mathf.MoveTowards(_curl, targetCurl, Time.deltaTime / Mathf.Max(rewindDuration, 0.01f));
 
                 if (_dimmed && !IsHeldBy(ConnectedPlayer))
                 {
@@ -148,8 +170,7 @@ namespace New_Scripts.Player.Nodes.Spiral
             visual.GetPropertyBlock(_block);
             _block.SetFloat(AngleId, _visualAngle);
             _block.SetFloat(DirectionId, SpinSign);
-            _block.SetFloat(ProgressId, ReverseProgress);
-            _block.SetFloat(ReversingId, IsReversing ? 1f : 0f);
+            _block.SetFloat(CurlId, _curl);
             _block.SetFloat(GlowId, _glow);
             visual.SetPropertyBlock(_block);
         }

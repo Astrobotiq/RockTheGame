@@ -1,31 +1,26 @@
 Shader "UI/SpiralNode"
 {
-    // Spiral node görseli (docs/spiral-node-tasarimi.md §9). Dönüş açısı script'ten gelir (_Angle):
-    // hit-stop ve pause sırasında script ilerletmez, görsel de durur. Pürüzsüz baskı / halftone, piksel art değil.
+    // Spiral node görseli: "Nokta ve Çizgi" (docs/ui-research/spiral-node, B2). Ortada bir nokta, ondan çıkan tek Arşimet
+    // çizgisi, 3 tur, çizgi kalınlığı = boşluk. Başka hiçbir şey yok.
+    // Dönüş açısı script'ten gelir (_Angle): hit-stop ve pause sırasında script ilerletmez, görsel de durur.
+    // Görsel normal node ile aynı boyda (20 birim) ve aynı dışa doğru sönmeyle çizilir. Çizgi dönüş yönünün arkasında kıvrılır; _Direction = -1 ise desen ayna görüntüsüdür.
+    // _Curl: kıvrım (1 = _Turns tur, 0 = merkezden kenara düz kol). Ters dönen spiral yön değiştirmeye yaklaştıkça açılır,
+    // çevrilince ters yöne yeniden sarılır (SpiralNode sürer). Çizgi kalınlığı kıvrımdan bağımsız sabittir.
     Properties
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-        _RampTex ("Ramp Texture (1D)", 2D) = "white" {}
-        _RampU ("Disk Color (ramp U)", Range(0, 1)) = 0.15
-        _InkColor ("Ink Color", Color) = (0.1, 0.08, 0.12, 1)
-        _AccentColor ("Accent Color (chevrons)", Color) = (1, 0.85, 0.3, 1)
+        _PaperColor ("Paper (zemin)", Color) = (0.9333, 0.9176, 0.7804, 1)
+        _LineColor ("Line (çizgi + nokta)", Color) = (1, 0.3176, 0.0157, 1)
 
         _Angle ("Angle (radians, script)", Float) = 0
         _Direction ("Direction (+1 CCW, -1 CW)", Float) = 1
-        _ArmCount ("Arm Count", Float) = 3
-        _Twist ("Twist", Float) = 2.2
-        _ArmWidth ("Arm Width (0-1)", Range(0.05, 0.95)) = 0.45
-
-        _DotDensity ("Halftone Dot Density", Float) = 18
-        _InnerRadius ("Inner Radius (0-0.5)", Range(0, 0.5)) = 0.08
-        _RingInner ("Chevron Ring Inner (0-0.5)", Range(0, 0.5)) = 0.4
-        _RingOuter ("Chevron Ring Outer (0-0.5)", Range(0, 0.5)) = 0.49
-        _ChevronCount ("Chevron Count", Float) = 10
-        _ChevronSlant ("Chevron Slant", Float) = 6
-
-        _Progress ("Reverse Progress (0 = hidden)", Range(0, 1)) = 0
-        _Reversing ("Reversing (0/1)", Float) = 0
+        _Turns ("Turns", Float) = 3
+        _Curl ("Curl (1 = Turns, 0 = düz kol; script)", Range(0, 1)) = 1
+        _LineWidth ("Line Width (pitch oranı)", Range(0.2, 0.8)) = 0.5
+        _DotRadius ("Center Dot Radius (0-0.5)", Range(0, 0.5)) = 0.06
         _Glow ("Glow (-1 dim .. 1 bright)", Range(-1, 1)) = 0
+        _OuterFadeStart ("Outer Fade Start (0-1)", Range(0, 1)) = 0.4
+        _OuterFadePower ("Outer Fade Power", Range(0.1, 5)) = 0.96
 
         [HideInInspector] _StencilComp ("Stencil Comparison", Float) = 8
         [HideInInspector] _Stencil ("Stencil ID", Float) = 0
@@ -86,13 +81,9 @@ Shader "UI/SpiralNode"
             };
 
             sampler2D _MainTex;
-            sampler2D _RampTex;
-            fixed4 _InkColor;
-            fixed4 _AccentColor;
-            float _RampU;
-            float _Angle, _Direction, _ArmCount, _Twist, _ArmWidth;
-            float _DotDensity, _InnerRadius, _RingInner, _RingOuter, _ChevronCount, _ChevronSlant;
-            float _Progress, _Reversing, _Glow;
+            fixed4 _PaperColor;
+            fixed4 _LineColor;
+            float _Angle, _Direction, _Turns, _Curl, _LineWidth, _DotRadius, _Glow, _OuterFadeStart, _OuterFadePower;
 
             v2f vert(appdata_t IN)
             {
@@ -110,16 +101,6 @@ Shader "UI/SpiralNode"
                 return smoothstep(threshold - w, threshold + w, value);
             }
 
-            // 45° döndürülmüş halftone ızgara: tone 0..1 → nokta yarıçapı.
-            float halftone(float2 uv, float tone)
-            {
-                float2 r = float2(uv.x + uv.y, uv.y - uv.x) * 0.70710678 * _DotDensity;
-                float2 cell = frac(r) - 0.5;
-                float d = length(cell);
-                float radius = sqrt(saturate(tone)) * 0.62;
-                return 1.0 - aastep(radius, d);
-            }
-
             fixed4 frag(v2f IN) : SV_Target
             {
                 float2 uv = IN.texcoord - 0.5;
@@ -127,62 +108,36 @@ Shader "UI/SpiralNode"
                 float edge = 1.0 - aastep(0.5, dist);
                 if (edge <= 0.0) return fixed4(0, 0, 0, 0);
 
-                float polar = atan2(uv.y, uv.x);              // CCW pozitif
-                float a = (polar - _Angle) / TAU;              // desen _Angle kadar döner
-                float rn = saturate(dist / max(_RingInner, 1e-3));
+                float dir = _Direction >= 0.0 ? 1.0 : -1.0;
+                // Ayna: CW'de x ters çevrilir; desen kendi çerçevesinde _Angle*dir kadar döner (dönüş yönüne göre).
+                float phi = atan2(uv.y, uv.x * dir) - _Angle * dir;
 
-                // --- Spiral kollar (iç disk) ---
-                // Kollar dönüş yönünün tersine kıvrılır. Her kolun ön kenarı dolu mürekkep, arkası halftone
-                // noktalarla söner: dönerken kuyruğu arkada bırakır, durağan karede de yön okunur.
-                float arm = frac(a * _ArmCount - _Direction * _Twist * rn);
-                float lead = _Direction > 0 ? arm : 1.0 - arm;   // ön kenarda 1, arkada 0
-                float tone = lead * lead;
-                float solid = aastep(1.0 - _ArmWidth * 0.25, lead);
-                float dots = max(halftone(IN.texcoord, tone * (1.0 - rn * 0.3)), solid);
+                // Arşimet çizgisi: yarıçap tur başına pitch kadar büyür, çizgi dönüşün arkasında kalır.
+                // Kıvrım _Curl ile azalır; turns → 0'da çizgi phi = 0 yönünde düz bir kol olur.
+                float turns = max(_Turns, 0.5) * saturate(_Curl);
+                float f = dist * 2.0 * turns + phi / TAU;      // 2·turns = 1 / pitch
+                float d = abs(frac(f + 0.5) - 0.5);            // f biriminde çizgiye uzaklık
+                // Dünya biriminde dik uzaklık = d / |∇f|; kalınlık tam kıvrık spiraldeki ile aynı kalır.
+                float gradient = sqrt(4.0 * turns * turns + 1.0 / max(TAU * TAU * dist * dist, 1e-6));
+                float halfWidth = _LineWidth * 0.5 * (0.5 / max(_Turns, 0.5));
+                float stroke = 1.0 - aastep(halfWidth, d / gradient);
 
-                fixed3 paper = tex2D(_RampTex, float2(_RampU, 0.5)).rgb;
-                fixed4 disk = fixed4(lerp(paper, _InkColor.rgb, dots), 1.0);
-                float diskMask = (1.0 - aastep(_RingInner, dist)) * aastep(_InnerRadius, dist);
-                // merkez göbek: düz mürekkep
-                float hub = 1.0 - aastep(_InnerRadius, dist);
+                float hub = 1.0 - aastep(_DotRadius, dist);
+                float ink = max(stroke, hub);
 
-                // --- Dış halka: yön dişleri (chevron) ---
-                float ringMask = aastep(_RingInner + 0.012, dist) * (1.0 - aastep(_RingOuter, dist));
-                float ringMid = (_RingInner + _RingOuter) * 0.5;
-                float ringHalf = max((_RingOuter - _RingInner) * 0.5, 1e-3);
-                float across = abs(dist - ringMid) / ringHalf;  // 0 ortada, 1 kenarda
-                // Ucu dönüş yönünü gösteren ">" şekli: kenarlar ortaya göre geride kalır.
-                float chevU = a * _ChevronCount + _Direction * across * _ChevronSlant * 0.1;
-                float chevIndex = floor(chevU);
-                float chev = frac(chevU);
-                float tooth = aastep(0.45, chev) * (1.0 - aastep(0.9, chev));
-
-                // Ters dönen spiral: dişler ilerlemeyle dolar (sabit konumda, desenle dönmez).
-                float baseIndex = frac(-(polar / TAU) * _Direction);
-                float filled = step(baseIndex, _Progress) * step(0.001, _Progress);
-
-                fixed3 ringCol = lerp(_InkColor.rgb, _AccentColor.rgb, tooth);
-                float ringAlpha = lerp(0.55, 1.0, tooth);
-                if (_Reversing > 0.5)
-                {
-                    // Çift yönlü işaret: ters yöndeki ince ikinci diş sırası.
-                    float backU = a * _ChevronCount - _Direction * across * _ChevronSlant * 0.1 + 0.5;
-                    float back = frac(backU);
-                    float backTooth = aastep(0.6, back) * (1.0 - aastep(0.75, back)) * (1.0 - aastep(0.55, across));
-                    ringCol = lerp(ringCol, _AccentColor.rgb * 0.6 + 0.2, backTooth * 0.8);
-                    ringAlpha = max(ringAlpha, backTooth);
-                    ringCol = lerp(ringCol * 0.55, ringCol, max(filled, 1.0 - step(0.001, _Progress)));
-                    ringCol = lerp(ringCol, fixed3(1, 1, 1), filled * tooth * 0.35);
-                }
-
-                fixed4 col = fixed4(0, 0, 0, 0);
-                col = lerp(col, disk, diskMask);
-                col = lerp(col, fixed4(_InkColor.rgb, 1), hub);
-                col = lerp(col, fixed4(ringCol, ringAlpha), ringMask);
+                fixed4 col = fixed4(lerp(_PaperColor.rgb, _LineColor.rgb, ink), 1.0);
 
                 // Parlama / soluklaşma
                 col.rgb = _Glow >= 0 ? lerp(col.rgb, 1.0 - (1.0 - col.rgb) * 0.4, _Glow) : col.rgb * (1.0 + _Glow * 0.6);
                 col.a *= _Glow >= 0 ? 1.0 : (1.0 + _Glow * 0.5);
+
+                // Normal node (CircularRings) ile aynı dışa doğru sönme: aynı ayak izi.
+                float nr = dist / 0.5;
+                if (nr > _OuterFadeStart)
+                {
+                    float t = (nr - _OuterFadeStart) / (1.0 - _OuterFadeStart + 0.0001);
+                    col.a *= pow(1.0 - saturate(t), _OuterFadePower);
+                }
 
                 col.a *= edge;
                 col *= IN.color;

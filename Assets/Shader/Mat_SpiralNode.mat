@@ -33,17 +33,23 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Angle: 0
+    - _Angle: 0.03
     - _ArmCount: 3
     - _ArmWidth: 0.45
     - _ChevronCount: 10
     - _ChevronSlant: 6
     - _ColorMask: 15
-    - _Direction: 1
+    - _Curl: 1
+    - _Direction: 1.09
     - _DotDensity: 18
-    - _Glow: 0
+    - _DotRadius: 0.06
+    - _Glow: -0.227
     - _InnerRadius: 0.08
+    - _LineWidth: 0.5
+    - _OuterFadePower: 1.04
+    - _OuterFadeStart: 0.9
     - _Progress: 0
+    - _RampU: 0.15
     - _Reversing: 0
     - _RingInner: 0.4
     - _RingOuter: 0.49
@@ -52,9 +58,12 @@ Material:
     - _StencilOp: 0
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
+    - _Turns: 2
     - _Twist: 2.2
     m_Colors:
     - _AccentColor: {r: 1, g: 0.85, b: 0.3, a: 1}
     - _InkColor: {r: 0.1, g: 0.08, b: 0.12, a: 1}
+    - _LineColor: {r: 1, g: 0.3176, b: 0.0157, a: 1}
+    - _PaperColor: {r: 0.9333, g: 0.9176, b: 0.7804, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

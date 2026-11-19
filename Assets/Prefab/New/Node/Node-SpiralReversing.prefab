@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 1}
+  m_LocalScale: {x: 20, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6406092073164439418}
@@ -58,7 +58,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9b6c3b83cbd6207488baab6d9db3747b, type: 2}
+  - {fileID: 2100000, guid: 08165190eff608348a09b7e3530c43cf, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -236,5 +236,6 @@ MonoBehaviour:
   direction: 1
   targetSpeed: 32
   reverseEveryDegrees: 360
-  idleReferenceRadius: 3
+  idleReferenceRadius: 8
   visual: {fileID: 7218128135261326849}
+  rewindDuration: 0.4

@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node, spiral node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-20 (spiral çıkış hızı, SP8).*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-20 (zamanlı çiçek node'u).*
 
 ## Tasarım niyeti
 
@@ -76,6 +76,22 @@ Bu asimetri bilinçli bir tercih (GDD §5.1).
 - **Fırlatma:** tek kanca bırakışı, çift kancada iki tetiği birden bırakma ve slingshot çıkışında (ortalama) node hızı × `MovingNodeLaunchMultiplier` `AirEntry.CarriedVelocity` ile aktarılır: Y normal hıza eklenir, X taşınır ve hava sürtünmesinden etkilenmez (duvardan ayrılma kuralı, [`platforms.md`](platforms.md)); duvar kuralından farkı, taşınan X `MovingNodeCarryDecayTime` (0.6 sn) içinde doğrusal olarak sıfıra iner (`AirEntry.CarriedDecayTime`). Çarpışmayla kopma ve çift kancadan tek kancaya düşüş aktarmaz.
 - **Prefab:** `Assets/Prefab/New/Node/Node-Moving.prefab`: kök `PlatformController` + kinematik `Rigidbody2D` + `SinePingPongStrategy` (uçlarda yavaşlayan gidip gelme, period 4), child `Node` (node katmanı, oda node'larının kopyası). `startPoint`/`endPoint` **dünya koordinatı**: her yerleştirmede ayarlanmalı, yoksa node (0,0)–(6,0) arasına ışınlanır. Başka strateji (dairesel vb.) aynı şekilde takılabilir.
 
+### Zamanlı çiçek node'u (`FlowerCycle`)
+
+*Görsel ve zamanlama: `Assets/Scripts/New-Scripts/Flower/` (`FlowerBloom`, `FlowerCycle`, `FlowerCycleMath`), shader'lar `Assets/Shader/Flower*.shader`, prefab `Assets/Prefab/New/Node/Node-Flower.prefab`.*
+
+- **Döngü:** kapalı 1.8 → açılış 0.5 → açık 2.2 → uyarı 0.7 → snap 0.15 sn (`FlowerCycleTimings.Default`, başlangıç değerleri; hissi gamepad ile ayarlanır). Çiçekleri senkronsuzlaştırmak için `phaseOffset`.
+- **Tutulabilirlik:** açılışın `grabAt` (0.3) sn sonrasından snap başladıktan `coyote` (0.1) sn sonrasına kadar. Uyarı fazında hâlâ tutulur. Prefab'ın `Node` çocuğu (Grapple katmanı, `CircleCollider2D`) yalnızca tutulabilirken açıktır: `NodeDetector` kapalı çiçeği görmez, hedef işareti de çıkmaz.
+- **Kapanırken tutuluyorsa:** `PlayerController.ReleaseUngrabbableNodes` (her fizik adımı, `RefreshMovingAnchors`'tan sonra) tutulan node'un `IGrabbableNode.IsGrabbable`'ına bakar. Tutulamaz olduysa durumun `INodeReleaseHandler.ReleaseByNode`'unu çağırır:
+  - `SwingingState`: tetik bırakılmış gibi tek kanca bırakışı (`AirEntry.SwingRelease`, node hızı taşınır), üstüne çiçekten dışa `ReleaseImpulse` (6 b/sn) hız. Spiral çıkış boost'u yok.
+  - `DualSwingingState`: o kol bırakılır, diğer kolla tek kancaya düşülür (hop yok), itme hıza eklenir.
+  - `SlingshotState` ve diğer durumlar bu kuralı **uygulamaz**: gerilme 0.1 sn sürer, anchor'lar sabitlenmiştir.
+- **Test:** `FlowerNodeRulesTests` (PlayMode): kapalı tutulmaz, açık tutulur, kapanınca kanca kopar, oyuncu dışa itilir. Bu davranış `bozulmamali-davranislar.md`'ye henüz kural olarak eklenmedi.
+- **Test odası:** `RoomNew-FlowerTest` (roomId 100, NewScene'de x −640, spiral test odasının yanında; `RoomManager.rooms`'a kayıtlı, komşusuz). Spiral odasının zemin/duvar/tavan geometrisi (sütun ve havadaki platformlar silindi), hepsi zeminden 8 birim yukarıda, yerden tutunulur. Sırayla: `Cicek-Tekli` (açılıp kapanma ve kapanırken bırakılma), `Cicek-Cift-A`/`B` (ters fazda; çift kanca, biri kapanınca tek kancaya düşüş), `Node-Normal` (karşılaştırma), `Cicek-Zincir-1..4` (10 birim arayla, fazlar 1.3 sn kayık: sırayla açılan yol), `Cicek-Slingshot` (aynı çiçeğe iki kol: kapanırken slingshot kuralı dışında kalır). Oraya başlamak için `LevelBootstrapper.startingRoom` = `RoomNew-FlowerTest`.
+- **Boyut:** `Node-Flower` prefab kökünün ölçeği 4 (çiçek çapı ~9 birim; oyuncu 1×1, diğer node görselleri 20 birim). Çiçeği büyütüp küçültmek için yalnızca kök ölçeği değiştirilir (geometri, halo, titreme ve collider birlikte ölçeklenir); `Node` collider'ının yarıçapı 0.5 / ölçek olarak tutulur ki dünyada 0.5 kalsın. Zincir ve çift düzeninde komşu çiçekler 10 birim arayla durur: ölçek 4'ün üstüne çıkarsa çakışırlar.
+- **Derinlik:** yapraklar derinlik yazar (ZWrite), kameraya doğru çıkan yaprak z = 0'daki oyuncu sprite'larının derinlik testini geçerdi ve oyuncu çiçeğin arkasında kalırdı. `FlowerBloom.depthBehind` (1.25 × petal boyu) çiçeğin tamamını kameradan uzağa iter; en öne çıkan yaprak (kapalı hal, ~1 × petal boyu) bile oyuncunun arkasında kalır. Anchor node'un Vector2 konumunu kullandığı için z etkilemez. Oyuncu `Player` sorting layer'ında, çiçek `Default`'ta.
+- **Ayar:** `FlowerCycle.releaseImpulse` (6) çiçeğin kendi alanı; PlayerStats'ta değil. Çiçek görseli ve yayları (açılış 180/14.8, snap 900/48) `FlowerBloom`'da.
+
 ### Dönen node (`FullRotationNode`)
 
 - Yalnızca **tek kanca** sırasında sayılır. Tutunulan noktada `FullRotationNode` varsa bir `FullRotationTracker` oluşur. Tracker ardışık yönler arasındaki işaretli açıyı biriktirir, iki yön de sayılır.
@@ -144,6 +160,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 - Kanca girişleri: `NormalState.CheckGroundGrappleInput` (yerde), `NormalState.ProcessGrappleInput` (havada), `SwingingState.CheckOppositeGrappleCast`, `WallSlidingState` (kayarken). Hepsi node'u `PlayerController.AttachAnchor` ile bağlar.
 - `Player/Nodes/Spiral/`: `SpiralNode`, `SpiralDriveMath` ve `SpiralReverseCounter` (saf C#, testli); motor `SwingingState.DriveSpiral`, takılma `IsSpiralBlocked`. Shader `Assets/Shader/SpiralNode.shader`, prefab'lar `Node-Spiral`, `Node-SpiralReversing`.
 - `Player/Nodes/Rotation/`: `FullRotationNode`, `FullRotationTracker` (saf C#, testli), `SpeedBoostRotationEffect`, `RotationEventTrigger`
+- `Player/Nodes/IGrabbableNode.cs`, `Player/States/INodeReleaseHandler.cs` (zamanlı node bırakışı), `PlayerController.ReleaseUngrabbableNodes`; çiçek: `Flower/`
 - Prefab'lar: `Assets/Prefab/New/Node/` (hareketli: `Node-Moving.prefab`)
 - Oda 5'teki yavaş zaman tutorial'ı (`SwingTutorial`, ilk node): [`swing-tutorial.md`](swing-tutorial.md). `NodeDetector` kurallarını `PlayerController.TryCastGrapple` ile kullanır.
 

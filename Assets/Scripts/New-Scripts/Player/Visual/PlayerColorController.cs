@@ -31,6 +31,9 @@ namespace New_Scripts.Player.Visual
         [SerializeField] private Color crownReplaceColor3 = new Color(0.3f, 0.3f, 0.3f); // Replacement 3
         [SerializeField] private float tolerance3 = 0.05f;
 
+        private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
+        private static readonly int FlashColorId = Shader.PropertyToID("_FlashColor");
+
         private Tween bodyTween;
         private Tween[] armTweens;
         private Material bodyMaterial;
@@ -62,6 +65,17 @@ namespace New_Scripts.Player.Visual
 
                 bodyMaterial.SetFloat("_Blend", 0f);
             }
+        }
+
+        /// <summary>
+        /// Gövde silüetini <paramref name="color"/> yönünde <paramref name="amount"/> (0-1) oranında boyar (stamina uyarısı).
+        /// Dash'in <c>_Blend</c> değerine dokunmaz; ikisi birlikte çalışır.
+        /// </summary>
+        public void SetFlash(float amount, Color color)
+        {
+            if (bodyMaterial == null) return;
+            bodyMaterial.SetColor(FlashColorId, color);
+            bodyMaterial.SetFloat(FlashAmountId, amount);
         }
 
         public void SetDashExhausted()

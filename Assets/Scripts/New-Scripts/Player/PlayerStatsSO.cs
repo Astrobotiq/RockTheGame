@@ -72,6 +72,12 @@ namespace New_Scripts.Player
         public float ClimbVerticalJumpVelocity = 15f;
         public float MaxWallStamina = 6f;
         public float StaminaWarningThreshold = 1.5f;
+        [Tooltip("Uyarı eşiğinde karakterin yanıp sönme hızı (Hz).")]
+        public float StaminaFlashHzAtThreshold = 7f;
+        [Tooltip("Enerji bittiğinde yanıp sönme hızı (Hz); eşikten sıfıra doğru hızlanır.")]
+        public float StaminaFlashHzAtZero = 12f;
+        [Tooltip("Flash'ın gövdeyi kırmızıya çekme oranı (1 = düz kırmızı).")]
+        [Range(0f, 1f)] public float StaminaFlashAmount = 0.7f;
         public float WallSnapRaycastDistance = 2f;
         public float WallSnapSafetyOffset = 0.02f;
         [Tooltip("Tirmanirken/kayarken duvar bu mesafeye kadar uzaklasirsa karakter duvara cekilir ve temas kopmus sayilmaz.")]

@@ -28,7 +28,8 @@ Shader "Sprites/Custom/PaletteSwap"
         _Blend ("Swap Blend", Range(0.0, 1.0)) = 0.0
 
         [Header(Flash)]
-        _FlashAmount ("Flash Amount (beyaz silüet)", Range(0.0, 1.0)) = 0.0
+        _FlashAmount ("Flash Amount (silüeti _FlashColor'a çeker)", Range(0.0, 1.0)) = 0.0
+        _FlashColor ("Flash Color", Color) = (1, 1, 1, 1)
     }
 
     SubShader
@@ -93,6 +94,7 @@ Shader "Sprites/Custom/PaletteSwap"
 
             float _Blend;
             float _FlashAmount;
+            fixed4 _FlashColor;
 
             v2f vert(appdata_t IN)
             {
@@ -145,8 +147,8 @@ Shader "Sprites/Custom/PaletteSwap"
                 // Combine with Sprite Renderer's Vertex Tint / Color
                 finalColor.rgb *= IN.color.rgb;
 
-                // Beyaz flaş (ölüm anı): silüet beyaza çekilir
-                finalColor.rgb = lerp(finalColor.rgb, fixed3(1, 1, 1), _FlashAmount);
+                // Flaş (ölüm anı, stamina uyarısı): silüet _FlashColor'a çekilir; varsayılan beyaz
+                finalColor.rgb = lerp(finalColor.rgb, _FlashColor.rgb, _FlashAmount);
 
                 // Premultiply alpha (Standard for Unity Sprites)
                 finalColor.rgb *= finalColor.a;

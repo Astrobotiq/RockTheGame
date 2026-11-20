@@ -178,6 +178,7 @@ namespace New_Scripts.Player.States
             context.PhysicsHandler.ClingingWallDirection = 0;
             context.LatestLedgeResult = default;
             context.LedgeHoldTimerProgress = 0f;
+            context.UIController.StopStaminaWarning();
 
             if (HapticManager.Instance != null)
             {

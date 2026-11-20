@@ -1,6 +1,6 @@
 # Duvar: tırmanma, kenardan çıkma, kayma, duvar zıplaması
 
-*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-16 (duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında; tutunmaya giriş toleranslı; havadan duvar zıplaması; duvardan ayrılınca coyote yok; yer/hava tek durum `NormalState`).*
+*GDD §5.1, §5.2 "Duvar". Son kod doğrulaması: 2026-11-20 (stamina göstergesi halka yerine karakter yanıp sönmesi; 2026-11-16: duvara yapışma, temas kaybı kilitlemez; duvar zıplaması buffer'lı; ledge climb fizik adımında; tutunmaya giriş toleranslı; havadan duvar zıplaması; duvardan ayrılınca coyote yok; yer/hava tek durum `NormalState`).*
 
 ## Tasarım niyeti
 
@@ -26,15 +26,14 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 - **Tutunmaya giriş (16 Kasım 2026, PF-8):** yerden ve havadan tırmanmaya (bumper basılı) ve havada kaymaya (düşerken stick duvara doğru) girmek için fiilî temas şart değil; `PlayerController.CanGrabWall`, sensör temasını **ya da** duvarın `WallClimbContactTolerance` (0.15) içinde olmasını kabul eder. Eskiden yalnızca ~0.045 temas sayılıyordu.
 - **Girişte duvara yapışma:** `WallSnapRaycastDistance` mesafesine kadar duvara doğru ışın atılır ve karakter `WallSnapSafetyOffset` boşlukla duvara oturtulur. Dikey hız sıfırlanır. Giriş artık yalnızca duvar temas/tolerans içindeyken olduğundan bu mesafenin pratik rolü, tolerans içindeki boşluğu tek seferde kapatmaktır; 2 birimlik değere ulaşan bir durum yok. Değer bilerek değiştirilmedi.
 - **Duvara yapışma:** her fizik adımında collider merkezinden duvara `WallClimbContactTolerance` (0.15) payı kadar ışın atılır. Duvar toleransın içindeyse ve `WallSnapSafetyOffset`'ten uzaksa X hızı boşluğu o adımda kapatacak değere ayarlanır (`WallClingMath.ClosingSpeed`); çarpışmayı yine `KinematicPhysicsHandler` çözer, `Rigidbody2D.position` yazılmaz. Hareketli duvarın tek adımlık taşıma kaçağı (0.08) ya da hizasız collider (0.045–0.075) böylece temas kaybı sayılmaz. Tırmanma kopması yalnızca sensör **ve** ışın duvarı bulamazsa olur. Kayma (`WallSlidingState`) aynı toleransı kullanır (stick duvara itiyorsa).
-- **Dayanıklılık** hareket edip etmemekten bağımsız, her saniye 1 azalır (`ConsumeWallStamina(Time.deltaTime)`). Göstergesi **kırılan stamina halkası**dır (`HudStaminaRing`, aşağıya bak); tırmanmaya girince açılır.
+- **Dayanıklılık** hareket edip etmemekten bağımsız, her saniye 1 azalır (`ConsumeWallStamina(Time.deltaTime)`). Göstergesi ekranda bir arayüz değil, **karakterin yanıp sönmesi**dir (aşağıya bak).
 
-### Kırılan stamina halkası (`HudStaminaRing`)
+### Stamina yanıp sönmesi (`StaminaWarningFlash`)
 
-- Karakterin (collider merkezinin) etrafında 6 sarı boyalı beton parça. Her `MaxWallStamina / 6` kaybında **son parça** kopar (6 sn'de saniyede bir): dışarı ve yukarı fırlar, döner, düşer, 0,7 sn'de söner. Sağlam parça sayısı `StaminaRingMath.IntactPieces` (EditMode testli).
-- Enerji `StaminaWarningThreshold` (1,5 sn) altına inince kalan parçalar sarı/kırmızı yanıp söner. Uyarı **görsel**; titreşim profili yok.
-- Yere inince / launch pad / respawn `RefillWallStamina` → parçalar yaylanarak geri gelir, 0,45 sn sonra halka çekilir.
-- Overlay canvas'ta (CRT dışında, keskin), `UiPixelScale` ile tam sayı sanat pikseli; konum her kare `WorldToScreenPoint` + piksele yuvarlama. Eski World Space `StaminaCanvas` `PlayerUIController.Awake`'te kapatılır (sahnede duruyor, görünmez). Unscaled zaman.
-- Boyut ve hareket değerleri `HudStaminaRing` Inspector'ında (dış yarıçap 22, kalınlık 5 sanat pikseli, fırlama 70/50, yerçekimi 300, dönüş 240°/sn): başlangıç önerisi, gamepad ile ayarlanır.
+- Karakterin etrafında hiçbir öğe yok (20 Kasım 2026'da kırılan halka kaldırıldı: tırmanma animasyonunu kapatıyordu). Kalan süre `StaminaWarningThreshold` (1,5 sn) altına inince **gövde** normal renk ile kırmızı (`UiThemeSO.Red`, %70) arasında yanıp söner; hız eşikte 7 Hz'den sıfırda 12 Hz'e hızlanır. İlk 4,5 sn'de gösterge yok (bilinçli, Celeste gibi).
+- Mantık `StaminaFlashState` (saf, EditMode testli), her kareyi `StaminaWarningFlash` (`Time.unscaledDeltaTime`) sürer, `PlayerColorController.SetFlash` shader'ın `_FlashAmount`/`_FlashColor` özelliğine yazar. Dash'in `_Blend`'i (taç grileşmesi) ayrı özellik; ikisi birlikte çalışır. Kollar yanıp sönmez (renkleri dash/sling bilgisini taşıyor).
+- **Durur:** duvardan ayrılınca (`WallClimbingState.ExitState` → `StopStaminaWarning`), yere inince / launch pad / respawn `RefillWallStamina`. Eşikteyken duvara tekrar tutunursan hemen yeniden başlar. Ölüm silüeti (`DeathBurst`) `_FlashColor`u beyaza sabitler, yanıp sönerken ölünce kırmızı çıkmaz.
+- Uyarı **görsel**; titreşim/ses yok. Değerler `PlayerStatsSO` `StaminaFlashHzAtThreshold` (7), `StaminaFlashHzAtZero` (12), `StaminaFlashAmount` (0,7): başlangıç önerisi, gamepad ile ayarlanır. Eski World Space `StaminaCanvas` `PlayerUIController.Awake`'te kapatılır (sahnede duruyor, görünmez).
 - **Dayanıklılık yalnızca şunlarla dolar:** yere inmek, launch pad, respawn. Duvar zıplaması doldurmaz; 6 saniye bir yere değişten diğerine kadar toplam bütçe.
 - **Bitince:** `CanWallClimb = false`, karakter hızı sıfırlanıp düşer ve 0.5 sn tutunamaz. Yere inene kadar tekrar tırmanılamaz, ama kayılabilir.
 - Tırmanmaya girmek kayma süresini yeniler (`ResetWallSlideTime`).
@@ -62,7 +61,9 @@ Kayarken bumper'a basılırsa tırmanmaya geçilir (`CanWallClimb` ise).
 | Alan | Değer | Not |
 |---|---|---|
 | `MaxWallStamina` | 6 | `PlayerStatsSanityTests` 5–7 bandı |
-| `StaminaWarningThreshold` | 1.5 | halkada parçaların yanıp sönmeye başladığı kalan süre |
+| `StaminaWarningThreshold` | 1.5 | karakterin yanıp sönmeye başladığı kalan süre |
+| `StaminaFlashHzAtThreshold` / `StaminaFlashHzAtZero` | 7 / 12 | yanıp sönme hızı (Hz), eşikten sıfıra doğru hızlanır. Başlangıç değeri, gamepad ile ayarlanır |
+| `StaminaFlashAmount` | 0.7 | flash'ın gövdeyi kırmızıya çekme oranı. Başlangıç değeri, gamepad ile ayarlanır |
 | `ClimbSpeed` | 8 | |
 | `ClimbVerticalJumpVelocity` | 14 | tırmanırken zıplama |
 | `WallJumpForce` | (11, 14) | **hiçbir yerde okunmuyor** |
@@ -82,12 +83,12 @@ Sabit kodlu değerler: tutunma kilitleri 0.2 sn (bırakma) ve 0.5 sn (dayanıkl�
 - `Player/States/WallClimbingState.cs`, `WallSlidingState.cs`, `LedgeClimbState.cs`
 - `Player/PlayerController.cs`: `CheckLedge`, dayanıklılık ve kayma süresi kaynakları
 - `Player/KinematicPhysicsHandler.cs`: `IsTouchingLeftWall/RightWall`, `ClingingWallDirection`
-- `Player/UI/PlayerUIController.cs`: halkaya köprü; `UI/Hud/HudStaminaRing.cs` (çizim, hareket), `UI/Hud/StaminaRingMath.cs` (saf mantık)
+- `Player/UI/PlayerUIController.cs`: yanıp sönmeye köprü; `Player/Visual/StaminaWarningFlash.cs` (kare sürücüsü), `Player/Visual/StaminaFlashState.cs` (saf mantık), `Player/Visual/PlayerColorController.cs` (`SetFlash`), `Assets/Shader/PaletteSwap.shader` (`_FlashAmount`, `_FlashColor`)
 - `Player/PlayerVibrationSettingsSO.cs`: sürekli duvar titreşimleri
 
 ## Bilinen kenar durumlar ve GDD ile farklar
 
-1. **Dayanıklılık uyarısı yalnızca görsel.** GDD §5.2 "azalırken uyarı verir": halka parçaları kopar ve son 1,5 sn yanıp söner. Titreşim uyarısı yok. `WallClimbingState`'teki `warningTriggered` bayrağı ve `PlayerController.TriggerStaminaWarning` / `OnStaminaWarning` hâlâ kullanılmıyor (halka eşiği kendisi okuyor); ölü kod.
+1. **Dayanıklılık uyarısı yalnızca görsel.** GDD §5.2 "azalırken uyarı verir": son 1,5 sn karakter kırmızıya yanıp söner. Titreşim uyarısı yok. `WallClimbingState`'teki `warningTriggered` bayrağı ve `PlayerController.TriggerStaminaWarning` / `OnStaminaWarning` hâlâ kullanılmıyor (yanıp sönme eşiği kendisi okuyor); ölü kod. Titreşim ve ses uyarısı için uygun kanca.
 2. **Tırmanırken duvar zıplaması dikey (bilinçli).** Dışarı zıplama yalnızca **kayarken** var; tırmanırken zıplamak dümdüz yukarı atar (`WallJumpForce` hiç kullanılmıyor).
 3. **Kenardan çıkma tam otomatik değil (bilinçli).** 0.1 sn yukarı basılı tutmak gerekiyor.
 4. **Tırmanırken kanca atılamıyor**, kayarken atılabiliyor.

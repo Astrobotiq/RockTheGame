@@ -16,7 +16,6 @@ namespace New_Scripts.Death
     {
         private const int MaxParticles = 400;
         private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
-        private static readonly int FlashColorId = Shader.PropertyToID("_FlashColor");
 
         private static bool _claimed;
         private static SpriteRenderer _behind;
@@ -222,8 +221,6 @@ namespace New_Scripts.Death
                 _flash.transform.localScale = lossy;
                 _flashBlock.Clear();
                 _flashBlock.SetFloat(FlashAmountId, 1f);
-                // Gövde materyalini stamina uyarısıyla paylaşıyoruz: yanıp sönerken ölünce silüet kırmızı çıkmasın.
-                _flashBlock.SetColor(FlashColorId, Color.white);
                 _flash.SetPropertyBlock(_flashBlock);
                 _flash.enabled = true;
             }

@@ -45,6 +45,8 @@ namespace New_Scripts.Player.Visual
         {
             _state.Stop();
             _flashing = false;
+            // Eski değer kalırsa yeniden tutunurken ilk kare (ConsumeWallStamina gelmeden) bayat süreyle flash çıkar.
+            _remaining = 0f;
             if (_colors != null) _colors.SetFlash(0f, _red);
         }
 

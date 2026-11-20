@@ -34,6 +34,7 @@ namespace New_Scripts.Player.Visual
         private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
         private static readonly int FlashColorId = Shader.PropertyToID("_FlashColor");
 
+        private MaterialPropertyBlock _flashBlock; // alan başlatıcısında değil, ilk kullanımda: yerel nesne yapıcıda kurulamaz
         private Tween bodyTween;
         private Tween[] armTweens;
         private Material bodyMaterial;
@@ -69,13 +70,17 @@ namespace New_Scripts.Player.Visual
 
         /// <summary>
         /// Gövde silüetini <paramref name="color"/> yönünde <paramref name="amount"/> (0-1) oranında boyar (stamina uyarısı).
-        /// Dash'in <c>_Blend</c> değerine dokunmaz; ikisi birlikte çalışır.
+        /// Dash'in <c>_Blend</c> değerine dokunmaz; ikisi birlikte çalışır. Değer materyale değil bu renderer'a özel blokta
+        /// tutulur: çok oyunculu hayalet ve dash artç görüntüleri <c>sharedMaterial</c>'ı kopyalıyor, flash onlara sızmasın.
         /// </summary>
         public void SetFlash(float amount, Color color)
         {
-            if (bodyMaterial == null) return;
-            bodyMaterial.SetColor(FlashColorId, color);
-            bodyMaterial.SetFloat(FlashAmountId, amount);
+            if (bodyRenderer == null) return;
+            _flashBlock ??= new MaterialPropertyBlock();
+            bodyRenderer.GetPropertyBlock(_flashBlock);
+            _flashBlock.SetColor(FlashColorId, color);
+            _flashBlock.SetFloat(FlashAmountId, amount);
+            bodyRenderer.SetPropertyBlock(_flashBlock);
         }
 
         public void SetDashExhausted()

@@ -12,7 +12,7 @@ namespace New_Scripts.Player.States
     /// Anchor, FullRotationNode taşıyorsa; 360 tamamlanınca node'un efekti tetiklenir.
     /// Mevcut pendulum/hop mantığına dokunulmadı.
     /// </summary>
-    public class SwingingState : IPlayerState
+    public class SwingingState : IPlayerState, INodeReleaseHandler
     {
         private readonly PlayerController _context;
         private readonly PlayerStatsSO _stats;
@@ -460,6 +460,20 @@ namespace New_Scripts.Player.States
             }
 
             CheckOppositeGrappleCast();
+        }
+
+        /// <summary>
+        /// Tutulan node tutulamaz hale geldi (kapanan çiçek): tetik bırakılmış gibi tek kanca bırakışı, üstüne node'dan itme.
+        /// Spiral çıkış boost'u yok: node zaten kapandı.
+        /// </summary>
+        public void ReleaseByNode(ActiveArm arm, Vector2 impulse)
+        {
+            if (arm != _swingingArm) return;
+
+            Vector2 nodeVelocity = _context.AnchorReleaseVelocity(_swingingArm) * _stats.MovingNodeLaunchMultiplier;
+            ReleaseAnchor();
+            AirEntry entry = AirEntry.SwingRelease(nodeVelocity, _stats.MovingNodeCarryDecayTime);
+            _context.TransitionToState(new NormalState(_context, _currentVelocity + impulse, entry));
         }
 
         private void CheckOppositeGrappleCast()

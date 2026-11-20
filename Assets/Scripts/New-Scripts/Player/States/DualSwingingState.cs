@@ -6,7 +6,7 @@ namespace New_Scripts.Player.States
     /// Karakterin iki farkli kanca noktasina ayni anda tutundugu durumu yonetir. 
     /// Verilerini ScriptableObject uzerinden okur ve Hooke yasasi (yay fizigi) kullanarak sarkaç/esneme mekanigini isletir.
     /// </summary>
-    public class DualSwingingState : IPlayerState
+    public class DualSwingingState : IPlayerState, INodeReleaseHandler
     {
         private readonly PlayerController context;
         private readonly PlayerStatsSO stats;
@@ -94,6 +94,26 @@ namespace New_Scripts.Player.States
                 context.RightAnchor = null;
                 context.TransitionToState(new SwingingState(context, ActiveArm.Left));
                 return;
+            }
+        }
+
+        /// <summary>
+        /// Kollardan birinin node'u tutulamaz hale geldi (kapanan çiçek): tetik bırakılmış gibi diğer kolla tek kancaya
+        /// düşer (hop yok), bırakılan kolun node'undan itme hıza eklenir.
+        /// </summary>
+        public void ReleaseByNode(ActiveArm arm, Vector2 impulse)
+        {
+            context.Velocity += impulse;
+
+            if (arm == ActiveArm.Left)
+            {
+                context.LeftAnchor = null;
+                context.TransitionToState(new SwingingState(context, ActiveArm.Right));
+            }
+            else
+            {
+                context.RightAnchor = null;
+                context.TransitionToState(new SwingingState(context, ActiveArm.Left));
             }
         }
 

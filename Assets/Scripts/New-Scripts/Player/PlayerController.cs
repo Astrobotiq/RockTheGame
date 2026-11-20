@@ -193,6 +193,7 @@ namespace New_Scripts.Player
             if (_isPaused) return;
 
             RefreshMovingAnchors();
+            ReleaseUngrabbableNodes();
             CurrentState?.FixedUpdateState();
 
             // 2. FSM'in hesapladığı teorik hızı bir delta mesafeye çevirip handler'a veriyoruz.
@@ -268,6 +269,33 @@ namespace New_Scripts.Player
         {
             _leftAnchorDelta = FollowNode(LeftAnchorNode, _leftNodeBody, _leftNodeLocal, ref _leftAnchor);
             _rightAnchorDelta = FollowNode(RightAnchorNode, _rightNodeBody, _rightNodeLocal, ref _rightAnchor);
+        }
+
+        /// <summary>
+        /// Tutulan node tutulamaz hale geldiyse (kapanan çiçek, <see cref="Nodes.IGrabbableNode"/>) o kolu bırakır ve
+        /// oyuncuyu node'dan dışa iter. Durum <see cref="INodeReleaseHandler"/> değilse (slingshot vb.) hiçbir şey yapmaz.
+        /// Adım başına tek kol: iki kol aynı çiçekteyse ikincisi sonraki adımda bırakılır.
+        /// </summary>
+        private void ReleaseUngrabbableNodes()
+        {
+            if (CurrentState is not INodeReleaseHandler handler) return;
+
+            if (TryGetClosedNode(LeftAnchorNode, out Nodes.IGrabbableNode left))
+                handler.ReleaseByNode(ActiveArm.Left, PushAwayFromNode(LeftAnchorNode, left));
+            else if (TryGetClosedNode(RightAnchorNode, out Nodes.IGrabbableNode right))
+                handler.ReleaseByNode(ActiveArm.Right, PushAwayFromNode(RightAnchorNode, right));
+        }
+
+        private static bool TryGetClosedNode(Transform node, out Nodes.IGrabbableNode grabbable)
+        {
+            grabbable = node != null ? node.GetComponentInParent<Nodes.IGrabbableNode>() : null;
+            return grabbable != null && !grabbable.IsGrabbable;
+        }
+
+        private Vector2 PushAwayFromNode(Transform node, Nodes.IGrabbableNode grabbable)
+        {
+            Vector2 away = PlayerRigidbody.position - (Vector2)node.position;
+            return away.sqrMagnitude > 1e-6f ? away.normalized * grabbable.ReleaseImpulse : Vector2.zero;
         }
 
         /// <summary>Node'u taşıyan Rigidbody2D ve node'un gövdeye göre (ölçeksiz) konumu; gövde yoksa null.</summary>

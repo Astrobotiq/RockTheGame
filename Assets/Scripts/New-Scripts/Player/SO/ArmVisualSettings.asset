@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e61b0c69905c0849889398a2d1d1d60, type: 3}
+  m_Name: ArmVisualSettings
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Player.Visual.ArmVisualSettingsSO
+  <IdleReach>k__BackingField: 1
+  <IdleSpread>k__BackingField: 0.9
+  <GroundHandHeight>k__BackingField: 0.2
+  <GroundTrail>k__BackingField: 0.18
+  <IdleDrop>k__BackingField: 0.3
+  <WallHandX>k__BackingField: 0.6
+  <WallHandLow>k__BackingField: -0.4
+  <WallHandHigh>k__BackingField: 1.1
+  <WallSlideHandY>k__BackingField: 0.5
+  <IdleBow>k__BackingField: 0.25
+  <HandStiffness>k__BackingField: 220
+  <HandDamping>k__BackingField: 12
+  <BowStiffness>k__BackingField: 90
+  <BowDamping>k__BackingField: 6
+  <DroopTrail>k__BackingField: 0.04
+  <ExtendDuration>k__BackingField: 0.1
+  <ShoulderWidth>k__BackingField: 0.2
+  <HandWidth>k__BackingField: 0.34
+  <Resolution>k__BackingField: 20
+  <ArmColor>k__BackingField: {r: 1, g: 0.40392157, b: 0.21176471, a: 1}
+  <OutlineColor>k__BackingField: {r: 0.16862746, g: 0.078431375, b: 0.0627451, a: 1}
+  <OutlineExtra>k__BackingField: 0.083
+  <OpenHand>k__BackingField: {fileID: 21300000, guid: 8af00a10871a1d94793ad128f0a0ef22, type: 3}
+  <ClosedHand>k__BackingField: {fileID: 21300000, guid: 927217d8f5bbbdb4b96ae1175bda4139, type: 3}
+  <WallGripHand>k__BackingField: {fileID: 21300000, guid: 701ee209734f43e99b8c620440b0bd2a, type: 3}
+  <GrabPunch>k__BackingField: 7
+  <PunchStiffness>k__BackingField: 300
+  <PunchDamping>k__BackingField: 14

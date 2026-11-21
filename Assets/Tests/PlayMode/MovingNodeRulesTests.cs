@@ -432,18 +432,26 @@ namespace RockTheGame.Tests.PlayMode
             Assert.Greater(Player.Velocity.x, 8f);
         }
 
+        private static LineRenderer FindRightArmLine()
+        {
+            foreach (var av in Object.FindObjectsByType<New_Scripts.Player.Visual.ArmVisual>(FindObjectsSortMode.None))
+            {
+                var so = new UnityEditor.SerializedObject(av);
+                if (so.FindProperty("arm").enumValueIndex == (int)New_Scripts.Player.ActiveArm.Right)
+                    return (LineRenderer)so.FindProperty("line").objectReferenceValue;
+            }
+            Assert.Fail("Sag kol ArmVisual bulunamadi");
+            return null;
+        }
+
         [UnityTest]
         public IEnumerator M1e_RopeReachesMovingNode()
         {
-            var visuals = Object.FindFirstObjectByType<New_Scripts.Player.GrappleVisualManager>();
-            Assert.IsNotNull(visuals, "GrappleVisualManager bulunamadi");
-            var rope = (LineRenderer)typeof(New_Scripts.Player.GrappleVisualManager)
-                .GetField("rightRopeRenderer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .GetValue(visuals);
+            var rope = FindRightArmLine();
 
             GameObject node = null;
             yield return GrabNodeAbove(NodeStart, n => node = n);
-            // Firlatma animasyonu (0.15 sn) bittikten sonra da node hareket ediyor
+            // Uzanma animasyonu (0.1 sn) bittikten sonra da node hareket ediyor
             yield return MoveEachFixedStep(node, new Vector2(0.2f, 0f), 20);
             yield return WaitFixedSteps(1);
             yield return new WaitForEndOfFrame();

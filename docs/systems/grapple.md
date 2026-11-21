@@ -1,6 +1,6 @@
 # Kanca ailesi: swing, dual swing, slingshot, dönen node, spiral node
 
-*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-20 (zamanlı çiçek node'u).*
+*GDD §2 (sütun 2), §5.1, §5.2 "Kanca ailesi". Son kod doğrulaması: 2026-11-20 (uzayan kollar).*
 
 ## Tasarım niyeti
 
@@ -22,7 +22,7 @@ Kanca bir tetikleyici değil, **basılı tutulan** bir eylem: tetik eşiği `Inp
 - Oyuncunun etrafında `detectionRadius` yarıçapında node katmanındaki collider'lar taranır. Sahnedeki değer **10**, koddaki varsayılan 15.
 - Stick yönüyle node yönü arasındaki nokta çarpımı `minimumDotProduct` (0.5) ve üstündeyse aday olur. Bu, stick'in iki yanında ±60°'lik bir koni demek.
 - Adaylardan **en yakını değil, stick'le en iyi hizalanan** seçilir. Oyuncu ile node arasında engel (`obstacleLayerMask`) varsa aday elenir.
-- Tutunma anlıktır: mermi ya da uçuş süresi yok. İp animasyonu (`GrappleVisualManager`) yalnızca görsel. `TargetVisualizer` her iki stick için o an seçilecek node'u nişangâhla gösterir.
+- Tutunma anlıktır: mermi ya da uçuş süresi yok. Kol çizimi (`ArmVisual`: turuncu, koyu dış çizgili kalın kol; omuzlar gövdede ±0,3; havada boşta yaylı ve gevşek, yana açık sarkan açık eldiven; yerdeyken kol zeminde sürünür ve hızın gerisinde kalır (sol kol yerdeyken sol stiği izlemez, sağ kol sağ stikle nişan alabilir); tutununca node'a 0,1 sn'de uzanıp yumruğa dönen eldiven) yalnızca görsel; ip çizimi yok. Eldiven sprite'ları `Assets/Sprites/Arm/Glove_Open.png`, `Glove_Closed.png` ve `Glove_WallGrip.png` (duvarda tutma anı, parmaklar yandan duvara kıvrılır) (26×26, 24 PPU, pivot kol ucu). `TargetVisualizer` her iki stick için o an seçilecek node'u nişangâhla gösterir.
 - Anchor, node'un `transform.position`'ıdır. Kol node'un `Transform`'unu da tutar (`PlayerController.AttachAnchor`) ve anchor her fizik adımında node'un konumunu izler. Bkz. "Hareketli node".
 
 ## Durumlar
@@ -155,7 +155,7 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 
 ## Kod
 
-- `Player/NodeDetector.cs`, `Player/TargetVisualizer.cs`, `Player/GrappleVisualManager.cs`, `Player/ArmController.cs`
+- `Player/NodeDetector.cs`, `Player/TargetVisualizer.cs`, `Player/ArmController.cs` (omuz + `AimDirection`), `Player/Visual/ArmVisual.cs`, `Player/Visual/ArmShapeMath.cs`, `Player/Visual/ArmVisualSettingsSO.cs` (ayarlar: `Player/SO/ArmVisualSettings.asset`)
 - `Player/States/SwingingState.cs`, `DualSwingingState.cs`, `SlingshotState.cs`
 - Kanca girişleri: `NormalState.CheckGroundGrappleInput` (yerde), `NormalState.ProcessGrappleInput` (havada), `SwingingState.CheckOppositeGrappleCast`, `WallSlidingState` (kayarken). Hepsi node'u `PlayerController.AttachAnchor` ile bağlar.
 - `Player/Nodes/Spiral/`: `SpiralNode`, `SpiralDriveMath` ve `SpiralReverseCounter` (saf C#, testli); motor `SwingingState.DriveSpiral`, takılma `IsSpiralBlocked`. Shader `Assets/Shader/SpiralNode.shader`, prefab'lar `Node-Spiral`, `Node-SpiralReversing`.
@@ -173,9 +173,9 @@ Sahnedeki `NodeDetector`: `detectionRadius` 10, `minimumDotProduct` 0.5.
 5. **GDD "dönen node hız patlaması verir" diyor.** Kodda bu, 1.2 sn boyunca yalnızca tek kanca sarkaç hız sınırının yükselmesi + tek seferlik ×1.2 hız. Hız patlaması prefab'ı hiçbir odada yok; sahnede kullanılan tek dönen node kapı açıyor.
 6. **`OncePerNode` ölünce sıfırlanmıyor.** Ölmeden önce bir kez tamamlanan node, respawn'dan sonra tekrar tetiklenmez. Kapı açan node için bu sorun olmayabilir; bkz. [`death-respawn.md`](death-respawn.md).
 7. **Ölü kod:** `Player/Grappler.cs` hiçbir sahne ya da prefab'da kullanılmıyor (CLAUDE.md onu aktif sistemin parçası sayıyor). `SwingInitialBoost` okunmuyor.
-8. **Hareketli node bir adım geriden izlenir** ve hareketli dönen node test edilmedi (17 Kasım 2026, kapsam dışı bırakıldı). İpin görsel olarak node'un gerisinde kalıp kalmadığı gamepad turunda bakılacak.
+8. **Hareketli node bir adım geriden izlenir** ve hareketli dönen node test edilmedi (17 Kasım 2026, kapsam dışı bırakıldı). Kolun (`ArmVisual`) elinin node'un gerisinde kalıp kalmadığı gamepad turunda bakılacak.
 9. **Çift kanca çarpışması hâlâ daire.** Tek kanca 5 Kasım 2026'dan beri oyuncu kutusuyla arıyor (eğimde takılma düzeltildi); çift kanca `DualSwingCollisionRadius` (0.4) daireyle arıyor ve eğimde test edilmedi. Ayrıntı: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).
 
 ## Testler
 
-`FullRotationTrackerTests`, `SpiralDriveMathTests`, `SpiralReverseCounterTests`, `SwingRulesTests`, `SlingshotRulesTests`, `MovingNodeRulesTests`, `SpiralNodeRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).
+`ArmShapeMathTests`, `FullRotationTrackerTests`, `SpiralDriveMathTests`, `SpiralReverseCounterTests`, `SwingRulesTests`, `SlingshotRulesTests`, `MovingNodeRulesTests`, `SpiralNodeRulesTests`. Kurallar: [`../bozulmamali-davranislar.md`](../bozulmamali-davranislar.md).

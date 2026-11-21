@@ -174,8 +174,8 @@ namespace New_Scripts.Player.States
 
         private void HandleGroundArmRouting()
         {
-            Vector2 facingDirection = new Vector2(_context.Input.LeftStick.x, 0f).normalized;
-            _context.LeftArm.UpdateArmRotation(facingDirection);
+            // Sol stik yürümek içindir; sol kol yerdeyken nişan almaz, zeminde sürünür.
+            _context.LeftArm.UpdateArmRotation(Vector2.zero);
             _context.RightArm.UpdateArmRotation(_context.Input.RightStick);
         }
 

@@ -3,20 +3,16 @@
 namespace New_Scripts.Player
 {
     /// <summary>
-    /// Girdi yönüne göre görsel açıyı hesaplayan ve uygulayan pasif kol kontrolcüsü.
+    /// Omuz konumu ve nişan yönünü tutan pasif kol kontrolcüsü. Çizimi <c>Visual/ArmVisual</c> yapar.
     /// </summary>
-
     public class ArmController : MonoBehaviour
     {
-        [SerializeField] private Transform rotationPivot;
+        /// <summary>Son nişan yönü (normalize). Girdi yoksa <see cref="Vector2.zero"/>.</summary>
+        public Vector2 AimDirection { get; private set; }
 
         public void UpdateArmRotation(Vector2 inputDirection)
         {
-            if (inputDirection.sqrMagnitude > 0.01f)
-            {
-                float targetAngle = Mathf.Atan2(inputDirection.y, inputDirection.x) * Mathf.Rad2Deg;
-                rotationPivot.rotation = Quaternion.Euler(0f, 0f, targetAngle);
-            }
+            AimDirection = inputDirection.sqrMagnitude > 0.01f ? inputDirection.normalized : Vector2.zero;
         }
     }
 }

@@ -10,39 +10,9 @@
 
 - [ ] **Hareketli node gamepad testi** #test - `Node-Moving` prefab'ını bir odaya koy (startPoint/endPoint dünya koordinatı); taşıma, üç bırakış, yerden hop, duvara taşınma; çarpan 1 ve taşınan X'in sönmemesi hissi, due 2026-11-19
 
-### Spiral node'lar (docs/spiral-node-tasarimi.md + spiral-node-plani.md, branch `feature/spiral-nodes`)
-
-- [x] **Spiral 1: motor matematiği ve kurallar** #code - `SpiralDriveMath`, `SpiralReverseCounter`, `PlayerStatsSO` Spiral* alanları, SP1–SP7 `bozulmamali-davranislar.md`'ye, EditMode testleri (plan Task 1), due 2026-11-17
-- [x] **Spiral 2: SwingingState motoru** #code - `SpiralNode`, motor, test yardımcıları (`GrabExistingWithRight`, `SetField` tabana), SP1/SP2/SP3/SP5 PlayMode (plan Task 2), due 2026-11-17
-- [x] **Spiral 3: duvar kopması ve kombinasyonlar** #code - takılma kontrolü (SP4), çift kanca/slingshot (SP6), dönen node dışlaması, pasif node (plan Task 3), due 2026-11-17
-- [x] **Spiral 4: ters dönen spiral** #code - `reverseEveryDegrees` 360, her turda çevrilir, bırakınca ilk yön (SP7) (plan Task 4), due 2026-11-17
-- [x] **Spiral 5: sprite yönü, ses ve titreşim** #code - `SpiralFacingSign`, döngü sesi + stop kanalı, `SpiralOrbit`/`SpiralOpposeGrab`/`SpiralReverse` titreşimleri (plan Task 5), due 2026-11-17
-- [x] **Spiral 6: spiral shader ve prefab'lar** #art - `UI/SpiralNode`, yön dişleri, script'ten sürülen açı (hit-stop'ta durur), `Node-Spiral` + `Node-SpiralReversing`, ekran görüntüleri (plan Task 6), due 2026-11-17
-- [x] **Spiral 7: test odası ve dokümanlar** #level - `RoomNew-SpiralTest` (id 97, x −480, slingshot odasının yanı); NewScene kaydedildi ama commit'lenmedi (plan Task 7), due 2026-11-17
-- [ ] **Spiral gamepad testi** #test - tutunma çeşitleri, stick, bırakış zamanlaması, zincir, ters dönen, duvar kopması, sprite/ses/titreşim, shader okunurluğu; değişiklikler `feel-notlari.md`'ye (plan Task 8). Önce: NewScene'de `Player/Audio` → `PlayerAudioController.sfxStopChannel` = `Assets/Audio/SO/Play-StopEvents/SFX-Stop.asset` (atanmadan loop cue verilirse ses hiç durmaz); `spiralLoopCue` 2D ve loop olmalı. Hit-stop'ta spiral görselinin durduğuna bak, due 2026-11-17
-
-### Spiral çıkış hızı (docs/spiral-cikis-hizi.md; yalnızca spiral bırakışı, slingshot/swing/dönen node değişmez)
-
-- [ ] **Çıkış gamepad testi** #test - spiral test odasında 45°/yatay/dik bırakış, mesafe ve "garip görünüyor mu"; `SpiralExitBoost` 4–6, tutma süresi ayarı; değişiklikler `feel-notlari.md`'ye, due 2026-11-20
-
-### Asit temas tepkisi (docs/asit-tepki-plani.md, branch `feature/acid-reaction`)
-
-- [ ] **Asit A0: çift Kill koruması** #code - AK7 onayına bağlı; `PlayerHealth.Kill` başına `activeSelf` koruması + PlayMode testi (sen onaylarsın), `bozulmamali-davranislar.md`'ye ölüm kuralı (plan Task A0), due 2026-11-18
-- [x] **Asit A1: kanca ve saf hesap** #code - `DeathZone.Killing`/`Killed` (try/finally), `AcidHazard.PixelScale` getter, `AcidImpactMath` + EditMode testleri (plan Task A1), due 2026-11-18
-- [x] **Asit A2: shader parlama ve çukur** #code - `AcidImpact.cginc`, `PixelArtAcid`'e `_AcidImpact` tek yuva, target 3.0; darbe yokken kare aynı (plan Task A2), due 2026-11-18
-- [x] **Asit A3: AcidReaction bileşeni** #code - temas noktası (geri sarma), CPU yaş sayacı, `IResettable`, `DebugImpact`, `Acid.prefab`'a ekle; ana menüden gelince de çalışmalı (plan Task A3), due 2026-11-18
-- [x] **Asit A4: damla materyali ve FX prefab'ı** #art - `Px4.png`, `M_FX_AcidPixel` (Sprite-Unlit), `FX_AcidImpact` (World, Local scaling, VFX katmanı, min 2 px) (plan Task A4), due 2026-11-18
-- [x] **Asit A5: emit ve ayar SO'su** #code - `AcidReactionSettingsSO`, lazy FX, hıza göre yönlü kare damlalar, `Clear` reset'te (plan Task A5), due 2026-11-18
-- [x] **Asit A6: titreşim, ses kancası, dokümanlar** #code - `Killed`'de `AcidDeath` titreşimi, 2D ses kancası (boş cue sessiz), `hazards.md` + `death-respawn.md` (plan Task A6; `FX_PlayerDeath` VFX katmanına taşıma AK6 onayını bekliyor, yapılmadı), due 2026-11-18
-- [ ] **Asit A7: gamepad testi** #test - oda 2, 3, 5, 12, 18, 22; düşüş/koşu/swing/dash/slingshot, ana menüden gelerek; AK1/AK4/AK5/AK6 ve B aşaması kararları, değerler `feel-notlari.md`'ye (plan Task A7), due 2026-11-18
-
-### Kamera çerçeve bölgesi (oda 4)
-
-
 ### Çok oyunculu
 
 - [ ] **MP 0: Steam'i iki bilgisayarda dene** #test - MP 9 kodda; build al, ikisinde Steam açık, lobide "Bağlantı: Steam", host Host ol → davet, diğeri kabul eder; yarış, bayrak, ceza, bitiş (docs/multiplayer-arkadasla-test.md §3a), due 2026-11-09
-
 
 ## Waiting On
 
@@ -60,7 +30,6 @@
 - [ ] **Bayrakları yerleştir** #level - 22 odada `RaceFlagPoint`'leri istediğin yere sürükle (sarı bayrak gizmo'su); oda 21 ve 22'ninkiler oda ortasında havada, mutlaka taşı; oda 21'deki bitiş işaretini (dama bayrağı gizmo'su, `RaceFinishPoint`) de bitiş yerine taşı, due 2026-12-07
 
 ## Someday
-
 
 ### CRT
 
@@ -116,6 +85,43 @@
 
 ## Done
 
+### Kamera çerçeve bölgesi (oda 4)
+
+### Spiral node'lar (docs/spiral-node-tasarimi.md + spiral-node-plani.md, branch `feature/spiral-nodes`)
+
+- [x] ~~**Spiral 1: motor matematiği ve kurallar** #code~~ (2026-11-21) - `SpiralDriveMath`, `SpiralReverseCounter`, `PlayerStatsSO` Spiral* alanları, SP1–SP7 `bozulmamali-davranislar.md`'ye, EditMode testleri (plan Task 1)
+- [x] ~~**Spiral 2: SwingingState motoru** #code~~ (2026-11-21) - `SpiralNode`, motor, test yardımcıları (`GrabExistingWithRight`, `SetField` tabana), SP1/SP2/SP3/SP5 PlayMode (plan Task 2)
+- [x] ~~**Spiral 3: duvar kopması ve kombinasyonlar** #code~~ (2026-11-21) - takılma kontrolü (SP4), çift kanca/slingshot (SP6), dönen node dışlaması, pasif node (plan Task 3)
+- [x] ~~**Spiral 4: ters dönen spiral** #code~~ (2026-11-21) - `reverseEveryDegrees` 360, her turda çevrilir, bırakınca ilk yön (SP7) (plan Task 4)
+- [x] ~~**Spiral 5: sprite yönü, ses ve titreşim** #code~~ (2026-11-21) - `SpiralFacingSign`, döngü sesi + stop kanalı, `SpiralOrbit`/`SpiralOpposeGrab`/`SpiralReverse` titreşimleri (plan Task 5)
+- [x] ~~**Spiral 6: spiral shader ve prefab'lar** #art~~ (2026-11-21) - `UI/SpiralNode`, yön dişleri, script'ten sürülen açı (hit-stop'ta durur), `Node-Spiral` + `Node-SpiralReversing`, ekran görüntüleri (plan Task 6)
+- [x] ~~**Spiral 7: test odası ve dokümanlar** #level~~ (2026-11-21) - `RoomNew-SpiralTest` (id 97, x −480, slingshot odasının yanı); NewScene kaydedildi ama commit'lenmedi (plan Task 7)
+- [x] ~~**Spiral gamepad testi** #test~~ (2026-11-21) - tutunma çeşitleri, stick, bırakış zamanlaması, zincir, ters dönen, duvar kopması, sprite/ses/titreşim, shader okunurluğu; değişiklikler `feel-notlari.md`'ye (plan Task 8). Önce: NewScene'de `Player/Audio` → `PlayerAudioController.sfxStopChannel` = `Assets/Audio/SO/Play-StopEvents/SFX-Stop.asset` (atanmadan loop cue verilirse ses hiç durmaz); `spiralLoopCue` 2D ve loop olmalı. Hit-stop'ta spiral görselinin durduğuna bak
+
+### Spiral çıkış hızı (docs/spiral-cikis-hizi.md; yalnızca spiral bırakışı, slingshot/swing/dönen node değişmez)
+
+- [x] ~~**Çıkış gamepad testi** #test~~ (2026-11-21) - spiral test odasında 45°/yatay/dik bırakış, mesafe ve "garip görünüyor mu"; `SpiralExitBoost` 4–6, tutma süresi ayarı; değişiklikler `feel-notlari.md`'ye
+
+### Uzayan kollar (docs/superpowers/specs/2026-11-20-stretchy-arms-design.md + plans/2026-11-20-stretchy-arms.md; yalnızca görsel)
+
+- [x] ~~**Kol K1: şekil matematiği + testler** #code~~ (2026-11-21) - plan Task 1: `ArmShapeMath` (Bezier, kavis, boşta el hedefi, uzanma ilerlemesi) + `ArmShapeMathTests`
+- [x] ~~**Kol K2: ArmVisual + ayar SO'su** #code~~ (2026-11-21) - plan Task 2: `ArmVisualSettingsSO`, `ArmVisual` (UiSpring ile el ve orta nokta), `ArmController.AimDirection`
+- [x] ~~**Kol K3: sahne bağlantısı, renk, eski ipin kaldırılması** #code~~ (2026-11-21) - plan Task 3: `GrappleVisualManager` ve kare kollar kalkar, el sprite'ı, gövde rengi, ekran görüntüleri, PlayMode testleri, `grapple.md`
+- [x] ~~**Kol gamepad testi** #test~~ (2026-11-21) - boştaki sallantı, uzanma hızı (~0.1 sn), kalınlık, slingshot sonrası el rengi; değerler `ArmVisualSettings.asset`'te
+
+### Asit temas tepkisi (docs/asit-tepki-plani.md, branch `feature/acid-reaction`)
+
+- [x] ~~**Asit A0: çift Kill koruması** #code~~ (2026-11-21) - AK7 onayına bağlı; `PlayerHealth.Kill` başına `activeSelf` koruması + PlayMode testi (sen onaylarsın), `bozulmamali-davranislar.md`'ye ölüm kuralı (plan Task A0)
+- [x] ~~**Asit A1: kanca ve saf hesap** #code~~ (2026-11-21) - `DeathZone.Killing`/`Killed` (try/finally), `AcidHazard.PixelScale` getter, `AcidImpactMath` + EditMode testleri (plan Task A1)
+- [x] ~~**Asit A2: shader parlama ve çukur** #code~~ (2026-11-21) - `AcidImpact.cginc`, `PixelArtAcid`'e `_AcidImpact` tek yuva, target 3.0; darbe yokken kare aynı (plan Task A2)
+- [x] ~~**Asit A3: AcidReaction bileşeni** #code~~ (2026-11-21) - temas noktası (geri sarma), CPU yaş sayacı, `IResettable`, `DebugImpact`, `Acid.prefab`'a ekle; ana menüden gelince de çalışmalı (plan Task A3)
+- [x] ~~**Asit A4: damla materyali ve FX prefab'ı** #art~~ (2026-11-21) - `Px4.png`, `M_FX_AcidPixel` (Sprite-Unlit), `FX_AcidImpact` (World, Local scaling, VFX katmanı, min 2 px) (plan Task A4)
+- [x] ~~**Asit A5: emit ve ayar SO'su** #code~~ (2026-11-21) - `AcidReactionSettingsSO`, lazy FX, hıza göre yönlü kare damlalar, `Clear` reset'te (plan Task A5)
+- [x] ~~**Asit A6: titreşim, ses kancası, dokümanlar** #code~~ (2026-11-21) - `Killed`'de `AcidDeath` titreşimi, 2D ses kancası (boş cue sessiz), `hazards.md` + `death-respawn.md` (plan Task A6; `FX_PlayerDeath` VFX katmanına taşıma AK6 onayını bekliyor, yapılmadı)
+- [x] ~~**Asit A7: gamepad testi** #test~~ (2026-11-21) - oda 2, 3, 5, 12, 18, 22; düşüş/koşu/swing/dash/slingshot, ana menüden gelerek; AK1/AK4/AK5/AK6 ve B aşaması kararları, değerler `feel-notlari.md`'ye (plan Task A7)
+
+- [x] ~~**Stamina flash gamepad testi** #test~~ (2026-11-20) - kullanıcı gamepad ile test etti; `StaminaFlash*` değerleri (7→12 Hz, %70) değişmedi
+- [x] ~~**Stamina yanıp sönmesi: halka yerine karakter flash'ı** #code~~ (2026-11-20) - `StaminaFlashState` (11 EditMode testi), `PaletteSwap` `_FlashColor` + `PlayerColorController.SetFlash`, `StaminaWarningFlash`, `HudStaminaRing`/`StaminaRingMath` silindi, `DeathBurst` silüeti beyaza sabit, `wall-movement.md`/`ui-motion.md` güncel; EditMode 553/553, PlayMode 111/111; kullanıcı isteğiyle bugüne eklendi (gün 4 task sınırını aştı), branch `feature/stamina-flash`
 - [x] ~~**Spiral çıkış hızı, Çıkış 1–3** #code~~ (2026-11-20) - SP5 yeni metni, SP8, H2 notu; `SpiralDriveMath.ExitBoost`; `PlayerStatsSO` `SpiralExitBoost` 4 / `SpiralExitHoldTime` 0.3 / `SpiralExitMinSpeedRatio` 0.5; `AirEntry.SpiralRelease` (frensiz tutma); iz tutma süresinde açık, `_Glow` darbesi, `SpiralRelease` titreşimi (0.12 sn), `spiralReleaseCue` alanı (klip boş). EditMode 511/511, PlayMode 107/107 (SP5, SP8a–d). İzin hafifçe uzaması yapılmadı. Gamepad ilk tur: yavaş → `SpiralExitBoost` 4→6, `SpiralExitHoldTime` 0.3→0.45; spiral test odasına karşılaştırma için normal node (x −2). Commit yok, branch `feature/acid-reaction`
 
 - [x] ~~**Hareketli node 1–4** #code~~ (2026-11-17) - anchor node'u izler (`AttachAnchor`, `RefreshMovingAnchors`); tek/çift kanca ve slingshot taşır, bırakışta node hızı × `MovingNodeLaunchMultiplier` (1) geçer; `Node-Moving` prefab'ı, dokümanlar. PlayMode 67/67 (M1–M5 dahil), EditMode 441/441. Branch `feature/moving-nodes`, commit'li, push yok

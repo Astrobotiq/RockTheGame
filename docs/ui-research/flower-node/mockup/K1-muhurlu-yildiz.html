@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K1 · Mühürlü Yıldız</title>
+<style>
+:root{
+  --bg:#F4F1EA; --panel:#FFFFFF; --ink:#1B1822; --muted:#5E5970; --line:#D9D3C7; --accent:#0E7F8C; --chip:#ECE7DC; --warnbox:#FFF4D6; --warnline:#E0A200;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12101A; --panel:#1B1826; --ink:#ECE8F2; --muted:#A39DB8; --line:#342F47; --accent:#2CF5FF; --chip:#26223A; --warnbox:#2B2410; --warnline:#C99500;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px 56px}
+header.top{padding:28px 0 8px}
+h1{font-size:clamp(26px,5vw,38px);line-height:1.1;margin:0 0 6px;letter-spacing:-.01em}
+h1 small{font-size:.5em;font-weight:500;color:var(--muted);letter-spacing:0}
+h2{font-size:20px;margin:40px 0 4px}
+h3{font-size:16px;margin:0 0 4px}
+p.lede{margin:4px 0 0;color:var(--muted);max-width:70ch}
+p.sub{margin:0 0 14px;color:var(--muted);font-size:14px;max-width:80ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+
+/* test anahtarlari */
+.tests{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:14px;z-index:5}
+@media (min-width:720px){ .tests{position:sticky;top:8px} }
+.tests b{font-size:13px;color:var(--muted);font-weight:600}
+.tests label{display:inline-flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+select,button{font:inherit;color:var(--ink)}
+select{background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+button.btn{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer}
+button.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* paletler */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--chip);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;font-family:ui-monospace,Consolas,monospace}
+.chip i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(128,128,128,.5);display:block}
+
+/* sahne kutulari (testler bunlara uygulanir) */
+.stage{position:relative;overflow:hidden;border-radius:10px;line-height:0;filter:var(--stage-filter,none)}
+.stage svg{display:block;width:100%;height:auto}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(0,0,0,.38) 100%),
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.15) 0 1px, rgba(0,0,0,0) 1px 3px);}
+body.crt .stage::after{opacity:1}
+
+/* durum seridi */
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media (max-width:900px){.strip{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.strip{grid-template-columns:repeat(2,1fr)}}
+.cell{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.cell h3{margin:8px 2px 2px}
+.cell p{margin:0 2px 2px;font-size:12.5px;color:var(--muted);line-height:1.4}
+.cell code{font-size:11.5px}
+
+/* etkilesim */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+@media (max-width:760px){.lab{grid-template-columns:1fr}}
+.ctrl{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:70px 1fr 52px;gap:10px;align-items:center;font-size:14px}
+.row output{font-family:ui-monospace,Consolas,monospace;font-size:13px;text-align:right;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.phase{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}
+.opts label{display:inline-flex;gap:6px;align-items:center}
+
+/* zoom */
+.zooms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+@media (max-width:560px){.zooms{grid-template-columns:1fr 1fr 1fr;gap:6px}}
+.zooms figure{margin:0}
+.zooms figcaption,.cap{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* boru testi */
+.pipegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.pipegrid{grid-template-columns:repeat(2,1fr)}}
+.pipegrid figure{margin:0}
+
+/* karsilastirma */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.cmp h3{margin:8px 2px 2px}
+
+.note{margin:14px 0 0;padding:12px 14px;background:var(--chip);border-radius:10px;font-size:14px}
+.honest{margin-top:40px;padding:14px 16px;background:var(--warnbox);border:2px solid var(--warnline);border-radius:12px;font-size:14px}
+.honest b{display:block;margin-bottom:4px}
+ul.tight{margin:6px 0 0;padding-left:20px;font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Machado 2009, siddet 1.0 (linearRGB uzayinda) -->
+    <filter id="cb-protan" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.152286 1.052583 -0.204868 0 0  0.114503 0.786281 0.099216 0 0  -0.003882 -0.048116 1.051998 0 0  0 0 0 1 0"/></filter>
+    <filter id="cb-deutan" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0  0.280085 0.672501 0.047413 0 0  -0.011820 0.042940 0.968881 0 0  0 0 0 1 0"/></filter>
+    <filter id="cb-tritan" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0"/></filter>
+    <!-- siluet testi: tum renkleri murekkebe cevirir, alfa kalir -->
+    <filter id="sil" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0.016  0 0 0 0 0.016  0 0 0 0 0.047  0 0 0 1 0"/></filter>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header class="top">
+  <h1>K1 · Mühürlü Yıldız <small>çiçek node'u, statik/etkileşimli mockup</small></h1>
+  <p class="lede">Yıldız mantar (Geastrum) şekli: kapalıyken dikişli mühürlü küre, açılırken 5–7 sivri ışın dışa devrilir, ortada küre ve koni ağız. Koyu mürekkep ışınlar, mavi-mor kenar ışığı, neon camgöbeği çekirdek (P6 Mürekkep Neon). Durumu çekirdek ışığı ve silüet taşır; uyarıyı renk değil titreme, ölçek ve dolgu ile kontürün birbirinden kayması (baskı kayması) taşır.</p>
+  <div class="chips" id="chips" aria-label="P6 Mürekkep Neon paleti"></div>
+</header>
+
+<div class="tests" role="group" aria-label="Test anahtarları">
+  <b>Testler</b>
+  <label><input type="checkbox" id="tGray"> Gri tonlama</label>
+  <label><input type="checkbox" id="tCrt"> CRT benzetimi</label>
+  <label>Renk körlüğü
+    <select id="tCb">
+      <option value="">Yok</option>
+      <option value="protan">Protan</option>
+      <option value="deutan">Deutan</option>
+      <option value="tritan">Tritan</option>
+    </select>
+  </label>
+</div>
+
+<h2>1 · Durum şeridi</h2>
+<p class="sub">Aynı çiçek beş halde, gökyüzü mavisi (<code>#71BAEA</code>) üstünde. Çiçek 9 birim çapında (ışın ucundan ışın ucuna). Uyarı hücresi canlı titrer.</p>
+<div class="strip" id="strip"></div>
+
+<h2>2 · Etkileşim</h2>
+<p class="sub">Kaydırıcılar geometriyi doğrudan sürer. "Oynat" zamanlı döngüyü çalıştırır: kapalı 1,8 sn, açılış 0,5, açık 2,2, uyarı 0,7, snap 0,15. Açılış yayı kodtaki değerlerle (sertlik 180, sönüm 14,8, yaklaşık %12 aşım) simüle edilir.</p>
+<div class="lab panel">
+  <div>
+    <div class="stage" id="labStage"><svg id="labSvg" viewBox="-5.7 -5.7 11.4 11.4" role="img" aria-label="Çiçek önizlemesi"></svg></div>
+  </div>
+  <div class="ctrl">
+    <div class="row"><label for="sOpen">Open</label><input type="range" id="sOpen" min="-0.1" max="1.2" step="0.01" value="1"><output id="oOpen">1.00</output></div>
+    <div class="row"><label for="sWarn">Warn</label><input type="range" id="sWarn" min="0" max="1" step="0.01" value="0"><output id="oWarn">0.00</output></div>
+    <div class="btns"><button class="btn" id="bPlay" type="button">Oynat</button><span class="phase" id="phase" aria-live="off">elle</span></div>
+    <div class="opts">
+      <label>Işın sayısı
+        <select id="selRays"><option>5</option><option selected>6</option><option>7</option></select>
+      </label>
+      <label><input type="checkbox" id="cEmber" checked> Kapalıyken kor noktası</label>
+    </div>
+    <ul class="tight">
+      <li><b>Open &lt; 0</b>: anticipation, çiçek hafifçe büzülür. <b>Open &gt; 1</b>: overshoot, çiçek büyür ve ters yönde döner.</li>
+      <li><b>Warn</b>: ışınlar biraz geri kıvrılır (%20), çekirdek ve kenar ışığı amber'e kayar, kontür ile dolgu birbirinden kayar, amber kesikli halka belirir.</li>
+      <li>Kor noktası, kapalı halin "boru kapağı" gibi okunmasına karşı eklenmiş bir tasarım kararı (araştırmadaki "çekirdek tamamen söner" kuralından sapma). Kapatıp karşılaştırın.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>3 · Sahne bağlamı</h2>
+<p class="sub">Gökyüzü, turuncu zemin ve pembe krema şeridi, asit havuzu, koyu boru, gökkuşağı halkalı normal node. Çiçek 9 birim, karakter 1 birim (çiçek çapının 1/9'u). Bu sahne, bölüm 2'deki kaydırıcılara ve "Oynat"a bağlıdır. Karakter, <code>Candy/Idle.png</code> ilk karesidir (64×64 kareden kırpılmış 28×51 piksel; 1 birim = 51 piksel).</p>
+<div class="stage" id="sceneStage"><svg id="sceneSvg" viewBox="0 0 24 13" role="img" aria-label="Sahne: çiçek, karakter, boru, havuz ve normal node"></svg></div>
+<p class="cap">Sahnede karakter üç yerde: solda çiçeğe kancayla asılı (kanca çiçeğin merkezine uzanır), sağ üstte çiçeğin üzerinde (bir ışının ucunda), sağ altta zeminde çiçeğin yanında. Aşağıda aynı üçü yakın plan.</p>
+<div class="zooms">
+  <figure><div class="stage"><svg id="z1" viewBox="6.4 5.4 5.6 5.6" role="img" aria-label="Asılı karakter yakın plan"></svg></div><figcaption>Asılı: ışın ve karakter</figcaption></figure>
+  <figure><div class="stage"><svg id="z2" viewBox="12.2 0.9 5.6 5.6" role="img" aria-label="Çiçeğin üstündeki karakter yakın plan"></svg></div><figcaption>Üstünde: ışın ucunda</figcaption></figure>
+  <figure><div class="stage"><svg id="z3" viewBox="12.8 7.2 5.6 5.6" role="img" aria-label="Yandaki karakter yakın plan"></svg></div><figcaption>Yanında: zeminde</figcaption></figure>
+</div>
+
+<h2>4 · Boru parçası riski</h2>
+<p class="sub">Asıl risk: koyu çiçek koyu boruyla (ΔE yaklaşık 13) karışabilir. Üstte renkli, altta yalnızca silüet. Hepsi aynı ölçekte (1 birim = karakter boyu).</p>
+<div class="pipegrid" id="pipegrid"></div>
+<ul class="tight">
+  <li><b>Silüette ayıran:</b> açık halde 5–7 sivri ışın ve 9 birimlik çap; boru tek renkli, düz kenarlı bir daire ya da dikdörtgen ve 2 birim kalınlığında.</li>
+  <li><b>Çözmediğim:</b> kapalı halin tek başına silüeti (kabaca daire) boru ağzına en çok benzeyen şey. Kapalıyı yalnızca çıkıntılı kenar (ışın uçları), dikiş çizgileri, mavi-mor kenar ışığı ve kor noktası ayırıyor; bunlar küçük detaylar ve CRT'de azalıyor. Kapalı halde çiçeğin çapı boru ağzının yaklaşık 2 katı, bu da ikinci ipucu.</li>
+</ul>
+
+<h2>5 · Karşılaştırma</h2>
+<p class="sub">Mevcut pembe çiçek (<code>#FF9EC4</code> gövde) ile K1, aynı sahnede, aynı karakterle, ikisi de açık halde.</p>
+<div class="cmp">
+  <div><div class="stage"><svg id="cmpA" viewBox="6 0 17 13" role="img" aria-label="Mevcut pembe çiçek sahnede"></svg></div><h3>Mevcut pembe çiçek</h3></div>
+  <div><div class="stage"><svg id="cmpB" viewBox="6 0 17 13" role="img" aria-label="K1 sahnede"></svg></div><h3>K1 · Mühürlü Yıldız</h3></div>
+</div>
+<div class="note">Mevcutta karıştıran: pembe gövde ve gölge karakterin <code>#FF51DE</code> başına çok yakın, karakter çiçeğin üzerinde ya da önünde kaybolur; gri tonlamada ikisi aynı değerde. K1'de ayrışan: koyu ışınlar karakterden gri tonlamada yaklaşık 30 L* birimi uzak ve sivri silüet pembe/turuncu sprite'ı öne çıkarır, çekirdek ışığı da tek sıcak odak olur (bedeli: koyu boruya yakınlık, bölüm 4).</div>
+
+<div class="honest" role="note">
+  <b>Dürüstlük notu</b>
+  Bu bir SVG yaklaşımıdır; gerçek shader çıktısı değildir; Unity'de bakılmadı. Ölçüler ve süreler başlangıç tahminidir: yay katsayıları <code>FlowerBloom.cs</code> varsayılanlarından, ışın oranları (kapalı küre 0,42, açık küre 0,27, ışın ucu 1,0) ve titreme genliği (0,03 yarıçap, kodtaki 0,025 birimden büyük; görünsün diye) tahmindir. Renkler <code>C-renk.md</code> P6 tablosundan; kor noktası ve ışık yayılımı mockup'a özgü kararlardır. Zemin kenarı pembesi <code>#E040C0</code>, havuz ve boru ışık bantları gözle alındı. Renk körlüğü ve CRT anahtarları kaba benzetimdir, gerçek oyuncu testi yerine geçmez. Game feel geliştiricinin kararıdır.
+</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const TAU=Math.PI*2;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+const easeOutQuad=t=>1-(1-t)*(1-t);
+const easeOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+const r3=v=>Math.round(v*1000)/1000;
+
+/* P6 Murekkep Neon (C-renk.md) */
+const PAL={hi:'#6870C8',tip:'#3F4590',base:'#242650',shadow:'#171833',deep:'#0D0D20',out:'#04040C',glow:'#2CF5FF',warn:'#FFB020',center:'#2CF5FF',halo:'#7CF9FF',closed:'#3A3C58'};
+const ROLE_TR={hi:'Hi',tip:'Tip',base:'Base',shadow:'Shadow',deep:'Deep',out:'Outline',glow:'Glow',warn:'Warn',center:'Merkez',halo:'Halo',closed:'Kapalı'};
+const SCN={sky:'#71BAEA',ground:'#E68D41',cream:'#E040C0',acid:'#28D028',pipe:'#140C1C',pipe2:'#442434',pipe3:'#4E4A4E',
+  ring:['#FF5104','#FCAE04','#F1E6C7','#289AA4','#362D70']};
+
+const CANDY='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAzCAYAAACE92h3AAABMklEQVR42u3WvQ3CMBAF4OxDQYFEQ0HDAoiCggHYhQWYgpKKAegQHR0FGzDBIUdyZFn+uXvnC00iPdGEfHlR7EvXGRy364q6MY9RwddzQ1WQc0f03ZOLGnQXkYAl1GGshh4tnRiCOZQNxmjqDzGYQsVgDk1h4fkhxgZTKAf0TVVg3LQGhpiLaB2lUAkoXvS1izcHEVQNStEQU+2jCKjejLmgup0Eva8vQ5qNHdq+KRePnRen4dfFBEuhYZpDzVAppkK1mBhFQRjVgKW31gQUN9S2q6Fmj3NqODVsgpk2ZC/6v+ylmtEEj6iWo8lkJqqxFp8X0HcNHZdUy+cw76OCENDlsZv1McNC0GMwiraDQGm7FChCpZgKRNrlQBaKYDCIYiWwiFpgWdCqXRZFMQi0bufzA1MG2xFTFeTjAAAAAElFTkSuQmCC';
+const SPR_W=28/51, SPR_H=1;        /* 1 birim = 51 px */
+const HOOK=[0.275,0.55];             /* sprite sol-ust kosesinden kanca cikis noktasi (birim) */
+
+/* ---------- renk yardimcilari ---------- */
+function h2r(h){return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));}
+function mix(a,b,t){const A=h2r(a),B=h2r(b);return '#'+A.map((v,i)=>Math.round(lerp(v,B[i],t)).toString(16).padStart(2,'0')).join('');}
+
+/* ---------- durum ---------- */
+const S={o:1,w:0,t:0.37,snap:-1,haloT:-1,pop:null,rays:6,ember:true,curlApplied:false,anim:true};
+const REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function popOf(oc){const x=clamp((oc-0.38)/0.22,0,1);return x<=0?0:easeOutBack(x);}
+
+/* ---------- K1 cicek geometrisi (birim: yaricap R=1) ---------- */
+function P(a,r){return r3(Math.cos(a)*r)+' '+r3(Math.sin(a)*r);}
+function rayShapes(st,oc){
+  const n=st.rays,step=TAU/n,out=[];
+  for(let i=0;i<n;i++){
+    const a=-Math.PI/2+i*step;
+    const ord=(i*0.618)%1;
+    const p=clamp((oc-0.12*ord)/0.88,0,1);
+    const sm=smooth(p);
+    const curl=1-0.08*(st._w||0);
+    const tipR=lerp(0.40,1.0,sm)*curl;
+    const rb=lerp(0.34,0.28,p);
+    const hw=step*0.47*lerp(0.55,1,sm);
+    const midR=rb+(tipR-rb)*0.5;
+    out.push({a,tipR,rb,hw,midR,tip:P(a,tipR),c:P(a,rb),bl:P(a-hw,rb),br:P(a+hw,rb),
+      cl:P(a-hw*0.72,midR),cr:P(a+hw*0.72,midR),
+      mL:P(a-hw*0.5,rb),mR:P(a+hw*0.5,rb)});
+  }
+  return out;
+}
+function rayD(r){return 'M'+r.bl+' Q'+r.cl+' '+r.tip+' Q'+r.cr+' '+r.br+' Z';}
+function ballPath(rb,bump,n){
+  let d='';const N=96;
+  for(let k=0;k<N;k++){
+    const th=k/N*TAU;
+    const f=0.5+0.5*Math.cos(n*(th+Math.PI/2));
+    const r=rb*(1+bump*Math.pow(f,3));
+    d+=(k?'L':'M')+r3(Math.cos(th)*r)+' '+r3(Math.sin(th)*r);
+  }
+  return d+'Z';
+}
+
+/* Tek cicek: yerel birim R=1, cagiran scale(R) ile yerlestirir */
+function flowerK1(st,uid){
+  const n=st.rays,step=TAU/n;
+  const w=st.w;
+  const oeff=st.curlApplied?st.o:st.o*(1-0.2*w);
+  const oc=clamp(oeff,0,1),over=Math.max(0,oeff-1),under=Math.max(0,-oeff);
+  st._w=w;
+  const snapOn=st.snap>=0;
+  const t=st.t;
+  const ph=t*TAU*(8+12*w);
+  const tr=w*0.03;
+  const tx=Math.sin(ph)*tr,ty=Math.cos(ph*1.31)*tr;
+  const pulse=1+0.03*w*Math.sin(ph*1.5);
+  const sc=Math.max(0.1,1+over*0.5-under*0.6-(snapOn?0.04*(1-st.snap):0))*pulse;
+  const twist=22*(1-oeff);
+  const mx=w*0.055*(0.85+0.15*Math.sin(ph*0.7)),my=w*0.04*(0.85+0.15*Math.cos(ph*0.9));
+  const tint=w*0.25;
+  const cBase=mix(PAL.base,PAL.warn,tint),cTip=mix(PAL.tip,PAL.warn,tint),cShadow=mix(PAL.shadow,PAL.warn,tint*0.6);
+  const cRim=mix(PAL.hi,PAL.warn,w),cCore=mix(PAL.glow,PAL.warn,w);
+  const cCoreHot=mix(cCore,'#FFFFFF',0.85);
+  const L=[-0.55,-0.83];
+  const rays=rayShapes(st,oc);
+  const uclip=uid+'c',ucg=uid+'g',ucg2=uid+'e';
+  let s='';
+  s+='<g transform="translate('+r3(tx)+' '+r3(ty)+') scale('+r3(sc)+') rotate('+r3(twist)+')">';
+
+  /* gradients / clip */
+  s+='<defs>';
+  s+='<radialGradient id="'+ucg+'"><stop offset="0" stop-color="'+cCore+'" stop-opacity=".85"/><stop offset=".5" stop-color="'+cCore+'" stop-opacity=".4"/><stop offset="1" stop-color="'+cCore+'" stop-opacity="0"/></radialGradient>';
+  s+='<radialGradient id="'+ucg2+'"><stop offset="0" stop-color="'+cCore+'" stop-opacity=".9"/><stop offset="1" stop-color="'+cCore+'" stop-opacity="0"/></radialGradient>';
+  s+='<clipPath id="'+uclip+'">'+rays.map(r=>'<path d="'+rayD(r)+'"/>').join('')+'</clipPath>';
+  s+='</defs>';
+
+  /* ghost (snap) */
+  if(snapOn){
+    const gh=rayShapes(st,0.8);
+    s+='<g fill="none" stroke="'+PAL.halo+'" stroke-width=".022" stroke-dasharray=".06 .05" opacity=".7">'+gh.map(r=>'<path d="'+rayD(r)+'"/>').join('')+'</g>';
+  }
+  /* acilis halkasi */
+  if(st.haloT>=0){
+    const e=easeOutQuad(st.haloT),rr=lerp(0.3,1.2,e),al=(1-st.haloT)*0.9;
+    s+='<circle r="'+r3(rr)+'" fill="none" stroke="'+PAL.out+'" stroke-opacity="'+r3(al*0.35)+'" stroke-width="'+r3(0.075*(1-st.haloT)+0.01)+'"/>';
+    s+='<circle r="'+r3(rr)+'" fill="none" stroke="'+PAL.halo+'" stroke-opacity="'+r3(al)+'" stroke-width="'+r3(0.045*(1-st.haloT)+0.008)+'"/>';
+  }
+  /* uyari halkasi */
+  if(w>0.02){
+    const blink=st.anim?(0.7+0.3*Math.sin(t*TAU*7)):1;
+    const a=clamp(w*4,0,1)*blink;
+    const dash=0.17,gap=0.12;
+    s+='<circle r="1.1" fill="none" stroke="'+PAL.out+'" stroke-opacity="'+r3(a*0.85)+'" stroke-width=".085"/>';
+    s+='<circle r="1.1" fill="none" stroke="'+PAL.warn+'" stroke-opacity="'+r3(a)+'" stroke-width=".05" stroke-dasharray="'+dash+' '+gap+'" stroke-dashoffset="'+r3(-t*0.6)+'"/>';
+  }
+
+  /* --- isinlarin dolgusu --- */
+  s+='<g transform="translate('+r3(-mx*0.3)+' '+r3(-my*0.3)+')">';
+  rays.forEach(r=>{
+    const sideN=[[Math.sin(r.a),-Math.cos(r.a)],[-Math.sin(r.a),Math.cos(r.a)]];
+    const dL=sideN[0][0]*L[0]+sideN[0][1]*L[1],dR=sideN[1][0]*L[0]+sideN[1][1]*L[1];
+    const litLeft=dL>=dR;
+    const litCtrl=litLeft?r.cl:r.cr,litCorner=litLeft?r.bl:r.br;
+    const shCtrl=litLeft?r.cr:r.cl,shCorner=litLeft?r.br:r.bl,shMid=litLeft?r.mR:r.mL;
+    s+='<path d="'+rayD(r)+'" fill="'+cBase+'"/>';
+    s+='<path d="M'+r.c+' L'+r.tip+' Q'+litCtrl+' '+litCorner+' Z" fill="'+cTip+'"/>';
+    s+='<path d="M'+shMid+' L'+r.tip+' Q'+shCtrl+' '+shCorner+' Z" fill="'+cShadow+'"/>';
+    s+='<path d="M'+P(r.a,r.rb+0.05)+' L'+P(r.a,r.tipR*0.86)+'" stroke="'+PAL.deep+'" stroke-opacity=".85" stroke-width=".016" stroke-linecap="round" fill="none"/>';
+    s+='<path d="M'+litCorner+' Q'+litCtrl+' '+r.tip+'" stroke="'+cRim+'" stroke-opacity="'+r3(0.25+0.75*smooth(oc*1.5))+'" stroke-width=".02" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+  });
+  /* cekirdek isigi isinlara yayilir */
+  const glowA=smooth((oc-0.3)/0.5)*(1-0.25*w);
+  if(glowA>0.01) s+='<circle r=".8" fill="url(#'+ucg+')" opacity="'+r3(glowA)+'" clip-path="url(#'+uclip+')"/>';
+  s+='</g>';
+
+  /* kontur plakasi A (isinlar) */
+  s+='<g transform="translate('+r3(mx)+' '+r3(my)+')" fill="none" stroke="'+PAL.out+'" stroke-width=".045" stroke-linejoin="round">'+rays.map(r=>'<path d="'+rayD(r)+'"/>').join('')+'</g>';
+
+  /* --- kure + kemer (dolgu) --- */
+  const sm=smooth(oc);
+  const rb=lerp(0.42,0.27,sm);
+  const bump=0.16*(1-smooth(oc*1.25));
+  const bd=ballPath(rb,bump,n);
+  const collarA=smooth((oc-0.25)/0.4);
+  const rc=rb+0.05;
+  s+='<g transform="translate('+r3(-mx*0.3)+' '+r3(-my*0.3)+')">';
+  if(collarA>0.01) s+='<circle r="'+r3(rc)+'" fill="none" stroke="'+cTip+'" stroke-width=".07" opacity="'+r3(collarA)+'"/><circle r="'+r3(rc+0.012)+'" fill="none" stroke="'+cRim+'" stroke-opacity="'+r3(0.7*collarA)+'" stroke-width=".014" stroke-dasharray=".05 .045"/>';
+  const ballFill=mix(PAL.closed,cBase,sm);
+  s+='<path d="'+bd+'" fill="'+ballFill+'"/>';
+  s+='<circle cx="'+r3(-0.2*rb)+'" cy="'+r3(-0.23*rb)+'" r="'+r3(0.7*rb)+'" fill="'+mix(cTip,PAL.hi,0.25*(1-sm))+'" opacity="'+r3(0.9)+'"/>';
+  /* dikisler (kapaliyken) */
+  const seamA=1-smooth(oc*1.5);
+  if(seamA>0.01){
+    for(let i=0;i<n;i++){
+      const a=-Math.PI/2+i*step;
+      const rr=rb*(1+bump)*0.97;
+      s+='<path d="M'+P(a,0.035)+' L'+P(a,rr)+'" stroke="'+PAL.deep+'" stroke-width=".026" stroke-linecap="round" opacity="'+r3(seamA)+'" fill="none"/>';
+      s+='<path d="M'+P(a,0.05)+' L'+P(a,rr*0.96)+'" stroke="'+PAL.hi+'" stroke-width=".011" stroke-dasharray=".032 .034" opacity="'+r3(0.9*seamA)+'" fill="none"/>';
+    }
+  }
+  /* kure kenar isigi */
+  const ra=rb*0.95;
+  s+='<path d="M'+P(-2.62,ra)+' A'+r3(ra)+' '+r3(ra)+' 0 0 1 '+P(-1.22,ra)+'" stroke="'+cRim+'" stroke-opacity="'+r3(0.7+0.3*sm)+'" stroke-width=".024" stroke-linecap="round" fill="none"/>';
+  s+='</g>';
+
+  /* kontur plakasi B (kure + kemer) */
+  s+='<g transform="translate('+r3(mx)+' '+r3(my)+')" fill="none" stroke="'+PAL.out+'" stroke-linejoin="round">';
+  s+='<path d="'+bd+'" stroke-width=".05"/>';
+  if(collarA>0.01) s+='<circle r="'+r3(rc+0.04)+'" stroke-width=".035" opacity="'+r3(collarA)+'"/>';
+  s+='</g>';
+
+  /* agiz + cekirdek / kor */
+  const pop=st.pop!=null?st.pop:popOf(oc);
+  s+='<g transform="translate('+r3(-mx*0.3)+' '+r3(-my*0.3)+')">';
+  const mouthA=smooth((oc-0.15)/0.35);
+  if(mouthA>0.01){
+    s+='<g opacity="'+r3(mouthA)+'"><circle r=".135" fill="'+cTip+'" stroke="'+PAL.out+'" stroke-width=".022"/><circle r=".1" fill="'+PAL.deep+'" stroke="'+PAL.out+'" stroke-width=".018"/></g>';
+  }
+  if(pop>0.02){
+    const pp=Math.min(pop,1.35);
+    s+='<circle r="'+r3(0.3*pp)+'" fill="url(#'+ucg2+')" opacity="'+r3(Math.min(1,pop)*(1-0.0*w))+'"/>';
+    s+='<circle r="'+r3(0.075*pp)+'" fill="'+cCore+'"/>';
+    s+='<circle r="'+r3(0.036*pp)+'" fill="'+cCoreHot+'"/>';
+  }
+  if(st.ember&&oc<0.5&&!snapOn){
+    const k=1-smooth(oc/0.5);
+    const pl=st.anim?(0.6+0.4*Math.sin(t*3.1)):0.8;
+    s+='<circle r=".13" fill="url(#'+ucg2+')" opacity="'+r3(0.55*k*pl)+'"/><circle r=".03" fill="'+PAL.glow+'" opacity="'+r3(0.9*k*pl)+'"/>';
+  }
+  s+='</g>';
+
+  /* snap: parlama + hiz cizgileri */
+  if(snapOn){
+    const k=st.snap;
+    s+='<circle r="'+r3(lerp(1.15,0.35,easeOutQuad(k)))+'" fill="none" stroke="'+PAL.halo+'" stroke-opacity="'+r3(1-0.5*k)+'" stroke-width="'+r3(0.07*(1-0.5*k))+'"/>';
+    for(let i=0;i<n;i++){
+      const a=-Math.PI/2+(i+0.5)*step;
+      s+='<path d="M'+P(a,1.02)+' L'+P(a,0.7)+'" stroke="'+PAL.halo+'" stroke-width=".022" stroke-linecap="round" opacity=".85"/>';
+    }
+    s+='<circle r="'+r3(0.17*(1-0.6*k))+'" fill="'+PAL.halo+'" opacity=".95"/>';
+  }
+  s+='</g>';
+  return s;
+}
+
+/* ---------- mevcut pembe cicek (yaklasik; shader renklerinden) ---------- */
+function flowerPink(st,uid){
+  const oc=clamp(st.o,0,1);
+  const n=6,sm=smooth(oc);
+  const pet=(len,wid,rot,fill,shade,hi)=>{
+    const l=len,wd=wid;
+    const d='M0.1 0 C'+r3(l*0.25)+' '+r3(-wd)+' '+r3(l*0.9)+' '+r3(-wd*0.8)+' '+r3(l)+' 0 C'+r3(l*0.9)+' '+r3(wd*0.8)+' '+r3(l*0.25)+' '+r3(wd)+' 0.1 0Z';
+    const dsh='M0.1 0 C'+r3(l*0.25)+' '+r3(wd)+' '+r3(l*0.9)+' '+r3(wd*0.8)+' '+r3(l)+' 0 Z';
+    return '<g transform="rotate('+r3(rot)+')"><path d="'+d+'" fill="'+fill+'"/><path d="'+dsh+'" fill="'+shade+'"/><path d="M'+r3(l*0.3)+' '+r3(-wd*0.35)+' Q'+r3(l*0.6)+' '+r3(-wd*0.55)+' '+r3(l*0.82)+' '+r3(-wd*0.15)+'" stroke="'+hi+'" stroke-width=".035" fill="none" stroke-linecap="round"/><path d="'+d+'" fill="none" stroke="#9E2F6E" stroke-width=".03" stroke-linejoin="round"/></g>';
+  };
+  let s='<g transform="scale('+r3(lerp(0.55,1,sm))+')">';
+  for(let i=0;i<n;i++) s+=pet(lerp(0.5,1,sm),0.3,i*60-90,'#FF9EC4','#E06AA6','#FFE0EC');
+  for(let i=0;i<n;i++) s+=pet(lerp(0.35,0.66,sm),0.26,i*60-60,'#FFB3D0','#E985B5','#FFE0EC');
+  s+='<circle r=".2" fill="#FFD84A" stroke="#9E2F6E" stroke-width=".03"/><circle cx="-.04" cy="-.05" r=".08" fill="#FFF0A0"/></g>';
+  return s;
+}
+
+/* ---------- sahne ---------- */
+function charImg(cx,cy){
+  return '<image href="'+CANDY+'" x="'+r3(cx-SPR_W/2)+'" y="'+r3(cy-0.5)+'" width="'+r3(SPR_W)+'" height="'+SPR_H+'" style="image-rendering:pixelated" preserveAspectRatio="none"/>';
+}
+function creamPath(){
+  let d='M0 10.4 L24 10.4 L24 10.78';
+  const drips=[.2,.5,.15,.38,.12,.55,.22,.3,.45,.14,.35,.26,.5,.18,.4,.24,.32,.16,.48,.2];
+  let x=24,i=0;
+  while(x>0){
+    const dl=drips[i%drips.length];i++;
+    d+=' Q'+r3(x-0.35)+' '+r3(10.78+dl*1.4)+' '+r3(x-0.7)+' 10.78';
+    x-=0.7;
+    if(x<=0.01)break;
+  }
+  return d+' L0 10.78 Z';
+}
+const CREAM_D=creamPath();
+function sceneStatic(){
+  let s='';
+  s+='<rect x="-2" y="-2" width="28" height="17" fill="'+SCN.sky+'"/>';
+  /* zemin */
+  s+='<rect x="-2" y="10.4" width="28" height="4" fill="'+SCN.ground+'"/>';
+  s+='<path d="'+CREAM_D+'" fill="'+SCN.cream+'"/>';
+  /* asit havuzu */
+  s+='<rect x="1" y="10.4" width="5.0" height="2.1" fill="'+SCN.acid+'"/>';
+  s+='<rect x="1" y="10.4" width="5.0" height=".14" fill="#7CF07C"/>';
+  s+='<path d="M1 10.4 V12.5 H6 V10.4" fill="none" stroke="#0E6B0E" stroke-width=".12"/>';
+  s+='<circle cx="2.3" cy="11.3" r=".18" fill="#7CF07C"/><circle cx="3.9" cy="11.8" r=".12" fill="#7CF07C"/><circle cx="4.9" cy="11.1" r=".15" fill="#7CF07C"/>';
+  /* boru: yatay govde + dikey cikis */
+  s+='<g>';
+  s+='<rect x="21.35" y="5" width="2" height="3.6" fill="'+SCN.pipe+'"/>';
+  s+='<rect x="21.5" y="5" width=".16" height="3.6" fill="'+SCN.pipe3+'"/><rect x="21.68" y="5" width=".34" height="3.6" fill="'+SCN.pipe2+'"/>';
+  s+='<rect x="21.1" y="4.78" width="2.5" height=".4" fill="'+SCN.pipe2+'"/><rect x="21.1" y="4.78" width="2.5" height=".1" fill="'+SCN.pipe3+'"/>';
+  s+='<rect x="17" y="8.55" width="6.35" height="1.85" fill="'+SCN.pipe+'"/>';
+  s+='<rect x="17" y="8.68" width="6.35" height=".15" fill="'+SCN.pipe3+'"/><rect x="17" y="8.83" width="6.35" height=".3" fill="'+SCN.pipe2+'"/>';
+  s+='<rect x="16.8" y="8.35" width=".42" height="2.05" fill="'+SCN.pipe2+'"/><rect x="16.8" y="8.35" width=".1" height="2.05" fill="'+SCN.pipe3+'"/>';
+  s+='<rect x="21.1" y="8.35" width="2.5" height=".35" fill="'+SCN.pipe2+'"/>';
+  s+='</g>';
+  /* normal node (gokkusagi halkali) */
+  const nx=19.6,ny=2.5,rr=[0.95,0.77,0.58,0.4,0.22];
+  rr.forEach((r,i)=>{s+='<circle cx="'+nx+'" cy="'+ny+'" r="'+r+'" fill="'+SCN.ring[i]+'"/>';});
+  return s;
+}
+function scene(svg,uid,st,kind,opts){
+  opts=opts||{};
+  const fx=12,fy=5.2,R=4.5;
+  let s=sceneStatic();
+  const fl=kind==='pink'?flowerPink(st,uid):flowerK1(st,uid);
+  s+='<g transform="translate('+fx+' '+fy+') scale('+R+')">'+fl+'</g>';
+  /* kanca: karakter -> cicek merkezi */
+  const hx=9.3-SPR_W/2+HOOK[0],hy=8.2-0.5+HOOK[1];
+  s+='<line x1="'+r3(hx)+'" y1="'+r3(hy)+'" x2="'+fx+'" y2="'+fy+'" stroke="#04040C" stroke-width=".13" stroke-linecap="round"/>';
+  s+='<line x1="'+r3(hx)+'" y1="'+r3(hy)+'" x2="'+fx+'" y2="'+fy+'" stroke="#F1E6C7" stroke-width=".065" stroke-linecap="round"/>';
+  s+=charImg(9.3,8.2);
+  s+=charImg(14.6,3.2);
+  s+=charImg(15.6,9.9);
+  svg.innerHTML=s;
+}
+
+/* ---------- durum seridi ---------- */
+const STRIP=[
+  {name:'Kapalı',cap:'Mühürlü, dikişli küre. Çekirdek sönük, yalnızca küçük kor noktası.',st:{o:0,w:0},tag:'open 0'},
+  {name:'Açılış',cap:'Işınlar dışa devriliyor, küre küçülüyor, çekirdek ışığı yükseliyor.',st:{o:0.5,w:0,haloT:0.4},tag:'open 0.5'},
+  {name:'Açık',cap:'Küre, kemer halkası ve koni ağız; neon çekirdek ışınlara yayılıyor.',st:{o:1,w:0},tag:'open 1'},
+  {name:'Uyarı',cap:'Titreme, ölçek nabzı, kontür dolgudan kaymış (baskı kayması), amber kesikli halka.',st:{o:1,w:1},tag:'warn 1',live:true},
+  {name:'Snap',cap:'Işınlar saniyenin onda birinde içe devriliyor; önceki poz kesikli iz, cam göbeği parlama.',st:{o:0.3,w:0,snap:0.5},tag:'snap 0.5'}
+];
+const stripEls=[];
+(function buildStrip(){
+  const host=document.getElementById('strip');
+  STRIP.forEach((c,i)=>{
+    const d=document.createElement('div');d.className='cell';
+    d.innerHTML='<div class="stage"><svg viewBox="-5.7 -5.7 11.4 11.4" role="img" aria-label="'+c.name+'"></svg></div><h3>'+c.name+' <code>'+c.tag+'</code></h3><p>'+c.cap+'</p>';
+    host.appendChild(d);
+    stripEls.push(d.querySelector('svg'));
+  });
+})();
+function mkState(base,extra){return Object.assign({},S,{curlApplied:false,pop:null,haloT:-1,snap:-1,anim:false,t:0.37},base,extra||{});}
+function drawStage(svg,uid,st,kind,R){
+  const body=(kind==='pink'?flowerPink(st,uid):flowerK1(st,uid));
+  svg.innerHTML='<rect x="-9" y="-9" width="18" height="18" fill="'+SCN.sky+'"/><g transform="scale('+(R||4.5)+')">'+body+'</g>';
+}
+function renderStrip(forceAll,t){
+  STRIP.forEach((c,i)=>{
+    if(!c.live&&!forceAll)return;
+    const st=mkState(c.st,{rays:S.rays,ember:S.ember});
+    if(c.live&&!REDUCED){st.t=t;st.anim=true;}
+    drawStage(stripEls[i],'s'+i,st,'k1');
+  });
+}
+
+/* ---------- boru testi ---------- */
+function pipeEnd(){ /* ustten bakilan boru agzi */
+  return '<circle r="1.05" fill="'+SCN.pipe+'" stroke="'+SCN.pipe3+'" stroke-width=".12"/><circle r=".82" fill="'+SCN.pipe2+'"/><circle r=".66" fill="#04040C"/>';
+}
+function pipeSide(){
+  return '<g transform="translate(-2.6 -0.9)"><rect x="0" y="0" width="5.2" height="1.8" fill="'+SCN.pipe+'"/><rect x="0" y=".14" width="5.2" height=".14" fill="'+SCN.pipe3+'"/><rect x="0" y=".3" width="5.2" height=".3" fill="'+SCN.pipe2+'"/><rect x="-.2" y="-.2" width=".42" height="2.2" fill="'+SCN.pipe2+'"/><rect x="4.98" y="-.2" width=".42" height="2.2" fill="'+SCN.pipe2+'"/></g>';
+}
+const pipeTiles=[
+  {name:'Boru ağzı (üstten)',g:pipeEnd},
+  {name:'Boru gövdesi (yandan)',g:pipeSide},
+  {name:'K1 kapalı',k:{o:0,w:0}},
+  {name:'K1 açık',k:{o:1,w:0}}
+];
+const pipeEls=[];
+(function buildPipe(){
+  const host=document.getElementById('pipegrid');
+  [false,true].forEach(sil=>{
+    pipeTiles.forEach((p,i)=>{
+      const f=document.createElement('figure');
+      f.innerHTML='<div class="stage"><svg viewBox="-5.7 -5.7 11.4 11.4" role="img" aria-label="'+p.name+(sil?' siluet':'')+'"></svg></div><div class="cap">'+p.name+(sil?' · siluet':'')+'</div>';
+      host.appendChild(f);
+      pipeEls.push({svg:f.querySelector('svg'),p:p,sil:sil,uid:'p'+(sil?1:0)+i});
+    });
+  });
+})();
+function renderPipes(){
+  pipeEls.forEach(e=>{
+    let inner;
+    if(e.p.g) inner='<g>'+e.p.g()+'</g>';
+    else inner='<g transform="scale(4.5)">'+flowerK1(mkState(e.p.k,{rays:S.rays,ember:S.ember}),e.uid)+'</g>';
+    if(e.sil) inner='<g filter="url(#sil)">'+inner+'</g>';
+    e.svg.innerHTML='<rect x="-9" y="-9" width="18" height="18" fill="'+(e.sil?'#F1E6C7':SCN.sky)+'"/>'+inner;
+  });
+}
+
+/* ---------- etkilesim / oynat ---------- */
+const el=id=>document.getElementById(id);
+const sOpen=el('sOpen'),sWarn=el('sWarn'),oOpen=el('oOpen'),oWarn=el('oWarn'),bPlay=el('bPlay'),phaseEl=el('phase');
+let play=null;
+const TL={closed:1.8,open:0.5,hold:2.2,warn:0.7,snap:0.15};
+const T1=TL.closed,T2=T1+TL.open,T3=T2+TL.hold,T4=T3+TL.warn,T5=T4+TL.snap;
+const sim={x:0,v:0,k:180,c:14.8,target:0,pop:0,popv:0,phase:-1};
+function stopPlay(){play=null;bPlay.textContent='Oynat';phaseEl.textContent='elle';S.pop=null;S.snap=-1;S.curlApplied=false;S.anim=!REDUCED;}
+function onSlider(){
+  if(play)stopPlay();
+  S.o=parseFloat(sOpen.value);S.w=parseFloat(sWarn.value);S.pop=null;S.snap=-1;S.haloT=-1;S.curlApplied=false;
+  oOpen.textContent=S.o.toFixed(2);oWarn.textContent=S.w.toFixed(2);
+}
+sOpen.addEventListener('input',onSlider);
+sWarn.addEventListener('input',onSlider);
+bPlay.addEventListener('click',()=>{
+  if(play){stopPlay();return;}
+  play={pt:T1-0.01};S.curlApplied=true;S.anim=true;
+  sim.x=0;sim.v=0;sim.pop=0;sim.popv=0;sim.phase=-1;S.o=0;S.w=0;S.haloT=-1;
+  bPlay.textContent='Durdur';
+});
+el('selRays').addEventListener('change',e=>{S.rays=parseInt(e.target.value,10);renderStrip(true,S.t);renderPipes();});
+el('cEmber').addEventListener('change',e=>{S.ember=e.target.checked;renderStrip(true,S.t);renderPipes();});
+
+function stepSpring(dt,target,k,c){
+  let rem=dt;const h=1/240;
+  while(rem>1e-6){const d=Math.min(h,rem);rem-=d;
+    const acc=k*(target-sim.x)-c*sim.v;sim.v+=acc*d;sim.x+=sim.v*d;}
+}
+function stepPop(dt){
+  const tg=sim.x>=0.45?1:0;
+  if(tg<0.5){sim.pop=Math.max(0,sim.pop-dt*12);sim.popv=0;return;}
+  let rem=dt;const h=1/240;
+  while(rem>1e-6){const d=Math.min(h,rem);rem-=d;const acc=260*(1-sim.pop)-12*sim.popv;sim.popv+=acc*d;sim.pop+=sim.popv*d;}
+}
+function stepPlay(dt){
+  play.pt+=dt;
+  if(play.pt>=T5){play.pt-=T5;}
+  const pt=play.pt;
+  let ph=0,target=0,k=180,c=14.8,w=0,snap=-1;
+  if(pt<T1){ph=0;target=0;}
+  else if(pt<T2){ph=1;const l=pt-T1;target=l<0.08?-0.08:1;}
+  else if(pt<T3){ph=2;target=1;}
+  else if(pt<T4){ph=3;w=(pt-T3)/TL.warn;target=lerp(1,0.8,w);}
+  else{ph=4;target=0;k=900;c=48;w=0;snap=(pt-T4)/TL.snap;}
+  if(ph!==sim.phase){
+    if(ph===1)S.haloT=0;
+    sim.phase=ph;
+  }
+  stepSpring(dt,target,k,c);
+  stepPop(dt);
+  S.o=sim.x;S.w=w;S.pop=sim.pop;S.snap=snap;
+  const names=['kapalı','açılış','açık','uyarı','snap'];
+  phaseEl.textContent=names[ph]+'  '+pt.toFixed(2)+' sn';
+  sOpen.value=clamp(S.o,-0.1,1.2);sWarn.value=S.w;oOpen.textContent=S.o.toFixed(2);oWarn.textContent=S.w.toFixed(2);
+}
+
+/* ---------- ana cizim ---------- */
+const labSvg=el('labSvg'),sceneSvg=el('sceneSvg'),z=[el('z1'),el('z2'),el('z3')],cmpA=el('cmpA'),cmpB=el('cmpB');
+const cmpState={o:1,w:0,t:0.37,snap:-1,haloT:-1,pop:null,rays:6,ember:true,curlApplied:false,anim:false};
+function renderMain(){
+  const st=Object.assign({},S);
+  drawStage(labSvg,'L',st,'k1',4.5);
+  scene(sceneSvg,'M',Object.assign({},S),'k1');
+  z.forEach((zs,i)=>scene(zs,'Z'+i,Object.assign({},S),'k1'));
+}
+function renderCmp(){
+  cmpState.rays=S.rays;cmpState.ember=S.ember;
+  scene(cmpA,'CA',Object.assign({},cmpState),'pink');
+  scene(cmpB,'CB',Object.assign({},cmpState),'k1');
+}
+
+let last=0;
+function frame(ts){
+  const dt=Math.min(0.05,(ts-last)/1000||0.016);last=ts;
+  if(play)stepPlay(dt);
+  if(S.haloT>=0){S.haloT+=dt/0.35;if(S.haloT>=1)S.haloT=-1;}
+  S.t=(REDUCED&&!play)?0.37:ts/1000;
+  if(play)S.anim=true;
+  renderMain();
+  renderStrip(false,ts/1000);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- testler ---------- */
+function applyTests(){
+  const parts=[];
+  const cb=el('tCb').value;
+  if(cb)parts.push('url(#cb-'+cb+')');
+  if(el('tGray').checked)parts.push('grayscale(1)');
+  if(el('tCrt').checked)parts.push('brightness(1.08)');
+  document.documentElement.style.setProperty('--stage-filter',parts.length?parts.join(' '):'none');
+  document.body.classList.toggle('crt',el('tCrt').checked);
+}
+['tGray','tCrt','tCb'].forEach(id=>el(id).addEventListener('change',applyTests));
+
+/* ---------- palet cipleri ---------- */
+(function(){
+  const host=el('chips');
+  Object.keys(PAL).forEach(k=>{
+    const c=document.createElement('span');c.className='chip';
+    c.innerHTML='<i style="background:'+PAL[k]+'"></i>'+ROLE_TR[k]+' '+PAL[k];
+    host.appendChild(c);
+  });
+})();
+
+/* baslat */
+S.anim=!REDUCED;
+applyTests();
+renderStrip(true,0.37);
+renderPipes();
+renderCmp();
+requestAnimationFrame(frame);
+window.__K1={S:S,flowerK1:flowerK1,renderStrip:renderStrip};
+})();
+</script>
+</body>
+</html>

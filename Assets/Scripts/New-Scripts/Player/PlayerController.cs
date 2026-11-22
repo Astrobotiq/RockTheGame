@@ -174,6 +174,8 @@ namespace New_Scripts.Player
         {
             HitStopEvents.HitStopStarted -= OnPauseStarted;
             HitStopEvents.HitStopEnded -= OnPauseEnded;
+            NotifyReleased(ActiveArm.Left);
+            NotifyReleased(ActiveArm.Right);
         }
 
         private void Update()
@@ -252,6 +254,40 @@ namespace New_Scripts.Player
                 _rightNodeLocal = local;
                 _rightSimulatedVelocity = simulated;
             }
+            NotifyGrabbed(arm == ActiveArm.Left ? ActiveArm.Left : ActiveArm.Right, node, point);
+        }
+
+        // --- Tutunma bildirimi (Nodes.IGrabReactive) ---
+        // Tutunma AttachAnchor'dan bildirilir; bırakma çok yoldan olduğu için LateUpdate'te kolun node'unun değiştiğine bakılır.
+        private Nodes.IGrabReactive _leftReactive;
+        private Nodes.IGrabReactive _rightReactive;
+        private Transform _leftReactiveNode;
+        private Transform _rightReactiveNode;
+
+        private void NotifyGrabbed(ActiveArm arm, Transform node, Vector2 point)
+        {
+            NotifyReleased(arm);   // aynı kol başka node'a geçtiyse öncekini bırak
+            Nodes.IGrabReactive reactive = node != null ? node.GetComponentInParent<Nodes.IGrabReactive>() : null;
+            if (reactive == null) return;
+            if (arm == ActiveArm.Left) { _leftReactive = reactive; _leftReactiveNode = node; }
+            else { _rightReactive = reactive; _rightReactiveNode = node; }
+            reactive.OnGrabbed(arm, point);
+        }
+
+        private void NotifyReleased(ActiveArm arm)
+        {
+            Nodes.IGrabReactive reactive = arm == ActiveArm.Left ? _leftReactive : _rightReactive;
+            if (arm == ActiveArm.Left) { _leftReactive = null; _leftReactiveNode = null; }
+            else { _rightReactive = null; _rightReactiveNode = null; }
+            // Çiçek yok edildiyse (oda uyutuldu/yeniden kuruldu) haber verilecek kimse kalmadı.
+            if (reactive == null || (reactive is UnityEngine.Object o && o == null)) return;
+            reactive.OnReleased(arm);
+        }
+
+        private void LateUpdate()
+        {
+            if (_leftReactive != null && LeftAnchorNode != _leftReactiveNode) NotifyReleased(ActiveArm.Left);
+            if (_rightReactive != null && RightAnchorNode != _rightReactiveNode) NotifyReleased(ActiveArm.Right);
         }
 
         /// <summary>Kolun node'unun bu fizik adımındaki kayması; sabit anchor'da sıfır.</summary>

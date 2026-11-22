@@ -1,5 +1,6 @@
 using System.Collections;
 using New_Scripts.Flower;
+using New_Scripts.Player;
 using New_Scripts.Player.States;
 using NUnit.Framework;
 using UnityEngine;
@@ -93,6 +94,44 @@ namespace RockTheGame.Tests.PlayMode
 
             Assert.IsFalse(Player.RightAnchor.HasValue, "Kapanan çiçekten kanca kopmalı");
             Assert.IsNull(Player.RightAnchorNode);
+        }
+
+        [UnityTest]
+        public IEnumerator GrabbingFlower_NotifiesGrabbedWithArmAndPoint()
+        {
+            var t = Timings(closed: 0.3f, open: 5f);
+            var flower = SpawnFlower(t, phaseOffset: t.closed + t.opening + 0.1f);
+            var cycle = flower.GetComponent<FlowerCycle>();
+            int grabbed = 0;
+            ActiveArm arm = ActiveArm.None;
+            Vector2 point = Vector2.zero;
+            cycle.Grabbed += (a, p) => { grabbed++; arm = a; point = p; };
+
+            yield return GrabExistingWithRight(flower.transform.Find("Node").gameObject);
+
+            Assert.AreEqual(1, grabbed, "Tutunma tek kez bildirilmeli");
+            Assert.AreEqual(ActiveArm.Right, arm);
+            Assert.IsTrue(cycle.IsHeldBy(ActiveArm.Right));
+            Assert.IsFalse(cycle.IsHeldBy(ActiveArm.Left));
+            Assert.Less(Vector2.Distance(point, flower.transform.position), 0.5f, $"Tutunma noktası çiçekte olmalı: {point}");
+        }
+
+        [UnityTest]
+        public IEnumerator ClosingFlower_NotifiesReleased()
+        {
+            var t = Timings(closed: 0.3f, open: 1f);
+            var flower = SpawnFlower(t, phaseOffset: t.closed + t.opening + 0.05f);
+            var cycle = flower.GetComponent<FlowerCycle>();
+            int released = 0;
+            cycle.Released += _ => released++;
+
+            yield return GrabExistingWithRight(flower.transform.Find("Node").gameObject);
+            Assert.IsTrue(cycle.IsHeld);
+            yield return WaitWhileState<SwingingState>();
+            yield return null;   // bırakma bildirimi LateUpdate'te yoklanır
+
+            Assert.AreEqual(1, released, "Kapanışta bırakma tek kez bildirilmeli");
+            Assert.IsFalse(cycle.IsHeld);
         }
 
         [UnityTest]

@@ -1,4 +1,5 @@
 using System;
+using New_Scripts.Player;
 using New_Scripts.Player.Nodes;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace New_Scripts.Flower
     /// <see cref="ReleaseImpulse"/> kadar çiçekten iter.
     /// </summary>
     [RequireComponent(typeof(FlowerBloom))]
-    public class FlowerCycle : MonoBehaviour, IGrabbableNode
+    public class FlowerCycle : MonoBehaviour, IGrabbableNode, IGrabReactive
     {
         [SerializeField] private FlowerCycleTimings timings = FlowerCycleTimings.Default;
         [Tooltip("Çiçekler aynı anda açılmasın diye döngüye eklenen kayma (saniye).")]
@@ -35,8 +36,41 @@ namespace New_Scripts.Flower
         /// <summary>Tutulabilirlik değiştiğinde (true = tutulabilir).</summary>
         public event Action<bool> GrabbableChanged;
 
+        // Tutunma durumu (IGrabReactive): çiçek tepkisi (FlowerReactor) ve polen bunu okur. Tutulabilirlik kapısı tüketicidedir.
+        private bool _leftHeld;
+        private bool _rightHeld;
+        private Vector2 _leftGripPoint;
+        private Vector2 _rightGripPoint;
+
+        /// <summary>Herhangi bir kol çiçeğe tutunuyor mu.</summary>
+        public bool IsHeld => _leftHeld || _rightHeld;
+        public bool IsHeldBy(ActiveArm arm) => arm == ActiveArm.Left ? _leftHeld : arm == ActiveArm.Right && _rightHeld;
+        /// <summary>Kolun tutunma noktası (dünya); kol tutmuyorsa son nokta.</summary>
+        public Vector2 GripPoint(ActiveArm arm) => arm == ActiveArm.Left ? _leftGripPoint : _rightGripPoint;
+
+        /// <summary>Bir kol tutundu (kol, dünya noktası). Aynı karede ikinci kol da tutunabilir.</summary>
+        public event Action<ActiveArm, Vector2> Grabbed;
+        /// <summary>Bir kol bıraktı (kol). Çiçeğin kapanması, ölüm, el bırakma gibi her neden için gelir.</summary>
+        public event Action<ActiveArm> Released;
+
+        public void OnGrabbed(ActiveArm arm, Vector2 worldPoint)
+        {
+            if (arm == ActiveArm.Left) { _leftHeld = true; _leftGripPoint = worldPoint; }
+            else if (arm == ActiveArm.Right) { _rightHeld = true; _rightGripPoint = worldPoint; }
+            else return;
+            Grabbed?.Invoke(arm, worldPoint);
+        }
+
+        public void OnReleased(ActiveArm arm)
+        {
+            if (!IsHeldBy(arm)) return;
+            if (arm == ActiveArm.Left) _leftHeld = false; else _rightHeld = false;
+            Released?.Invoke(arm);
+        }
+
         private void OnEnable()
         {
+            _leftHeld = _rightHeld = false;   // oda uyandığında eski tutunma kalmasın (olay yok: tüketiciler de sıfırlanır)
             _bloom = GetComponent<FlowerBloom>();
             _time = phaseOffset;
             _phase = (FlowerPhase)(-1);

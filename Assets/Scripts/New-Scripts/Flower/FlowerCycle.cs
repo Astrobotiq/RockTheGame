@@ -39,9 +39,14 @@ namespace New_Scripts.Flower
         public FlowerPhase Phase => _phase;
         public bool IsGrabbable => _grabbable;
         public float ReleaseImpulse => releaseImpulse;
+        /// <summary>Uyarı fazında 0..1 (diğer fazlarda 0): sayaç tıkları buna bakar.</summary>
+        public float Warn01 { get; private set; }
 
         /// <summary>Tutulabilirlik değiştiğinde (true = tutulabilir).</summary>
         public event Action<bool> GrabbableChanged;
+
+        /// <summary>Faz değiştiğinde (yeni faz). Ses/titreşim ve efektler bunu dinler.</summary>
+        public event Action<FlowerPhase> PhaseChanged;
 
         // Tutunma durumu (IGrabReactive): çiçek tepkisi (FlowerReactor) ve polen bunu okur. Tutulabilirlik kapısı tüketicidedir.
         private bool _leftHeld;
@@ -105,7 +110,10 @@ namespace New_Scripts.Flower
                         break;
                     case FlowerPhase.Closed: _bloom.SetWarn(0f); break;
                 }
+                PhaseChanged?.Invoke(_phase);
             }
+
+            Warn01 = _phase == FlowerPhase.Warning ? s.Warn01 : 0f;
 
             if (_phase == FlowerPhase.Warning) _bloom.SetWarn(s.Warn01, (1f - s.Warn01) * timings.warning);
             if (_phase == FlowerPhase.Closed) _bloom.SetHint(s.Hint01);

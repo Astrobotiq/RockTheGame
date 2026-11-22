@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27932ee9dd065c7409e77aedf5aee964, type: 3}
+  m_Name: FlowerAudioSettings
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Flower.FlowerAudioSettingsSO
+  warnTickCue: {fileID: 11400000, guid: 70e70002482d4864fa427f5db848ca04, type: 2}
+  warnTickCount: 4
+  warnTickPitch: {x: 0.9, y: 1.4}
+  grabCue: {fileID: 11400000, guid: ec79d9f1d3062044bae475d230e782f3, type: 2}
+  snapCue: {fileID: 11400000, guid: f958a1c887bd5114dafd22fe6c07275e, type: 2}

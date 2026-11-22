@@ -11,7 +11,8 @@ Shader "Flower/Petal"
     // Boya (el işi kâğıt): düz renk alanlar. Bükülmüş normalden 2 bant (ışık / gölge), orta çizgiden katlanmış iki yüz
     // (bir yüz bir ton gölgede), ince katlama izi ve ışık yakalayan ince kâğıt kenarı. Kontür, damar, parlama çizgisi,
     // gradyan yok; yaprağın okunması kesim gölgesinden gelecek (ikinci pass). Bükme/rulo vertex'tedir ve boyadan bağımsızdır.
-    // _Open kapalıyken yaprak düz _ClosedCol tonuna döner (kâğıt "soldu"); _Warn kapanış uyarısında titreşen sıcak tint verir.
+    // _Open kapalıyken yaprak düz _ClosedCol tonuna döner (kâğıt "soldu"). Kapanış uyarısı boyayı değiştirmez; uyarı titreme,
+    // iplik büzülmesi, kesim gölgesi büyümesi ve kesikli halka ile (renkten bağımsız) verilir.
     Properties
     {
         _HiCol ("Kâğıt kenarı (ışık)", Color) = (1.0, 1.0, 1.0, 1)
@@ -19,7 +20,8 @@ Shader "Flower/Petal"
         _ShadowCol ("Shadow (gölge yüzü)", Color) = (0.804, 0.824, 0.894, 1)
         _DeepCol ("Katlama izi", Color) = (0.353, 0.376, 0.533, 1)
         _ClosedCol ("Kapalı hal tonu", Color) = (0.431, 0.435, 0.471, 1)
-        _WarnCol ("Warn Tint", Color) = (1.0, 0.788, 0.302, 1)
+        _ClosedTipCol ("Kapalı uç ipucu (alfa 0 = yok)", Color) = (0.082, 0.212, 0.910, 0)
+        _ClosedTipFrom ("Kapalı uç ipucu başlangıcı (boyun oranı)", Range(0.3, 0.95)) = 0.72
 
         _Shape ("Shape (en geniş nokta; büyük = uca doğru)", Range(0.6, 3)) = 1.35
         _Roundness ("Roundness (uç yuvarlaklığı; küçük = yuvarlak)", Range(0.3, 1.5)) = 0.62
@@ -39,7 +41,6 @@ Shader "Flower/Petal"
         [HideInInspector] _BaseCurl ("Base Curl rad (script)", Float) = 0.6
         [HideInInspector] _Roll ("Roll rad (script)", Float) = 0.6
         [HideInInspector] _Open ("Open (script)", Range(0, 1)) = 1
-        [HideInInspector] _Warn ("Warn (script)", Range(0, 1)) = 0
         [HideInInspector] _Seed ("Seed (script)", Range(0, 1)) = 0.5
     }
 
@@ -81,10 +82,11 @@ Shader "Flower/Petal"
                 float3 posW   : TEXCOORD2;
             };
 
-            fixed4 _HiCol, _BaseCol, _ShadowCol, _DeepCol, _ClosedCol, _WarnCol;
+            fixed4 _HiCol, _BaseCol, _ShadowCol, _DeepCol, _ClosedCol, _ClosedTipCol;
             float4 _LightDir;
             float _ShadowThr, _FoldShade, _CreasePx, _EdgePx;
-            float _Open, _Warn, _Seed;
+            float _ClosedTipFrom;
+            float _Open, _Seed;
 
             v2f vert(appdata_t IN)
             {
@@ -146,16 +148,16 @@ Shader "Flower/Petal"
                 float edgeBand = smoothstep(-_EdgePx - 0.5, -_EdgePx + 0.5, dpx);
                 col = lerp(col, _HiCol.rgb, edgeBand * bShadow * 0.85);
 
-                // Kapalı hal: yaprak düz kapalı tona döner (aynı iki bant + katlanan yüz, daha koyu).
+                // Kapalı hal: yaprak düz kapalı tona döner (aynı iki bant + katlanan yüz, daha koyu). _ClosedTipCol'un alfa'sı
+                // 0'dan büyükse yaprak uçları (u > _ClosedTipFrom) o renge boyanır: kapalı tomurcuğun çiçek olduğunu söyleyen uç ipucu.
                 float closed = 1.0 - smoothstep(0.0, 0.45, _Open);
                 float3 closedCol = lerp(_ClosedCol.rgb * 0.8, _ClosedCol.rgb, bShadow);
                 closedCol = lerp(closedCol, closedCol * 0.85, foldDim);
+                closedCol = lerp(closedCol, _ClosedTipCol.rgb, _ClosedTipCol.a * AAStep(_ClosedTipFrom, u, 0.0));
                 col = lerp(col, closedCol, closed);
 
-                // Uyarı = sıcak tint + titreşen parlaklık (asıl uyarı titreme/kayma; renk ikincil).
-                float pulse = 0.5 + 0.5 * sin(_Time.y * (8.0 + 12.0 * _Warn) * 6.2831853);
-                col = lerp(col, col * _WarnCol.rgb * 1.15, _Warn * 0.55);
-                col *= 1.0 + _Warn * pulse * 0.14;
+                // Uyarı bu shader'da boya değiştirmez: titreme, iplik büzülmesi ve kesim gölgesi büyümesi renkten bağımsız
+                // uyarıyı taşır (turuncu, turuncu zeminde kayboluyor ve renk körlüğünde asit yeşiline yaklaşıyor).
 
                 // Yaprak başına çok küçük ton sapması
                 col *= 1.0 + (_Seed - 0.5) * 0.06;

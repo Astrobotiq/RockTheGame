@@ -59,6 +59,7 @@ namespace New_Scripts.Flower
         {
             int n = _bloom.PetalCount;
             _state = new FlowerReactionState(n);
+            if (settings != null) _state.Shape = settings.GripShape;
             _yaw = new UiSpring[n];
             _dip = new UiSpring[n];
             var s = settings;

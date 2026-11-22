@@ -673,6 +673,17 @@ namespace New_Scripts.Flower
                 float az = PetalAzimuth(p.Layer, p.Index);
                 p.Pivot.localPosition = new Vector3(Mathf.Cos(az) * baseRadius, 0f, Mathf.Sin(az) * baseRadius);
 
+                // Karaktere tepki (FlowerReactor): yaprağın tabanında menteşe gibi yana itme (yaw) ve aşağı bastırma (dip).
+                // Tepki yoksa yaprak kurulu duruşunda kalır (eski çıktıyla birebir aynı).
+                float reactYaw = 0f, reactDipDeg = 0f;
+                var reaction = Reaction;
+                if (reaction != null && p.Index < reaction.PetalYaw.Length)
+                {
+                    reactYaw = reaction.PetalYaw[p.Index];
+                    reactDipDeg = reaction.PetalDip[p.Index] * Mathf.Rad2Deg;
+                    p.Pivot.localRotation = Quaternion.Euler(0f, FlowerReactMath.PivotYawDegrees(az, reactYaw), 0f);
+                }
+
                 // Uyarıda yapraklar sırayla katlanır (sayaç): katlanan yaprağın ilerlemesi azalır.
                 if (_warn > 0f) prog *= 1f - warnFoldDepth * FlowerWarnMath.Fold(_warn, p.Index, petalCount, warnFoldOverlap);
 
@@ -688,7 +699,7 @@ namespace New_Scripts.Flower
                 }
 
                 float pitchDeg = Mathf.Lerp(closedPitch, openPitch + p.Layer * innerPitchBonus, prog) - over * overshootPitch
-                                 + pitchFlutterDeg * (tip - prog);
+                                 + pitchFlutterDeg * (tip - prog) - reactDipDeg;
                 float reach = Mathf.Lerp(closedStraight, 1f, prog);
 
                 var cut = handCut ? FlowerCutMath.ForSeed(p.Seed) : FlowerCutMath.Cut.None;
@@ -762,8 +773,11 @@ namespace New_Scripts.Flower
                 var ring = rings[r];
                 if (mr == null || ring == null) continue;
 
+                // Tutunma yumruğu: şeritler tutan ele sarılır (Reaction yoksa grip 0 = eski duruş).
+                var reaction = Reaction;
                 var pose = FlowerCoronaMath.Evaluate(open, _warn, ring.openPitchDeg * Mathf.Deg2Rad,
-                    ring.closedPitchDeg * Mathf.Deg2Rad, ring.openCurl, ring.closedCurl, coronaOpenStart);
+                    ring.closedPitchDeg * Mathf.Deg2Rad, ring.openCurl, ring.closedCurl, coronaOpenStart,
+                    reaction != null ? reaction.Grip01 : 0f, reaction != null ? reaction.Shape : FlowerCoronaMath.GripShape.Default);
                 mr.enabled = pose.Visible;
                 if (!pose.Visible) continue;
 

@@ -19,6 +19,8 @@ namespace New_Scripts.Flower
         public float Gate;
         /// <summary>Tutunan kolun çiçek-yerel azimutu (radyan, gecikmeli izlenen, sarılmamış).</summary>
         public float ArmAzimuth;
+        /// <summary>Tam kavramada iplik tacı şeritlerinin duruşu (ayar SO'sundan).</summary>
+        public FlowerCoronaMath.GripShape Shape = FlowerCoronaMath.GripShape.Default;
 
         public FlowerReactionState(int petalCount)
         {

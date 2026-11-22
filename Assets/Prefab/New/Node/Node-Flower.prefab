@@ -664,6 +664,7 @@ GameObject:
   - component: {fileID: 3300073991569223057}
   - component: {fileID: 7687777289321385611}
   - component: {fileID: 1315076699474676627}
+  - component: {fileID: 6041797636908512324}
   m_Layer: 0
   m_Name: Node-Flower
   m_TagString: Untagged
@@ -880,6 +881,19 @@ MonoBehaviour:
   audioSettings: {fileID: 11400000, guid: ad48e162566fee94791e53523eb334bf, type: 2}
   vibrationSettings: {fileID: 11400000, guid: f522b8d0141bb5a4bb1b78b8f479aef6, type: 2}
   sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
+--- !u!114 &6041797636908512324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8016881550571652347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6393f1728c2dcee42a626cb2e877b536, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Flower.FlowerReactor
+  settings: {fileID: 11400000, guid: 39bbc3de52da06147b11e176d440f9c5, type: 2}
 --- !u!1 &8374446772970231210
 GameObject:
   m_ObjectHideFlags: 0

@@ -29,11 +29,10 @@ namespace New_Scripts.Flower
             var uv2 = new Vector2[strips * perStrip];
             var tris = new int[strips * segmentsAlong * segmentsAcross * 6];
 
-            float step = 2f * Mathf.PI / strips;
             int t = 0;
             for (int s = 0; s < strips; s++)
             {
-                float azimuth = (s + phase) * step;
+                float azimuth = FlowerCoronaMath.StripAzimuth(s, strips, phase);
                 float lengthMul = StripLengthMul(s, phase);
                 int baseIdx = s * perStrip;
 

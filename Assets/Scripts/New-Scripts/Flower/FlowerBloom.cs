@@ -32,6 +32,8 @@ namespace New_Scripts.Flower
         private static readonly int ShapeId = Shader.PropertyToID("_Shape");
         private static readonly int RoundnessId = Shader.PropertyToID("_Roundness");
         private static readonly int TipSkewId = Shader.PropertyToID("_TipSkew");
+        private static readonly int BaseRadiusId = Shader.PropertyToID("_BaseRadius");
+        private static readonly int BaseHeightId = Shader.PropertyToID("_BaseHeight");
         private static readonly int CoreRadiusId = Shader.PropertyToID("_CoreRadius");
         private static readonly int RingId = Shader.PropertyToID("_Ring");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
@@ -45,6 +47,27 @@ namespace New_Scripts.Flower
             public int Layer;
             public int Index;
             public float Seed;
+        }
+
+        /// <summary>İplik tacının bir halkası: şerit boyutları, yerleşimi ve kapalı/açık duruşu.</summary>
+        [Serializable]
+        private class CoronaRing
+        {
+            [Tooltip("Halkanın dönüklüğü, şerit adımının oranı (iç halka 0.5: dış halkayla dişlenir).")]
+            [Range(0f, 1f)] public float phase;
+            [Tooltip("Açıkken şerit boyu (petal boyu biriminde).")]
+            [Min(0.02f)] public float length = 0.55f;
+            [Tooltip("Şerit eni. Komşu şeritlerle birleşmesin: taban çevresi / şerit sayısından küçük olmalı.")]
+            [Min(0.02f)] public float width = 0.14f;
+            [Tooltip("Açıkken tabanın eksenden uzaklığı.")]
+            [Min(0f)] public float baseRadius = 0.3f;
+            [Tooltip("Açıkken yaprakların üstündeki yükseklik (kase biçimli yapraklar şeritleri örtmesin).")]
+            [Min(0f)] public float baseHeight = 0.3f;
+            [Range(-30f, 90f)] public float openPitchDeg = 20f;
+            [Range(0f, 110f)] public float closedPitchDeg = 70f;
+            [Tooltip("Boy boyunca eğrilik, açıkken / kapalıyken (radyan / boy birimi).")]
+            public float openCurl = 0.4f;
+            public float closedCurl = 1.4f;
         }
 
         [Header("Açılma")]
@@ -147,6 +170,28 @@ namespace New_Scripts.Flower
         [SerializeField] private string sortingLayerName = "Default";
         [SerializeField] private int baseSortingOrder;
 
+        [Header("İplik tacı (pasiflora)")]
+        [Tooltip("İplik tacı materyali (Flower/Corona). Boşsa taç yok. Atandıktan sonra Rebuild gerekir.")]
+        [SerializeField] private Material coronaMaterial;
+        [Tooltip("İplik tacı gölgesi (Flower/CoronaShadow): aynı mesh'e ikinci materyal. Boşsa gölge yok.")]
+        [SerializeField] private Material coronaShadowMaterial;
+        [Tooltip("Halka başına şerit sayısı. Değişince Rebuild gerekir.")]
+        [SerializeField, Range(3, 16)] private int coronaStrips = 10;
+        [Tooltip("Açılma değeri bu eşiği geçince taç açılmaya başlar (yapraklar önce açılır).")]
+        [SerializeField, Range(0f, 0.9f)] private float coronaOpenStart = FlowerCoronaMath.DefaultOpenStart;
+        [SerializeField] private CoronaRing coronaOuter = new CoronaRing
+        {
+            phase = 0f, length = 0.55f, width = 0.14f, baseRadius = 0.3f, baseHeight = 0.3f,
+            openPitchDeg = 20f, closedPitchDeg = 70f, openCurl = 0.4f, closedCurl = 1.4f
+        };
+        [SerializeField] private CoronaRing coronaInner = new CoronaRing
+        {
+            phase = 0.5f, length = 0.32f, width = 0.11f, baseRadius = 0.2f, baseHeight = 0.4f,
+            openPitchDeg = 40f, closedPitchDeg = 75f, openCurl = 0.6f, closedCurl = 1.6f
+        };
+
+        [SerializeField, HideInInspector] private MeshRenderer[] coronaRenderers;
+        [SerializeField, HideInInspector] private int builtCoronaStrips;
         [SerializeField, HideInInspector] private List<Petal> petals = new List<Petal>();
         [SerializeField, HideInInspector] private MeshRenderer centerRenderer;
         [SerializeField, HideInInspector] private MeshRenderer haloRenderer;
@@ -235,6 +280,7 @@ namespace New_Scripts.Flower
         private void OnEnable()
         {
             if (!IsBuilt()) Rebuild();
+            EnsureCoronaMeshes();
             _spring = new UiSpring(openStiffness, openDamping) { Value = open, Target = open };
             _pop = new UiSpring(popStiffness, popDamping);
         }
@@ -288,6 +334,19 @@ namespace New_Scripts.Flower
             if (model == null || centerRenderer == null || haloRenderer == null || petals.Count != petalCount * layerCount) return false;
             foreach (var p in petals)
                 if (p == null || p.Pivot == null) return false;
+
+            // İplik tacı: materyal varsa iki halka renderer'ı ve şerit sayısı tutmalı; materyal yoksa taç hiç üretilmemiş olmalı.
+            if (coronaMaterial != null)
+            {
+                if (coronaRenderers == null || coronaRenderers.Length != 2 || builtCoronaStrips != coronaStrips) return false;
+                foreach (var r in coronaRenderers)
+                    if (r == null) return false;
+            }
+            else if (coronaRenderers != null && coronaRenderers.Length > 0)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -342,7 +401,63 @@ namespace New_Scripts.Flower
                 }
             }
 
+            // İplik tacı: iki halka (dış, iç), yapraklardan sonra ve üstte çizilir. Mesh'ler EnsureCoronaMeshes'te atanır.
+            coronaRenderers = null;
+            builtCoronaStrips = 0;
+            if (coronaMaterial != null)
+            {
+                coronaRenderers = new MeshRenderer[2];
+                string[] names = { "CoronaOuter", "CoronaInner" };
+                for (int r = 0; r < 2; r++)
+                {
+                    var go = new GameObject(names[r]);
+                    go.transform.SetParent(model, false);
+                    go.AddComponent<MeshFilter>();
+                    var mr = go.AddComponent<MeshRenderer>();
+                    mr.sharedMaterials = coronaShadowMaterial != null
+                        ? new[] { coronaMaterial, coronaShadowMaterial }
+                        : new[] { coronaMaterial };
+                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    mr.receiveShadows = false;
+                    mr.sortingLayerName = sortingLayerName;
+                    mr.sortingOrder = order + 1 + r;
+                    coronaRenderers[r] = mr;
+                }
+
+                builtCoronaStrips = coronaStrips;
+                EnsureCoronaMeshes();
+            }
+
             Apply();
+        }
+
+        // Halka mesh'leri kaydedilen asset değil, çalışma zamanında üretilir (şerit sayısı ve dönüklüğe göre ortak önbellek);
+        // böylece prefab'a gömülü mesh referansı bozulmaz.
+        private static readonly Dictionary<(int, float), Mesh> CoronaMeshes = new Dictionary<(int, float), Mesh>();
+
+        private static Mesh GetCoronaMesh(int strips, float phase)
+        {
+            var key = (strips, phase);
+            if (!CoronaMeshes.TryGetValue(key, out var mesh) || mesh == null)
+            {
+                mesh = FlowerCoronaMesh.Build(strips, phase);
+                mesh.hideFlags = HideFlags.HideAndDontSave;
+                CoronaMeshes[key] = mesh;
+            }
+
+            return mesh;
+        }
+
+        private void EnsureCoronaMeshes()
+        {
+            if (coronaMaterial == null || coronaRenderers == null || coronaRenderers.Length != 2) return;
+            var rings = new[] { coronaOuter, coronaInner };
+            for (int r = 0; r < 2; r++)
+            {
+                if (coronaRenderers[r] == null) continue;
+                var filter = coronaRenderers[r].GetComponent<MeshFilter>();
+                if (filter != null) filter.sharedMesh = GetCoronaMesh(coronaStrips, rings[r].phase);
+            }
         }
 
         private float PetalAzimuth(int layer, int index)
@@ -422,6 +537,8 @@ namespace New_Scripts.Flower
                 p.Renderer.SetPropertyBlock(_block);
             }
 
+            ApplyCorona();
+
             // Orta: disk shader'daki _CoreRadius (quad yarıçapının oranı) çiçek çekirdeğine oturacak şekilde ölçeklenir;
             // pop yayı ile 0 -> ~1,3 -> 1. Uyarıda hızlanan bir nabız (±%8).
             float fill = centerMaterial != null && centerMaterial.HasProperty(CoreRadiusId)
@@ -450,6 +567,40 @@ namespace New_Scripts.Flower
                 _block.SetFloat(RingId, Mathf.Lerp(0.18f, 0.95f, e));
                 _block.SetFloat(AlphaId, (1f - _haloT) * 0.9f);
                 haloRenderer.SetPropertyBlock(_block);
+            }
+        }
+
+        // İplik tacı: açılma değerinden (ve uyarıdan) türeyen duruş (FlowerCoronaMath) her halkanın bloğuna yazılır;
+        // bükme yaprakla aynı shader hesabı, yani eğrilik açıldıkça çözülür. Tamamen kapalıyken halkalar çizilmez.
+        private void ApplyCorona()
+        {
+            if (coronaMaterial == null || coronaRenderers == null || coronaRenderers.Length != 2) return;
+
+            var rings = new[] { coronaOuter, coronaInner };
+            for (int r = 0; r < 2; r++)
+            {
+                var mr = coronaRenderers[r];
+                var ring = rings[r];
+                if (mr == null || ring == null) continue;
+
+                var pose = FlowerCoronaMath.Evaluate(open, _warn, ring.openPitchDeg * Mathf.Deg2Rad,
+                    ring.closedPitchDeg * Mathf.Deg2Rad, ring.openCurl, ring.closedCurl, coronaOpenStart);
+                mr.enabled = pose.Visible;
+                if (!pose.Visible) continue;
+
+                _block.Clear();
+                _block.SetFloat(LengthId, ring.length * pose.Length);
+                _block.SetFloat(WidthId, ring.width);
+                _block.SetFloat(PitchId, pose.Pitch);
+                _block.SetFloat(BaseCurlId, pose.Curl);
+                _block.SetFloat(RollId, 0.1f);
+                _block.SetFloat(TurnId, 0f);
+                _block.SetFloat(ReachId, 1f);
+                _block.SetFloat(SoftId, reachSoftness);
+                _block.SetFloat(BaseRadiusId, ring.baseRadius * pose.Radius);
+                _block.SetFloat(BaseHeightId, ring.baseHeight * pose.Height);
+                _block.SetFloat(WarnId, _warn);
+                mr.SetPropertyBlock(_block);
             }
         }
 

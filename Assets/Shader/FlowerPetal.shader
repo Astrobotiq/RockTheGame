@@ -30,6 +30,7 @@ Shader "Flower/Petal"
         _LightDir ("Light Direction (world)", Vector) = (-0.35, 0.55, -0.75, 0)
         _Soft ("Reach Softness", Range(0.05, 0.6)) = 0.25
 
+        [HideInInspector] _TipSkew ("Tip Skew (script)", Float) = 0
         [HideInInspector] _Length ("Length (script)", Float) = 1
         [HideInInspector] _Width ("Width (script)", Float) = 0.55
         [HideInInspector] _Pitch ("Pitch rad (script)", Float) = 0.25

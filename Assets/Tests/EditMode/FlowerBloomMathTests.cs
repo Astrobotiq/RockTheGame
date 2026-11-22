@@ -73,5 +73,24 @@ namespace RockTheGame.Tests
             for (int i = 0; i < 40; i++)
                 Assert.That(FlowerBloomMath.PetalRank(i), Is.InRange(0f, 1f));
         }
+
+        [Test]
+        public void SingleLayerFlower_ClosedAtZero_OpenAtOne_AndMonotonic()
+        {
+            // K4 çiçeği tek katmanlı: layerDelay hiç devreye girmez, yalnızca katman içi sıra kalır.
+            for (int i = 0; i < 5; i++)
+            {
+                Assert.That(FlowerBloomMath.PetalProgress(0f, 0, 1, i, 0.25f, 0.15f), Is.EqualTo(0f).Within(1e-6f));
+                Assert.That(FlowerBloomMath.PetalProgress(1f, 0, 1, i, 0.25f, 0.15f), Is.EqualTo(1f).Within(1e-6f));
+
+                float prev = 0f;
+                for (int s = 0; s <= 20; s++)
+                {
+                    float p = FlowerBloomMath.PetalProgress(s / 20f, 0, 1, i, 0.25f, 0.15f);
+                    Assert.That(p, Is.GreaterThanOrEqualTo(prev - 1e-6f));
+                    prev = p;
+                }
+            }
+        }
     }
 }

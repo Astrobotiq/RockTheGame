@@ -29,6 +29,9 @@ namespace New_Scripts.Flower
         private static readonly int BaseCurlId = Shader.PropertyToID("_BaseCurl");
         private static readonly int RollId = Shader.PropertyToID("_Roll");
         private static readonly int SoftId = Shader.PropertyToID("_Soft");
+        private static readonly int ShapeId = Shader.PropertyToID("_Shape");
+        private static readonly int RoundnessId = Shader.PropertyToID("_Roundness");
+        private static readonly int TipSkewId = Shader.PropertyToID("_TipSkew");
         private static readonly int CoreRadiusId = Shader.PropertyToID("_CoreRadius");
         private static readonly int RingId = Shader.PropertyToID("_Ring");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
@@ -91,11 +94,14 @@ namespace New_Scripts.Flower
         [SerializeField] private float haloRadius = 1.7f;
 
         [Header("Şekil")]
-        [SerializeField, Min(3)] private int petalCount = 6;
-        [SerializeField, Range(1, 4)] private int layerCount = 2;
+        [SerializeField, Min(3)] private int petalCount = 5;
+        [SerializeField, Range(1, 4)] private int layerCount = 1;
         [SerializeField, Min(0.05f)] private float coreRadius = 0.22f;
         [SerializeField, Min(0.05f)] private float petalLength = 1f;
-        [SerializeField, Min(0.05f)] private float petalWidth = 0.55f;
+        [Tooltip("Yaprak eni. Kâğıt çiçekte 5 geniş yaprak komşusuyla hafifçe örtüşür.")]
+        [SerializeField, Min(0.05f)] private float petalWidth = 1f;
+        [Tooltip("Elle kesim: her yaprağın boy, en ve uç yatıklığı kendi Seed'inden gelir (FlowerCutMath). Kapatınca yapraklar eşit olur.")]
+        [SerializeField] private bool handCut = true;
         [Tooltip("Her iç katmanın boy çarpanı.")]
         [SerializeField, Range(0.3f, 1f)] private float layerLengthScale = 0.65f;
         [Tooltip("Her iç katmanın en çarpanı.")]
@@ -378,6 +384,10 @@ namespace New_Scripts.Flower
 
             // Rulo eğriliği sabit (yarıçap değişmez): kapalıyken sarılı kısım (1 - closedStraight) boyunca closedTurns tur atar.
             float closedTurnRate = closedTurns * Mathf.PI * 2f / Mathf.Max(0.1f, 1f - closedStraight);
+            bool hasShape = petalMaterial != null && petalMaterial.HasProperty(ShapeId);
+            bool hasRoundness = petalMaterial != null && petalMaterial.HasProperty(RoundnessId);
+            float shape = hasShape ? petalMaterial.GetFloat(ShapeId) : 0f;
+            float roundness = hasRoundness ? petalMaterial.GetFloat(RoundnessId) : 0f;
             foreach (var p in petals)
             {
                 float prog = FlowerBloomMath.PetalProgress(oc, p.Layer, layerCount, p.Index, layerDelay, indexStagger);
@@ -390,9 +400,16 @@ namespace New_Scripts.Flower
                 float pitchDeg = Mathf.Lerp(closedPitch, openPitch + p.Layer * innerPitchBonus, prog) - over * overshootPitch;
                 float reach = Mathf.Lerp(closedStraight, 1f, prog);
 
+                var cut = handCut ? FlowerCutMath.ForSeed(p.Seed) : FlowerCutMath.Cut.None;
+
                 _block.Clear();
-                _block.SetFloat(LengthId, petalLength * Mathf.Pow(layerLengthScale, p.Layer));
-                _block.SetFloat(WidthId, petalWidth * Mathf.Pow(layerWidthScale, p.Layer));
+                _block.SetFloat(LengthId, petalLength * Mathf.Pow(layerLengthScale, p.Layer) * cut.Length);
+                _block.SetFloat(WidthId, petalWidth * Mathf.Pow(layerWidthScale, p.Layer) * cut.Width);
+                _block.SetFloat(TipSkewId, cut.TipSkew);
+                // Yaprak şekli (damla) materyalden okunup bloğa yazılır: kesim gölgesi materyali aynı şekli buradan alır,
+                // iki materyalin değeri birbirinden ayrılamaz.
+                if (hasShape) _block.SetFloat(ShapeId, shape);
+                if (hasRoundness) _block.SetFloat(RoundnessId, roundness);
                 _block.SetFloat(PitchId, pitchDeg * Mathf.Deg2Rad);
                 _block.SetFloat(ReachId, reach);
                 _block.SetFloat(SoftId, reachSoftness);

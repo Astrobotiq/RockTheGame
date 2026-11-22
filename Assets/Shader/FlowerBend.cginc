@@ -15,7 +15,7 @@
 #define FLOWER_PI 3.14159265359
 #define FLOWER_STEPS 14
 
-float _Shape, _Roundness, _Soft;
+float _Shape, _Roundness, _Soft, _TipSkew;
 float _Length, _Width, _Pitch, _Reach, _Turn, _BaseCurl, _Roll;
 
 // uv: x boy (0..1), y en (0..1). Dönüş: nesne uzayında konum ve yüzey normali.
@@ -57,7 +57,11 @@ float FlowerEdgeDpx(float2 uv)
     float u = saturate(uv.x);
     float v = uv.y * 2.0 - 1.0;
     float w = pow(saturate(sin(FLOWER_PI * pow(u, _Shape))), _Roundness);
-    float d = abs(v) - w;
+    // Elle kesim: uç bir yana yatık (_TipSkew; 0 = simetrik). Kayma en geniş noktadan sonra başlar (orada şekil mesh
+    // sınırına değer), uçta en fazla 2 * _TipSkew (v biriminde, tam en = 2) kadar olur.
+    float t = saturate((u - 0.55) / 0.45);
+    float vs = v - 2.0 * _TipSkew * t * t;
+    float d = abs(vs) - w;
     return d / max(fwidth(d), 1e-5);
 }
 

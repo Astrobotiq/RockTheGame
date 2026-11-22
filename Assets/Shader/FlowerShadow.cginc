@@ -2,13 +2,13 @@
 #define FLOWER_SHADOW_INCLUDED
 
 // Kesim gölgesinin ortak köşe hesabı (Flower/PetalShadow, Flower/CoronaShadow): parçanın ekran uzayında sağ-alta ofsetlenmiş
-// koyu kopyası. Ofset piksel cinsindendir, çözünürlükten bağımsız aynı kalınlıkta görünür; _Warn uyarıda ofseti büyütür.
+// koyu kopyası. Ofset çiçeğin boyuyla orantılıdır (alt sınırı piksel); _Warn uyarıda ofseti büyütür.
 // Kopya eğime göre geriye itilir, böylece kendi yaprağının önüne geçmez (ayrıntı FlowerPetalShadow.shader).
 
 #include "UnityCG.cginc"
 
 fixed4 _CutShadowCol;
-float _CutShadowPx, _CutShadowWarnMul, _CutShadowDepth, _Warn;
+float _CutShadowRel, _CutShadowPx, _CutShadowWarnMul, _CutShadowDepth, _Warn;
 
 // posObj, nObj: parçanın nesne uzayındaki bükülmüş konumu ve normali. Dönüş: kırpma uzayı konumu.
 float4 FlowerShadowClip(float3 posObj, float3 nObj)
@@ -20,8 +20,11 @@ float4 FlowerShadowClip(float3 posObj, float3 nObj)
     float worldPerPx = unity_OrthoParams.w > 0.5
         ? 2.0 * unity_OrthoParams.y / _ScreenParams.y
         : 2.0 * abs(posV.z) / (UNITY_MATRIX_P._m11 * _ScreenParams.y);
-    float px = _CutShadowPx * (1.0 + _Warn * _CutShadowWarnMul);
-    float2 off = float2(1.0, -1.0) * px * worldPerPx;
+    // Ofset çiçeğin boyuyla orantılı (_CutShadowRel, nesne birimi * nesne ölçeği): ekranda ne kadar yakın ya da uzak olursa olsun
+    // gölge çiçeğe oranla aynı kalınlıkta görünür. _CutShadowPx alt sınırdır (çok küçük çiçekte gölge kaybolmasın).
+    float scale = length(float3(unity_ObjectToWorld._m00, unity_ObjectToWorld._m10, unity_ObjectToWorld._m20));
+    float offWorld = max(_CutShadowRel * scale, _CutShadowPx * worldPerPx) * (1.0 + _Warn * _CutShadowWarnMul);
+    float2 off = float2(1.0, -1.0) * offWorld;
     posV.xy += off;
 
     // Kameraya doğru dikilen (eğimli) parçada ofsetli kopya, kendi parçasının önüne geçerdi: yüzey ofset kadar yan kayınca

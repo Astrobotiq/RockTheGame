@@ -10,8 +10,9 @@ Shader "Flower/PetalShadow"
     Properties
     {
         _CutShadowCol ("Kesim gölgesi", Color) = (0.188, 0.216, 0.471, 1)
-        _CutShadowPx ("Ofset (piksel)", Range(0, 12)) = 3
-        _CutShadowWarnMul ("Uyarıda ek ofset (çarpan)", Range(0, 3)) = 1
+        _CutShadowRel ("Ofset (nesne birimi, çiçek boyuyla orantılı)", Range(0, 0.15)) = 0.042
+        _CutShadowPx ("En az ofset (piksel)", Range(0, 12)) = 2
+        _CutShadowWarnMul ("Uyarıda ek ofset (çarpan)", Range(0, 3)) = 0.6
         _CutShadowDepth ("Derinlik itmesi (dünya birimi)", Range(0, 0.5)) = 0.02
 
         _Shape ("Shape", Range(0.6, 3)) = 1.35

@@ -27,8 +27,9 @@ Material:
     m_Floats:
     - _BaseCurl: 0.6
     - _CutShadowDepth: 0.02
-    - _CutShadowPx: 4
-    - _CutShadowWarnMul: 1
+    - _CutShadowPx: 2
+    - _CutShadowRel: 0.042
+    - _CutShadowWarnMul: 0.6
     - _Length: 1
     - _Pitch: 0.25
     - _Reach: 1

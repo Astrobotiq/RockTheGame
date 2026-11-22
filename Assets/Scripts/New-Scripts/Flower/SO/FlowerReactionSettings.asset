@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 317d7a49d0fad104f86c2f15a111a6e3, type: 3}
+  m_Name: FlowerReactionSettings
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Flower.FlowerReactionSettingsSO
+  enabled: 1
+  farMargin: 3
+  maxYawDeg: 12
+  maxDipDeg: 10
+  halfWidthDeg: 50
+  bodyRadiusRel: 0.5
+  bodyMaxYawDeg: 8
+  bodyMaxDipDeg: 6
+  bodySpeedFloor: 0.3
+  bodySpeedReference: 0
+  petalStiffness: 300
+  petalDamping: 17
+  petalSeedVariation: 0.2
+  gripStiffness: 700
+  gripDamping: 36
+  gripReleaseDamping: 22
+  directionStiffness: 120
+  directionDamping: 15
+  gripOneArm: 0.75
+  gripLiftDeg: 20
+  gripCurl: 0.3
+  gripPinch: 0.25
+  gripShorten: 0.1
+  pokeCenterKick: 4
+  pokeOpenKick: -2

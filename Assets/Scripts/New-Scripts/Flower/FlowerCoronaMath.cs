@@ -79,18 +79,42 @@ namespace New_Scripts.Flower
         public static Pose Evaluate(float open, float warn01, float openPitch, float closedPitch, float openCurl, float closedCurl,
             float start = DefaultOpenStart)
         {
+            return Evaluate(open, warn01, openPitch, closedPitch, openCurl, closedCurl, start, 0f, GripShape.Default);
+        }
+
+        /// <summary>
+        /// Tutunma yumruğu (<paramref name="grip01"/> 0..1): şeritler tutan ele sarılır; kalkar, kıvrılır, tabana büzülür, kısalır
+        /// (shader değişmez, aynı duruş kanalları). <paramref name="grip01"/> = 0 iken çıktı grip'siz Evaluate ile birebir aynıdır.
+        /// Yaprakların kendisi kıpırdamaz: "açık" işareti yapraklarda kalır, yumruk "kapanıyor" okunmasın diye hafif tutulur.
+        /// </summary>
+        public static Pose Evaluate(float open, float warn01, float openPitch, float closedPitch, float openCurl, float closedCurl,
+            float start, float grip01, GripShape grip)
+        {
             float fan = Fan(open, start);
             float f = Mathf.Clamp01(fan);
             float over = Mathf.Max(0f, fan - 1f);
             float warn = Mathf.Clamp01(warn01);
+            float g = Mathf.Clamp01(grip01);
 
             float shrink = 1f - WarnShrink * warn;
-            float length = Mathf.Lerp(0.1f, 1f, f) * (1f + over * 0.5f) * shrink;
-            float radius = Mathf.Lerp(0.5f, 1f, f) * shrink;
+            float length = Mathf.Lerp(0.1f, 1f, f) * (1f + over * 0.5f) * shrink * (1f - grip.Shorten * g);
+            float radius = Mathf.Lerp(0.5f, 1f, f) * shrink * (1f - grip.Pinch * g);
             float height = f;
-            float pitch = Mathf.Lerp(closedPitch, openPitch, f) + WarnLift * warn;
-            float curl = Mathf.Lerp(closedCurl, openCurl, f);
+            float pitch = Mathf.Lerp(closedPitch, openPitch, f) + WarnLift * warn + grip.Lift * g;
+            float curl = Mathf.Lerp(closedCurl, openCurl, f) + grip.Curl * g;
             return new Pose(fan, length, radius, height, pitch, curl);
+        }
+
+        /// <summary>Tutunma yumruğunun şeritlere etkisi (tam kavramada, grip01 = 1). Ayar SO'sundan gelir.</summary>
+        [System.Serializable]
+        public struct GripShape
+        {
+            [Tooltip("Şeritlerin ek kalkışı (radyan).")] public float Lift;
+            [Tooltip("Ek eğrilik (radyan / boy birimi).")] public float Curl;
+            [Tooltip("Tabanın eksene çekilmesi (oran).")] public float Pinch;
+            [Tooltip("Şerit boyunun kısalması (oran).")] public float Shorten;
+
+            public static GripShape Default => new GripShape { Lift = 0.35f, Curl = 0.3f, Pinch = 0.25f, Shorten = 0.1f };
         }
     }
 }

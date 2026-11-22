@@ -144,5 +144,97 @@ namespace RockTheGame.Tests
         {
             Assert.That(FlowerCoronaMath.StripAzimuth(1, 1, 0f), Is.EqualTo(2f * Mathf.PI / 3f).Within(1e-5f));
         }
+
+        // --- Tutunma yumruğu (grip01) ---
+
+        // grip eklenmeden önceki Evaluate'in formülü (referans kopya): grip01 = 0 iken çıktı bununla birebir aynı olmalı.
+        private static FlowerCoronaMath.Pose OldEvaluate(float open, float warn01)
+        {
+            float fan = FlowerCoronaMath.Fan(open);
+            float f = Mathf.Clamp01(fan);
+            float over = Mathf.Max(0f, fan - 1f);
+            float warn = Mathf.Clamp01(warn01);
+            float shrink = 1f - FlowerCoronaMath.WarnShrink * warn;
+            float length = Mathf.Lerp(0.1f, 1f, f) * (1f + over * 0.5f) * shrink;
+            float radius = Mathf.Lerp(0.5f, 1f, f) * shrink;
+            float pitch = Mathf.Lerp(ClosedPitch, OpenPitch, f) + FlowerCoronaMath.WarnLift * warn;
+            float curl = Mathf.Lerp(ClosedCurl, OpenCurl, f);
+            return new FlowerCoronaMath.Pose(fan, length, radius, f, pitch, curl);
+        }
+
+        [Test]
+        public void ZeroGrip_IsBitIdenticalToTheOldOutput()
+        {
+            for (float open = -0.2f; open <= 1.3f; open += 0.05f)
+            for (float warn = 0f; warn <= 1f; warn += 0.25f)
+            {
+                var expected = OldEvaluate(open, warn);
+                var plain = Pose(open, warn);
+                var withZeroGrip = FlowerCoronaMath.Evaluate(open, warn, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                    FlowerCoronaMath.DefaultOpenStart, 0f, FlowerCoronaMath.GripShape.Default);
+                foreach (var p in new[] { plain, withZeroGrip })
+                {
+                    Assert.AreEqual(expected.Fan, p.Fan, $"fan open={open} warn={warn}");
+                    Assert.AreEqual(expected.Length, p.Length, $"length open={open} warn={warn}");
+                    Assert.AreEqual(expected.Radius, p.Radius, $"radius open={open} warn={warn}");
+                    Assert.AreEqual(expected.Height, p.Height, $"height open={open} warn={warn}");
+                    Assert.AreEqual(expected.Pitch, p.Pitch, $"pitch open={open} warn={warn}");
+                    Assert.AreEqual(expected.Curl, p.Curl, $"curl open={open} warn={warn}");
+                }
+            }
+        }
+
+        [Test]
+        public void FullGrip_LiftsAndCurlsTheStrips_AndPinchesAndShortensThem()
+        {
+            var grip = FlowerCoronaMath.GripShape.Default;
+            var open = Pose(1f);
+            var fist = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                FlowerCoronaMath.DefaultOpenStart, 1f, grip);
+            Assert.That(fist.Pitch, Is.EqualTo(open.Pitch + grip.Lift).Within(1e-5f));
+            Assert.That(fist.Curl, Is.EqualTo(open.Curl + grip.Curl).Within(1e-5f));
+            Assert.That(fist.Radius, Is.EqualTo(open.Radius * (1f - grip.Pinch)).Within(1e-5f));
+            Assert.That(fist.Length, Is.EqualTo(open.Length * (1f - grip.Shorten)).Within(1e-5f));
+            Assert.That(fist.Fan, Is.EqualTo(open.Fan), "açıklık (yelpaze) yumrukla değişmez");
+        }
+
+        [Test]
+        public void Grip_IsMonotonic_AndClamped()
+        {
+            var grip = FlowerCoronaMath.GripShape.Default;
+            float prevPitch = 0f, prevLength = 10f;
+            for (int i = 0; i <= 10; i++)
+            {
+                var p = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                    FlowerCoronaMath.DefaultOpenStart, i / 10f, grip);
+                Assert.That(p.Pitch, Is.GreaterThanOrEqualTo(prevPitch));
+                Assert.That(p.Length, Is.LessThanOrEqualTo(prevLength));
+                prevPitch = p.Pitch;
+                prevLength = p.Length;
+            }
+            var over = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                FlowerCoronaMath.DefaultOpenStart, 3f, grip);
+            var one = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                FlowerCoronaMath.DefaultOpenStart, 1f, grip);
+            Assert.AreEqual(one.Pitch, over.Pitch, "grip01 > 1 kıskaçlanır");
+        }
+
+        [Test]
+        public void ReactionSettingsDefaults_MatchTheMathConstants()
+        {
+            var so = ScriptableObject.CreateInstance<FlowerReactionSettingsSO>();
+            try
+            {
+                var d = FlowerCoronaMath.GripShape.Default;
+                Assert.That(so.GripShape.Lift, Is.EqualTo(d.Lift).Within(0.01f));
+                Assert.That(so.GripShape.Curl, Is.EqualTo(d.Curl).Within(1e-6f));
+                Assert.That(so.GripShape.Pinch, Is.EqualTo(d.Pinch).Within(1e-6f));
+                Assert.That(so.GripShape.Shorten, Is.EqualTo(d.Shorten).Within(1e-6f));
+                Assert.That(so.petalStiffness, Is.EqualTo(FlowerReactMath.PetalStiffness));
+                Assert.That(so.gripReleaseDamping, Is.LessThan(so.gripDamping), "bırakışta daha az sönüm");
+                Assert.That(so.enabled, Is.True);
+            }
+            finally { Object.DestroyImmediate(so); }
+        }
     }
 }

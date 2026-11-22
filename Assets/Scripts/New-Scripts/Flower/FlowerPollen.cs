@@ -1,4 +1,5 @@
 using New_Scripts.Audio;
+using New_Scripts.Death;
 using New_Scripts.Player;
 using New_Scripts.Player.IFramePauseable;
 using UnityEngine;
@@ -14,9 +15,15 @@ namespace New_Scripts.Flower
     /// boyut/hız/renk/konumla doğar. İki sistem: <c>Chips</c> (nokta ve elips) ve <c>Pieces</c> (iki tonlu kâğıt parçası).
     /// </summary>
     [RequireComponent(typeof(FlowerCycle), typeof(FlowerBloom))]
-    public class FlowerPollen : MonoBehaviour
+    public class FlowerPollen : MonoBehaviour, IResettable
     {
         private const int MaxPending = 2;   // en çok iki kol
+
+        // Çiçekler arası ortak bekleme: aynı karede birden çok çiçek patlarsa polen sesi üst üste binmesin.
+        private static float s_nextCueTime;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => s_nextCueTime = 0f;
 
         [SerializeField] private FlowerPollenSettingsSO settings;
         [Tooltip("FX_FlowerPollen: Chips ve Pieces çocuk sistemleri. İlk patlamada bu çiçeğin çocuğu olarak bir kez kurulur.")]
@@ -58,7 +65,9 @@ namespace New_Scripts.Flower
             _cycle.PhaseChanged += OnPhaseChanged;
             HitStopEvents.HitStopStarted += OnHitStopStarted;
             HitStopEvents.HitStopEnded += OnHitStopEnded;
-            ClearAll();
+            // Ölüm sıfırlaması IResettable ile (iris kapalıyken temizlenir, polen gözün önünde kaybolmaz).
+            if (LevelResetManager.Instance != null) LevelResetManager.Instance.Register(this);
+            ClearAll();   // oda uyanınca donmuş polen kalmasın
         }
 
         private void OnDisable()
@@ -70,7 +79,11 @@ namespace New_Scripts.Flower
             }
             HitStopEvents.HitStopStarted -= OnHitStopStarted;
             HitStopEvents.HitStopEnded -= OnHitStopEnded;
+            if (LevelResetManager.Instance != null) LevelResetManager.Instance.Unregister(this);
         }
+
+        /// <summary>Ölüm sıfırlaması (<see cref="IResettable"/>): bekleyen patlamalar iptal, canlı polen silinir.</summary>
+        public void ResetToDefault() => ClearAll();
 
         /// <summary>Bekleyen patlamaları iptal eder ve canlı parçacıkları siler (oda uyanınca/sıfırlamada donmuş polen kalmasın).</summary>
         public void ClearAll()
@@ -83,7 +96,7 @@ namespace New_Scripts.Flower
         private void OnGrabbed(ActiveArm arm, Vector2 point)
         {
             if (settings == null || !settings.enabled || fxPrefab == null) return;
-            if (_cycle.Phase != FlowerPhase.Open) return;   // uyarı/kapanışta polen çıkmaz
+            if (!CanEmit) return;   // uyarı/kapanışta polen çıkmaz
 
             float speed = TryGetPlayer(out _, out Vector2 velocity) ? velocity.magnitude : 0f;
             for (int i = 0; i < _pending.Length; i++)
@@ -94,10 +107,13 @@ namespace New_Scripts.Flower
             }
         }
 
+        // Polen yalnızca açılırken ve açıkken çıkar: tutulabilirlik açılışın ortasında başlar (grabAt), oradaki tutunma da polen verir.
+        private bool CanEmit => _cycle.Phase == FlowerPhase.Opening || _cycle.Phase == FlowerPhase.Open;
+
         private void OnPhaseChanged(FlowerPhase phase)
         {
-            if (phase == FlowerPhase.Open) return;
-            // Uyarı, snap ve kapalıda bekleyen patlama iptal: polen yalnızca açık fazda tutunmanın karşılığıdır.
+            if (phase == FlowerPhase.Opening || phase == FlowerPhase.Open) return;
+            // Uyarı, snap ve kapalıda bekleyen patlama iptal: polen kapanışa ve uyarıya karışmaz.
             for (int i = 0; i < _pending.Length; i++) _pending[i].Active = false;
         }
 
@@ -107,7 +123,7 @@ namespace New_Scripts.Flower
             {
                 if (!_pending[i].Active || Time.time < _pending[i].FireAt) continue;
                 _pending[i].Active = false;
-                if (_cycle.Phase == FlowerPhase.Open) Burst(_pending[i].Point, _pending[i].Speed);
+                if (CanEmit) Burst(_pending[i].Point, _pending[i].Speed);
             }
         }
 
@@ -202,6 +218,8 @@ namespace New_Scripts.Flower
         private void PlayCue(AudioCueSO cue, Vector2 point)
         {
             if (sfxPlayChannel == null || cue == null || cue.AudioClips == null || cue.AudioClips.Length == 0) return;
+            if (Time.unscaledTime < s_nextCueTime) return;
+            s_nextCueTime = Time.unscaledTime + (settings != null ? settings.globalCooldown : 0f);
             var p = AudioCuePlayParams.Default;
             p.Position = point;
             p.Is3D = true;

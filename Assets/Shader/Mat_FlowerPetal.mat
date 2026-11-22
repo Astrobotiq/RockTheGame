@@ -26,11 +26,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _BaseCurl: 0.6
-    - _ClosedOutlineMul: 1.5
+    - _CreasePx: 1.2
+    - _EdgePx: 1.5
+    - _FoldShade: 0.45
     - _Length: 1
-    - _LightThr: 0.965
     - _Open: 1
-    - _OutlinePx: 2.2
     - _Pitch: 0.25
     - _Reach: 1
     - _Roll: 0.6
@@ -39,21 +39,16 @@ Material:
     - _ShadowThr: 0.72
     - _Shape: 1.35
     - _Soft: 0.25
-    - _SpecThr: 0.992
     - _Turn: 7
-    - _VeinCount: 3
-    - _VeinWidth: 0.028
     - _Warn: 0
     - _Width: 0.55
     m_Colors:
-    - _BaseCol: {r: 1, g: 0.62, b: 0.769, a: 1}
-    - _DeepCol: {r: 0.761, g: 0.298, b: 0.549, a: 1}
-    - _GlowCol: {r: 1, g: 0.788, b: 0.639, a: 1}
-    - _HiCol: {r: 1, g: 0.878, b: 0.925, a: 1}
+    - _BaseCol: {r: 0.95686275, g: 0.94509804, b: 0.91764706, a: 1}
+    - _ClosedCol: {r: 0.43137255, g: 0.43529412, b: 0.47058824, a: 1}
+    - _DeepCol: {r: 0.3529412, g: 0.3764706, b: 0.53333336, a: 1}
+    - _HiCol: {r: 1, g: 1, b: 1, a: 1}
     - _LightDir: {r: -0.35, g: 0.55, b: -0.75, a: 0}
-    - _OutlineCol: {r: 0.62, g: 0.184, b: 0.431, a: 1}
-    - _ShadowCol: {r: 0.878, g: 0.416, b: 0.651, a: 1}
-    - _TipCol: {r: 1, g: 0.769, b: 0.855, a: 1}
-    - _WarnCol: {r: 1, g: 0.62, b: 0.38, a: 1}
+    - _ShadowCol: {r: 0.8039216, g: 0.8235294, b: 0.89411765, a: 1}
+    - _WarnCol: {r: 1, g: 0.7882353, b: 0.3019608, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

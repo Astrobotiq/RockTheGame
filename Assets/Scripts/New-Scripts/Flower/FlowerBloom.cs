@@ -299,6 +299,18 @@ namespace New_Scripts.Flower
         public float PetalReach => (petalLength + coreRadius) * transform.lossyScale.x;
         /// <summary>Yaprakların bağlı olduğu modelin dünya dönüşü (viewTilt, orientationDeg, açılma dönüşü, kök dönüşü içinde).</summary>
         public Quaternion ModelRotation => model != null ? model.rotation : transform.rotation;
+        /// <summary>
+        /// Organ uçlarının çiçek merkezinden dünya uzaklığı: <c>Flower/Center</c> <c>_OrganRing</c> (diskin oranı) x disk yarıçapı
+        /// (<c>coreRadius x towerScale</c>) x ölçek. Polen kaynak noktaları için.
+        /// </summary>
+        public float OrganRingRadius
+        {
+            get
+            {
+                float ring = centerMaterial != null && centerMaterial.HasProperty("_OrganRing") ? centerMaterial.GetFloat("_OrganRing") : 1.44f;
+                return ring * coreRadius * towerScale * transform.lossyScale.x;
+            }
+        }
         /// <summary>İlk katmandaki <paramref name="index"/>. yaprağın çiçek-yerel azimutu (radyan).</summary>
         public float PetalAzimuthOf(int index) => PetalAzimuth(0, index);
         /// <summary>Karaktere tepki durumu (FlowerReactor yazar). Boşsa çiçek eskisi gibi çizilir.</summary>

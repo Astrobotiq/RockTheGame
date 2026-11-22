@@ -665,6 +665,7 @@ GameObject:
   - component: {fileID: 7687777289321385611}
   - component: {fileID: 1315076699474676627}
   - component: {fileID: 6041797636908512324}
+  - component: {fileID: 3725460142081632771}
   m_Layer: 0
   m_Name: Node-Flower
   m_TagString: Untagged
@@ -894,6 +895,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Flower.FlowerReactor
   settings: {fileID: 11400000, guid: 39bbc3de52da06147b11e176d440f9c5, type: 2}
+--- !u!114 &3725460142081632771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8016881550571652347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8082d8bf78acd044a9cf499c5a2e069, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RockTheGame.Runtime::New_Scripts.Flower.FlowerPollen
+  settings: {fileID: 11400000, guid: d13515149bc065249aa6cd3ecc92b617, type: 2}
+  fxPrefab: {fileID: 7474428901475979578, guid: 20651e16d996fa7418f068de6108c0e8, type: 3}
+  sfxPlayChannel: {fileID: 11400000, guid: 6571b9cd03672e642a4a3f74f0194215, type: 2}
 --- !u!1 &8374446772970231210
 GameObject:
   m_ObjectHideFlags: 0

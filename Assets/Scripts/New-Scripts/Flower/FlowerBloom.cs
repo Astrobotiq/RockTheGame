@@ -34,7 +34,6 @@ namespace New_Scripts.Flower
         private static readonly int TipSkewId = Shader.PropertyToID("_TipSkew");
         private static readonly int BaseRadiusId = Shader.PropertyToID("_BaseRadius");
         private static readonly int BaseHeightId = Shader.PropertyToID("_BaseHeight");
-        private static readonly int DashesId = Shader.PropertyToID("_Dashes");
         private static readonly int InnerColId = Shader.PropertyToID("_InnerCol");
         private static readonly int GapColId = Shader.PropertyToID("_GapCol");
         private static readonly int TipColId = Shader.PropertyToID("_TipCol");
@@ -139,15 +138,6 @@ namespace New_Scripts.Flower
         [SerializeField] private float haloDuration = 0.35f;
         [SerializeField] private float haloRadius = 1.7f;
 
-        [Header("Uyarı halkası")]
-        [Tooltip("Kapanış uyarısında çiçeğin etrafında yanıp sönen kesikli halkanın yarıçapı (petal boyu birimi; çiçeğin dışında kalmalı).")]
-        [SerializeField, Min(0.5f)] private float warnRingRadius = 1.065f;
-        [SerializeField, Range(4, 24)] private int warnRingDashes = 16;
-        [Tooltip("Halka kalınlığı (halo quad yarıçapının oranı).")]
-        [SerializeField, Range(0.02f, 0.3f)] private float warnRingWidth = 0.04f;
-        [Tooltip("Yanıp sönme hızı (Hz). Erişilebilirlik için 3'e kırpılır (FlowerWarnMath.MaxBlinkHz).")]
-        [SerializeField, Range(0.5f, 3f)] private float warnBlinkHz = 2f;
-
         [Header("Şekil")]
         [SerializeField, Min(3)] private int petalCount = 5;
         [SerializeField, Range(1, 4)] private int layerCount = 1;
@@ -247,7 +237,6 @@ namespace New_Scripts.Flower
         private float _hint;
         private float _haloT = -1f;
         private float _tremblePhase;
-        private float _blinkClock;
         private float _anticipateLeft;
 
         /// <summary>Şu an çizilen açılma değeri (spring sürüyorsa spring değeri).</summary>
@@ -366,10 +355,6 @@ namespace New_Scripts.Flower
 
             if (_warn > 0f && Application.isPlaying)
                 _tremblePhase += dt * Mathf.Lerp(trembleHz.x, trembleHz.y, _warn) * Mathf.PI * 2f;
-
-            // Uyarı halkasının yanıp sönme saati: her uyarı yanık başlar (saat 0), uyarı bitince sıfırlanır.
-            if (_warn > FlowerWarnMath.VisibleAbove) _blinkClock += dt;
-            else _blinkClock = 0f;
 
             Apply();
         }
@@ -603,11 +588,9 @@ namespace New_Scripts.Flower
             _block.SetFloat(TowerAngleId, -orientationDeg);
             centerRenderer.SetPropertyBlock(_block);
 
-            // Halka: açılışta yarıçap ease-out ile büyür, alfa söner. Uyarıda aynı renderer kesikli amber halkaya döner
-            // (dalga ve uyarı hiçbir zaman üst üste gelmez).
+            // Halka: açılışta yarıçap ease-out ile büyür, alfa söner.
             bool haloOn = _haloT >= 0f;
-            bool warnRing = FlowerWarnMath.RingVisible(_warn, haloOn);
-            haloRenderer.enabled = haloOn || warnRing;
+            haloRenderer.enabled = haloOn;
             if (haloOn)
             {
                 float e = 1f - (1f - _haloT) * (1f - _haloT);
@@ -615,16 +598,6 @@ namespace New_Scripts.Flower
                 _block.Clear();
                 _block.SetFloat(RingId, Mathf.Lerp(0.18f, 0.95f, e));
                 _block.SetFloat(AlphaId, (1f - _haloT) * 0.9f);
-                haloRenderer.SetPropertyBlock(_block);
-            }
-            else if (warnRing)
-            {
-                haloRenderer.transform.localScale = new Vector3(haloRadius * 2f, haloRadius * 2f, 1f);
-                _block.Clear();
-                _block.SetFloat(DashesId, warnRingDashes);
-                _block.SetFloat(RingId, FlowerWarnMath.RingRadius01(warnRingRadius, haloRadius));
-                _block.SetFloat(WidthId, warnRingWidth);
-                _block.SetFloat(AlphaId, FlowerWarnMath.BlinkOn(_blinkClock, warnBlinkHz) ? 1f : 0f);
                 haloRenderer.SetPropertyBlock(_block);
             }
         }

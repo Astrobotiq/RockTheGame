@@ -20,8 +20,6 @@ Shader "Flower/Petal"
         _ShadowCol ("Shadow (gölge yüzü)", Color) = (0.804, 0.824, 0.894, 1)
         _DeepCol ("Katlama izi", Color) = (0.353, 0.376, 0.533, 1)
         _ClosedCol ("Kapalı hal tonu", Color) = (0.431, 0.435, 0.471, 1)
-        _ClosedTipCol ("Kapalı uç ipucu (alfa 0 = yok)", Color) = (0.082, 0.212, 0.910, 0)
-        _ClosedTipFrom ("Kapalı uç ipucu başlangıcı (boyun oranı)", Range(0.3, 0.95)) = 0.72
 
         _Shape ("Shape (en geniş nokta; büyük = uca doğru)", Range(0.6, 3)) = 1.35
         _Roundness ("Roundness (uç yuvarlaklığı; küçük = yuvarlak)", Range(0.3, 1.5)) = 0.62
@@ -82,10 +80,9 @@ Shader "Flower/Petal"
                 float3 posW   : TEXCOORD2;
             };
 
-            fixed4 _HiCol, _BaseCol, _ShadowCol, _DeepCol, _ClosedCol, _ClosedTipCol;
+            fixed4 _HiCol, _BaseCol, _ShadowCol, _DeepCol, _ClosedCol;
             float4 _LightDir;
             float _ShadowThr, _FoldShade, _CreasePx, _EdgePx;
-            float _ClosedTipFrom;
             float _Open, _Seed;
 
             v2f vert(appdata_t IN)
@@ -148,12 +145,11 @@ Shader "Flower/Petal"
                 float edgeBand = smoothstep(-_EdgePx - 0.5, -_EdgePx + 0.5, dpx);
                 col = lerp(col, _HiCol.rgb, edgeBand * bShadow * 0.85);
 
-                // Kapalı hal: yaprak düz kapalı tona döner (aynı iki bant + katlanan yüz, daha koyu). _ClosedTipCol'un alfa'sı
-                // 0'dan büyükse yaprak uçları (u > _ClosedTipFrom) o renge boyanır: kapalı tomurcuğun çiçek olduğunu söyleyen uç ipucu.
+                // Kapalı hal: yaprak düz kapalı tona döner (aynı iki bant + katlanan yüz, daha koyu). Ton, gökyüzünde ve turuncu
+                // zeminde en az ~3:1 kontrast verecek kadar koyu seçildi (açık gri gökte 2.3:1 kalıyordu).
                 float closed = 1.0 - smoothstep(0.0, 0.45, _Open);
                 float3 closedCol = lerp(_ClosedCol.rgb * 0.8, _ClosedCol.rgb, bShadow);
                 closedCol = lerp(closedCol, closedCol * 0.85, foldDim);
-                closedCol = lerp(closedCol, _ClosedTipCol.rgb, _ClosedTipCol.a * AAStep(_ClosedTipFrom, u, 0.0));
                 col = lerp(col, closedCol, closed);
 
                 // Uyarı bu shader'da boya değiştirmez: titreme, iplik büzülmesi ve kesim gölgesi büyümesi renkten bağımsız

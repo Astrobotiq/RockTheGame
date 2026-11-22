@@ -214,7 +214,8 @@ namespace RockTheGame.Tests
             {
                 Assert.AreEqual(3, so.size.Length);
                 Assert.AreEqual(3, so.speed.Length);
-                Assert.AreEqual(3, so.gravity.Length);
+                Assert.That(so.gravity, Is.InRange(0f, 0.5f));
+                Assert.That(so.ellipseAspect, Is.InRange(0.3f, 1f));
                 Assert.AreEqual(so.palette.Length, so.dotColorWeights.Length);
                 Assert.AreEqual(so.palette.Length, so.ellipseColorWeights.Length);
                 Assert.AreEqual(so.palette.Length, so.pieceColorWeights.Length);

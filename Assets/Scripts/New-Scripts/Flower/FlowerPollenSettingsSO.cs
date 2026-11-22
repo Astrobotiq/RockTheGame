@@ -36,7 +36,7 @@ namespace New_Scripts.Flower
         [Header("Boyut (dünya birimi çapı), hız (b/sn) ve ömür (sn): sınıf başına [Dot, Ellipse, Piece]")]
         public Vector2[] size =
         {
-            new Vector2(0.14f, 0.20f), new Vector2(0.22f, 0.30f), new Vector2(0.32f, 0.45f)
+            new Vector2(0.20f, 0.30f), new Vector2(0.30f, 0.42f), new Vector2(0.45f, 0.62f)
         };
         public Vector2[] speed =
         {
@@ -44,8 +44,12 @@ namespace New_Scripts.Flower
         };
         [Tooltip("Ömür tüm sınıflar için aynı aralıkta; kâğıt parçaları üst yarıyı alır.")]
         public Vector2 lifetime = new Vector2(1.2f, 1.9f);
-        [Tooltip("Sınıf başına yerçekimi çarpanı (Physics2D yerçekimine göre).")]
-        public float[] gravity = { 0.09f, 0.09f, 0.15f };
+        [Tooltip("Parçacık sistemi yerçekimi çarpanı (Physics2D yerçekimine göre). Sistem başına tek değer: sınıfa göre ayrılamaz.")]
+        [Range(0f, 0.5f)] public float gravity = 0.1f;
+        [Tooltip("Hız sönümü (Limit Velocity drag): parçacıklar yavaşlayıp süzülür. Kare hızından bağımsız.")]
+        [Range(0f, 5f)] public float drag = 2f;
+        [Tooltip("Elips sınıfının eni/boyu: nokta sprite'ı bu oranda basıklaştırılır (elips için ayrı sprite yok).")]
+        [Range(0.3f, 1f)] public float ellipseAspect = 0.62f;
 
         [Header("Kaynak ve yön")]
         [Tooltip("Oyuncuya dönük organ sayısı ve parçacıkların bu organlardan çıkma oranı.")]
@@ -69,7 +73,7 @@ namespace New_Scripts.Flower
         };
         [Tooltip("Gökte krem/beyaz tek başına okunmaz (1.9:1): küçük taneler koyu ağırlıklı, parçalar krem (indigo hilal sprite'ta).")]
         public float[] dotColorWeights = { 0.30f, 0.05f, 0f, 0.40f, 0.25f };
-        public float[] ellipseColorWeights = { 0.50f, 0.20f, 0f, 0.30f, 0f };
+        public float[] ellipseColorWeights = { 0.35f, 0.15f, 0f, 0.40f, 0.10f };
         public float[] pieceColorWeights = { 0.60f, 0.25f, 0.15f, 0f, 0f };
 
         [Header("Ses (isteğe bağlı)")]
@@ -85,8 +89,6 @@ namespace New_Scripts.Flower
 
         public Vector2 SizeRange(PollenKind kind) => Pick(size, kind, new Vector2(0.2f, 0.3f));
         public Vector2 SpeedRange(PollenKind kind) => Pick(speed, kind, new Vector2(2f, 5f));
-        public float Gravity(PollenKind kind) => (int)kind < gravity.Length ? gravity[(int)kind] : 0.1f;
-
         private static Vector2 Pick(Vector2[] arr, PollenKind kind, Vector2 fallback) =>
             arr != null && (int)kind < arr.Length ? arr[(int)kind] : fallback;
 

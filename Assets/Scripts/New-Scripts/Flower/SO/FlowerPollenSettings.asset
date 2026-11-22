@@ -23,18 +23,17 @@ MonoBehaviour:
   dotShare: 0.5
   ellipseShare: 0.33
   size:
-  - {x: 0.14, y: 0.2}
-  - {x: 0.22, y: 0.3}
-  - {x: 0.32, y: 0.45}
+  - {x: 0.2, y: 0.3}
+  - {x: 0.3, y: 0.42}
+  - {x: 0.45, y: 0.62}
   speed:
   - {x: 3.5, y: 6}
   - {x: 2.5, y: 4.5}
   - {x: 2, y: 3.5}
   lifetime: {x: 1.2, y: 1.9}
-  gravity:
-  - 0.09
-  - 0.09
-  - 0.15
+  gravity: 0.1
+  drag: 2
+  ellipseAspect: 0.62
   nearOrgans: 3
   nearShare: 0.7
   towardBias: 0.5
@@ -54,11 +53,11 @@ MonoBehaviour:
   - 0.4
   - 0.25
   ellipseColorWeights:
-  - 0.5
-  - 0.2
+  - 0.35
+  - 0.15
   - 0
-  - 0.3
-  - 0
+  - 0.4
+  - 0.1
   pieceColorWeights:
   - 0.6
   - 0.25

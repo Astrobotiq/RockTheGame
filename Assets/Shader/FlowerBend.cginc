@@ -18,8 +18,9 @@
 float _Shape, _Roundness, _Soft, _TipSkew;
 float _Length, _Width, _Pitch, _Reach, _Turn, _BaseCurl, _Roll;
 
-// uv: x boy (0..1), y en (0..1). Dönüş: nesne uzayında konum ve yüzey normali.
-void FlowerBend(float2 uv, out float3 pos, out float3 nObj)
+// uv: x boy (0..1), y en (0..1). lenMul: bu parçanın boy çarpanı (elle kesim; yaprakta 1). Dönüş: nesne uzayında konum ve
+// yüzey normali.
+void FlowerBendL(float2 uv, float lenMul, out float3 pos, out float3 nObj)
 {
     float u = uv.x;
     float v = uv.y * 2.0 - 1.0;
@@ -34,7 +35,7 @@ void FlowerBend(float2 uv, out float3 pos, out float3 nObj)
         float t = (i + 0.5) * h;
         float k = _Turn * smoothstep(_Reach, _Reach + _Soft, t) + _BaseCurl;
         float am = a + 0.5 * k * h;
-        P += _Length * h * float2(cos(am), sin(am));
+        P += _Length * lenMul * h * float2(cos(am), sin(am));
         a += k * h;
     }
     float2 N = float2(-sin(a), cos(a));   // bükülme düzleminde iç (içbükey) yüz yönü
@@ -48,6 +49,11 @@ void FlowerBend(float2 uv, out float3 pos, out float3 nObj)
 
     pos = float3(P + N * lift, across);
     nObj = float3(N * cos(phi), -sin(phi));
+}
+
+void FlowerBend(float2 uv, out float3 pos, out float3 nObj)
+{
+    FlowerBendL(uv, 1.0, pos, nObj);
 }
 
 // Yaprak şekli (damla): tabanda dar, ~%60'ta en geniş, uçta yuvarlak bir sivrilik. Yalnızca fragment'ta çağrılır (fwidth).

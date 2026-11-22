@@ -707,6 +707,12 @@ MonoBehaviour:
   tipStiffness: 150
   tipDamping: 9
   pitchFlutterDeg: 14
+  thudDip: 0.1
+  thudStiffness: 400
+  thudDamping: 14
+  windUpTime: 0.12
+  windUpOpen: 0.15
+  windUpScale: 0.04
   openStiffness: 180
   openDamping: 14.8
   closeStiffness: 900
@@ -856,6 +862,8 @@ MonoBehaviour:
   phaseOffset: 0
   nodeCollider: {fileID: 5131099266991970744}
   releaseImpulse: 6
+  snapHitStop: 0
+  snapHitStopSeconds: 0.05
 --- !u!1 &8374446772970231210
 GameObject:
   m_ObjectHideFlags: 0

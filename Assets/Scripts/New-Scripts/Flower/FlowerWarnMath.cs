@@ -33,6 +33,16 @@ namespace New_Scripts.Flower
             return k * k;
         }
 
+        /// <summary>
+        /// "Nefes çek" (ters yönlü anticipation) ilerlemesi 0..1: uyarının son <paramref name="windUpTime"/> saniyesinde
+        /// yumuşakça 0'dan 1'e çıkar, öncesinde 0. Uyarının bitimine kalan süre bilinmiyorsa (sonsuz) 0'dır.
+        /// </summary>
+        public static float WindUp(float secondsLeft, float windUpTime)
+        {
+            if (windUpTime <= 0f || secondsLeft >= windUpTime) return 0f;
+            return Smooth(1f - Mathf.Max(0f, secondsLeft) / windUpTime);
+        }
+
         private static float Smooth(float x)
         {
             x = Mathf.Clamp01(x);

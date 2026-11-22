@@ -109,6 +109,17 @@ namespace New_Scripts.Flower
         [Tooltip("Uç yayı yapraktan ayrıştıkça (aşım, geri kalma) yaprağın eğimine eklenen titreşim (derece, fark başına). 0 = kapalı.")]
         [SerializeField, Range(0f, 40f)] private float pitchFlutterDeg = 14f;
 
+        [Header("Snap darbesi")]
+        [Tooltip("Kapanış anında bütün modelin ölçeği bu kadar ezilir (thud), sonra yayla geri seker. 0 = kapalı.")]
+        [SerializeField, Range(0f, 0.3f)] private float thudDip = 0.1f;
+        [SerializeField] private float thudStiffness = 400f;
+        [SerializeField] private float thudDamping = 14f;
+        [Tooltip("Nefes çek: uyarının son bu kadar saniyesinde çiçek snap'ten önce hafifçe açılıp gerilir (ters yönlü anticipation). Kapanışla aynı yöne gitmediği için snap daha sert okunur; ama 'daha açık = daha güvenli' okunabilir, A/B için windUpOpen = 0 kapatır.")]
+        [SerializeField, Min(0f)] private float windUpTime = 0.12f;
+        [Tooltip("Nefes çekmede açılma hedefine eklenen miktar ve modelin ek ölçeği. 0 = nefes çekme kapalı.")]
+        [SerializeField, Range(0f, 0.4f)] private float windUpOpen = 0.15f;
+        [SerializeField, Range(0f, 0.15f)] private float windUpScale = 0.04f;
+
         [Header("Yaylar")]
         [Tooltip("Açılış yayı. ζ = damping / (2·√stiffness): 180/14,8 -> ζ≈0,55, ~%12 aşım, ~0,5 sn yerleşme.")]
         [SerializeField] private float openStiffness = 180f;
@@ -265,6 +276,8 @@ namespace New_Scripts.Flower
         private float _clock;
         private float _stepDt;
         private float _warnAge = -1f;
+        private float _windUp;
+        private UiSpring _thud = new UiSpring(400f, 14f);
         private readonly FlowerOpenDelayLine _delayLine = new FlowerOpenDelayLine();
         private float _haloT = -1f;
         private float _tremblePhase;
@@ -295,6 +308,7 @@ namespace New_Scripts.Flower
             _wantOpen = true;
             _warn = 0f;
             _warnAge = -1f;
+            _windUp = 0f;
             _hint = 0f;
             _haloT = 0f;
         }
@@ -306,11 +320,15 @@ namespace New_Scripts.Flower
             _wantOpen = false;
             _warn = 0f;
             _warnAge = -1f;
+            _windUp = 0f;
             _hint = 0f;
+            // Thud: bütün model bir an ezilir, sonra geri seker.
+            _thud = new UiSpring(thudStiffness, thudDamping) { Value = -thudDip, Target = 0f };
         }
 
         /// <summary>Kapanış uyarısı (0..1): yaprak uçları geri kıvrılır, çiçek titrer, renk kayar.</summary>
-        public void SetWarn(float warn01)
+        /// <param name="secondsLeft">Uyarının bitimine kalan süre (bilinmiyorsa verilmez); son <c>windUpTime</c> saniyede nefes çekme başlar.</param>
+        public void SetWarn(float warn01, float secondsLeft = float.PositiveInfinity)
         {
             float w = Mathf.Clamp01(warn01);
             if (_warn <= 0f && w > 0f && _wantOpen && _anticipateLeft <= 0f)
@@ -319,7 +337,8 @@ namespace New_Scripts.Flower
                 _spring.Kick(-warnStartKick);
             }
             _warn = w;
-            if (_wantOpen && _anticipateLeft <= 0f) _spring.Target = Mathf.Lerp(1f, warnCurlTarget, _warn);
+            _windUp = windUpOpen > 0f ? FlowerWarnMath.WindUp(secondsLeft, windUpTime) : 0f;
+            if (_wantOpen && _anticipateLeft <= 0f) _spring.Target = Mathf.Lerp(1f, warnCurlTarget, _warn) + windUpOpen * _windUp;
         }
 
         /// <summary>Kapalıyken "şimdi açılacak" ipucu (0..1): tomurcuk çekirdeği nabız atar. Yaprak açılmaz (yaprak ilerlemesi
@@ -338,6 +357,8 @@ namespace New_Scripts.Flower
             _pop = new UiSpring(popStiffness, popDamping) { Value = value >= centerRevealAt ? 1f : 0f, Target = value >= centerRevealAt ? 1f : 0f };
             _haloT = -1f;
             open = value;
+            _windUp = 0f;
+            _thud = new UiSpring(thudStiffness, thudDamping);
             ResetPetalDelays(value);
         }
 
@@ -355,6 +376,7 @@ namespace New_Scripts.Flower
             EnsureCoronaMeshes();
             _spring = new UiSpring(openStiffness, openDamping) { Value = open, Target = open };
             _pop = new UiSpring(popStiffness, popDamping);
+            _thud = new UiSpring(thudStiffness, thudDamping);
             ResetPetalDelays(open);
         }
 
@@ -401,6 +423,7 @@ namespace New_Scripts.Flower
                 open = _spring.Value;
             }
             StepPetalDelays(dt);
+            if (Application.isPlaying && _driven) _thud.Step(dt);
 
             // Orta: açılma eşiğini geçince pop yayıyla büyür; kapanınca anında sıfırlanmaya yakın küçülür.
             float popTarget = open >= centerRevealAt ? 1f : 0f;
@@ -604,7 +627,7 @@ namespace New_Scripts.Flower
             // anticipation büzülmesi ve uyarı titremesi.
             float twist = openTwist * (1f - open);
             model.localRotation = Quaternion.Euler(-viewTilt, 0f, 0f) * Quaternion.Euler(0f, twist + orientationDeg, 0f);
-            model.localScale = Vector3.one * Mathf.Max(0.1f, 1f + over * overshootScale - under * 0.6f);
+            model.localScale = Vector3.one * Mathf.Max(0.1f, (1f + over * overshootScale - under * 0.6f) * (1f + _thud.Value + windUpScale * _windUp));
             float tr = (_warn + warnBurstTremble * FlowerWarnMath.StartBurst(_warnAge, warnBurstTime)) * trembleAmplitude;
             model.localPosition = new Vector3(Mathf.Sin(_tremblePhase) * tr, Mathf.Cos(_tremblePhase * 1.31f) * tr, petalLength * depthBehind);
 

@@ -1,5 +1,6 @@
 using System;
 using New_Scripts.Player;
+using New_Scripts.Player.IFramePauseable;
 using New_Scripts.Player.Nodes;
 using UnityEngine;
 
@@ -23,6 +24,12 @@ namespace New_Scripts.Flower
         [SerializeField] private Collider2D nodeCollider;
         [Tooltip("Çiçek kapanırken tutuluyorsa oyuncuya çiçekten dışa verilen hız (b/sn). Hissi gamepad ile ayarlanır.")]
         [SerializeField, Min(0f)] private float releaseImpulse = 6f;
+
+        [Header("Snap darbesi (opsiyonel)")]
+        [Tooltip("Çiçek tutulurken kapanırsa kısa bir hit-stop (HitStopEvents) fırlatma anını vurgular. Varsayılan kapalı: his gamepadle denenir.")]
+        [SerializeField] private bool snapHitStop;
+        [Tooltip("Hit-stop süresi (sn). ~3 kare = 0.05. Slingshot'ın 0.2 sn'si çiçek için çok uzun.")]
+        [SerializeField, Range(0.02f, 0.1f)] private float snapHitStopSeconds = 0.05f;
 
         private FlowerBloom _bloom;
         private float _time;
@@ -92,12 +99,15 @@ namespace New_Scripts.Flower
                 switch (_phase)
                 {
                     case FlowerPhase.Opening: _bloom.OpenBloom(); break;
-                    case FlowerPhase.Closing: _bloom.CloseBloom(); break;
+                    case FlowerPhase.Closing:
+                        _bloom.CloseBloom();
+                        if (snapHitStop && IsHeld) HitStopEvents.RequestHitStop?.Invoke(snapHitStopSeconds);
+                        break;
                     case FlowerPhase.Closed: _bloom.SetWarn(0f); break;
                 }
             }
 
-            if (_phase == FlowerPhase.Warning) _bloom.SetWarn(s.Warn01);
+            if (_phase == FlowerPhase.Warning) _bloom.SetWarn(s.Warn01, (1f - s.Warn01) * timings.warning);
             if (_phase == FlowerPhase.Closed) _bloom.SetHint(s.Hint01);
 
             if (s.Grabbable != _grabbable) SetGrabbable(s.Grabbable, notify: true);

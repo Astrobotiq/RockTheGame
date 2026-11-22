@@ -76,5 +76,29 @@ namespace RockTheGame.Tests
             Assert.That(FlowerWarnMath.StartBurst(-1f, 0.2f), Is.EqualTo(0f), "darbe yokken (age < 0) sıfır");
             Assert.That(FlowerWarnMath.StartBurst(0.05f, 0f), Is.EqualTo(0f), "süre 0 ise darbe yok");
         }
+
+        [Test]
+        public void WindUp_ZeroUntilLastWindowThenRisesToOne()
+        {
+            Assert.That(FlowerWarnMath.WindUp(float.PositiveInfinity, 0.12f), Is.EqualTo(0f), "kalan süre bilinmiyor");
+            Assert.That(FlowerWarnMath.WindUp(0.5f, 0.12f), Is.EqualTo(0f));
+            Assert.That(FlowerWarnMath.WindUp(0.12f, 0.12f), Is.EqualTo(0f).Within(1e-6f));
+            Assert.That(FlowerWarnMath.WindUp(0.06f, 0.12f), Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(FlowerWarnMath.WindUp(0f, 0.12f), Is.EqualTo(1f).Within(1e-6f));
+            Assert.That(FlowerWarnMath.WindUp(-0.1f, 0.12f), Is.EqualTo(1f).Within(1e-6f), "süre taştıysa tam");
+        }
+
+        [Test]
+        public void WindUp_IsMonotonicAndOffWithoutWindow()
+        {
+            float prev = 0f;
+            for (int s = 0; s <= 24; s++)
+            {
+                float v = FlowerWarnMath.WindUp(0.12f - s * 0.005f, 0.12f);
+                Assert.That(v, Is.GreaterThanOrEqualTo(prev - 1e-6f));
+                prev = v;
+            }
+            Assert.That(FlowerWarnMath.WindUp(0f, 0f), Is.EqualTo(0f), "pencere 0 ise nefes çekme yok");
+        }
     }
 }

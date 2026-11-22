@@ -133,6 +133,9 @@ namespace New_Scripts.Flower
         [SerializeField, Range(0.05f, 0.6f)] private float reachSoftness = 0.25f;
         [SerializeField] private Mesh petalMesh;
         [SerializeField] private Material petalMaterial;
+        [Tooltip("Yaprağın kesim gölgesi (Flower/PetalShadow): aynı mesh'e ikinci materyal olarak çizilir. Boşsa gölge yok. " +
+                 "Atandıktan sonra Rebuild gerekir.")]
+        [SerializeField] private Material petalShadowMaterial;
         [SerializeField] private Material centerMaterial;
         [SerializeField] private Material haloMaterial;
         [SerializeField] private string sortingLayerName = "Default";
@@ -320,7 +323,10 @@ namespace New_Scripts.Flower
 
                     var r = go.AddComponent<MeshRenderer>();
                     go.AddComponent<MeshFilter>().sharedMesh = grid;
-                    r.sharedMaterial = petalMaterial;
+                    // Gölge materyali aynı mesh'i ikinci kez çizer (son alt mesh tekrarlanır); kuyruğu yapraklardan sonradır.
+                    r.sharedMaterials = petalShadowMaterial != null
+                        ? new[] { petalMaterial, petalShadowMaterial }
+                        : new[] { petalMaterial };
                     r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     r.receiveShadows = false;
                     r.sortingLayerName = sortingLayerName;

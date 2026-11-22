@@ -64,10 +64,7 @@ Shader "Flower/Petal"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
-
-            #define PI 3.14159265359
-            #define STEPS 14
+            #include "FlowerBend.cginc"
 
             struct appdata_t
             {
@@ -85,38 +82,13 @@ Shader "Flower/Petal"
 
             fixed4 _HiCol, _BaseCol, _ShadowCol, _DeepCol, _ClosedCol, _WarnCol;
             float4 _LightDir;
-            float _Shape, _Roundness, _ShadowThr, _FoldShade, _CreasePx, _EdgePx, _Soft;
-            float _Length, _Width, _Pitch, _Reach, _Turn, _BaseCurl, _Roll, _Open, _Warn, _Seed;
+            float _ShadowThr, _FoldShade, _CreasePx, _EdgePx;
+            float _Open, _Warn, _Seed;
 
             v2f vert(appdata_t IN)
             {
-                float u = IN.texcoord.x;
-                float v = IN.texcoord.y * 2.0 - 1.0;
-
-                // Merkez çizgisini u'ya kadar sayısal entegre et (kıvrım profili parçalı, kapalı form yok).
-                float a = _Pitch;
-                float2 P = float2(0, 0);
-                float h = u / STEPS;
-                [unroll]
-                for (int i = 0; i < STEPS; i++)
-                {
-                    float t = (i + 0.5) * h;
-                    float k = _Turn * smoothstep(_Reach, _Reach + _Soft, t) + _BaseCurl;
-                    float am = a + 0.5 * k * h;
-                    P += _Length * h * float2(cos(am), sin(am));
-                    a += k * h;
-                }
-                float2 N = float2(-sin(a), cos(a));   // bükülme düzleminde iç (içbükey) yüz yönü
-
-                // Enine rulo: en boyunca psi radyan sarılır, kenarlar içbükey yüze doğru kalkar.
-                float psi = max(_Roll, 1e-3);
-                float R = _Width / psi;
-                float phi = psi * v * 0.5;
-                float across = R * sin(phi);
-                float lift = R * (1.0 - cos(phi));
-
-                float3 pos = float3(P + N * lift, across);
-                float3 nObj = float3(N * cos(phi), -sin(phi));
+                float3 pos, nObj;
+                FlowerBend(IN.texcoord, pos, nObj);
 
                 v2f OUT;
                 OUT.vertex = UnityObjectToClipPos(float4(pos, 1.0));
@@ -138,11 +110,8 @@ Shader "Flower/Petal"
                 float u = saturate(IN.uv.x);
                 float v = IN.uv.y * 2.0 - 1.0;
 
-                // Damla profili: tabanda dar, ~%60'ta en geniş, uçta yuvarlak bir sivrilik.
-                // d < 0 içeride, d = 0 kenarda; dpx = pikselde kenara uzaklık (negatif = içeride).
-                float w = pow(saturate(sin(PI * pow(u, _Shape))), _Roundness);
-                float d = abs(v) - w;
-                float dpx = d / max(fwidth(d), 1e-5);
+                // Yaprak şekli ortak (FlowerBend.cginc); dpx = pikselde kenara uzaklık (negatif = içeride).
+                float dpx = FlowerEdgeDpx(IN.uv);
                 clip(0.5 - dpx);
 
                 // Hangi yüz kameraya bakıyor? Ortografik kamerada bakış yönü sabit.

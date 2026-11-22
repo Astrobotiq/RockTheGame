@@ -702,6 +702,11 @@ MonoBehaviour:
   open: 1
   layerDelay: 0.25
   indexStagger: 0.15
+  petalOpenDelay: 0.12
+  petalCloseDelay: 0.03
+  tipStiffness: 150
+  tipDamping: 9
+  pitchFlutterDeg: 14
   openStiffness: 180
   openDamping: 14.8
   closeStiffness: 900
@@ -718,9 +723,14 @@ MonoBehaviour:
   towerHeight: 0.5
   overshootPitch: 24
   overshootScale: 0.5
-  warnCurlTarget: 0.8
+  warnCurlTarget: 0.6
   trembleAmplitude: 0.025
   trembleHz: {x: 8, y: 20}
+  warnFoldDepth: 0.35
+  warnFoldOverlap: 0.5
+  warnStartKick: 1.5
+  warnBurstTime: 0.2
+  warnBurstTremble: 1.5
   hintPulse: 0.35
   hintHz: {x: 2, y: 6}
   haloDuration: 0.35

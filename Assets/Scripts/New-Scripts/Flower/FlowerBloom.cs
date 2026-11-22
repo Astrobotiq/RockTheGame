@@ -142,10 +142,19 @@ namespace New_Scripts.Flower
         [Tooltip("Overshoot'ta her +1 için çiçeğin ekstra büyümesi.")]
         [SerializeField] private float overshootScale = 0.5f;
         [Tooltip("Kapanış uyarısında yaprak uçları bu açıklığa kadar geri kıvrılır.")]
-        [SerializeField, Range(0.4f, 1f)] private float warnCurlTarget = 0.8f;
+        [SerializeField, Range(0.4f, 1f)] private float warnCurlTarget = 0.6f;
         [Tooltip("Uyarıda titreme genliği (dünya birimi, ~px/100) ve frekans aralığı (Hz).")]
         [SerializeField] private float trembleAmplitude = 0.025f;
         [SerializeField] private Vector2 trembleHz = new Vector2(8f, 20f);
+        [Tooltip("Uyarıda yapraklar sırayla katlanır (kalan süre yaprak sayısı olarak okunur, renksiz). Katlanan yaprağın ilerlemesi bu oranda düşer.")]
+        [SerializeField, Range(0f, 0.8f)] private float warnFoldDepth = 0.35f;
+        [Tooltip("Komşu yaprakların katlanma pencerelerinin üst üste binmesi (0 ardışık, 1 iki yaprak aralığı).")]
+        [SerializeField, Range(0f, 1f)] private float warnFoldOverlap = 0.5f;
+        [Tooltip("Uyarı başlarken çiçek bir an ürperir: açılma yayına ters yönde verilen hız (b/sn) ve ürpermenin süresi (sn).")]
+        [SerializeField, Min(0f)] private float warnStartKick = 1.5f;
+        [SerializeField, Min(0f)] private float warnBurstTime = 0.2f;
+        [Tooltip("Ürpermede titreme genliği, uyarı titremesinin bu katı kadar eklenir (başta en çok, süre sonunda 0).")]
+        [SerializeField, Min(0f)] private float warnBurstTremble = 1.5f;
         [Tooltip("Kapalıyken 'şimdi açılacak' ipucu: tomurcuk çekirdeği nabız atar (yaprak açılmaz). Nabzın en büyük şişmesi (çekirdek ölçeğinin oranı).")]
         [SerializeField, Range(0f, 1f)] private float hintPulse = 0.35f;
         [Tooltip("İpucu nabzı: başlangıç ve bitiş sıklığı (Hz). Açılışa yaklaştıkça sıklaşır ve büyür.")]
@@ -255,6 +264,7 @@ namespace New_Scripts.Flower
         private float _hintCycles;
         private float _clock;
         private float _stepDt;
+        private float _warnAge = -1f;
         private readonly FlowerOpenDelayLine _delayLine = new FlowerOpenDelayLine();
         private float _haloT = -1f;
         private float _tremblePhase;
@@ -284,6 +294,7 @@ namespace New_Scripts.Flower
             BeginDrive(openStiffness, openDamping, anticipationTime > 0f ? anticipationDip : 1f);
             _wantOpen = true;
             _warn = 0f;
+            _warnAge = -1f;
             _hint = 0f;
             _haloT = 0f;
         }
@@ -294,13 +305,20 @@ namespace New_Scripts.Flower
             BeginDrive(closeStiffness, closeDamping, 0f);
             _wantOpen = false;
             _warn = 0f;
+            _warnAge = -1f;
             _hint = 0f;
         }
 
         /// <summary>Kapanış uyarısı (0..1): yaprak uçları geri kıvrılır, çiçek titrer, renk kayar.</summary>
         public void SetWarn(float warn01)
         {
-            _warn = Mathf.Clamp01(warn01);
+            float w = Mathf.Clamp01(warn01);
+            if (_warn <= 0f && w > 0f && _wantOpen && _anticipateLeft <= 0f)
+            {
+                _warnAge = 0f;                      // ürperme darbesi: yay bir an geri çekilir, titreme patlar
+                _spring.Kick(-warnStartKick);
+            }
+            _warn = w;
             if (_wantOpen && _anticipateLeft <= 0f) _spring.Target = Mathf.Lerp(1f, warnCurlTarget, _warn);
         }
 
@@ -408,6 +426,12 @@ namespace New_Scripts.Flower
 
             if (Application.isPlaying)
                 _hintCycles = _hint > 0f ? _hintCycles + dt * Mathf.Lerp(hintHz.x, hintHz.y, _hint) : 0f;
+
+            if (_warnAge >= 0f && Application.isPlaying)
+            {
+                _warnAge += dt;
+                if (_warnAge >= warnBurstTime) _warnAge = -1f;
+            }
 
             if (_warn > 0f && Application.isPlaying)
                 _tremblePhase += dt * Mathf.Lerp(trembleHz.x, trembleHz.y, _warn) * Mathf.PI * 2f;
@@ -581,7 +605,7 @@ namespace New_Scripts.Flower
             float twist = openTwist * (1f - open);
             model.localRotation = Quaternion.Euler(-viewTilt, 0f, 0f) * Quaternion.Euler(0f, twist + orientationDeg, 0f);
             model.localScale = Vector3.one * Mathf.Max(0.1f, 1f + over * overshootScale - under * 0.6f);
-            float tr = _warn * trembleAmplitude;
+            float tr = (_warn + warnBurstTremble * FlowerWarnMath.StartBurst(_warnAge, warnBurstTime)) * trembleAmplitude;
             model.localPosition = new Vector3(Mathf.Sin(_tremblePhase) * tr, Mathf.Cos(_tremblePhase * 1.31f) * tr, petalLength * depthBehind);
 
             // Rulo eğriliği sabit (yarıçap değişmez): kapalıyken sarılı kısım (1 - closedStraight) boyunca closedTurns tur atar.
@@ -602,6 +626,9 @@ namespace New_Scripts.Flower
                 float baseRadius = coreRadius * Mathf.Lerp(closedBaseRadius, 0.9f, prog);
                 float az = PetalAzimuth(p.Layer, p.Index);
                 p.Pivot.localPosition = new Vector3(Mathf.Cos(az) * baseRadius, 0f, Mathf.Sin(az) * baseRadius);
+
+                // Uyarıda yapraklar sırayla katlanır (sayaç): katlanan yaprağın ilerlemesi azalır.
+                if (_warn > 0f) prog *= 1f - warnFoldDepth * FlowerWarnMath.Fold(_warn, p.Index, petalCount, warnFoldOverlap);
 
                 // Uç yayı: sürücü modunda açılırken yaprağı yavaşça kovalar ve aşar, kapanırken (snap) yaprakla birebir gider.
                 float tip = prog;

@@ -54,6 +54,7 @@ namespace New_Scripts.Flower
             public int Index;
             public float Seed;
             [NonSerialized] public float Delay;   // şu anki zaman gecikmesi (sn)
+            [NonSerialized] public UiSpring Tip;  // uç eğriliği/yuvarlanması için ikinci (yavaş, az sönümlü) yay: follow-through
         }
 
         /// <summary>İplik tacının bir halkası: şerit boyutları, yerleşimi ve kapalı/açık duruşu.</summary>
@@ -100,6 +101,13 @@ namespace New_Scripts.Flower
         [SerializeField, Range(0f, 0.3f)] private float petalOpenDelay = 0.12f;
         [Tooltip("Kapanışta yapraklar 0..bu kadar saniye gecikmeyle kapanır. Snap sert kalsın diye küçük tutulur.")]
         [SerializeField, Range(0f, 0.1f)] private float petalCloseDelay = 0.03f;
+
+        [Header("Yaprak ucu (follow-through)")]
+        [Tooltip("Yaprak ucunun eğriliği (_BaseCurl) ve yuvarlanması (_Roll) yaprağın kendisinden sonra, daha yavaş ve daha az sönümlü bir yayla gelir: gövde durduktan sonra uç biraz daha eğilip yerine oturur. 150/9 -> ζ≈0,37, ~%28 aşım, ~0,9 sn yerleşme.")]
+        [SerializeField] private float tipStiffness = 150f;
+        [SerializeField] private float tipDamping = 9f;
+        [Tooltip("Uç yayı yapraktan ayrıştıkça (aşım, geri kalma) yaprağın eğimine eklenen titreşim (derece, fark başına). 0 = kapalı.")]
+        [SerializeField, Range(0f, 40f)] private float pitchFlutterDeg = 14f;
 
         [Header("Yaylar")]
         [Tooltip("Açılış yayı. ζ = damping / (2·√stiffness): 180/14,8 -> ζ≈0,55, ~%12 aşım, ~0,5 sn yerleşme.")]
@@ -246,6 +254,7 @@ namespace New_Scripts.Flower
         private float _hint;
         private float _hintCycles;
         private float _clock;
+        private float _stepDt;
         private readonly FlowerOpenDelayLine _delayLine = new FlowerOpenDelayLine();
         private float _haloT = -1f;
         private float _tremblePhase;
@@ -336,7 +345,11 @@ namespace New_Scripts.Flower
             _clock = 0f;
             _delayLine.Reset(0f, value);
             foreach (var p in petals)
-                if (p != null) p.Delay = 0f;
+            {
+                if (p == null) continue;
+                p.Delay = 0f;
+                p.Tip = null;   // ilk kullanımda ilerlemeyle başlar
+            }
         }
 
         // Her yaprak açılma değerini kendi gecikmesi kadar eski okur. Gecikme yönle değişir (açılış uzun, kapanış kısa);
@@ -356,6 +369,7 @@ namespace New_Scripts.Flower
         private void Update()
         {
             float dt = Application.isPlaying ? Time.deltaTime : 0f;
+            _stepDt = dt;
 
             if (Application.isPlaying && _driven)
             {
@@ -399,6 +413,7 @@ namespace New_Scripts.Flower
                 _tremblePhase += dt * Mathf.Lerp(trembleHz.x, trembleHz.y, _warn) * Mathf.PI * 2f;
 
             Apply();
+            _stepDt = 0f;   // Rebuild gibi başka yerden gelen Apply yayları ilerletmesin
         }
 
         private bool IsBuilt()
@@ -588,7 +603,19 @@ namespace New_Scripts.Flower
                 float az = PetalAzimuth(p.Layer, p.Index);
                 p.Pivot.localPosition = new Vector3(Mathf.Cos(az) * baseRadius, 0f, Mathf.Sin(az) * baseRadius);
 
-                float pitchDeg = Mathf.Lerp(closedPitch, openPitch + p.Layer * innerPitchBonus, prog) - over * overshootPitch;
+                // Uç yayı: sürücü modunda açılırken yaprağı yavaşça kovalar ve aşar, kapanırken (snap) yaprakla birebir gider.
+                float tip = prog;
+                if (Application.isPlaying && _driven)
+                {
+                    p.Tip ??= new UiSpring(tipStiffness, tipDamping) { Value = prog, Target = prog };
+                    p.Tip.Target = prog;
+                    if (_wantOpen) p.Tip.Step(_stepDt);
+                    else { p.Tip.Value = prog; p.Tip.Velocity = 0f; }
+                    tip = Mathf.Max(0f, p.Tip.Value);
+                }
+
+                float pitchDeg = Mathf.Lerp(closedPitch, openPitch + p.Layer * innerPitchBonus, prog) - over * overshootPitch
+                                 + pitchFlutterDeg * (tip - prog);
                 float reach = Mathf.Lerp(closedStraight, 1f, prog);
 
                 var cut = handCut ? FlowerCutMath.ForSeed(p.Seed) : FlowerCutMath.Cut.None;
@@ -605,8 +632,8 @@ namespace New_Scripts.Flower
                 _block.SetFloat(ReachId, reach);
                 _block.SetFloat(SoftId, reachSoftness);
                 _block.SetFloat(TurnId, closedTurnRate);
-                _block.SetFloat(BaseCurlId, openCurl * prog);
-                _block.SetFloat(RollId, Mathf.Lerp(closedRoll, openRoll, prog));
+                _block.SetFloat(BaseCurlId, openCurl * tip);
+                _block.SetFloat(RollId, Mathf.LerpUnclamped(closedRoll, openRoll, tip));
                 _block.SetFloat(OpenId, prog);
                 _block.SetFloat(WarnId, _warn);
                 _block.SetFloat(SeedId, p.Seed);

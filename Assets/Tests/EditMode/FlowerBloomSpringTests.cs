@@ -63,5 +63,18 @@ namespace RockTheGame.Tests
             Assert.That(settle, Is.LessThan(0.3f), "snap time");
             Assert.That(min, Is.GreaterThan(-0.08f), "undershoot");
         }
+
+        [Test]
+        public void TipSpring_IsSlowerAndLessDampedThanOpenSpring()
+        {
+            // FlowerBloom.tipStiffness/tipDamping varsayılanı (follow-through): ζ = 9 / (2·√150).
+            var tip = new UiSpring(150f, 9f) { Value = 0f, Target = 1f };
+            Simulate(tip, 3f, out _, out float max, out float settle);
+            float zetaOpen = OpenC / (2f * Mathf.Sqrt(OpenK));
+            float zetaTip = 9f / (2f * Mathf.Sqrt(150f));
+            Assert.Less(zetaTip, zetaOpen, "uç yayı daha az sönümlü");
+            Assert.That(max, Is.InRange(1.2f, 1.4f), "uç aşımı belirgin ama abartısız");
+            Assert.That(settle, Is.LessThan(1.5f), "uç yerleşmesi");
+        }
     }
 }

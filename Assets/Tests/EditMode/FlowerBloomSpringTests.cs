@@ -11,7 +11,7 @@ namespace RockTheGame.Tests
     public class FlowerBloomSpringTests
     {
         private const float OpenK = 180f, OpenC = 14.8f, CloseK = 900f, CloseC = 48f;
-        private const float DipTarget = -0.08f, AnticipationTime = 0.08f;
+        private const float DipTarget = -0.2f, AnticipationTime = 0.12f;
 
         private static void Simulate(UiSpring s, float seconds, out float min, out float max, out float settleTime)
         {
@@ -51,7 +51,7 @@ namespace RockTheGame.Tests
                 min = Mathf.Min(min, s.Value);
                 max = Mathf.Max(max, s.Value);
             }
-            Assert.That(min, Is.InRange(-0.07f, -0.02f), "anticipation dip");
+            Assert.That(min, Is.InRange(-0.14f, -0.07f), "anticipation dip");
             Assert.That(max, Is.InRange(1.08f, 1.22f), "overshoot after the dip");
         }
 

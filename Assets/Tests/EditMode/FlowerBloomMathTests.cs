@@ -92,5 +92,28 @@ namespace RockTheGame.Tests
                 }
             }
         }
+
+        [Test]
+        public void HintPulse_NoHintMeansNoChange()
+        {
+            Assert.That(FlowerBloomMath.HintPulse(0f, 0.5f, 0.35f), Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void HintPulse_StartsSoftAndPeaksAtHalfCycle()
+        {
+            Assert.That(FlowerBloomMath.HintPulse(1f, 0f, 0.35f), Is.EqualTo(1f).Within(1e-6f), "ipucu yumuşak başlar");
+            Assert.That(FlowerBloomMath.HintPulse(1f, 0.5f, 0.35f), Is.EqualTo(1.35f).Within(1e-5f), "yarım turda en çok şişer");
+            Assert.That(FlowerBloomMath.HintPulse(1f, 1f, 0.35f), Is.EqualTo(1f).Within(1e-5f), "tur sonunda eski boy");
+        }
+
+        [Test]
+        public void HintPulse_AmplitudeGrowsWithHint()
+        {
+            float weak = FlowerBloomMath.HintPulse(0.3f, 0.5f, 0.35f);
+            float strong = FlowerBloomMath.HintPulse(1f, 0.5f, 0.35f);
+            Assert.That(weak, Is.GreaterThan(1f));
+            Assert.That(strong, Is.GreaterThan(weak));
+        }
     }
 }

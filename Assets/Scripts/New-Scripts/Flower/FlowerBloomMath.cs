@@ -30,5 +30,17 @@ namespace New_Scripts.Flower
             float t = Mathf.Clamp01((open - delay) / window);
             return t * t * (3f - 2f * t);
         }
+
+        /// <summary>
+        /// Kapalı halde "şimdi açılacak" ipucunun tomurcuk çekirdeğine çarpanı (≥ 1). <paramref name="cycles"/> ipucu başından beri
+        /// atılan nabız sayısıdır (0'da dalga 0, yani ipucu yumuşak başlar); nabzın genliği ipucuyla (0..1) büyür, en çok
+        /// <paramref name="swell"/> kadar şişer. İpucu yokken tam 1.
+        /// </summary>
+        public static float HintPulse(float hint01, float cycles, float swell)
+        {
+            if (hint01 <= 0f) return 1f;
+            float wave = 0.5f - 0.5f * Mathf.Cos(cycles * 2f * Mathf.PI);   // 0..1
+            return 1f + swell * Mathf.Clamp01(hint01) * wave;
+        }
     }
 }

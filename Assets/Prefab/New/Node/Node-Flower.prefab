@@ -706,8 +706,8 @@ MonoBehaviour:
   openDamping: 14.8
   closeStiffness: 900
   closeDamping: 48
-  anticipationDip: -0.08
-  anticipationTime: 0.08
+  anticipationDip: -0.2
+  anticipationTime: 0.12
   popStiffness: 260
   popDamping: 12
   centerRevealAt: 0.45
@@ -721,13 +721,10 @@ MonoBehaviour:
   warnCurlTarget: 0.8
   trembleAmplitude: 0.025
   trembleHz: {x: 8, y: 20}
-  hintSwell: 0.07
+  hintPulse: 0.35
+  hintHz: {x: 2, y: 6}
   haloDuration: 0.35
   haloRadius: 1.7
-  warnRingRadius: 1.065
-  warnRingDashes: 16
-  warnRingWidth: 0.04
-  warnBlinkHz: 2
   petalCount: 5
   layerCount: 1
   coreRadius: 0.22

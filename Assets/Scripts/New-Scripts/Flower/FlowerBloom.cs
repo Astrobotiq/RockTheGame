@@ -101,10 +101,10 @@ namespace New_Scripts.Flower
         [Tooltip("Kapanış hamlesi (snap): sert ve az aşımlı. 900/48 -> ζ≈0,8, ~0,15 sn.")]
         [SerializeField] private float closeStiffness = 900f;
         [SerializeField] private float closeDamping = 48f;
-        [Tooltip("Açılış başında yayın hedefi kısa süre bu (negatif) değere çekilir: çiçek bir an büzülür (anticipation). Gerçek dip ~yarısı kadardır.")]
-        [SerializeField, Range(-0.3f, 0f)] private float anticipationDip = -0.08f;
+        [Tooltip("Açılış başında yayın hedefi kısa süre bu (negatif) değere çekilir: çiçek bir an büzülür (anticipation). Gerçek dip ~yarısı kadardır (-0,2 -> ~-0,09, ölçekte ~%5).")]
+        [SerializeField, Range(-0.3f, 0f)] private float anticipationDip = -0.2f;
         [Tooltip("Anticipation süresi (saniye). Sonra yay 1'e fırlar.")]
-        [SerializeField, Range(0f, 0.2f)] private float anticipationTime = 0.08f;
+        [SerializeField, Range(0f, 0.2f)] private float anticipationTime = 0.12f;
         [Tooltip("Ortadaki nokta 'pop' yayı: 260/12 -> ζ≈0,37, belirgin aşım.")]
         [SerializeField] private float popStiffness = 260f;
         [SerializeField] private float popDamping = 12f;
@@ -131,8 +131,10 @@ namespace New_Scripts.Flower
         [Tooltip("Uyarıda titreme genliği (dünya birimi, ~px/100) ve frekans aralığı (Hz).")]
         [SerializeField] private float trembleAmplitude = 0.025f;
         [SerializeField] private Vector2 trembleHz = new Vector2(8f, 20f);
-        [Tooltip("Kapalıyken 'şimdi açılacak' ipucunun şişme miktarı (open birimi).")]
-        [SerializeField] private float hintSwell = 0.07f;
+        [Tooltip("Kapalıyken 'şimdi açılacak' ipucu: tomurcuk çekirdeği nabız atar (yaprak açılmaz). Nabzın en büyük şişmesi (çekirdek ölçeğinin oranı).")]
+        [SerializeField, Range(0f, 1f)] private float hintPulse = 0.35f;
+        [Tooltip("İpucu nabzı: başlangıç ve bitiş sıklığı (Hz). Açılışa yaklaştıkça sıklaşır ve büyür.")]
+        [SerializeField] private Vector2 hintHz = new Vector2(2f, 6f);
 
         [Header("Halo")]
         [SerializeField] private float haloDuration = 0.35f;
@@ -235,6 +237,7 @@ namespace New_Scripts.Flower
         private bool _wantOpen;
         private float _warn;
         private float _hint;
+        private float _hintCycles;
         private float _haloT = -1f;
         private float _tremblePhase;
         private float _anticipateLeft;
@@ -263,6 +266,7 @@ namespace New_Scripts.Flower
             BeginDrive(openStiffness, openDamping, anticipationTime > 0f ? anticipationDip : 1f);
             _wantOpen = true;
             _warn = 0f;
+            _hint = 0f;
             _haloT = 0f;
         }
 
@@ -272,6 +276,7 @@ namespace New_Scripts.Flower
             BeginDrive(closeStiffness, closeDamping, 0f);
             _wantOpen = false;
             _warn = 0f;
+            _hint = 0f;
         }
 
         /// <summary>Kapanış uyarısı (0..1): yaprak uçları geri kıvrılır, çiçek titrer, renk kayar.</summary>
@@ -281,11 +286,11 @@ namespace New_Scripts.Flower
             if (_wantOpen && _anticipateLeft <= 0f) _spring.Target = Mathf.Lerp(1f, warnCurlTarget, _warn);
         }
 
-        /// <summary>Kapalıyken "şimdi açılacak" ipucu (0..1): tomurcuk hafifçe şişer.</summary>
+        /// <summary>Kapalıyken "şimdi açılacak" ipucu (0..1): tomurcuk çekirdeği nabız atar. Yaprak açılmaz (yaprak ilerlemesi
+        /// bu kadar küçük açıklıkta görünmüyordu).</summary>
         public void SetHint(float hint01)
         {
-            _hint = Mathf.Clamp01(hint01);
-            if (!_wantOpen) _spring.Target = hintSwell * _hint;
+            _hint = _wantOpen ? 0f : Mathf.Clamp01(hint01);
         }
 
         /// <summary>Yayları sıfırlayıp çiçeği anında bu açıklığa koyar (sürücü modunda).</summary>
@@ -352,6 +357,9 @@ namespace New_Scripts.Flower
                 _haloT += dt / Mathf.Max(0.05f, haloDuration);
                 if (_haloT >= 1f) _haloT = -1f;
             }
+
+            if (Application.isPlaying)
+                _hintCycles = _hint > 0f ? _hintCycles + dt * Mathf.Lerp(hintHz.x, hintHz.y, _hint) : 0f;
 
             if (_warn > 0f && Application.isPlaying)
                 _tremblePhase += dt * Mathf.Lerp(trembleHz.x, trembleHz.y, _warn) * Mathf.PI * 2f;
@@ -578,6 +586,7 @@ namespace New_Scripts.Flower
             // Kapalıyken küçük bir tomurcuk çekirdeği (budScale) görünür; açılınca sarıya dönüp pop yapar.
             float pop = _pop.Value;
             float popScale = pop <= 1f ? Mathf.Lerp(budScale, 1f, Mathf.Max(0f, pop)) : pop;
+            popScale *= FlowerBloomMath.HintPulse(_hint, _hintCycles, hintPulse);
             float diameter = coreRadius * 2f / fill * popScale * pulse * towerScale;
             centerRenderer.transform.localScale = new Vector3(diameter, diameter, 1f);
             centerRenderer.transform.localPosition = new Vector3(0f, coronaMaterial != null ? towerHeight : 0.02f, 0f);

@@ -293,6 +293,17 @@ namespace New_Scripts.Flower
         /// <summary>Kapanış uyarısı 0..1 (Warn fazı). Editörde önizleme için doğrudan da ayarlanabilir.</summary>
         public float Warn01 => _warn;
 
+        // --- Karaktere tepki (FlowerReactor) için okuma API'si ve durum ---
+        public int PetalCount => petalCount;
+        /// <summary>Yaprak ucunun çiçek merkezinden (kök) dünya uzaklığı: (petalLength + coreRadius) x ölçek.</summary>
+        public float PetalReach => (petalLength + coreRadius) * transform.lossyScale.x;
+        /// <summary>Yaprakların bağlı olduğu modelin dünya dönüşü (viewTilt, orientationDeg, açılma dönüşü, kök dönüşü içinde).</summary>
+        public Quaternion ModelRotation => model != null ? model.rotation : transform.rotation;
+        /// <summary>İlk katmandaki <paramref name="index"/>. yaprağın çiçek-yerel azimutu (radyan).</summary>
+        public float PetalAzimuthOf(int index) => PetalAzimuth(0, index);
+        /// <summary>Karaktere tepki durumu (FlowerReactor yazar). Boşsa çiçek eskisi gibi çizilir.</summary>
+        public FlowerReactionState Reaction { get; set; }
+
         /// <summary>Halka ilerlemesi 0..1; &lt; 0 = görünmez. Oyunda açılışta otomatik çalışır, editörde önizleme için ayarlanabilir.</summary>
         public float HaloProgress
         {
@@ -346,6 +357,18 @@ namespace New_Scripts.Flower
         public void SetHint(float hint01)
         {
             _hint = _wantOpen ? 0f : Mathf.Clamp01(hint01);
+        }
+
+        /// <summary>
+        /// Yakalama darbesi (tutunma anı): kule kabarır (<paramref name="centerKick"/>, pop yayına hız) ve çiçek bir an çekinir
+        /// ya da karşılar (<paramref name="openKick"/>, açılma yayına hız; negatif = çekinir). Açılma darbesi yalnızca çiçek
+        /// açık ve uyarıda değilken verilir: uyarı/kapanış hedefe kilitli, oraya sıçrama eklenmez.
+        /// </summary>
+        public void Poke(float centerKick, float openKick)
+        {
+            if (!_driven) return;
+            _pop.Kick(centerKick);
+            if (_wantOpen && _anticipateLeft <= 0f && _warn <= 0f) _spring.Kick(openKick);
         }
 
         /// <summary>Yayları sıfırlayıp çiçeği anında bu açıklığa koyar (sürücü modunda).</summary>

@@ -22,6 +22,9 @@ namespace New_Scripts.Flower
         /// <summary>Overshoot'ta (open &gt; 1) her +1 için tacın ek açılması.</summary>
         public const float OvershootGain = 0.5f;
 
+        /// <summary>Tutunma yumruğu aralığı: yay aşımına izin verir (bırakışta şeritler bir an gevşekten de fazla açılır).</summary>
+        public const float MinGrip = -0.4f, MaxGrip = 1.25f;
+
         /// <summary>Bir şeridin o anki duruşu. Çarpanlar halkanın kendi değerleriyle çarpılır.</summary>
         public readonly struct Pose
         {
@@ -94,7 +97,7 @@ namespace New_Scripts.Flower
             float f = Mathf.Clamp01(fan);
             float over = Mathf.Max(0f, fan - 1f);
             float warn = Mathf.Clamp01(warn01);
-            float g = Mathf.Clamp01(grip01);
+            float g = Mathf.Clamp(grip01, MinGrip, MaxGrip);   // yay aşımı: bırakışta eksiye (şeritler açılır), tutarken 1'in biraz üstüne
 
             float shrink = 1f - WarnShrink * warn;
             float length = Mathf.Lerp(0.1f, 1f, f) * (1f + over * 0.5f) * shrink * (1f - grip.Shorten * g);

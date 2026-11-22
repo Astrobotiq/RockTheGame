@@ -214,9 +214,17 @@ namespace RockTheGame.Tests
             }
             var over = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
                 FlowerCoronaMath.DefaultOpenStart, 3f, grip);
-            var one = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
-                FlowerCoronaMath.DefaultOpenStart, 1f, grip);
-            Assert.AreEqual(one.Pitch, over.Pitch, "grip01 > 1 kıskaçlanır");
+            var max = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                FlowerCoronaMath.DefaultOpenStart, FlowerCoronaMath.MaxGrip, grip);
+            Assert.AreEqual(max.Pitch, over.Pitch, "grip01 üst sınırda kıskaçlanır (yay aşımına izin var)");
+
+            var under = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                FlowerCoronaMath.DefaultOpenStart, -3f, grip);
+            var min = FlowerCoronaMath.Evaluate(1f, 0f, OpenPitch, ClosedPitch, OpenCurl, ClosedCurl,
+                FlowerCoronaMath.DefaultOpenStart, FlowerCoronaMath.MinGrip, grip);
+            Assert.AreEqual(min.Pitch, under.Pitch, "alt sınırda kıskaçlanır");
+            var rest = Pose(1f);
+            Assert.Less(min.Pitch, rest.Pitch, "bırakış aşımı: şeritler dinlenme duruşundan da gevşer");
         }
 
         [Test]

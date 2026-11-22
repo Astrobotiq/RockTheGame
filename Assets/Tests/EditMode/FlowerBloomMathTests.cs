@@ -115,5 +115,38 @@ namespace RockTheGame.Tests
             Assert.That(weak, Is.GreaterThan(1f));
             Assert.That(strong, Is.GreaterThan(weak));
         }
+
+        [Test]
+        public void PetalDelay_FirstPetalHasNoDelayAndOthersStayWithinMax()
+        {
+            Assert.That(FlowerBloomMath.PetalDelay(0, true, 0.12f, 0.03f), Is.EqualTo(0f));
+            for (int i = 0; i < 12; i++)
+            {
+                Assert.That(FlowerBloomMath.PetalDelay(i, true, 0.12f, 0.03f), Is.InRange(0f, 0.12f));
+                Assert.That(FlowerBloomMath.PetalDelay(i, false, 0.12f, 0.03f), Is.InRange(0f, 0.03f));
+            }
+        }
+
+        [Test]
+        public void PetalDelay_OrderIsTheSameOpeningAndClosing_AndCloseIsShorter()
+        {
+            for (int i = 1; i < 5; i++)
+            {
+                float open = FlowerBloomMath.PetalDelay(i, true, 0.12f, 0.03f);
+                float close = FlowerBloomMath.PetalDelay(i, false, 0.12f, 0.03f);
+                Assert.That(close, Is.EqualTo(open * 0.25f).Within(1e-6f), "aynı sıra, 4 kat kısa");
+            }
+            // Beş yaprak birbirinden en az ~15 ms ayrışmalı, yoksa sıra görünmez.
+            var d = new float[5];
+            for (int i = 0; i < 5; i++) d[i] = FlowerBloomMath.PetalDelay(i, true, 0.12f, 0.03f);
+            System.Array.Sort(d);
+            for (int i = 1; i < 5; i++) Assert.That(d[i] - d[i - 1], Is.GreaterThan(0.012f), $"yaprak {i} ayrışmıyor");
+        }
+
+        [Test]
+        public void PetalDelay_NegativeMaxIsTreatedAsZero()
+        {
+            Assert.That(FlowerBloomMath.PetalDelay(3, true, -1f, -1f), Is.EqualTo(0f));
+        }
     }
 }

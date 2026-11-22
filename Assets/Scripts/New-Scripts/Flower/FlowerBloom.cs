@@ -53,6 +53,7 @@ namespace New_Scripts.Flower
             public int Layer;
             public int Index;
             public float Seed;
+            [NonSerialized] public float Delay;   // şu anki zaman gecikmesi (sn)
         }
 
         /// <summary>İplik tacının bir halkası: şerit boyutları, yerleşimi ve kapalı/açık duruşu.</summary>
@@ -93,6 +94,12 @@ namespace New_Scripts.Flower
         [SerializeField, Range(0f, 0.6f)] private float layerDelay = 0.25f;
         [Tooltip("Aynı katmanda altın oran sırasıyla yapraklar arası yayılma (açılma değerinin oranı).")]
         [SerializeField, Range(0f, 0.5f)] private float indexStagger = 0.15f;
+
+        [Header("Yaprak gecikmesi (zaman)")]
+        [Tooltip("Açılışta yapraklar altın oran sırasıyla 0..bu kadar saniye gecikmeyle açılır (açılma yayı yaprakları aynı anda açıyordu).")]
+        [SerializeField, Range(0f, 0.3f)] private float petalOpenDelay = 0.12f;
+        [Tooltip("Kapanışta yapraklar 0..bu kadar saniye gecikmeyle kapanır. Snap sert kalsın diye küçük tutulur.")]
+        [SerializeField, Range(0f, 0.1f)] private float petalCloseDelay = 0.03f;
 
         [Header("Yaylar")]
         [Tooltip("Açılış yayı. ζ = damping / (2·√stiffness): 180/14,8 -> ζ≈0,55, ~%12 aşım, ~0,5 sn yerleşme.")]
@@ -238,6 +245,8 @@ namespace New_Scripts.Flower
         private float _warn;
         private float _hint;
         private float _hintCycles;
+        private float _clock;
+        private readonly FlowerOpenDelayLine _delayLine = new FlowerOpenDelayLine();
         private float _haloT = -1f;
         private float _tremblePhase;
         private float _anticipateLeft;
@@ -302,6 +311,7 @@ namespace New_Scripts.Flower
             _pop = new UiSpring(popStiffness, popDamping) { Value = value >= centerRevealAt ? 1f : 0f, Target = value >= centerRevealAt ? 1f : 0f };
             _haloT = -1f;
             open = value;
+            ResetPetalDelays(value);
         }
 
         private void BeginDrive(float stiffness, float damping, float target)
@@ -318,6 +328,29 @@ namespace New_Scripts.Flower
             EnsureCoronaMeshes();
             _spring = new UiSpring(openStiffness, openDamping) { Value = open, Target = open };
             _pop = new UiSpring(popStiffness, popDamping);
+            ResetPetalDelays(open);
+        }
+
+        private void ResetPetalDelays(float value)
+        {
+            _clock = 0f;
+            _delayLine.Reset(0f, value);
+            foreach (var p in petals)
+                if (p != null) p.Delay = 0f;
+        }
+
+        // Her yaprak açılma değerini kendi gecikmesi kadar eski okur. Gecikme yönle değişir (açılış uzun, kapanış kısa);
+        // yön, değer durağanken (kapalı bekleme, açık faz) değişir, bu yüzden gecikmenin aniden değişmesi görünmez.
+        private void StepPetalDelays(float dt)
+        {
+            if (!Application.isPlaying || !_driven) return;
+            _clock += dt;
+            _delayLine.Push(_clock, open);
+            foreach (var p in petals)
+            {
+                float target = FlowerBloomMath.PetalDelay(p.Index, _wantOpen, petalOpenDelay, petalCloseDelay);
+                p.Delay = target;
+            }
         }
 
         private void Update()
@@ -335,6 +368,7 @@ namespace New_Scripts.Flower
                 _spring.Step(dt);
                 open = _spring.Value;
             }
+            StepPetalDelays(dt);
 
             // Orta: açılma eşiğini geçince pop yayıyla büyür; kapanınca anında sıfırlanmaya yakın küçülür.
             float popTarget = open >= centerRevealAt ? 1f : 0f;
@@ -543,7 +577,11 @@ namespace New_Scripts.Flower
             float roundness = hasRoundness ? petalMaterial.GetFloat(RoundnessId) : 0f;
             foreach (var p in petals)
             {
-                float prog = FlowerBloomMath.PetalProgress(oc, p.Layer, layerCount, p.Index, layerDelay, indexStagger);
+                // Sürücü modunda yaprak kendi gecikmesiyle eski açılma değerini okur; editörde / sürücüsüz doğrudan open.
+                float ocp = Application.isPlaying && _driven && p.Delay > 0f
+                    ? Mathf.Clamp01(_delayLine.Sample(_clock - p.Delay))
+                    : oc;
+                float prog = FlowerBloomMath.PetalProgress(ocp, p.Layer, layerCount, p.Index, layerDelay, indexStagger);
 
                 // Kapalıyken yaprak tabanları eksene toplanır (rulolar ortayı örter), açılırken çekirdeğin kenarına açılır.
                 float baseRadius = coreRadius * Mathf.Lerp(closedBaseRadius, 0.9f, prog);

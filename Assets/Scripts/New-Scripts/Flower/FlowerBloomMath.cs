@@ -32,6 +32,14 @@ namespace New_Scripts.Flower
         }
 
         /// <summary>
+        /// Yaprağın zaman alanındaki gecikmesi (saniye): altın oran sırası × en geç yaprağın gecikmesi. Açılışta yapraklar
+        /// <paramref name="openMax"/> içinde art arda açılır, kapanışta <paramref name="closeMax"/> içinde (snap sert olmalı).
+        /// Sıra açılış ve kapanışta aynıdır, 0. yaprağın gecikmesi sıfırdır.
+        /// </summary>
+        public static float PetalDelay(int index, bool opening, float openMax, float closeMax) =>
+            PetalRank(index) * Mathf.Max(0f, opening ? openMax : closeMax);
+
+        /// <summary>
         /// Kapalı halde "şimdi açılacak" ipucunun tomurcuk çekirdeğine çarpanı (≥ 1). <paramref name="cycles"/> ipucu başından beri
         /// atılan nabız sayısıdır (0'da dalga 0, yani ipucu yumuşak başlar); nabzın genliği ipucuyla (0..1) büyür, en çok
         /// <paramref name="swell"/> kadar şişer. İpucu yokken tam 1.

@@ -27,7 +27,7 @@ Material:
     m_Floats:
     - _BaseCurl: 0.6
     - _CutShadowDepth: 0.02
-    - _CutShadowPx: 3
+    - _CutShadowPx: 4
     - _CutShadowWarnMul: 1
     - _Length: 1
     - _Pitch: 0.25
@@ -36,6 +36,7 @@ Material:
     - _Roundness: 0.62
     - _Shape: 1.35
     - _Soft: 0.25
+    - _TipSkew: 0
     - _Turn: 7
     - _Warn: 0
     - _Width: 0.55

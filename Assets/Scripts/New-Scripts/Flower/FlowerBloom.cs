@@ -35,6 +35,12 @@ namespace New_Scripts.Flower
         private static readonly int BaseRadiusId = Shader.PropertyToID("_BaseRadius");
         private static readonly int BaseHeightId = Shader.PropertyToID("_BaseHeight");
         private static readonly int DashesId = Shader.PropertyToID("_Dashes");
+        private static readonly int InnerColId = Shader.PropertyToID("_InnerCol");
+        private static readonly int GapColId = Shader.PropertyToID("_GapCol");
+        private static readonly int TipColId = Shader.PropertyToID("_TipCol");
+        private static readonly int Band1Id = Shader.PropertyToID("_Band1");
+        private static readonly int Band2Id = Shader.PropertyToID("_Band2");
+        private static readonly int TowerAngleId = Shader.PropertyToID("_TowerAngle");
         private static readonly int CoreRadiusId = Shader.PropertyToID("_CoreRadius");
         private static readonly int RingId = Shader.PropertyToID("_Ring");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
@@ -69,6 +75,16 @@ namespace New_Scripts.Flower
             [Tooltip("Boy boyunca eğrilik, açıkken / kapalıyken (radyan / boy birimi).")]
             public float openCurl = 0.4f;
             public float closedCurl = 1.4f;
+            [Header("Boya: boyuna üç bant (iç / boşluk / uç)")]
+            public Color innerColor = new Color(0.898f, 0.914f, 1f, 1f);
+            public Color gapColor = new Color(0.898f, 0.914f, 1f, 1f);
+            public Color tipColor = new Color(0.188f, 0.216f, 0.471f, 1f);
+            [Tooltip("İç bandın bittiği yer (şerit boyunun oranı). 1 = tüm şerit iç renk.")]
+            [Range(0.05f, 1f)] public float band1 = 0.62f;
+            [Tooltip("Boşluk bandının bittiği yer; band1'e eşitse boşluk bandı yok.")]
+            [Range(0.05f, 1f)] public float band2 = 0.62f;
+            [Tooltip("Uyarıda iç renk uyarı rengine kayar (mockup'ta iç halka).")]
+            public bool warnTint;
         }
 
         [Header("Açılma")]
@@ -101,6 +117,12 @@ namespace New_Scripts.Flower
         [Header("Top-down hareket")]
         [Tooltip("Kapalıdan açığa çiçeğin kendi ekseninde dönüşü (derece). Açılırken çözülür, overshoot'ta ters yöne taşar.")]
         [SerializeField] private float openTwist = 22f;
+        [Tooltip("Çiçeğin kendi ekseninde sabit dönüşü (derece). -90: bir yaprak yukarı bakar (mockup'taki duruş). Kule yönü bunu iptal eder.")]
+        [SerializeField] private float orientationDeg = -90f;
+        [Tooltip("Merkez kulenin ölçeği (çekirdek yarıçapının oranı). Kule diski mockup'ta petal boyunun ~%14'ü; organ uçları diskin dışında durur.")]
+        [SerializeField, Range(0.3f, 1.2f)] private float towerScale = 0.5f;
+        [Tooltip("İplik tacı varken merkez kulenin yüksekliği: iplik şeritlerinin üstünde durur (organ uçları şeritleri örter). Taç yoksa 0.02.")]
+        [SerializeField, Min(0f)] private float towerHeight = 0.5f;
         [Tooltip("Overshoot'ta (open > 1) her +1 için yaprakların ekstra yatma açısı (derece).")]
         [SerializeField] private float overshootPitch = 24f;
         [Tooltip("Overshoot'ta her +1 için çiçeğin ekstra büyümesi.")]
@@ -119,10 +141,10 @@ namespace New_Scripts.Flower
 
         [Header("Uyarı halkası")]
         [Tooltip("Kapanış uyarısında çiçeğin etrafında yanıp sönen kesikli halkanın yarıçapı (petal boyu birimi; çiçeğin dışında kalmalı).")]
-        [SerializeField, Min(0.5f)] private float warnRingRadius = 1.35f;
-        [SerializeField, Range(4, 24)] private int warnRingDashes = 12;
+        [SerializeField, Min(0.5f)] private float warnRingRadius = 1.065f;
+        [SerializeField, Range(4, 24)] private int warnRingDashes = 16;
         [Tooltip("Halka kalınlığı (halo quad yarıçapının oranı).")]
-        [SerializeField, Range(0.02f, 0.3f)] private float warnRingWidth = 0.09f;
+        [SerializeField, Range(0.02f, 0.3f)] private float warnRingWidth = 0.04f;
         [Tooltip("Yanıp sönme hızı (Hz). Erişilebilirlik için 3'e kırpılır (FlowerWarnMath.MaxBlinkHz).")]
         [SerializeField, Range(0.5f, 3f)] private float warnBlinkHz = 2f;
 
@@ -130,9 +152,9 @@ namespace New_Scripts.Flower
         [SerializeField, Min(3)] private int petalCount = 5;
         [SerializeField, Range(1, 4)] private int layerCount = 1;
         [SerializeField, Min(0.05f)] private float coreRadius = 0.22f;
-        [SerializeField, Min(0.05f)] private float petalLength = 1f;
+        [SerializeField, Min(0.05f)] private float petalLength = 0.95f;
         [Tooltip("Yaprak eni. Kâğıt çiçekte 5 geniş yaprak komşusuyla hafifçe örtüşür.")]
-        [SerializeField, Min(0.05f)] private float petalWidth = 1f;
+        [SerializeField, Min(0.05f)] private float petalWidth = 0.48f;
         [Tooltip("Elle kesim: her yaprağın boy, en ve uç yatıklığı kendi Seed'inden gelir (FlowerCutMath). Kapatınca yapraklar eşit olur.")]
         [SerializeField] private bool handCut = true;
         [Tooltip("Her iç katmanın boy çarpanı.")]
@@ -189,15 +211,23 @@ namespace New_Scripts.Flower
         [SerializeField, Range(3, 16)] private int coronaStrips = 10;
         [Tooltip("Açılma değeri bu eşiği geçince taç açılmaya başlar (yapraklar önce açılır).")]
         [SerializeField, Range(0f, 0.9f)] private float coronaOpenStart = FlowerCoronaMath.DefaultOpenStart;
+        [Tooltip("Uyarıda iç halkanın kayacağı renk.")]
+        [SerializeField] private Color coronaWarnColor = new Color(1f, 0.788f, 0.302f, 1f);
+        [Tooltip("Dış halka: soluk taban bandı + koyu uç bandı (K4 mockup'ı, R = 4.5 birim = 1 nesne birimi).")]
         [SerializeField] private CoronaRing coronaOuter = new CoronaRing
         {
-            phase = 0f, length = 0.55f, width = 0.14f, baseRadius = 0.3f, baseHeight = 0.3f,
-            openPitchDeg = 20f, closedPitchDeg = 70f, openCurl = 0.4f, closedCurl = 1.4f
+            phase = 0f, length = 0.564f, width = 0.138f, baseRadius = 0.156f, baseHeight = 0.3f,
+            openPitchDeg = 10f, closedPitchDeg = 70f, openCurl = 0.15f, closedCurl = 1.4f,
+            innerColor = new Color(0.898f, 0.914f, 1f, 1f), gapColor = new Color(0.898f, 0.914f, 1f, 1f),
+            tipColor = new Color(0.188f, 0.216f, 0.471f, 1f), band1 = 0.62f, band2 = 0.62f, warnTint = false
         };
+        [Tooltip("İç halka: kısa, kobalt, dış halkayla dişli.")]
         [SerializeField] private CoronaRing coronaInner = new CoronaRing
         {
-            phase = 0.5f, length = 0.32f, width = 0.11f, baseRadius = 0.2f, baseHeight = 0.4f,
-            openPitchDeg = 40f, closedPitchDeg = 75f, openCurl = 0.6f, closedCurl = 1.6f
+            phase = 0.5f, length = 0.244f, width = 0.111f, baseRadius = 0.156f, baseHeight = 0.4f,
+            openPitchDeg = 10f, closedPitchDeg = 75f, openCurl = 0.15f, closedCurl = 1.6f,
+            innerColor = new Color(0.082f, 0.212f, 0.910f, 1f), gapColor = new Color(0.082f, 0.212f, 0.910f, 1f),
+            tipColor = new Color(0.082f, 0.212f, 0.910f, 1f), band1 = 1f, band2 = 1f, warnTint = true
         };
 
         [SerializeField, HideInInspector] private MeshRenderer[] coronaRenderers;
@@ -507,7 +537,7 @@ namespace New_Scripts.Flower
             // Tüm çiçek: kendi ekseninde dönüş (açılırken çözülür, overshoot'ta ters yöne taşar), overshoot büyümesi,
             // anticipation büzülmesi ve uyarı titremesi.
             float twist = openTwist * (1f - open);
-            model.localRotation = Quaternion.Euler(-viewTilt, 0f, 0f) * Quaternion.Euler(0f, twist, 0f);
+            model.localRotation = Quaternion.Euler(-viewTilt, 0f, 0f) * Quaternion.Euler(0f, twist + orientationDeg, 0f);
             model.localScale = Vector3.one * Mathf.Max(0.1f, 1f + over * overshootScale - under * 0.6f);
             float tr = _warn * trembleAmplitude;
             model.localPosition = new Vector3(Mathf.Sin(_tremblePhase) * tr, Mathf.Cos(_tremblePhase * 1.31f) * tr, petalLength * depthBehind);
@@ -563,12 +593,14 @@ namespace New_Scripts.Flower
             // Kapalıyken küçük bir tomurcuk çekirdeği (budScale) görünür; açılınca sarıya dönüp pop yapar.
             float pop = _pop.Value;
             float popScale = pop <= 1f ? Mathf.Lerp(budScale, 1f, Mathf.Max(0f, pop)) : pop;
-            float diameter = coreRadius * 2f / fill * popScale * pulse;
+            float diameter = coreRadius * 2f / fill * popScale * pulse * towerScale;
             centerRenderer.transform.localScale = new Vector3(diameter, diameter, 1f);
+            centerRenderer.transform.localPosition = new Vector3(0f, coronaMaterial != null ? towerHeight : 0.02f, 0f);
 
             _block.Clear();
             _block.SetFloat(WarnId, _warn);
             _block.SetFloat(RevealId, pop);
+            _block.SetFloat(TowerAngleId, -orientationDeg);
             centerRenderer.SetPropertyBlock(_block);
 
             // Halka: açılışta yarıçap ease-out ile büyür, alfa söner. Uyarıda aynı renderer kesikli amber halkaya döner
@@ -627,6 +659,20 @@ namespace New_Scripts.Flower
                 _block.SetFloat(BaseRadiusId, ring.baseRadius * pose.Radius);
                 _block.SetFloat(BaseHeightId, ring.baseHeight * pose.Height);
                 _block.SetFloat(WarnId, _warn);
+
+                Color inner = ring.innerColor, gap = ring.gapColor;
+                if (ring.warnTint)
+                {
+                    float k = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.2f, 0.6f, _warn));
+                    inner = Color.Lerp(inner, coronaWarnColor, k);
+                    gap = Color.Lerp(gap, coronaWarnColor, k);
+                }
+
+                _block.SetColor(InnerColId, inner);
+                _block.SetColor(GapColId, gap);
+                _block.SetColor(TipColId, ring.warnTint ? inner : ring.tipColor);
+                _block.SetFloat(Band1Id, ring.band1);
+                _block.SetFloat(Band2Id, ring.band2);
                 mr.SetPropertyBlock(_block);
             }
         }

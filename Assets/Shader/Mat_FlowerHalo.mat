@@ -26,8 +26,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha: 0
-    - _Casing: 0.025
-    - _DashFill: 0.6
+    - _Casing: 0.014
+    - _DashFill: 0.66
     - _Dashes: 0
     - _Ring: 0.3
     - _Width: 0.12

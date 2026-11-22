@@ -26,9 +26,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _BaseCurl: 0.4
+    - _BaseHeight: 0.3
     - _BaseRadius: 0.2
     - _CutShadowDepth: 0.02
-    - _CutShadowPx: 3
+    - _CutShadowPx: 4
     - _CutShadowWarnMul: 1
     - _Length: 0.6
     - _Pitch: 0.25

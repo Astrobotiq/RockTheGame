@@ -396,6 +396,51 @@ namespace RockTheGame.Tests.PlayMode
             AssertNothingMoved(rig, "duvar tırmanmak");
         }
 
+        // ---- Geri bildirim (kural değil, TP4) ----
+
+        [UnityTest]
+        public IEnumerator FB1_SoundPlaysOncePerDash_NotOncePerPhysicsStep_AndNotWhenNothingMoves()
+        {
+            yield return LandOnFloor();
+            Rect body = PlayerRect();
+
+            var channel = ScriptableObject.CreateInstance<New_Scripts.Audio.AudioCuePlayEventChannelSO>();
+            var cue = ScriptableObject.CreateInstance<New_Scripts.Audio.AudioCueSO>();
+            int plays = 0;
+            channel.OnPlayRequested += (c, p) => plays++;
+
+            // Hiç hücreye değmeyen ilk dash: ses yok.
+            var rig = SpawnPair(new Vector2(body.xMin + 40f, body.yMin - 1f), new Vector2(body.xMin + 50f, body.yMin - 1f));
+            SetField(rig.Pair, "sfxPlayChannel", channel);
+            SetField(rig.Pair, "swapCue", cue);
+            yield return Dash(Vector2.right, _ => { });
+            yield return WaitForGround();
+            Assert.AreEqual(0, plays, "hücre taşınmadı, ses çalmamalı");
+
+            // Bloğun içinden geçen dash: onlarca fizik adımında hücre taşınır ama ses bir kez.
+            yield return ResetPlayerAt(Origin);
+            yield return WaitForGround();
+            body = PlayerRect();
+            rig.FrameA.position = OriginForBodyRows(body, 1.5f);
+            Physics2D.SyncTransforms();
+
+            yield return Dash(Vector2.right, _ => { });
+            yield return WaitFixedSteps(2);
+            Assert.Greater(rig.Grid.CountSolid(SwapBlockSide.B), 0);
+            Assert.AreEqual(1, plays, "bir dash = bir ses");
+
+            // İkinci dash yeni bir dash: yine bir ses.
+            yield return WaitForGround();
+            Rect now = PlayerRect();
+            rig.FrameB.position = new Vector2(now.xMin + 1.5f, now.yMin - 8 * Cell); // şerit tam önünde
+            Physics2D.SyncTransforms();
+            yield return Dash(Vector2.right, _ => { });
+            Assert.AreEqual(2, plays, "ikinci dash ayrı bir ses");
+
+            Object.Destroy(channel);
+            Object.Destroy(cue);
+        }
+
         // ---- SB5 ----
 
         [UnityTest]

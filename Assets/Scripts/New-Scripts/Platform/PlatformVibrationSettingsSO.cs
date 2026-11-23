@@ -11,5 +11,9 @@ namespace New_Scripts.Platform
 
         [Header("Breakable Platform Profiles")]
         public ContinuousRumbleProfile BreakablePlatformProfile;
+
+        [Header("Swap Block Profiles")]
+        [Tooltip("Bir dash takas bloğundan hücre taşıdığında dash başına bir kez.")]
+        public RumbleProfile SwapBlockProfile;
     }
 }

@@ -1,0 +1,8 @@
+Takas blogu (SwapBlockPair) sesleri.
+
+maximize_007.wav, minimize_007.wav
+  Paket : Kenney "Interface Sounds" 1.0 (www.kenney.nl), 11-02-2020
+  Lisans: CC0 1.0 (LICENSE-Kenney.txt), atif zorunlu degil
+  Kaynak: https://github.com/Calinou/kenney-interface-sounds (addons/kenney_interface_sounds/)
+          kenney.nl botlara 403 verdigi icin ayni paketin CC0 GitHub paketlemesinden alindi.
+  Degisiklik yok (orijinal 44.1 kHz WAV).

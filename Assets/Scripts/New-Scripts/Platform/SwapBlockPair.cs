@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using New_Scripts.Audio;
 using New_Scripts.Death;
 using New_Scripts.Player;
 using New_Scripts.Player.States;
@@ -38,9 +39,32 @@ namespace New_Scripts.Platform
         [Tooltip("KinematicPhysicsHandler.skinWidth ile aynı olmalı: dash'in önündeki skin kadar mesafe de oyulur.")]
         [SerializeField] private float skinWidth = 0.02f;
 
+        [Header("Görünüm (ilk sürüm, son sanat değil)")]
+        [Tooltip("Pembe/mavi tile asset'lerinin rengiyle aynı tutulur: çerçeve çizgisi ve sönen hayalet hücre bunu kullanır.")]
+        [SerializeField] private Color pinkColor = new Color(1f, 0.35f, 0.7f);
+        [SerializeField] private Color blueColor = new Color(0.3f, 0.55f, 1f);
+        [Tooltip("Boş çerçeve de okunsun diye çerçeve çizgisi. Boşsa çizgi yok (testler).")]
+        [SerializeField] private Material outlineMaterial;
+        [SerializeField] private float outlineWidth = 0.08f;
+        [Tooltip("Çizgi, çerçeve renginin siyaha bu oranda çekilmiş hali: açık mavi arka planda mavi çerçeve kaybolmasın.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float outlineDarken = 0.45f;
+        [Tooltip("Takas efekti: kaynakta sönen hayalet hücre, hedefte beliren flaş. Boşsa efekt yok. Dünya uzayında, emisyonu kapalı.")]
+        [SerializeField] private ParticleSystem swapFx;
+        [Tooltip("Hayalet hücre ve flaşın ömrü (saniye).")]
+        [SerializeField] private float swapFxLifetime = 0.25f;
+        [SerializeField] private Color arrivalFlashColor = new Color(1f, 1f, 1f, 0.9f);
+
+        [Header("Ses ve titreşim (dash başına bir kez)")]
+        [SerializeField] private AudioCuePlayEventChannelSO sfxPlayChannel;
+        [Tooltip("Klipsiz cue sessizce atlanır.")]
+        [SerializeField] private AudioCueSO swapCue;
+        [SerializeField] private PlatformVibrationSettingsSO vibrationSettings;
+
         private SwapBlockGrid _grid;
         private PlayerController _player;
         private bool _wasDashing;
+        private bool _feedbackPlayedThisDash;
         private TilemapCollider2D _colliderA, _colliderB;
         private CompositeCollider2D _compositeA, _compositeB;
 
@@ -54,6 +78,8 @@ namespace New_Scripts.Platform
             _colliderB = frameB.GetComponent<TilemapCollider2D>();
             _compositeA = frameA.GetComponent<CompositeCollider2D>();
             _compositeB = frameB.GetComponent<CompositeCollider2D>();
+            BuildOutline(frameA, pinkColor);
+            BuildOutline(frameB, blueColor);
             PaintAll();
         }
 
@@ -94,7 +120,11 @@ namespace New_Scripts.Platform
             if (_player == null || _player.PlayerCollider == null || !_player.PlayerCollider.isActiveAndEnabled) return;
 
             bool dashing = _player.CurrentState is DashState && !_player.IsPaused;
-            if (dashing && !_wasDashing) _grid.BeginSweep();
+            if (dashing && !_wasDashing)
+            {
+                _grid.BeginSweep();
+                _feedbackPlayedThisDash = false;
+            }
             _wasDashing = dashing;
 
             Bounds b = _player.PlayerCollider.bounds;
@@ -111,12 +141,15 @@ namespace New_Scripts.Platform
                 SwapBlockSweep.ForPlayer(playerRect, _player.Velocity, Time.fixedDeltaTime, cellSize, skinWidth,
                     out Rect start, out Vector2 delta);
 
-                changed.AddRange(_grid.SwapCells(
+                var fromA = _grid.SwapCells(
                     _grid.CellsInSweptBox(start, delta, FrameOrigin(frameA), cellSize),
-                    SwapBlockSide.A, (c, s) => Occupied(c, s, occupiedRect)));
-                changed.AddRange(_grid.SwapCells(
+                    SwapBlockSide.A, (c, s) => Occupied(c, s, occupiedRect));
+                var fromB = _grid.SwapCells(
                     _grid.CellsInSweptBox(start, delta, FrameOrigin(frameB), cellSize),
-                    SwapBlockSide.B, (c, s) => Occupied(c, s, occupiedRect)));
+                    SwapBlockSide.B, (c, s) => Occupied(c, s, occupiedRect));
+                changed.AddRange(fromA);
+                changed.AddRange(fromB);
+                PlaySwapFeedback(fromA, fromB);
             }
 
             changed.AddRange(_grid.ResolvePending((c, s) => Occupied(c, s, occupiedRect)));
@@ -129,6 +162,63 @@ namespace New_Scripts.Platform
         {
             Vector2 min = FrameOrigin(side == SwapBlockSide.A ? frameA : frameB) + (Vector2)cell * cellSize;
             return new Rect(min, new Vector2(cellSize, cellSize)).Overlaps(playerRect);
+        }
+
+        /// <summary>Çerçevenin dış hattı: dolu ya da boş, hangi çerçevenin nerede durduğu okunsun.</summary>
+        private void BuildOutline(Tilemap frame, Color color)
+        {
+            if (outlineMaterial == null) return;
+            var go = new GameObject("Outline");
+            go.transform.SetParent(frame.transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = false;
+            line.loop = true;
+            float w = cols * cellSize, h = rows * cellSize;
+            line.positionCount = 4;
+            line.SetPositions(new[] { new Vector3(0f, 0f), new Vector3(w, 0f), new Vector3(w, h), new Vector3(0f, h) });
+            line.widthMultiplier = outlineWidth;
+            line.sharedMaterial = outlineMaterial;
+            line.startColor = line.endColor = Color.Lerp(color, Color.black, outlineDarken);
+            line.sortingOrder = 1;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+        }
+
+        /// <summary>
+        /// Taşınan hücrelerde kaynakta kendi renginde sönen bir hayalet, hedefte beliren bir flaş (ParticleSystem, yeni tween
+        /// yok). Ses ve titreşim dash başına bir kez: dash her fizik adımında hücre taşır, hepsi için çalmak yorar.
+        /// </summary>
+        private void PlaySwapFeedback(List<Vector2Int> fromA, List<Vector2Int> fromB)
+        {
+            if (fromA.Count + fromB.Count == 0) return;
+
+            EmitSwapFx(fromA, frameA, frameB, pinkColor);
+            EmitSwapFx(fromB, frameB, frameA, blueColor);
+
+            if (_feedbackPlayedThisDash) return;
+            _feedbackPlayedThisDash = true;
+
+            if (sfxPlayChannel != null && swapCue != null)
+                sfxPlayChannel.RaisePlayEvent(swapCue, _player.PlayerCollider.bounds.center);
+            if (vibrationSettings != null && HapticManager.Instance != null)
+                HapticManager.Instance.Vibrate(vibrationSettings.SwapBlockProfile);
+        }
+
+        private void EmitSwapFx(List<Vector2Int> cells, Tilemap source, Tilemap target, Color sourceColor)
+        {
+            if (swapFx == null || cells.Count == 0) return;
+
+            Vector2 sourceOrigin = FrameOrigin(source), targetOrigin = FrameOrigin(target);
+            var ghost = new ParticleSystem.EmitParams { startColor = sourceColor, startSize = cellSize, startLifetime = swapFxLifetime };
+            var flash = new ParticleSystem.EmitParams { startColor = arrivalFlashColor, startSize = cellSize, startLifetime = swapFxLifetime };
+            foreach (var cell in cells)
+            {
+                Vector2 offset = (cell + new Vector2(0.5f, 0.5f)) * cellSize;
+                ghost.position = sourceOrigin + offset;
+                flash.position = targetOrigin + offset;
+                swapFx.Emit(ghost, 1);
+                swapFx.Emit(flash, 1);
+            }
         }
 
         private void PaintAll()
@@ -174,14 +264,11 @@ namespace New_Scripts.Platform
             if (composite != null) composite.GenerateGeometry();
         }
 
-        private static readonly Color PinkColor = new Color(1f, 0.35f, 0.7f);
-        private static readonly Color BlueColor = new Color(0.3f, 0.55f, 1f);
-
         private void OnDrawGizmos()
         {
             if (frameA == null || frameB == null) return;
-            DrawFrame(frameA, SwapBlockSide.A, PinkColor);
-            DrawFrame(frameB, SwapBlockSide.B, BlueColor);
+            DrawFrame(frameA, SwapBlockSide.A, pinkColor);
+            DrawFrame(frameB, SwapBlockSide.B, blueColor);
         }
 
         private void DrawFrame(Tilemap frame, SwapBlockSide side, Color color)
@@ -214,8 +301,8 @@ namespace New_Scripts.Platform
         private void OnDrawGizmosSelected()
         {
             if (frameA == null || frameB == null) return;
-            DrawGridLines(frameA, new Color(PinkColor.r, PinkColor.g, PinkColor.b, 0.25f));
-            DrawGridLines(frameB, new Color(BlueColor.r, BlueColor.g, BlueColor.b, 0.25f));
+            DrawGridLines(frameA, new Color(pinkColor.r, pinkColor.g, pinkColor.b, 0.25f));
+            DrawGridLines(frameB, new Color(blueColor.r, blueColor.g, blueColor.b, 0.25f));
         }
 
         private void DrawGridLines(Tilemap frame, Color color)

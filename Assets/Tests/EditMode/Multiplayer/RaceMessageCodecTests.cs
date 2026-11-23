@@ -136,6 +136,131 @@ namespace RockTheGame.Tests.Multiplayer
             Assert.AreEqual(s.RightAnchor, r.RightAnchor);
         }
 
+        private static SurfacePose Pose(uint id, float x, float y, float rot) => new SurfacePose(id, new Vector2(x, y), rot);
+
+        private static SnapshotMessage SnapshotWithSurfaces()
+        {
+            var s = FullSnapshot();
+            s.Carrier = Pose(0xDEADBEEFu, 12.5f, -3.25f, 90f);
+            s.LeftNode = Pose(7u, -1.5f, 2.5f, 0f);
+            s.RightNode = Pose(4000000000u, 100f, 200f, 359.5f);
+            return s;
+        }
+
+        private static void AssertPose(SurfacePose? expected, SurfacePose? actual)
+        {
+            Assert.AreEqual(expected.HasValue, actual.HasValue);
+            if (!expected.HasValue) return;
+            Assert.AreEqual(expected.Value.Id, actual.Value.Id);
+            Assert.AreEqual(expected.Value.Position, actual.Value.Position);
+            Assert.AreEqual(expected.Value.Rotation, actual.Value.Rotation);
+        }
+
+        [Test]
+        public void Snapshot_RoundTrips_CarrierAndBothNodes()
+        {
+            var s = SnapshotWithSurfaces();
+
+            var r = RoundTrip<SnapshotMessage>(s);
+
+            AssertPose(s.Carrier, r.Carrier);
+            AssertPose(s.LeftNode, r.LeftNode);
+            AssertPose(s.RightNode, r.RightNode);
+            Assert.AreEqual(s.RightAnchor, r.RightAnchor, "yüzeyler çapa alanlarını bozmaz");
+        }
+
+        [Test]
+        public void Snapshot_RoundTrips_EachSurfaceOnItsOwn()
+        {
+            for (int which = 0; which < 3; which++)
+            {
+                var s = FullSnapshot();
+                var pose = Pose(42u + (uint)which, which, -which, which * 10f);
+                if (which == 0) s.Carrier = pose;
+                if (which == 1) s.LeftNode = pose;
+                if (which == 2) s.RightNode = pose;
+
+                var r = RoundTrip<SnapshotMessage>(s);
+
+                AssertPose(s.Carrier, r.Carrier);
+                AssertPose(s.LeftNode, r.LeftNode);
+                AssertPose(s.RightNode, r.RightNode);
+            }
+        }
+
+        [Test]
+        public void Snapshot_WithoutSurfaces_DecodesAsNull()
+        {
+            var r = RoundTrip<SnapshotMessage>(FullSnapshot());
+
+            Assert.IsNull(r.Carrier);
+            Assert.IsNull(r.LeftNode);
+            Assert.IsNull(r.RightNode);
+        }
+
+        [Test]
+        public void Snapshot_WithAllSurfaces_StaysUnder100Bytes()
+        {
+            Assert.LessOrEqual(RaceMessageCodec.Encode(SnapshotWithSurfaces()).Length, 100);
+        }
+
+        [Test]
+        public void Death_RoundTrips()
+        {
+            var d = RoundTrip<DeathMessage>(new DeathMessage { Killer = Pose(123456u, -8.5f, 40.25f, 45f) });
+
+            AssertPose(Pose(123456u, -8.5f, 40.25f, 45f), d.Killer);
+            Assert.AreEqual(RaceMessageType.Death, d.Type);
+        }
+
+        [Test]
+        public void Leave_RoundTrips_AsSingleByte()
+        {
+            var leave = RoundTrip<LeaveMessage>(new LeaveMessage());
+
+            Assert.AreEqual(RaceMessageType.Leave, leave.Type);
+            Assert.AreEqual(1, RaceMessageCodec.Encode(new LeaveMessage()).Length);
+        }
+
+        [Test]
+        public void ProtocolVersion_IsSix_AfterBubbleBit()
+        {
+            Assert.AreEqual(6, New_Scripts.Multiplayer.RaceProtocol.Version);
+        }
+
+        [Test]
+        public void Snapshot_InBubble_RoundTrips()
+        {
+            Assert.IsTrue(RoundTrip<SnapshotMessage>(new SnapshotMessage { Sequence = 1, InBubble = true }).InBubble);
+            Assert.IsFalse(RoundTrip<SnapshotMessage>(new SnapshotMessage { Sequence = 1, InBubble = false }).InBubble);
+        }
+
+        [Test]
+        public void Snapshot_InBubble_DoesNotDisturbSurfaces()
+        {
+            var original = new SnapshotMessage
+            {
+                Sequence = 9, InBubble = true,
+                Carrier = new SurfacePose(3, new Vector2(1f, 2f), 15f),
+                RightNode = new SurfacePose(7, new Vector2(-4f, 5f), 90f)
+            };
+
+            var result = RoundTrip<SnapshotMessage>(original);
+
+            Assert.IsTrue(result.InBubble);
+            Assert.AreEqual(3u, result.Carrier.Value.Id);
+            Assert.IsFalse(result.LeftNode.HasValue);
+            Assert.AreEqual(7u, result.RightNode.Value.Id);
+        }
+
+        [Test]
+        public void Snapshot_WithoutInBubble_StaysTheSameSize()
+        {
+            // Balon biti, yüzey bayrak baytının boş bitini kullanır; paket büyümez.
+            Assert.AreEqual(RaceMessageCodec.Encode(new SnapshotMessage { Sequence = 1 }).Length,
+                RaceMessageCodec.Encode(new SnapshotMessage { Sequence = 1, InBubble = true }).Length);
+        }
+
         [Test]
         public void Snapshot_EncodedSize_IsAtMost50Bytes()
         {
@@ -226,7 +351,9 @@ namespace RockTheGame.Tests.Multiplayer
             {
                 new HelloMessage { ProtocolVersion = 1, Mode = RaceMode.Race, RaceId = FixedRaceId, PlayerName = "Eren" },
                 new ProgressSyncMessage { RoomId = 5, FlagCount = 1, CapturedRoomIds = new[] { 2, 3, 4 }, ElapsedSeconds = 10f },
-                FullSnapshot()
+                FullSnapshot(),
+                SnapshotWithSurfaces(),
+                new DeathMessage { Killer = Pose(9u, 1f, 2f, 3f) }
             };
 
             foreach (var message in messages)

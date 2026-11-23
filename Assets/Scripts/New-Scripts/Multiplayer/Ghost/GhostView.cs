@@ -1,3 +1,4 @@
+using New_Scripts.Multiplayer.Penalty;
 using UnityEngine;
 
 namespace New_Scripts.Multiplayer.Ghost
@@ -35,6 +36,14 @@ namespace New_Scripts.Multiplayer.Ghost
         private GhostDashFx _dashFx;
         private bool _hasPose;
         private bool _wasShown;
+        private PenaltyBubbleView _bubble;
+        private PenaltyBubbleSettingsSO _bubbleSettings;
+        private float _bubbleSeconds;
+
+        /// <summary>Rakibin ceza balonu şu an hayaletin çevresinde görünüyor.</summary>
+        public bool HasBubble => _bubble != null && !_bubble.IsPopping;
+        // Hayaletteki balon yerel oyuncununkinden soluk: rakibin cezasını göster, ama oyunu kapatma.
+        private const float BubbleAlpha = 0.6f;
 
         /// <summary>Bu kadardan büyük sıçrama ışınlanmadır (ölüm/respawn, ceza): iz temizlenir.</summary>
         private const float TrailClearDistance = 3f;
@@ -107,13 +116,48 @@ namespace New_Scripts.Multiplayer.Ghost
             _eyes?.SetVisible(shown);
             _arms?.Update(_pose.LeftAnchor, _pose.RightAnchor, shown);
             UpdateRopes();
+            RefreshBubble();
+        }
+
+        // Rakip balondayken (ve hayalet görünürken) çevresinde balon durur; balon bitince patlar, hayalet gizlenirse hemen kalkar.
+        private void RefreshBubble()
+        {
+            bool want = ShouldShow && _pose.InBubble;
+            if (want && !HasBubble)
+            {
+                _bubbleSettings ??= PenaltyBubbleSettingsSO.Load();
+                _bubble = PenaltyBubbleView.Create(_bubbleSettings.bubbleRadius, _body, _bubbleSettings.bubbleMaterial, BubbleAlpha);
+                _bubbleSeconds = 0f;
+            }
+            else if (!want && _bubble != null)
+            {
+                if (ShouldShow && HasBubble) _bubble.Pop();
+                else if (HasBubble) DestroyView(_bubble);
+                _bubble = null;
+            }
+
+            if (!HasBubble) return;
+            float scale = PenaltyBubbleMath.InflateScale(_bubbleSeconds / Mathf.Max(0.01f, _bubbleSettings.inflateSeconds),
+                _bubbleSettings.inflateOvershoot);
+            _bubble.Follow(new Vector3(_pose.Position.x, _pose.Position.y, transform.position.z), scale);
+        }
+
+        private static void DestroyView(PenaltyBubbleView view)
+        {
+            if (view == null) return;
+            if (Application.isPlaying) Destroy(view.gameObject); else DestroyImmediate(view.gameObject);
         }
 
         /// <summary>Gözleri pozla günceller; LateUpdate'te, animator EyePosition'ı oynattıktan sonra çağrılır.</summary>
         public void TickEyes(float deltaTime) => _eyes?.Tick(_pose, deltaTime);
 
         /// <summary>Dash kopyalarını ve izi ilerletir (LateUpdate'te; testler doğrudan çağırır).</summary>
-        public void TickEffects(float deltaTime) => _dashFx?.Tick(_pose, ShouldShow, _body, deltaTime);
+        public void TickEffects(float deltaTime)
+        {
+            _dashFx?.Tick(_pose, ShouldShow, _body, deltaTime);
+            _bubbleSeconds += deltaTime;
+            RefreshBubble();
+        }
 
         private void LateUpdate()
         {
@@ -121,7 +165,11 @@ namespace New_Scripts.Multiplayer.Ghost
             TickEffects(Time.deltaTime);
         }
 
-        private void OnDestroy() => _dashFx?.Dispose();
+        private void OnDestroy()
+        {
+            _dashFx?.Dispose();
+            if (_bubble != null) DestroyView(_bubble);
+        }
 
         private void ApplyAnimator(GhostPose pose)
         {

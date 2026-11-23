@@ -1,6 +1,6 @@
 # Toplanabilirler, anahtarlar ve kapılar
 
-*GDD §5.3, §6.2 "Toplanabilirler" ve "Diğer", §12 madde 4. Son kod doğrulaması: 2026-11-14 (HUD sayacı: anahtar halkası gel-git).*
+*GDD §5.3, §6.2 "Toplanabilirler" ve "Diğer", §12 madde 4. Son kod doğrulaması: 2026-11-24 (ceza sonrası anahtar–kapı sıfırlama; açık başlayan kapılar).*
 
 ## Tasarım niyeti
 
@@ -80,3 +80,4 @@ Prefab: `PineapplePartManager` (+ `Collectable-Pineaplle-Part Variant` parçalar
 4. **Slingshot yenileyici her zaman yeniden doğuyor.** 3 sn sonra aynı yerden tekrar alınabilir; aynı noktada döngü kurulabilir. Bilinçli olabilir ama seviye tasarımında hesaba katılmalı.
 5. **`KeyShardEffect` boş.** Parçanın anahtar olduğunu bildiren şey efekt değil, parçanın bir `RoomKeyManager` listesinde olması.
 6. **Kapı ilk durumu collider'ın kendi durumuna güveniyor.** `startOpen: false` iken `Awake`'teki `Close()` erken döner (`IsOpen` zaten false) ve collider'a dokunmaz. Kapalı başlaması gereken bir kapının collider'ı prefab'da kapalı bırakılırsa kapı açık davranır.
+7. **Multiplayer cezası odayı "ilk giriş" hâline döndürür.** Ceza ölüm değil (`OnDeath` yok) ve anahtarlar checkpoint ile kalıcı olmuş olabilir. `PenaltyHandler`, `RoomStateReset.ResetRoom` ile hedef odayı ve ayrılınan odayı sıfırlar: `RoomKeyManager.ResetForRoomReentry()` her anahtarda `Collectible.ForceReset()` (kalıcılığı da kaldırır) çağırır ve kapıyı `RoomDoor.ResetToInitial()` ile `startOpen` durumuna, sessiz döndürür. `RoomStateReset` ayrıca **açık başlayıp odaya girince arkandan kapanan** kapıları (`RoomDoor.StartsOpen`: oda 9, 10, 21) yeniden açar: oda 9'un kapısı oda 8'in kapısıyla aynı geçitte durur, 9 → 8 cezasında kapalı kalınca oda 8'in anahtarları kapısını açsa da yol tıkalı kalıyordu (24 Kasım playtest). Ananas ve kapalı başlayıp anahtarsız açılan kapılar (oda 17) sıfırlanmaz. Tasarım: [`../multiplayer-ceza-kapi-ve-platform-plani.md`](../multiplayer-ceza-kapi-ve-platform-plani.md).

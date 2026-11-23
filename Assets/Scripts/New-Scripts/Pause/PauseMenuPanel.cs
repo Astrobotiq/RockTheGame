@@ -138,6 +138,9 @@ namespace New_Scripts.Pause
             _age = 0f;
             _selected = 0;
 
+            // Çok oyunculu yarışta Retry kapalı: ölüm sayar ve son checkpoint'e atar, yarışta kaçış yolu olur.
+            SetEnabled(Action.Retry, !PauseManager.IsPauseBlocked);
+
             _open.Value = _open.Target = 1f;
             _open.Velocity = 0f;
 
@@ -164,6 +167,12 @@ namespace New_Scripts.Pause
 
             EnableInputs();
             Apply(0f);
+        }
+
+        private void SetEnabled(Action action, bool enabled)
+        {
+            _slices[(int)action].Enabled = enabled;
+            _enabled[(int)action] = enabled;
         }
 
         private void Hide()
@@ -231,7 +240,8 @@ namespace New_Scripts.Pause
             switch (action)
             {
                 case Action.Quit:
-                    SceneManager.LoadScene(MainMenuSceneName);
+                    // Çok oyunculuda lobiye döner ve rakibe haber verir; tek oyunculuda ana menü.
+                    if (!PauseManager.TryMultiplayerQuit()) SceneManager.LoadScene(MainMenuSceneName);
                     break;
                 case Action.Retry:
                     // Mevcut ölüm/respawn akışı: son checkpoint'te doğar, ölüm sayılır.

@@ -1,0 +1,7 @@
+Balon cezasi (PenaltyHandler, BB5) sesleri. Yer tutucu: kulakla ayarlanacak.
+
+BubbleInflate.wav, BubbleHum.wav, BubblePop.wav
+  Kaynak : generate_penalty_sfx.py (sentez, kayit ya da ucuncu taraf ornek yok; lisans sorunu yok).
+  Format : 44.1 kHz, mono, 16 bit.
+  Hum    : 2,5 sn dikissiz dongu (tum frekanslar tam sayi cevrim); tremolo 1,2 Hz = balon salinimi.
+  Yeniden uretmek icin: python generate_penalty_sfx.py (ayni klasorde), sonra Unity'de reimport.

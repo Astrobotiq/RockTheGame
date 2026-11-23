@@ -53,7 +53,13 @@ Müzik pause'ta çalmaya devam eder (`AudioManager` müzik kaynaklarında `ignor
 
 ## Çok oyunculu
 
-`MultiplayerSession.Create` `PauseManager.Block(session)`, `Shutdown` `Unblock` çağırır. Editor'de NewScene'i doğrudan Play'lemek `MultiplayerDevLauncher` ile oturum açar, bu yüzden **orada pause bilerek çalışmaz**. Tek oyunculu denemek için ana menüden gir ya da oturumu kapat.
+**Çok oyunculuda pause açık (2026-11-24, MPP1/MPP2; gamepad ile denenmedi).** `MultiplayerSession.Create` `PauseManager.Block(session)` + `SetMultiplayerHooks(session, canPause, quit)` çağırır, `Shutdown` `Unblock` (kancaları da temizler). `Block` artık "çok oyunculu oturum var" demek (`IsPauseBlocked`, swing tutorial buna bakar); pause'a izin `PauseRules.IsBlocked(blockerPresent, multiplayerAllows)` ile oturumun kancasından gelir.
+
+- **Ne zaman açık:** yalnız yarış sürerken (`LobbyPhase.Racing`). Geri sayım, yükleme, rakip kopma beklemesi, yerel bitişten sonra ve çıkış başlayınca kapalı. Kopma beklemesi başlarsa açık menü kapanır.
+- **Dünya yerelde durur** (`timeScale 0`). Yarış süresi `unscaledDeltaTime`, paket gönderimi ve 3 sn sessizlik kontrolü gerçek zamanlı: pause avantaj sağlamaz, rakip seni koptu saymaz. Rakibin ekranında hayalet durur. `PenaltyHandler` menü açıkken ceza uygulamaz, menü kapanınca sürer.
+- **Menü:** Retry kapalı (ölüm sayar, kaçış yolu olur), Options zaten pasif. **Quit** ana menü yerine `MultiplayerSession.QuitRace`: rakibe `LeaveMessage` yollar (protokol v5), 0,3 sn sonra `Shutdown` + lobi; lobide "Yarıştan ayrıldın.". Rakip mesajı alınca 30 sn beklemeden lobiye döner ("Rakip yarıştan ayrıldı."); o bitirmişse sonuç ekranı sürer.
+- **Bilinmeyen:** hayalet görünümü `Time.deltaTime` kullanıyor, pause'da donup devamda sıçrayabilir; iki oyunculu denenmedi (MPP3).
+- Editor'de NewScene'i doğrudan Play'lemek `MultiplayerDevLauncher` ile oturum açar; yarış başlayınca orada da pause çalışır.
 
 ## Kod
 

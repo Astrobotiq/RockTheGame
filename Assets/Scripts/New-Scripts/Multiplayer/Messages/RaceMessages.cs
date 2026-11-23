@@ -15,7 +15,9 @@ namespace New_Scripts.Multiplayer.Messages
         Penalty = 5,
         ProgressSync = 6,
         Finished = 7,
-        Ready = 8
+        Ready = 8,
+        Death = 9,
+        Leave = 10
     }
 
     public enum RaceMode : byte
@@ -63,8 +65,44 @@ namespace New_Scripts.Multiplayer.Messages
         public bool Teleported;
         /// <summary>Oyuncu görünmüyor (öldü, respawn bekliyor): hayalet gizlenir.</summary>
         public bool IsHidden;
+        /// <summary>Gönderen ceza balonunda taşınıyor (protokol v6): alıcı hayaletin çevresine balon çizer, hız sıçraması ışınlanma sayılmaz.</summary>
+        public bool InBubble;
         public Vector2? LeftAnchor;
         public Vector2? RightAnchor;
+        /// <summary>Gönderenin üstünde durduğu ya da tutunduğu hareketli yüzey (kimlik + gönderenin dünyasındaki poz), yoksa null.</summary>
+        public SurfacePose? Carrier;
+        /// <summary>Sol kolun tutunduğu hareketli node'un (ya da onu taşıyan sürücünün) kimliği ve gönderenin dünyasındaki pozu.</summary>
+        public SurfacePose? LeftNode;
+        public SurfacePose? RightNode;
+    }
+
+    /// <summary>
+    /// Gönderenin dünyasındaki bir hareketli nesnenin kimliği (<c>SceneObjectId</c>) ve o andaki pozu. Alıcı kendi dünyasındaki
+    /// nesneyi değil, nesnenin gönderenin dünyasındaki yerini çizer; çünkü platform fazı her oyuncuda ayrı gider.
+    /// </summary>
+    public readonly struct SurfacePose
+    {
+        public readonly uint Id;
+        public readonly Vector2 Position;
+        /// <summary>Derece, z ekseni.</summary>
+        public readonly float Rotation;
+
+        public SurfacePose(uint id, Vector2 position, float rotation)
+        {
+            Id = id;
+            Position = position;
+            Rotation = rotation;
+        }
+    }
+
+    /// <summary>
+    /// Oyuncu hareketli bir tehlikeye çarpıp öldü (güvenilir kanal). Alıcı tehlikeyi ölüm anındaki pozunda kısa süre gösterir.
+    /// Öldüren bilinmiyorsa ya da sabitse mesaj yollanmaz.
+    /// </summary>
+    public sealed class DeathMessage : IRaceMessage
+    {
+        public RaceMessageType Type => RaceMessageType.Death;
+        public SurfacePose Killer;
     }
 
     public sealed class RoomEnteredMessage : IRaceMessage
@@ -100,6 +138,15 @@ namespace New_Scripts.Multiplayer.Messages
     {
         public RaceMessageType Type => RaceMessageType.Finished;
         public float ElapsedSeconds;
+    }
+
+    /// <summary>
+    /// Oyuncu pause menüsünden yarıştan bilerek çıkıyor (güvenilir kanal). Alıcı 30 sn "koptu, bekleniyor" beklemeden lobiye döner;
+    /// bağlantının kendiliğinden kopmasından (ağ, çökme) ayrılır.
+    /// </summary>
+    public sealed class LeaveMessage : IRaceMessage
+    {
+        public RaceMessageType Type => RaceMessageType.Leave;
     }
 
     /// <summary>Sahne yüklendi, oyuncu donuk bekliyor. İki taraf da Ready görünce ortak geri sayım başlar.</summary>

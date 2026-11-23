@@ -25,6 +25,12 @@ namespace New_Scripts.Multiplayer.Messages
         private const byte LeftAnchorBit = 1 << 0;
         private const byte RightAnchorBit = 1 << 1;
 
+        private const byte CarrierBit = 1 << 0;
+        private const byte LeftNodeBit = 1 << 1;
+        private const byte RightNodeBit = 1 << 2;
+        // İkinci bayrak baytı yüzeylerden artanı da taşır (v6): ayrı bayt eklemek her paketi büyütürdü.
+        private const byte InBubbleBit = 1 << 3;
+
         public static byte[] Encode(IRaceMessage message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
@@ -67,6 +73,10 @@ namespace New_Scripts.Multiplayer.Messages
                     writer.Write(finished.ElapsedSeconds);
                     break;
                 case ReadyMessage _:
+                case LeaveMessage _:
+                    break;
+                case DeathMessage death:
+                    WritePose(writer, death.Killer);
                     break;
                 default:
                     throw new ArgumentException($"Bilinmeyen mesaj tipi: {message.GetType().Name}", nameof(message));
@@ -133,6 +143,12 @@ namespace New_Scripts.Multiplayer.Messages
                     case RaceMessageType.Ready:
                         message = new ReadyMessage();
                         break;
+                    case RaceMessageType.Death:
+                        message = new DeathMessage { Killer = ReadPose(reader) };
+                        break;
+                    case RaceMessageType.Leave:
+                        message = new LeaveMessage();
+                        break;
                     default:
                         return false;
                 }
@@ -189,7 +205,28 @@ namespace New_Scripts.Multiplayer.Messages
             writer.Write(anchors);
             if (s.LeftAnchor.HasValue) { writer.Write(s.LeftAnchor.Value.x); writer.Write(s.LeftAnchor.Value.y); }
             if (s.RightAnchor.HasValue) { writer.Write(s.RightAnchor.Value.x); writer.Write(s.RightAnchor.Value.y); }
+
+            byte surfaces = 0;
+            if (s.Carrier.HasValue) surfaces |= CarrierBit;
+            if (s.LeftNode.HasValue) surfaces |= LeftNodeBit;
+            if (s.RightNode.HasValue) surfaces |= RightNodeBit;
+            if (s.InBubble) surfaces |= InBubbleBit;
+            writer.Write(surfaces);
+            if (s.Carrier.HasValue) WritePose(writer, s.Carrier.Value);
+            if (s.LeftNode.HasValue) WritePose(writer, s.LeftNode.Value);
+            if (s.RightNode.HasValue) WritePose(writer, s.RightNode.Value);
         }
+
+        private static void WritePose(BinaryWriter writer, SurfacePose pose)
+        {
+            writer.Write(pose.Id);
+            writer.Write(pose.Position.x);
+            writer.Write(pose.Position.y);
+            writer.Write(pose.Rotation);
+        }
+
+        private static SurfacePose ReadPose(BinaryReader reader) =>
+            new SurfacePose(reader.ReadUInt32(), new Vector2(reader.ReadSingle(), reader.ReadSingle()), reader.ReadSingle());
 
         private static SnapshotMessage ReadSnapshot(BinaryReader reader)
         {
@@ -216,6 +253,12 @@ namespace New_Scripts.Multiplayer.Messages
             byte anchors = reader.ReadByte();
             if ((anchors & LeftAnchorBit) != 0) s.LeftAnchor = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             if ((anchors & RightAnchorBit) != 0) s.RightAnchor = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+
+            byte surfaces = reader.ReadByte();
+            s.InBubble = (surfaces & InBubbleBit) != 0;
+            if ((surfaces & CarrierBit) != 0) s.Carrier = ReadPose(reader);
+            if ((surfaces & LeftNodeBit) != 0) s.LeftNode = ReadPose(reader);
+            if ((surfaces & RightNodeBit) != 0) s.RightNode = ReadPose(reader);
             return s;
         }
     }

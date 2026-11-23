@@ -12,6 +12,13 @@ namespace New_Scripts.Multiplayer.Save
     {
         public const string FileName = "multiplayer-race.json";
 
+        /// <summary>
+        /// Yarış kaydı sistemi açık mı. Şimdilik kapalı: iki taraf her seferinde yeni yarış başlatsın, "Devam et" uyuşmazlığı
+        /// (<c>RaceLobbyFlow.ResumeMismatch</c>) çıkmasın. Kapalıyken varsayılan yola yazılmaz ve lobi kaydı okumaz;
+        /// açmak için <c>true</c> yapmak yeter, kayıt kodu aynen çalışır. Açık özel yola (testler) etki etmez.
+        /// </summary>
+        public static bool Enabled { get; set; } = false;
+
         public string Path { get; }
 
         private readonly bool _isDefaultPath;
@@ -47,6 +54,7 @@ namespace New_Scripts.Multiplayer.Save
 
         public void Write(RaceSaveData data)
         {
+            if (_isDefaultPath && !Enabled) return;
 #if UNITY_EDITOR
             // Editörde deneme kaydı bırakmamak için menüden kapatılabilir; testlerin verdiği özel yola etki etmez.
             if (_isDefaultPath && !New_Scripts.Multiplayer.Dev.MultiplayerDevSettings.SaveEnabled) return;

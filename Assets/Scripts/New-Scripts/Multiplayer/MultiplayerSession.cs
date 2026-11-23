@@ -42,6 +42,7 @@ namespace New_Scripts.Multiplayer
         private bool _playerFrozen;
         private LocalPlayerBroadcaster _broadcaster;
         private GhostView _ghost;
+        private GhostOutlineView _outline;
         private GhostInterpolator _interpolator = new GhostInterpolator();
         private bool _ghostVisible;
         private readonly List<RaceFlag> _flags = new List<RaceFlag>();
@@ -64,6 +65,8 @@ namespace New_Scripts.Multiplayer
         private RaceFinishLine _finishLine;
         private float _finishedAt = -1f;
         private const float ReturnHintDelaySeconds = 1.5f;
+        /// <summary>Quit'te <see cref="LeaveMessage"/>'ın Disconnect'ten önce yola çıkması için bekleme (güvenilir paket Poll'da gider).</summary>
+        private const double LeaveFlushSeconds = 0.3;
 
         public static MultiplayerSession Current { get; private set; }
 
@@ -107,8 +110,10 @@ namespace New_Scripts.Multiplayer
             transport.Disconnected += session.OnDisconnected;
             transport.MessageReceived += session.OnMessage;
             Current = session;
-            // Yarışta dünya durmaz (rakip hayalet akıyor); pause kapalı.
+            // Pause yalnız yarış sürerken açık: dünya yerelde durur ama süre ve paketler gerçek zamanla akar (MPP1).
+            // Quit ana menü yerine lobiye döner ve rakibe haber verir (MPP2).
             New_Scripts.Pause.PauseManager.Block(session);
+            New_Scripts.Pause.PauseManager.SetMultiplayerHooks(session, () => session.CanPauseNow, session.QuitRace);
             return session;
         }
 
@@ -157,7 +162,50 @@ namespace New_Scripts.Multiplayer
             Flow?.Tick(Now);
             UpdateGhost();
             TickRace();
-            if (CanReturnToLobby && ReturnPressed()) ReturnToLobby();
+            if (_exitReason != null && Now >= _exitAt) ExitToLobby();
+            else if (CanReturnToLobby && ReturnPressed()) ReturnToLobby();
+        }
+
+        // ---------------- Yarıştan çıkış (pause menüsü, MPP1/MPP2) ----------------
+
+        private bool _leaving;
+        private string _exitReason;
+        private double _exitAt;
+
+        /// <summary>Pause yalnız yarış sürerken: geri sayımda, yüklemede, kopma beklerken ve bitişten sonra kapalı.</summary>
+        private bool CanPauseNow => !_leaving && Flow != null && Session != null && Flow.Phase == LobbyPhase.Racing &&
+                                    !_watch.IsWaitingForReconnect && !Session.LocalFinished;
+
+        /// <summary>Pause menüsünden Quit: rakibe <see cref="LeaveMessage"/> yollar, paket yola çıksın diye kısa bekleyip lobiye döner.</summary>
+        private void QuitRace()
+        {
+            if (_leaving) return;
+            _leaving = true;
+            Debug.Log("[MP] Yarıştan çıkılıyor (pause menüsü)");
+            Send(new LeaveMessage());
+            _exitReason = "Yarıştan ayrıldın.";
+            _exitAt = Now + LeaveFlushSeconds;
+        }
+
+        /// <summary>
+        /// Rakip bilerek ayrıldı: 30 sn beklemeden lobiye. Ben bitirdiysem sonuç ekranı sürer. Çıkış Update'e ertelenir:
+        /// taşıyıcı kendi olayını işlerken kapatılmasın.
+        /// </summary>
+        private void OnOpponentLeft()
+        {
+            if (_leaving || Session == null || Session.LocalFinished) return;
+            _leaving = true;
+            _exitReason = "Rakip yarıştan ayrıldı.";
+            _exitAt = Now;
+        }
+
+        private void ExitToLobby()
+        {
+            LastExitReason = _exitReason;
+            _exitReason = null;
+            Shutdown();
+            SceneManager.LoadScene(LobbySceneName);
+            Destroy(gameObject);
         }
 
         private static bool ReturnPressed()
@@ -230,10 +278,13 @@ namespace New_Scripts.Multiplayer
             if (_watch.IsWaitingForReconnect) return;
             Debug.LogWarning($"[MP] Rakip koptu ({why}); {ConnectionWatch.ReconnectWindowSeconds:0} sn bekleniyor");
             WriteSave();
+            // Pause menüsü açıksa kapanır: dünya akmalı, oyuncu zaten donduruluyor.
+            if (New_Scripts.Pause.PauseManager.Instance != null) New_Scripts.Pause.PauseManager.Instance.Resume();
             Freeze();
             _watch.BeginReconnectWait(Now);
             _ghostVisible = false;
             if (_ghost != null) _ghost.SetVisible(false);
+            if (_outline != null) _outline.SetVisible(false);
             _reconnectAt = Now;
             if (Transport != null && Transport.State != TransportState.Disconnected) Transport.Disconnect();
         }
@@ -258,7 +309,9 @@ namespace New_Scripts.Multiplayer
         {
             Debug.LogWarning("[MP] Rakip geri dönmedi; yarış kaydedildi, lobiye dönülüyor");
             WriteSave();
-            LastExitReason = "Rakip geri dönmedi; yarış kaydedildi. İkiniz de Devam et ile sürdürebilirsiniz.";
+            LastExitReason = RaceSaveStore.Enabled
+                ? "Rakip geri dönmedi; yarış kaydedildi. İkiniz de Devam et ile sürdürebilirsiniz."
+                : "Rakip geri dönmedi; yarış sona erdi.";
             Shutdown();
             SceneManager.LoadScene(LobbySceneName);
             Destroy(gameObject);
@@ -287,6 +340,7 @@ namespace New_Scripts.Multiplayer
                 // Yeniden bağlanma denemesi tutmadı (zaman aşımı, host henüz dinlemiyor): saniyede bir tekrar.
                 _reconnectAt = Math.Max(_reconnectAt, Now + 1.0);
             }
+            else if (_leaving) Debug.Log("[MP] Yarıştan çıkılıyor; bağlantı kapanması beklenmiyor");
             else if (reason != DisconnectReason.LocalRequest && Flow != null && Flow.Phase != LobbyPhase.Failed)
             {
                 // El sıkışma bittiyse (sahne yükleniyor ya da yarış sürüyor) beklenir; bitmediyse lobi hatayı gösterir.
@@ -320,6 +374,17 @@ namespace New_Scripts.Multiplayer
             if (message is SnapshotMessage snapshot)
             {
                 _interpolator.Add(snapshot, Now);
+                return;
+            }
+            if (message is DeathMessage death)
+            {
+                if (_outline != null) _outline.ShowHazard(death.Killer);
+                return;
+            }
+            if (message is LeaveMessage)
+            {
+                Debug.Log("[MP] ← Leave");
+                OnOpponentLeft();
                 return;
             }
 
@@ -418,8 +483,13 @@ namespace New_Scripts.Multiplayer
                 GhostEyeSourceFactory.ArmsFrom(_player), GhostEyeSourceFactory.DashFrom(_player));
             DontDestroyOnLoad(_ghost.gameObject);
 
+            _outline = GhostOutlineView.Create(_broadcaster.Surfaces, GhostOutlineSettingsSO.Load());
+            DontDestroyOnLoad(_outline.gameObject);
+
             _penalty = PenaltyHandler.Create(Session, _player);
             Session.PenaltyReceived += _penalty.Enqueue;
+            // Rakip, ceza balonundaki oyuncuyu hayaletinde balonla görsün (snapshot InBubble biti).
+            _broadcaster.InBubbleSource = () => _penalty != null && _penalty.IsInBubble;
 
             SetUpFlags();
             SetUpFinish();
@@ -516,7 +586,11 @@ namespace New_Scripts.Multiplayer
             if (_ghost == null || _broadcaster == null || Session == null) return;
 
             bool hasPose = _interpolator.TrySample(Now, out GhostPose pose);
-            if (hasPose) _ghost.Apply(pose);
+            if (hasPose)
+            {
+                _ghost.Apply(pose);
+                if (_outline != null) _outline.SetPresent(pose);
+            }
 
             bool visible = hasPose && Transport != null && Transport.State == TransportState.Connected &&
                            GhostVisibility.IsVisible(Session.OpponentRoomId, _broadcaster.LocalRoomId, _broadcaster.LocalNeighborRoomIds);
@@ -524,6 +598,7 @@ namespace New_Scripts.Multiplayer
             {
                 _ghostVisible = visible;
                 _ghost.SetVisible(visible);
+                if (_outline != null) _outline.SetVisible(visible);
             }
         }
 
@@ -551,6 +626,7 @@ namespace New_Scripts.Multiplayer
             if (_penalty != null && Session != null) Session.PenaltyReceived -= _penalty.Enqueue;
             DestroyOwned(_penalty);
             DestroyOwned(_ghost);
+            DestroyOwned(_outline);
             DestroyOwned(_broadcaster);
             DestroyOwned(_hud);
             DestroyOwned(_finishLine);
@@ -559,6 +635,7 @@ namespace New_Scripts.Multiplayer
             _flags.Clear();
             _penalty = null;
             _ghost = null;
+            _outline = null;
             _broadcaster = null;
             _hud = null;
 

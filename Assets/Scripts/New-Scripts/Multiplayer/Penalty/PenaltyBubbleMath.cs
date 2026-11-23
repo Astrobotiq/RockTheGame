@@ -58,6 +58,26 @@ namespace New_Scripts.Multiplayer.Penalty
             return perpendicular * (amplitude * envelope * wave);
         }
 
+        // Gidiş yönünün yatay bileşeni bundan küçükse (neredeyse düşey) pozun yönü değişmez.
+        private const float PoseDeadZone = 0.2f;
+
+        /// <summary>
+        /// Uçma pozunun hedef açısı (derece, z): gidiş yönüne doğru yatar; sağa gidince saat yönünde (negatif).
+        /// Düşeye yakın giderken sağ-sol belirsiz olduğu için <paramref name="previous"/> korunur.
+        /// </summary>
+        public static float TargetPoseAngle(float directionX, float degrees, float previous)
+        {
+            if (Mathf.Abs(directionX) < PoseDeadZone) return previous;
+            return -Mathf.Sign(directionX) * degrees;
+        }
+
+        /// <summary>Balonun hız yönünde esneme miktarı (0–maxStretch): hızla doğrusal, referans hızda tavan.</summary>
+        public static float StretchAmount(float speed, float referenceSpeed, float maxStretch)
+        {
+            if (referenceSpeed <= 0f) return 0f;
+            return Mathf.Clamp01(speed / referenceSpeed) * maxStretch;
+        }
+
         /// <summary>Kalkış: yukarı ofset, ease-out (hızlı çıkar, yavaşça durur).</summary>
         public static float LiftOffset(float u, float height)
         {

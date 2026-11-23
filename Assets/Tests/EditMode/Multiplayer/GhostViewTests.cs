@@ -37,6 +37,9 @@ namespace RockTheGame.Tests.Multiplayer
         public void TearDown()
         {
             if (_ghost != null) Object.DestroyImmediate(_ghost.gameObject);
+            // Patlayan balon kendini Update'te siler; EditMode'da Update yok.
+            foreach (var bubble in Object.FindObjectsByType<New_Scripts.Multiplayer.Penalty.PenaltyBubbleView>(FindObjectsSortMode.None))
+                Object.DestroyImmediate(bubble.gameObject);
             Object.DestroyImmediate(_source);
         }
 
@@ -285,6 +288,45 @@ namespace RockTheGame.Tests.Multiplayer
             _ghost.Apply(new GhostPose { Position = Vector2.zero });
             _ghost.TickEffects(0.016f);
             Assert.IsFalse(trail.emitting);
+        }
+
+        [Test]
+        public void Apply_InBubble_ShowsABubbleAroundTheGhost_AndPopsItAfterwards()
+        {
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope);
+            _ghost.SetVisible(true);
+            Assert.IsFalse(_ghost.HasBubble);
+
+            _ghost.Apply(new GhostPose { Position = new Vector2(2f, 3f), InBubble = true });
+            Assert.IsTrue(_ghost.HasBubble);
+
+            _ghost.Apply(new GhostPose { Position = new Vector2(2f, 3f), InBubble = false });
+            Assert.IsFalse(_ghost.HasBubble, "balon patlamaya başladıysa artık görünür sayılmaz");
+        }
+
+        [Test]
+        public void Apply_InBubble_ButGhostNotVisible_ShowsNoBubble()
+        {
+            // Rakip başka bir odadaysa hayalet gizli; balonu da görünmez.
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope);
+            _ghost.SetVisible(false);
+
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, InBubble = true });
+
+            Assert.IsFalse(_ghost.HasBubble);
+        }
+
+        [Test]
+        public void SetVisible_False_WhileInBubble_RemovesTheBubble()
+        {
+            _ghost = GhostView.CreateFrom(_body, _animator, _rope);
+            _ghost.SetVisible(true);
+            _ghost.Apply(new GhostPose { Position = Vector2.zero, InBubble = true });
+            Assert.IsTrue(_ghost.HasBubble);
+
+            _ghost.SetVisible(false);
+
+            Assert.IsFalse(_ghost.HasBubble);
         }
 
         [Test]

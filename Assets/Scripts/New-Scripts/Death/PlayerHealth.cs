@@ -13,6 +13,15 @@ namespace New_Scripts.Death
     {
         public event Action OnDeath;
 
+        /// <summary>
+        /// Bu ölümü veren tehlikenin transform'u; <see cref="DeathZone"/> Kill()'den önce yazar, bilinmiyorsa
+        /// (menüden intihar, düşüş) null. Yalnızca <see cref="OnDeath"/> dinleyicileri sırasında geçerli, ardından temizlenir.
+        /// Multiplayer rakibin hayaletine öldüreni bildirmek için okur.
+        /// </summary>
+        public Transform LastKiller { get; private set; }
+
+        public void NoteKiller(Transform killer) => LastKiller = killer;
+
         [Header("VFX Settings")]
         [Tooltip("Eski ölüm partikülü. DeathBurst ayarı atanmışsa kullanılmaz.")]
         [SerializeField] private GameObject deathParticlePrefab;
@@ -44,7 +53,8 @@ namespace New_Scripts.Death
             }
 
             gameObject.SetActive(false);
-            OnDeath?.Invoke();
+            try { OnDeath?.Invoke(); }
+            finally { LastKiller = null; }
         }
 
         /// <summary>

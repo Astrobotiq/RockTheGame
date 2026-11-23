@@ -52,6 +52,14 @@ namespace RockTheGame.Tests
         }
 
         [Test]
+        public void IsBlocked_MultiplayerOpensPauseOnlyWhileRaceRuns()
+        {
+            Assert.IsFalse(PauseRules.IsBlocked(blockerPresent: false, multiplayerAllows: false), "tek oyunculu");
+            Assert.IsTrue(PauseRules.IsBlocked(true, false), "çok oyunculu, yarış sürmüyor (geri sayım, kopma, bitiş)");
+            Assert.IsFalse(PauseRules.IsBlocked(true, true), "çok oyunculu, yarış sürüyor");
+        }
+
+        [Test]
         public void CanPause_RequiresActiveIdleUnblockedPlayer()
         {
             Assert.IsTrue(PauseRules.CanPause(playerActive: true, playerBusy: false, inTransition: false, blocked: false));

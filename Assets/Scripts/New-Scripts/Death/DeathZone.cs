@@ -18,6 +18,7 @@ namespace New_Scripts.Death
         {
             if (other.TryGetComponent(out IKillable killableEntity))
             {
+                if (other.TryGetComponent(out PlayerHealth health)) health.NoteKiller(transform);
                 try { Killing?.Invoke(other); }
                 finally { killableEntity.Kill(); }
                 Killed?.Invoke(other);

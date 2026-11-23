@@ -283,6 +283,46 @@ namespace RockTheGame.Tests.Multiplayer
             Assert.IsFalse(float.IsNaN(w.x) || float.IsNaN(w.y));
         }
 
+        // ---------- Uçma pozu ----------
+
+        [Test]
+        public void PoseAngle_LeansIntoTheTravelDirection()
+        {
+            Assert.AreEqual(-70f, PenaltyBubbleMath.TargetPoseAngle(1f, 70f, 0f), 0.0001f, "sağa uçarken saat yönünde");
+            Assert.AreEqual(70f, PenaltyBubbleMath.TargetPoseAngle(-1f, 70f, 0f), 0.0001f, "sola uçarken saat yönünün tersi");
+        }
+
+        [Test]
+        public void PoseAngle_NearlyVerticalTravel_KeepsThePreviousAngle()
+        {
+            // Düşey süzülmede sağ-sol belirsiz; pozu bir o yana bir bu yana çevirme.
+            Assert.AreEqual(70f, PenaltyBubbleMath.TargetPoseAngle(0.05f, 70f, 70f), 0.0001f);
+            Assert.AreEqual(-70f, PenaltyBubbleMath.TargetPoseAngle(-0.05f, 70f, -70f), 0.0001f);
+        }
+
+        [Test]
+        public void PoseAngle_ZeroDegrees_IsAlwaysUpright()
+        {
+            Assert.AreEqual(0f, PenaltyBubbleMath.TargetPoseAngle(1f, 0f, 0f), 0.0001f);
+        }
+
+        // ---------- Esneme ----------
+
+        [Test]
+        public void Stretch_GrowsWithSpeed_AndIsCapped()
+        {
+            Assert.AreEqual(0f, PenaltyBubbleMath.StretchAmount(0f, 60f, 0.15f), 0.0001f);
+            Assert.AreEqual(0.075f, PenaltyBubbleMath.StretchAmount(30f, 60f, 0.15f), 0.0001f);
+            Assert.AreEqual(0.15f, PenaltyBubbleMath.StretchAmount(60f, 60f, 0.15f), 0.0001f);
+            Assert.AreEqual(0.15f, PenaltyBubbleMath.StretchAmount(500f, 60f, 0.15f), 0.0001f, "hız ne olursa olsun üst sınır");
+        }
+
+        [Test]
+        public void Stretch_ZeroReferenceSpeed_IsZeroNotNaN()
+        {
+            Assert.AreEqual(0f, PenaltyBubbleMath.StretchAmount(30f, 0f, 0.15f), 0.0001f);
+        }
+
         // ---------- Kalkış ve şişme ----------
 
         [Test]

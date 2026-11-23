@@ -124,6 +124,22 @@ namespace New_Scripts.Collectible
             }
         }
 
+        /// <summary>
+        /// Odaya "ilk kez giriliyormuş" gibi döner (multiplayer cezası): anahtarlar toplanmamış ve kalıcı değil,
+        /// kapı <c>startOpen</c> durumunda. Ses çalmaz. Ölümdeki <see cref="HandlePlayerDeath"/>'ten farkı:
+        /// kalıcı (committed) anahtarları da geri verir.
+        /// </summary>
+        public void ResetForRoomReentry()
+        {
+            foreach (var key in keys)
+            {
+                if (key != null) key.ForceReset();
+            }
+
+            if (door != null) door.ResetToInitial();
+            wasActionExecuted = false;
+        }
+
         private void HandlePlayerDeath()
         {
             // Eğer aksiyon çalışmışsa ama tüm anahtarlar henüz checkpoint ile kalıcı (committed) yapılmadıysa kapıyı eski haline döndür

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfeb19860f467bb41917b0ff336a6020, type: 3}
+  m_Name: GhostOutlineSettings
+  m_EditorClassIdentifier: RockTheGame.Multiplayer::New_Scripts.Multiplayer.Ghost.GhostOutlineSettingsSO
+  dashMaterial: {fileID: 2100000, guid: e44329c205fe277419478c289b6c4895, type: 2}
+  color: {r: 1, g: 0.965, b: 0.878, a: 1}
+  maxAlpha: 1
+  widthPixels: 5
+  dashPixels: 14
+  gapPixels: 9
+  enterSeconds: 0.1
+  lingerSeconds: 0.4
+  fadeSeconds: 0.2
+  minLocalDistance: 0.25
+  hazardSeconds: 0.6
+  hazardFadeSeconds: 0.2

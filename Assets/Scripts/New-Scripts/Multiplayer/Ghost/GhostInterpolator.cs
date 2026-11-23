@@ -19,8 +19,14 @@ namespace New_Scripts.Multiplayer.Ghost
         public bool IsWallSliding;
         public byte DashCount;
         public bool IsHidden;
+        /// <summary>Rakip ceza balonunda: hayaletin çevresine balon çizilir.</summary>
+        public bool InBubble;
         public Vector2? LeftAnchor;
         public Vector2? RightAnchor;
+        /// <summary>Rakibin üstünde durduğu hareketli yüzey, rakibin dünyasındaki pozuyla (MPG3 konturu).</summary>
+        public SurfacePose? Carrier;
+        public SurfacePose? LeftNode;
+        public SurfacePose? RightNode;
     }
 
     /// <summary>
@@ -113,11 +119,25 @@ namespace New_Scripts.Multiplayer.Ghost
         {
             GhostPose pose = ToPose(older);
             pose.Position = Vector2.Lerp(older.Position, newer.Position, t);
+            pose.InBubble = newer.InBubble; // balon başlangıcı/patlaması anlıktır, ara değeri yok
             pose.Speed = Mathf.Lerp(older.Speed, newer.Speed, t);
             pose.VerticalVelocity = Mathf.Lerp(older.VerticalVelocity, newer.VerticalVelocity, t);
             pose.LeftAnchor = BlendAnchor(older.LeftAnchor, newer.LeftAnchor, t);
             pose.RightAnchor = BlendAnchor(older.RightAnchor, newer.RightAnchor, t);
+            pose.Carrier = BlendSurface(older.Carrier, newer.Carrier, t);
+            pose.LeftNode = BlendSurface(older.LeftNode, newer.LeftNode, t);
+            pose.RightNode = BlendSurface(older.RightNode, newer.RightNode, t);
             return pose;
+        }
+
+        // Aynı yüzey iki örnekte de varsa konum ve dönüş ara değerlenir; farklıysa ya da biri yoksa yeni örneğin yüzeyi
+        // (yüzey değişimi anlıktır, iki platform arasında kayan bir kontur olmaz).
+        private static SurfacePose? BlendSurface(SurfacePose? older, SurfacePose? newer, float t)
+        {
+            if (!older.HasValue || !newer.HasValue || older.Value.Id != newer.Value.Id) return newer;
+            return new SurfacePose(newer.Value.Id,
+                Vector2.Lerp(older.Value.Position, newer.Value.Position, t),
+                Mathf.LerpAngle(older.Value.Rotation, newer.Value.Rotation, t));
         }
 
         // Kanca bir tarafta yoksa (yeni atıldı ya da bırakıldı) yeni snapshot'ınki kullanılır.
@@ -140,8 +160,12 @@ namespace New_Scripts.Multiplayer.Ghost
             IsWallSliding = s.IsWallSliding,
             DashCount = s.DashCount,
             IsHidden = s.IsHidden,
+            InBubble = s.InBubble,
             LeftAnchor = s.LeftAnchor,
-            RightAnchor = s.RightAnchor
+            RightAnchor = s.RightAnchor,
+            Carrier = s.Carrier,
+            LeftNode = s.LeftNode,
+            RightNode = s.RightNode
         };
     }
 }

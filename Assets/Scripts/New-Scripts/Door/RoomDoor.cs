@@ -27,6 +27,9 @@ namespace New_Scripts.Door
 
         public bool IsOpen { get; private set; }
 
+        /// <summary>Kapı ilk girişte açık mı (sahne ayarı). Ceza sıfırlaması açık başlayan kapıları yeniden açar.</summary>
+        public bool StartsOpen => startOpen;
+
         private bool _isInitialized;
 
         private void Awake()
@@ -41,14 +44,29 @@ namespace New_Scripts.Door
         }
 
         [ContextMenu("TEST: Kapıyı Aç")]
-        public void Open()
+        public void Open() => Open(true);
+
+        [ContextMenu("TEST: Kapıyı Kapat")]
+        public void Close() => Close(true);
+
+        /// <summary>
+        /// Kapıyı ilk girişteki hâline (<c>startOpen</c>) döndürür, ses çalmaz (ceza iris'i kapalıyken kapı sesi duyulmasın).
+        /// Durum değişirse <see cref="OnOpened"/>/<see cref="OnClosed"/> yine yayınlanır, görsel doğru pozu alır.
+        /// </summary>
+        public void ResetToInitial()
+        {
+            if (startOpen) Open(false);
+            else Close(false);
+        }
+
+        private void Open(bool playSound)
         {
             if (IsOpen) return;
             IsOpen = true;
 
             if (doorCollider != null && disableColliderOnOpen) doorCollider.enabled = false;
-            
-            if (_isInitialized && sfxPlayChannel != null && openSoundCue != null)
+
+            if (playSound && _isInitialized && sfxPlayChannel != null && openSoundCue != null)
             {
                 sfxPlayChannel.RaisePlayEvent(openSoundCue, transform.position);
             }
@@ -56,15 +74,14 @@ namespace New_Scripts.Door
             OnOpened?.Invoke();
         }
 
-        [ContextMenu("TEST: Kapıyı Kapat")]
-        public void Close()
+        private void Close(bool playSound)
         {
             if (!IsOpen) return;
             IsOpen = false;
 
             if (doorCollider != null && disableColliderOnOpen) doorCollider.enabled = true;
 
-            if (_isInitialized && sfxPlayChannel != null && closeSoundCue != null)
+            if (playSound && _isInitialized && sfxPlayChannel != null && closeSoundCue != null)
             {
                 sfxPlayChannel.RaisePlayEvent(closeSoundCue, transform.position);
             }

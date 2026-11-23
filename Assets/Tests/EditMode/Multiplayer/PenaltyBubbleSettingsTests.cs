@@ -37,6 +37,14 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Defaults_DoorPanMatchesTheNormalRoomTransition_AndBubbleHasSize()
+        {
+            // RoomTransitionCoordinator.transitionDuration 0.5 sn; balon kapıda aynı kaydırmayı yapar.
+            Assert.AreEqual(0.5f, _settings.doorPanSeconds, 0.0001f);
+            Assert.Greater(_settings.bubbleRadius, 0.5f, "balon oyuncuyu (≈1 birim) sarmalı");
+        }
+
+        [Test]
         public void TravelSeconds_UsesTheSettingsBounds()
         {
             Assert.AreEqual(_settings.minTravelSeconds, _settings.TravelSeconds(1f), 0.0001f);

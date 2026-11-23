@@ -107,7 +107,8 @@ namespace New_Scripts.Multiplayer.Lobby
             MultiplayerSession.LastExitReason = null;
             if (resumeButton != null)
             {
-                bool hasSave = new RaceSaveStore().TryRead(out _save);
+                _save = null;
+                bool hasSave = RaceSaveStore.Enabled && new RaceSaveStore().TryRead(out _save);
                 if (!hasSave) _save = null;
                 resumeButton.gameObject.SetActive(hasSave);
                 resumeButton.onClick.AddListener(ToggleResume);

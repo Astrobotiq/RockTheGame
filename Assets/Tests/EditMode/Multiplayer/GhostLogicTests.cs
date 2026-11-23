@@ -80,6 +80,33 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Build_InBubble_CarriesTheFlag()
+        {
+            var builder = new SnapshotBuilder();
+            Assert.IsTrue(builder.Build(new PlayerPoseInput { InBubble = true }, 0.0).InBubble);
+            Assert.IsFalse(builder.Build(new PlayerPoseInput { InBubble = false }, 0.05).InBubble);
+        }
+
+        [Test]
+        public void Build_InBubble_FastFlightIsNotTeleport()
+        {
+            // Balon uzun odada 100 b/sn'yi geçer; ceza hayalet yumuşakça süzülsün diye ışınlanma sayılmaz.
+            var builder = new SnapshotBuilder();
+            builder.Build(new PlayerPoseInput { Position = Vector2.zero, InBubble = true }, 0.0);
+
+            Assert.IsFalse(builder.Build(new PlayerPoseInput { Position = new Vector2(8f, 0f), InBubble = true }, 0.05).Teleported);
+        }
+
+        [Test]
+        public void Build_SameJumpWithoutBubble_IsStillTeleport()
+        {
+            var builder = new SnapshotBuilder();
+            builder.Build(new PlayerPoseInput { Position = Vector2.zero }, 0.0);
+
+            Assert.IsTrue(builder.Build(new PlayerPoseInput { Position = new Vector2(8f, 0f) }, 0.05).Teleported);
+        }
+
+        [Test]
         public void Build_ExplicitTeleportFlag_SetsTeleported()
         {
             var builder = new SnapshotBuilder();
@@ -218,6 +245,19 @@ namespace RockTheGame.Tests.Multiplayer
             double now = last / (double)GhostTiming.SnapshotRate * skew + Offset;
             Assert.IsTrue(interp.TrySample(now, out GhostPose pose));
             Assert.Less(pose.Position.x, last * 0.1f - 1e-3f, "en yeni snapshot'ta takılı kaldı, ara değer yok");
+        }
+
+        [Test]
+        public void Sample_InBubble_PassesThrough_AndBlendUsesTheNewerSnapshot()
+        {
+            var interp = new GhostInterpolator();
+            interp.Add(new SnapshotMessage { Sequence = 0, InBubble = false }, Arrival(0));
+            interp.Add(new SnapshotMessage { Sequence = 1, InBubble = true }, Arrival(1));
+
+            Assert.IsTrue(interp.TrySample(Arrival(1) + 1.0, out GhostPose end));
+            Assert.IsTrue(end.InBubble);
+            Assert.IsTrue(interp.TrySample(Arrival(0) + GhostTiming.InterpolationDelaySeconds + 0.5 / GhostTiming.SnapshotRate, out GhostPose mid));
+            Assert.IsTrue(mid.InBubble, "iki snapshot arasında balonun başladığı kare yeni snapshot'ı izler");
         }
 
         [Test]

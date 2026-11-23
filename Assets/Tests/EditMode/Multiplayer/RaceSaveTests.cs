@@ -112,6 +112,21 @@ namespace RockTheGame.Tests.Multiplayer
         }
 
         [Test]
+        public void Store_SystemOffByDefault_DefaultPathWriteIsSkipped_ExplicitPathStillWrites()
+        {
+            Assert.IsFalse(RaceSaveStore.Enabled, "kayıt sistemi şimdilik kapalı (Devam et uyuşmazlığı çıkmasın)");
+
+            var defaultStore = new RaceSaveStore();
+            bool existedBefore = defaultStore.Exists;
+            defaultStore.Write(RaceSaveData.From(SessionAtRoom7(), RaceId, "Rakip", 50f));
+            Assert.AreEqual(existedBefore, defaultStore.Exists, "kapalıyken varsayılan yola yazılmamalı");
+
+            var explicitStore = new RaceSaveStore(_path);
+            explicitStore.Write(RaceSaveData.From(SessionAtRoom7(), RaceId, "Rakip", 50f));
+            Assert.IsTrue(explicitStore.Exists, "özel yol (testler) bayraktan etkilenmez");
+        }
+
+        [Test]
         public void Store_MissingOrCorrupt_ReadsFalse_DeleteRemoves()
         {
             var store = new RaceSaveStore(_path);

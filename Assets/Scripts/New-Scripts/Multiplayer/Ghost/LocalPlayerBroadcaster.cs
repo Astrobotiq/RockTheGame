@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using New_Scripts.Death;
 using New_Scripts.LevelChange;
 using New_Scripts.Multiplayer.Messages;
 using New_Scripts.Multiplayer.Session;
@@ -21,10 +22,18 @@ namespace New_Scripts.Multiplayer.Ghost
         private readonly List<(Room room, UnityEngine.Events.UnityAction action)> _subscriptions = new List<(Room, UnityEngine.Events.UnityAction)>();
 
         private PlayerController _player;
+        private PlayerHealth _health;
+        private MovingSurfaceRegistry _surfaces;
         private SpriteRenderer _bodySprite;
         private RaceSession _session;
         private IRaceTransport _transport;
         private float _sendAccumulator;
+
+        /// <summary>Sahnedeki hareketli nesne kimlikleri; hayalet konturu aynı tabloyu kullanır.</summary>
+        public MovingSurfaceRegistry Surfaces => _surfaces;
+
+        /// <summary>Yerel oyuncu ceza balonunda mı (<c>PenaltyHandler.IsInBubble</c>); boşsa hiçbir zaman.</summary>
+        public System.Func<bool> InBubbleSource { get; set; }
 
         public int LocalRoomId { get; private set; }
         public IReadOnlyCollection<int> LocalNeighborRoomIds => _neighborIds;
@@ -35,6 +44,10 @@ namespace New_Scripts.Multiplayer.Ghost
             broadcaster._player = player;
             broadcaster._session = session;
             broadcaster._transport = transport;
+            // Hareketli nesne kimlikleri sahne yüklenince bir kez kurulur (çalışırken yaratılanlar kimlik almaz).
+            broadcaster._surfaces = MovingSurfaceRegistry.BuildFromScene();
+            broadcaster._health = player.GetComponent<PlayerHealth>();
+            if (broadcaster._health != null) broadcaster._health.OnDeath += broadcaster.OnPlayerDeath;
             var animation = player.GetComponentInChildren<PlayerAnimationController>(true);
             broadcaster._bodySprite = animation != null ? animation.GetComponent<SpriteRenderer>() : null;
             broadcaster.SubscribeToRooms();
@@ -96,6 +109,23 @@ namespace New_Scripts.Multiplayer.Ghost
                 _transport.Send(RaceMessageCodec.Encode(snapshot), reliable: false);
         }
 
+        /// <summary>Hareketli bir tehlike öldürdüyse rakibe bildirir; sabit tehlike ya da bilinmeyen ölümde mesaj yok.</summary>
+        private void OnPlayerDeath()
+        {
+            if (_transport == null || _transport.State != TransportState.Connected) return;
+            if (_health.LastKiller == null || !_surfaces.TryGetPose(_health.LastKiller, out SurfacePose killer)) return;
+            _transport.Send(RaceMessageCodec.Encode(new DeathMessage { Killer = killer }), reliable: true);
+        }
+
+        private SurfacePose? ReadCarrier()
+        {
+            var carrier = _player.PhysicsHandler != null ? _player.PhysicsHandler.CurrentCarrier as Component : null;
+            return carrier != null && _surfaces.TryGetPose(carrier.transform, out SurfacePose pose) ? pose : (SurfacePose?)null;
+        }
+
+        private SurfacePose? ReadNode(Transform node) =>
+            node != null && _surfaces.TryGetPose(node, out SurfacePose pose) ? pose : (SurfacePose?)null;
+
         private PlayerPoseInput ReadPose()
         {
             IPlayerState state = _player.CurrentState;
@@ -112,13 +142,18 @@ namespace New_Scripts.Multiplayer.Ghost
                 IsWallSliding = state is WallSlidingState,
                 LeftAnchor = _player.LeftAnchor,
                 RightAnchor = _player.RightAnchor,
+                Carrier = ReadCarrier(),
+                LeftNode = ReadNode(_player.LeftAnchorNode),
+                RightNode = ReadNode(_player.RightAnchorNode),
                 // PlayerHealth ölünce oyuncu nesnesini kapatır, RespawnManager yeni yerde açar.
-                IsHidden = !_player.gameObject.activeInHierarchy
+                IsHidden = !_player.gameObject.activeInHierarchy,
+                InBubble = InBubbleSource != null && InBubbleSource()
             };
         }
 
         private void OnDestroy()
         {
+            if (_health != null) _health.OnDeath -= OnPlayerDeath;
             foreach (var (room, action) in _subscriptions)
                 if (room != null) room.OnRoomEntered.RemoveListener(action);
             _subscriptions.Clear();

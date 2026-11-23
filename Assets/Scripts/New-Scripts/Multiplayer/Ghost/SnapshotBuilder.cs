@@ -18,10 +18,15 @@ namespace New_Scripts.Multiplayer.Ghost
         public bool IsWallSliding;
         public Vector2? LeftAnchor;
         public Vector2? RightAnchor;
+        public SurfacePose? Carrier;
+        public SurfacePose? LeftNode;
+        public SurfacePose? RightNode;
         /// <summary>Açık ışınlanma (respawn, ceza): hayalet kaydırmadan yerleşsin.</summary>
         public bool Teleported;
         /// <summary>Oyuncu nesnesi kapalı (öldü, respawn bekliyor).</summary>
         public bool IsHidden;
+        /// <summary>Oyuncu ceza balonunda taşınıyor (PenaltyHandler); uzun odada balon 100 b/sn'yi aşar.</summary>
+        public bool InBubble;
     }
 
     /// <summary>
@@ -50,7 +55,8 @@ namespace New_Scripts.Multiplayer.Ghost
             // Gizliyken (ölü) yeniden belirdiği ilk snapshot ışınlanmadır: respawn noktası yakın olsa da kaymasın.
             bool teleported = input.Teleported || (_wasHidden && !input.IsHidden);
             _wasHidden = input.IsHidden;
-            if (_lastPosition.HasValue)
+            // Balonda hız sıçraması ışınlanma değildir: hayalet balonla birlikte yumuşakça süzülür.
+            if (_lastPosition.HasValue && !input.InBubble)
             {
                 double elapsed = Math.Max(realtimeSeconds - _lastTime, 1.0 / GhostTiming.SnapshotRate);
                 double limit = GhostTiming.TeleportSpeed * elapsed + GhostTiming.TeleportMargin;
@@ -77,8 +83,12 @@ namespace New_Scripts.Multiplayer.Ghost
                 DashCount = _dashCount,
                 Teleported = teleported,
                 IsHidden = input.IsHidden,
+                InBubble = input.InBubble,
                 LeftAnchor = input.LeftAnchor,
-                RightAnchor = input.RightAnchor
+                RightAnchor = input.RightAnchor,
+                Carrier = input.Carrier,
+                LeftNode = input.LeftNode,
+                RightNode = input.RightNode
             };
         }
     }

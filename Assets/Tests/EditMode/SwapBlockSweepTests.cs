@@ -11,12 +11,12 @@ namespace RockTheGame.Tests
         private const float Skin = 0.02f;
 
         [Test]
-        public void Box_IsInflatedByHalfACell_MinusTolerance_OnEverySide()
+        public void Box_IsInflatedByHalfACellPlusClearance_OnEverySide()
         {
             SwapBlockSweep.ForPlayer(new Rect(2f, 3f, 1f, 1.5f), Vector2.zero, 0.02f, Cell, Skin,
                 out Rect start, out Vector2 delta);
 
-            float pad = Cell * 0.5f - SwapBlockSweep.Tolerance;
+            float pad = Cell * 0.5f + Skin * SwapBlockSweep.ClearanceFactor;
             Assert.That(start.xMin, Is.EqualTo(2f - pad).Within(1e-5f));
             Assert.That(start.xMax, Is.EqualTo(3f + pad).Within(1e-5f));
             Assert.That(start.yMin, Is.EqualTo(3f - pad).Within(1e-5f));
@@ -24,20 +24,41 @@ namespace RockTheGame.Tests
         }
 
         [Test]
-        public void GridAlignedBody_CarvesExactlyItsOwnRows_NotOneMoreOnEachSide()
+        public void GridAlignedBody_GetsOneRowOfClearanceOnEachSide_SoItNeverTouchesTheTunnelWall()
         {
-            // Gövde tam ızgara çizgilerine oturuyor (y 1..2 = 8 satır). Yarım hücre eşitliği 10 satır oyardı.
+            // Gövde tam ızgara çizgilerine oturuyor (y 1..2 = 8 satır). Duvar gövdeye sıfır boşlukla değerse oyuncu
+            // sıkışır (Play Mode'da görüldü): 7. ve 16. satır da oyulur, tünel 10 satır.
             var grid = new SwapBlockGrid(24, 24);
             SwapBlockSweep.ForPlayer(new Rect(-1f, 1f, 1f, 1f), new Vector2(30f, 0f), 0.02f, Cell, Skin,
                 out Rect start, out Vector2 delta);
 
-            var cells = grid.CellsInSweptBox(start, delta, Vector2.zero, Cell);
-            var rowsHit = new System.Collections.Generic.HashSet<int>();
-            foreach (var c in cells) rowsHit.Add(c.y);
+            var rowsHit = RowsOf(grid.CellsInSweptBox(start, delta, Vector2.zero, Cell));
 
-            Assert.That(rowsHit.Count, Is.EqualTo(8));
-            Assert.That(rowsHit, Does.Contain(8));
-            Assert.That(rowsHit, Does.Contain(15));
+            Assert.That(rowsHit.Count, Is.EqualTo(10));
+            Assert.That(rowsHit.Contains(7) && rowsHit.Contains(16), Is.True, "temas eden satırlar oyulmalı");
+            Assert.That(rowsHit.Contains(6) || rowsHit.Contains(17), Is.False, "bir satırdan fazla pay yok");
+        }
+
+        [Test]
+        public void BodyWithRoomToSpare_DoesNotCarveAnExtraRow()
+        {
+            // Gövde y 1.03..2.03: 7. satırın yüzü (1.0) gövdeden 0.03 > 0.015 uzakta, boşluk zaten var.
+            var grid = new SwapBlockGrid(24, 24);
+            SwapBlockSweep.ForPlayer(new Rect(-1f, 1.03f, 1f, 1f), new Vector2(30f, 0f), 0.02f, Cell, Skin,
+                out Rect start, out Vector2 delta);
+
+            var rowsHit = RowsOf(grid.CellsInSweptBox(start, delta, Vector2.zero, Cell));
+
+            Assert.That(rowsHit.Count, Is.EqualTo(9));
+            Assert.That(rowsHit.Contains(7), Is.False);
+            Assert.That(rowsHit.Contains(8) && rowsHit.Contains(16), Is.True);
+        }
+
+        private static System.Collections.Generic.HashSet<int> RowsOf(System.Collections.Generic.List<Vector2Int> cells)
+        {
+            var rows = new System.Collections.Generic.HashSet<int>();
+            foreach (var c in cells) rows.Add(c.y);
+            return rows;
         }
 
         [Test]

@@ -99,6 +99,11 @@ namespace New_Scripts.Platform
 
             Bounds b = _player.PlayerCollider.bounds;
             var playerRect = new Rect(b.min, b.size);
+            // Bekleme payı süpürmedeki boşlukla aynı: oyuncuya payın içinde yaklaşan hücre katılaşmaz, yoksa temas
+            // halindeki katı hücre oyuncuyu iter ve sıkıştırır (bkz. SwapBlockSweep).
+            float margin = skinWidth * SwapBlockSweep.ClearanceFactor;
+            var occupiedRect = new Rect(playerRect.xMin - margin, playerRect.yMin - margin,
+                playerRect.width + 2f * margin, playerRect.height + 2f * margin);
             var changed = new List<Vector2Int>();
 
             if (dashing)
@@ -108,13 +113,13 @@ namespace New_Scripts.Platform
 
                 changed.AddRange(_grid.SwapCells(
                     _grid.CellsInSweptBox(start, delta, FrameOrigin(frameA), cellSize),
-                    SwapBlockSide.A, (c, s) => Occupied(c, s, playerRect)));
+                    SwapBlockSide.A, (c, s) => Occupied(c, s, occupiedRect)));
                 changed.AddRange(_grid.SwapCells(
                     _grid.CellsInSweptBox(start, delta, FrameOrigin(frameB), cellSize),
-                    SwapBlockSide.B, (c, s) => Occupied(c, s, playerRect)));
+                    SwapBlockSide.B, (c, s) => Occupied(c, s, occupiedRect)));
             }
 
-            changed.AddRange(_grid.ResolvePending((c, s) => Occupied(c, s, playerRect)));
+            changed.AddRange(_grid.ResolvePending((c, s) => Occupied(c, s, occupiedRect)));
             ApplyToView(changed);
         }
 

@@ -65,6 +65,7 @@ namespace New_Scripts.Platform
         private PlayerController _player;
         private bool _wasDashing;
         private bool _feedbackPlayedThisDash;
+        private bool _colliderStale;
         private TilemapCollider2D _colliderA, _colliderB;
         private CompositeCollider2D _compositeA, _compositeB;
 
@@ -86,6 +87,10 @@ namespace New_Scripts.Platform
         private void OnEnable()
         {
             if (LevelResetManager.Instance != null) LevelResetManager.Instance.Register(this);
+            // Manual composite geometrisini kendiliğinden yenilemez: oda uyuyup uyanınca (RoomManager yalnızca güncel ve
+            // komşu odaları açık tutar, sahne başında da odaları uyutup açar) çerçeve ilk dash'e kadar içinden geçilir
+            // kalırdı. Çocuk bileşenler etkinleşmeden üretmek boşa gider: yenileme ilk FixedUpdate'te yapılır.
+            _colliderStale = true;
         }
 
         private void OnDisable()
@@ -116,6 +121,13 @@ namespace New_Scripts.Platform
 
         private void FixedUpdate()
         {
+            if (_colliderStale && _grid != null)
+            {
+                _colliderStale = false;
+                RefreshCollider(_colliderA, _compositeA);
+                RefreshCollider(_colliderB, _compositeB);
+            }
+
             if (_player == null) _player = FindFirstObjectByType<PlayerController>();
             if (_player == null || _player.PlayerCollider == null || !_player.PlayerCollider.isActiveAndEnabled) return;
 

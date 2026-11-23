@@ -396,6 +396,28 @@ namespace RockTheGame.Tests.PlayMode
             AssertNothingMoved(rig, "duvar tırmanmak");
         }
 
+        // ---- SB6 ----
+
+        [UnityTest]
+        public IEnumerator SB6_FramesAreSolidFromTheStart_AndAfterTheRoomSleepsAndWakes()
+        {
+            var rig = SpawnPair(new Vector2(Origin.x + 20f, Origin.y), new Vector2(Origin.x + 30f, Origin.y));
+            yield return WaitFixedSteps(3);
+
+            var inside = CellCenter(rig.FrameA, 12, 12);
+            Assert.IsTrue(rig.CompA.OverlapPoint(inside), "başlangıçta pembe çerçeve katı olmalı (dash'e kadar içinden geçilmemeli)");
+            Assert.IsFalse(rig.CompB.OverlapPoint(CellCenter(rig.FrameB, 12, 12)), "mavi çerçeve başta boş");
+
+            // Oda uyuyup uyanır (RoomManager yalnızca güncel ve komşu odaları açık tutar): Manual composite geometrisini
+            // kendiliğinden yenilemez, kimse yenilemezse ilk dash'e kadar çerçeve boş kalır.
+            rig.Pair.gameObject.SetActive(false);
+            yield return WaitFixedSteps(2);
+            rig.Pair.gameObject.SetActive(true);
+            yield return WaitFixedSteps(3);
+
+            Assert.IsTrue(rig.CompA.OverlapPoint(inside), "oda uyanınca pembe çerçeve yine katı olmalı");
+        }
+
         // ---- Geri bildirim (kural değil, TP4) ----
 
         [UnityTest]

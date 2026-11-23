@@ -441,6 +441,35 @@ namespace RockTheGame.Tests.PlayMode
             Object.Destroy(cue);
         }
 
+        // ---- SB1c ----
+
+        [UnityTest]
+        public IEnumerator SB1c_DiagonalDashStartingFlushAgainstTheBlock_IsNotStopped()
+        {
+            yield return LandOnFloor();
+
+            // Malzemesiz çapraz dash: süre, mesafe ve çıkış hızı için ölçü.
+            DashResult baseline = default;
+            yield return Dash(new Vector2(1f, 1f), r => baseline = r);
+            yield return ResetPlayerAt(Origin);
+            yield return WaitForGround();
+
+            // Blok zeminde, sol yüzü oyuncunun sağ kenarına bitişik. Fizik hareketi önce X sonra Y çözer, çapraz
+            // zarfın dışında kalan hücre yatayı engelleyip dash'i yüzeye yaslardı.
+            Rect body = PlayerRect();
+            var rig = SpawnPair(new Vector2(body.xMax, Origin.y - 1f), new Vector2(body.xMin + 40f, Origin.y - 1f));
+
+            DashResult withBlock = default;
+            yield return Dash(new Vector2(1f, 1f), r => withBlock = r);
+            yield return WaitFixedSteps(2);
+
+            Assert.Greater(rig.Grid.CountSolid(SwapBlockSide.B), 0, "çapraz dash hücre taşımalı");
+            Assert.AreEqual(baseline.Steps, withBlock.Steps, "dash süresi değişti");
+            Assert.AreEqual(baseline.Distance, withBlock.Distance, 0.01f, "çapraz dash bloğa takıldı");
+            Assert.AreEqual(baseline.ExitVelocity.x, withBlock.ExitVelocity.x, 0.05f, "çıkış hızı (x) değişti");
+            Assert.AreEqual(baseline.ExitVelocity.y, withBlock.ExitVelocity.y, 0.05f, "çıkış hızı (y) değişti");
+        }
+
         // ---- SB5 ----
 
         [UnityTest]

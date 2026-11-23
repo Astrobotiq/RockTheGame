@@ -142,10 +142,10 @@ namespace New_Scripts.Platform
                     out Rect start, out Vector2 delta);
 
                 var fromA = _grid.SwapCells(
-                    _grid.CellsInSweptBox(start, delta, FrameOrigin(frameA), cellSize),
+                    SweptCells(start, delta, FrameOrigin(frameA)),
                     SwapBlockSide.A, (c, s) => Occupied(c, s, occupiedRect));
                 var fromB = _grid.SwapCells(
-                    _grid.CellsInSweptBox(start, delta, FrameOrigin(frameB), cellSize),
+                    SweptCells(start, delta, FrameOrigin(frameB)),
                     SwapBlockSide.B, (c, s) => Occupied(c, s, occupiedRect));
                 changed.AddRange(fromA);
                 changed.AddRange(fromB);
@@ -154,6 +154,15 @@ namespace New_Scripts.Platform
 
             changed.AddRange(_grid.ResolvePending((c, s) => Occupied(c, s, occupiedRect)));
             ApplyToView(changed);
+        }
+
+        /// <summary>Çapraz zarf + oyuncunun fiziğinin gerçekte izlediği X-sonra-Y yolu (bkz. SwapBlockSweep.AxisLegs).</summary>
+        private HashSet<Vector2Int> SweptCells(Rect start, Vector2 delta, Vector2 frameOrigin)
+        {
+            var cells = new HashSet<Vector2Int>(_grid.CellsInSweptBox(start, delta, frameOrigin, cellSize));
+            foreach (var (legRect, legDelta) in SwapBlockSweep.AxisLegs(start, delta))
+                cells.UnionWith(_grid.CellsInSweptBox(legRect, legDelta, frameOrigin, cellSize));
+            return cells;
         }
 
         private Vector2 FrameOrigin(Tilemap frame) => frame.CellToWorld(Vector3Int.zero);

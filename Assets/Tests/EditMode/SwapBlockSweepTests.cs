@@ -89,6 +89,41 @@ namespace RockTheGame.Tests
         }
 
         [Test]
+        public void DiagonalStep_AlsoCoversTheAxisSeparatedPath_BecauseThePlayerMovesXThenY()
+        {
+            // KinematicPhysicsHandler hareketi önce X sonra Y ekseninde çözer: yol bir L'dir. Yalnızca çapraz zarf
+            // (hull) oyulursa kutunun sağ-altındaki hücre kalır ve yatay hareketi engeller (Play Mode'da görüldü).
+            var grid = new SwapBlockGrid(24, 24);
+            var body = new Rect(-1f, 1f, 1f, 1f);
+            var velocity = new Vector2(30f, 30f);
+            SwapBlockSweep.ForPlayer(body, velocity, 0.02f, Cell, Skin, out Rect start, out Vector2 delta);
+
+            var hull = new System.Collections.Generic.HashSet<Vector2Int>(grid.CellsInSweptBox(start, delta, Vector2.zero, Cell));
+            var all = new System.Collections.Generic.HashSet<Vector2Int>();
+            foreach (var (rect, d) in SwapBlockSweep.AxisLegs(start, delta))
+                foreach (var c in grid.CellsInSweptBox(rect, d, Vector2.zero, Cell)) all.Add(c);
+            all.UnionWith(hull);
+
+            // Kutunun hemen sağında, alt kenara yakın hücre: x çözümünde geçilen yer.
+            var rightOfBodyLow = new Vector2Int(4, 8); // merkez (0.5625, 1.0625): hull alt kenarı bu x'te y=1.41
+            Assert.That(hull.Contains(rightOfBodyLow), Is.False, "bu hücre yalnızca L yolunda: hull'da olmamalı (testin geçerli olması için)");
+            Assert.That(all.Contains(rightOfBodyLow), Is.True, "L'nin yatay ayağı bu hücreyi oymalı");
+        }
+
+        [Test]
+        public void AxisLegs_AreHorizontalThenVertical_AtTheShiftedPosition()
+        {
+            var start = new Rect(0f, 0f, 1f, 1f);
+            var legs = new System.Collections.Generic.List<(Rect rect, Vector2 delta)>(SwapBlockSweep.AxisLegs(start, new Vector2(0.6f, 0.4f)));
+
+            Assert.That(legs.Count, Is.EqualTo(2));
+            Assert.That(legs[0].rect, Is.EqualTo(start));
+            Assert.That(legs[0].delta, Is.EqualTo(new Vector2(0.6f, 0f)));
+            Assert.That(legs[1].rect.position, Is.EqualTo(new Vector2(0.6f, 0f)));
+            Assert.That(legs[1].delta, Is.EqualTo(new Vector2(0f, 0.4f)));
+        }
+
+        [Test]
         public void FloorUnderRestingFeet_IsNotCarved_ButOverlappingRowIs()
         {
             // Oyuncu zeminin skin kadar üstünde duruyor: zemin hücresi merkezi kutu dışında kalmalı.

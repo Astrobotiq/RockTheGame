@@ -126,6 +126,7 @@ Her odanın kendi checkpoint'i ve gerekirse kendi kamera ayarı (yakınlık/uzak
 - **Kırılan platformlar**: üstüne çıkınca titrer ve parçalanır; basılan yerden başlayarak dalga hâlinde kırılır, bir süre sonra yeniden oluşur.
 - **Tek yönlü platformlar**: aşağıdan geçilir, üstünde durulur.
 - **Fırlatma pedleri (launch pad)**: üstüne basınca belirli bir yönde fırlatır. Hareketli ve döngüsel versiyonları var.
+- **Takas blokları**: eş boyutlu pembe ve mavi iki çerçeve; dash'in süpürdüğü kısım karşı çerçevede aynı yerde belirir (bloğun tamamı değil), böylece tünel, merdiven ya da köprü kurulur.
 
 **Tehlikeler**
 - **Asit** ve akan asit.

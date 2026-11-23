@@ -5393,6 +5393,7 @@ MonoBehaviour:
   blueColor: {r: 0.3, g: 0.55, b: 1, a: 1}
   outlineMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   outlineWidth: 0.06
+  outlineDarken: 0.45
   swapFx: {fileID: 8659144540631031483}
   swapFxLifetime: 0.25
   arrivalFlashColor: {r: 1, g: 1, b: 1, a: 0.9}

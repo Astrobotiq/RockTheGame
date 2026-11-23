@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace New_Scripts.Platform
@@ -30,6 +31,19 @@ namespace New_Scripts.Platform
             delta = velocity * fixedDeltaTime;
             if (velocity.x != 0f) delta.x += Mathf.Sign(velocity.x) * skinWidth;
             if (velocity.y != 0f) delta.y += Mathf.Sign(velocity.y) * skinWidth;
+        }
+
+        /// <summary>
+        /// <c>KinematicPhysicsHandler</c> hareketi önce X sonra Y ekseninde çözer: bir adımın yolu çapraz değil bir L'dir.
+        /// Yalnızca çapraz zarf (<see cref="SwapBlockGrid.CellsInSweptBox"/> tek çağrı) oyulursa kutunun sağ-altında
+        /// kalan hücre yatay hareketi engeller; engellenen hız bir sonraki adımın oyma mesafesini de kısaltır ve dash
+        /// yüzeye yaslanıp yavaşlar (Play Mode'da görüldü). Çapraz adımda zarfa bu iki ayak da eklenir. Yatay ya da
+        /// dikey dash'te ikinci ayak boştur, fazladan hücre oyulmaz.
+        /// </summary>
+        public static IEnumerable<(Rect rect, Vector2 delta)> AxisLegs(Rect start, Vector2 delta)
+        {
+            yield return (start, new Vector2(delta.x, 0f));
+            yield return (new Rect(start.position + new Vector2(delta.x, 0f), start.size), new Vector2(0f, delta.y));
         }
     }
 }

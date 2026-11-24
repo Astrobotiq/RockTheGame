@@ -13,7 +13,7 @@ namespace New_Scripts.Platform
     /// Üzerine basıldığında oyuncuyu fırlatan fiziksel zemin/platform.
     /// Fırlatma yönünü objenin kendi 'transform.up' yönünden alır.
     /// </summary>
-    [RequireComponent(typeof(BoxCollider2D))]
+    [RequireComponent(typeof(Collider2D))]
     public class LaunchPad : MonoBehaviour
     {
         [Header("Settings")]
@@ -32,6 +32,21 @@ namespace New_Scripts.Platform
         
         [Tooltip("Algılama alanının yerel genişlik ve yüksekliği.")]
         [SerializeField] private Vector2 detectionSize = new Vector2(1.8f, 0.2f);
+
+        [Tooltip("Atanırsa algılama (kutu yerine) bu collider'ın şekliyle yapılır: üçgen/daire pad için pedin biraz büyütülmüş tetik collider'ı. " +
+                 "isTrigger olmalı ve oyuncu/zemin/kanca katmanlarının dışında bir katmanda durmalı. Boşsa yukarıdaki kutu kullanılır.")]
+        [SerializeField] private Collider2D detectionCollider;
+
+        [Header("Launch Direction")]
+        [Tooltip("TransformUp: pad'in yukarı yönü. OutwardFromCenter: merkezden oyuncunun temas ettiği noktaya, dışa (daire).")]
+        [SerializeField] private LaunchDirectionMode directionMode = LaunchDirectionMode.TransformUp;
+
+        [Tooltip("OutwardFromCenter için merkez (yerel ofset).")]
+        [SerializeField] private Vector2 outwardCenterOffset = Vector2.zero;
+
+        [Tooltip("TransformUp modunda yön, pad'in yukarı yönünden bu kadar derece döndürülür (saat yönünün tersi pozitif). " +
+                 "Dik üçgen köşe pedi için -45: hipotenüsün dışa bakan normali.")]
+        [SerializeField] private float launchAngleOffset = 0f;
 
 #if UNITY_EDITOR // sadece editor gizmo kullaniyor; player derlemesinde CS0414 uretiyordu
         [Header("Editor Trajectory Gizmo")]
@@ -65,6 +80,9 @@ namespace New_Scripts.Platform
         [Tooltip("Fırlatma anında oynatılacak ses efekti.")]
         [SerializeField] private AudioCueSO launchSoundCue;
 
+        [Tooltip("Her fırlatmada ayrıca bir nota çalar (zincir, ses sınırı ortak). Boşsa nota çalmaz.")]
+        [SerializeField] private BounceNotePlayerSO noteSystem;
+
         [Header("Vibration")]
         [SerializeField] private PlatformVibrationSettingsSO vibrationSettings;
 
@@ -77,14 +95,29 @@ namespace New_Scripts.Platform
         [SerializeField] private float launchSquashAmountScaleX = 0.7f;
         [SerializeField] private float returnDuration = 0.15f;
 
-        private BoxCollider2D _collider;
+        /// <summary>Bu pad'in son çaldığı nota (görsel/shader buna bağlanır). Hiç çalmadıysa default.</summary>
+        public NoteInfo LastNote { get; private set; }
+
+        /// <summary>Fırlatmada bir nota çalındığında tetiklenir (renk, enstrüman, frekans bilgisiyle).</summary>
+        public event Action<NoteInfo> NotePlayed;
+
+        /// <summary>Her fırlatmada tetiklenir (nota çalmasa bile); varsa <see cref="NotePlayed"/> bundan hemen önce gelir.</summary>
+        public event Action Launched;
+
+        private Collider2D _collider;
+
+        /// <summary>Pad'in yukarı yönü, <c>launchAngleOffset</c> kadar döndürülmüş hali (TransformUp modunun yönü).</summary>
+        private Vector2 LaunchUp => Quaternion.Euler(0f, 0f, launchAngleOffset) * transform.up;
+        private ContactFilter2D _detectionFilter;
+        private readonly Collider2D[] _detectionBuffer = new Collider2D[8];
         private float _cooldownTimer;
         private Vector3 _originalVisualScale;
         private CancellationTokenSource _cts;
 
         private void Awake()
         {
-            _collider = GetComponent<BoxCollider2D>();
+            _collider = GetComponent<Collider2D>();
+            _detectionFilter = new ContactFilter2D { useLayerMask = true, layerMask = playerLayer, useTriggers = true };
             
             if (visualTransform != null)
             {
@@ -114,20 +147,36 @@ namespace New_Scripts.Platform
         {
             if (_cooldownTimer > 0f) return;
 
-            // Yerel ofseti dünya koordinatlarına çeviriyoruz (rotasyon ve pozisyonu hesaba katarak)
-            Vector2 boxCenter = transform.TransformPoint(detectionOffset);
-            Vector2 overlapSize = detectionSize;
-            float angle = transform.eulerAngles.z;
-
-            Collider2D hit = Physics2D.OverlapBox(boxCenter, overlapSize, angle, playerLayer);
+            Collider2D hit = DetectPlayerCollider();
 
             if (hit != null && hit.TryGetComponent(out PlayerController player))
             {
-                LaunchPlayer(player);
+                LaunchPlayer(player, hit);
             }
         }
 
-        private void LaunchPlayer(PlayerController player)
+        /// <summary>
+        /// Oyuncunun collider'ını bulur: <c>detectionCollider</c> atanmışsa onun şekliyle (üçgen/daire),
+        /// değilse yerel kutuyla (rotasyon ve pozisyon hesaba katılarak).
+        /// </summary>
+        private Collider2D DetectPlayerCollider()
+        {
+            if (detectionCollider != null)
+            {
+                int count = detectionCollider.Overlap(_detectionFilter, _detectionBuffer);
+                for (int i = 0; i < count; i++)
+                {
+                    if (_detectionBuffer[i] != null && _detectionBuffer[i].TryGetComponent(out PlayerController _))
+                        return _detectionBuffer[i];
+                }
+                return null;
+            }
+
+            Vector2 boxCenter = transform.TransformPoint(detectionOffset);
+            return Physics2D.OverlapBox(boxCenter, detectionSize, transform.eulerAngles.z, playerLayer);
+        }
+
+        private void LaunchPlayer(PlayerController player, Collider2D hit)
         {
             _cooldownTimer = triggerCooldown;
 
@@ -136,8 +185,10 @@ namespace New_Scripts.Platform
                 HapticManager.Instance.Vibrate(vibrationSettings.LaunchPadProfile);
             }
 
-            // Fırlatma vektörünü hesapla (yerel transform.up yönü)
-            Vector2 launchVelocity = (Vector2)transform.up * launchSpeed;
+            // Fırlatma vektörünü hesapla: transform.up ya da (daire) merkezden temas noktasına, dışa
+            Vector2 launchDirection = LaunchDirectionMath.Resolve(directionMode,
+                transform.TransformPoint(outwardCenterOffset), hit.bounds.center, LaunchUp);
+            Vector2 launchVelocity = launchDirection * launchSpeed;
 
             // 1. Oyuncunun hareket yeteneklerini yenile
             player.ResetDash();
@@ -164,6 +215,14 @@ namespace New_Scripts.Platform
             {
                 sfxPlayChannel.RaisePlayEvent(launchSoundCue, transform.position);
             }
+
+            // Nota: fiziksel 'thump' yukarıda anında çaldı, nota onun üstüne biner. Seçilen nota görsele de gider.
+            if (noteSystem != null && noteSystem.TryPlay(out NoteInfo note))
+            {
+                LastNote = note;
+                NotePlayed?.Invoke(note);
+            }
+            Launched?.Invoke();
 
             onLaunch?.Invoke();
 
@@ -242,35 +301,94 @@ namespace New_Scripts.Platform
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = new Color(0f, 1f, 0f, 0.4f);
-            
-            // Gizmos çizerken rotasyonu uygulamak için matrisi ayarlayalım
             Vector2 boxCenter = transform.TransformPoint(detectionOffset);
-            Matrix4x4 rotationMatrix = Matrix4x4.TRS(boxCenter, transform.rotation, Vector3.one);
-            Gizmos.matrix = rotationMatrix;
-            
-            // Merkez artık lokal sıfırda, çünkü matrisimizi boxCenter'a öteledik.
-            // Sadece lokal döndürülmüş küpü çiziyoruz.
-            Gizmos.DrawWireCube(Vector3.zero, new Vector3(detectionSize.x, detectionSize.y, 0.1f));
-            
-            // Yönü gösteren bir ok çizelim
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(Vector3.zero, Vector3.up * 0.5f);
-            Gizmos.DrawLine(Vector3.up * 0.5f, Vector3.up * 0.35f + Vector3.left * 0.1f);
-            Gizmos.DrawLine(Vector3.up * 0.5f, Vector3.up * 0.35f + Vector3.right * 0.1f);
 
-            // Matrisi sıfırlayarak dünya koordinatlarında çizim yapalım (yerçekimi aşağı doğru kalsın)
-            Gizmos.matrix = Matrix4x4.identity;
-            DrawTrajectoryGizmo(boxCenter);
+            if (detectionCollider == null)
+            {
+                Gizmos.color = new Color(0f, 1f, 0f, 0.4f);
+
+                // Gizmos çizerken rotasyonu uygulamak için matrisi ayarlayalım
+                Matrix4x4 rotationMatrix = Matrix4x4.TRS(boxCenter, transform.rotation, Vector3.one);
+                Gizmos.matrix = rotationMatrix;
+
+                // Merkez artık lokal sıfırda, çünkü matrisimizi boxCenter'a öteledik.
+                // Sadece lokal döndürülmüş küpü çiziyoruz.
+                Gizmos.DrawWireCube(Vector3.zero, new Vector3(detectionSize.x, detectionSize.y, 0.1f));
+
+                // Yönü gösteren bir ok çizelim
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(Vector3.zero, Vector3.up * 0.5f);
+                Gizmos.DrawLine(Vector3.up * 0.5f, Vector3.up * 0.35f + Vector3.left * 0.1f);
+                Gizmos.DrawLine(Vector3.up * 0.5f, Vector3.up * 0.35f + Vector3.right * 0.1f);
+
+                // Matrisi sıfırlayarak dünya koordinatlarında çizim yapalım (yerçekimi aşağı doğru kalsın)
+                Gizmos.matrix = Matrix4x4.identity;
+                DrawTrajectoryGizmo(boxCenter, LaunchUp);
+                return;
+            }
+
+            // Şekilli algılama (üçgen/daire): algılama collider'ının hattı
+            Gizmos.color = new Color(0f, 1f, 0f, 0.6f);
+            DrawColliderOutline(detectionCollider);
+
+            Vector2 center = directionMode == LaunchDirectionMode.OutwardFromCenter
+                ? (Vector2)transform.TransformPoint(outwardCenterOffset)
+                : (Vector2)detectionCollider.bounds.center;
+
+            if (directionMode == LaunchDirectionMode.OutwardFromCenter)
+            {
+                // Yön temas noktasına bağlı: yukarıdan ±60° arası beş olası yönün yörüngesi
+                float radius = detectionCollider.bounds.extents.x;
+                foreach (Vector2 dir in LaunchDirectionMath.FanDirections(LaunchUp, 60f, 5))
+                {
+                    Gizmos.color = Color.green;
+                    Gizmos.DrawLine(center, center + dir * (radius + 0.4f));
+                    DrawTrajectoryGizmo(center + dir * radius, dir);
+                }
+            }
+            else
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(center, center + LaunchUp * 0.6f);
+                DrawTrajectoryGizmo(center, LaunchUp);
+            }
         }
 
-        private void DrawTrajectoryGizmo(Vector2 startPos)
+        private static void DrawColliderOutline(Collider2D c)
+        {
+            switch (c)
+            {
+                case CircleCollider2D circle:
+                {
+                    Vector3 s = circle.transform.lossyScale;
+                    Gizmos.DrawWireSphere(circle.bounds.center, circle.radius * Mathf.Max(Mathf.Abs(s.x), Mathf.Abs(s.y)));
+                    break;
+                }
+                case PolygonCollider2D polygon:
+                    for (int path = 0; path < polygon.pathCount; path++)
+                    {
+                        Vector2[] pts = polygon.GetPath(path);
+                        for (int i = 0; i < pts.Length; i++)
+                        {
+                            Vector3 a = polygon.transform.TransformPoint(pts[i] + polygon.offset);
+                            Vector3 b = polygon.transform.TransformPoint(pts[(i + 1) % pts.Length] + polygon.offset);
+                            Gizmos.DrawLine(a, b);
+                        }
+                    }
+                    break;
+                default:
+                    Gizmos.DrawWireCube(c.bounds.center, c.bounds.size);
+                    break;
+            }
+        }
+
+        private void DrawTrajectoryGizmo(Vector2 startPos, Vector2 direction)
         {
             if (playerStats == null) return;
 
             Gizmos.color = new Color(0f, 0.8f, 1f, 0.8f);
             Vector2 currentPos = startPos;
-            Vector2 currentVel = (Vector2)transform.up * launchSpeed;
+            Vector2 currentVel = direction.normalized * launchSpeed;
 
             float gravity = playerStats.Gravity;
             float fallGravityMult = playerStats.FallGravityMultiplier;

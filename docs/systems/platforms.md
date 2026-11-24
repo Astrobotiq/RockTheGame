@@ -1,6 +1,6 @@
 # Platformlar
 
-*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-17 (hareketli node bırakışı aynı aktarım yolunu kullanıyor).*
+*GDD §6.2 "Platformlar". Son kod doğrulaması: 2026-11-21 (launch pad nota bağlantısı ve sıvı ışık görseli; önceki: 2026-11-17 hareketli node bırakışı aynı aktarım yolunu kullanıyor).*
 
 ## Tasarım niyeti
 
@@ -59,21 +59,21 @@ Bileşen değil, **katman**. `KinematicPhysicsHandler.oneWayPlatformLayerMask` i
 
 - `transform.up` yönünde `launchSpeed` (varsayılan 15, her örnekte ayrı) hızla fırlatır. Pad döndürülerek yönü değiştirilir.
 - Algılama `FixedUpdate`'te bir `OverlapBox` (`detectionOffset`, `detectionSize`). Tetiklendikten sonra `triggerCooldown` (0.2 sn) boyunca yeniden tetiklenmez.
+- **Şekiller:** `detectionCollider` atanmışsa algılama kutu yerine bu collider'ın şekliyle yapılır (`Collider2D.Overlap`); boşsa yukarıdaki `OverlapBox` aynen çalışır. Üçgen ve daire pad'in algılama collider'ı pedin 0.12 birim büyütülmüş tetik hali, ayrı bir `Detection` çocuğunda ve **Ignore Raycast katmanında** durur (oyuncu/zemin/kanca sorgularına karışmasın); pedin kendisi zemin katmanında düz collider (`CircleCollider2D`/`PolygonCollider2D`). Fırlatma yönü `directionMode` ile: `TransformUp` (dikdörtgen; `launchAngleOffset` derece döndürülebilir, dik üçgende -45) ya da `OutwardFromCenter` (daire: `outwardCenterOffset` merkezinden oyuncunun collider merkezine doğru, `LaunchDirectionMath`). Daire alttan temasta aşağı fırlatır (kasıtlı, "temas noktasından dışa"). Prefab'lar: `LaunchPad-LiquidLight-Triangle` (**90-45-45 dik üçgen, seviye köşeleri için**: dik kenarlar 2 birim, prefab'ın pivotu dik açı köşesinde, yerelde dik açı sol-altta ve hipotenüs sağ-üste bakar; köşeye koyup 90°'lik adımlarla çevirilir; fırlatma hipotenüsün dışa bakan normali, yani yukarıdan 45° saat yönünde) ve `-Circle` (LiquidLight varyantının varyantları, kendi materyalleri `_Shape` 1/2). Gizmo: kutu için eskisi gibi, şekilli pad'de algılama collider'ı hattı; dairede yukarıdan ±60° arası beş olası yönün yörüngesi.
 - **Bütün kaynakları doldurur:** dash, slingshot, dayanıklılık, kayma süresi ve renkler.
 - Oyuncuyu `AirEntry.LaunchPad()` profiliyle fırlatır: yükselirken 3×, düşerken 1.5× yerçekimi, zıplama tuşundan bağımsız.
 - Juice: squash/stretch (UniTask), VFX, ses kanalı, `LaunchPadProfile` titreşimi, `onLaunch`/`onLaunchComplete` UnityEvent'leri.
+- **Nota:** `noteSystem` (`BounceNotePlayerSO`) atanmışsa her fırlatmada, anlık 'thump' cue'sunun üstüne bir nota da çalar. Seçim `NoteSequencer`'da (zincir dışında tekrarsız rastgele yürüyüş, zincirde gamda tırmanış, aynı enstrüman arka arkaya gelmez), zaman kapısı `NoteGate`'te: son notadan 1.5 sn içindeki vuruş zincir, en az 80 ms aralık, aynı anda en fazla 3 ses; kapı doluysa yeni nota **atlanır** (eski ses kesilmez). Zincir, sınır ve geçmiş pad başına değil asset'te ortak. Pad seçilen notayı `LastNote` ve `NotePlayed` olayıyla görsele (shader) verir. Gam A minör pentatonik (A4–G6), örnekler `Assets/Audio/SFX/Notes/`. Tasarım: `docs/ui-research/bounce-pad/oneri.md`.
+- **Sıvı ışık görseli (deneme, henüz oyun sahnelerinde yok):** `Prefab/New/Platforms/JumpPad/LaunchPad-LiquidLight.prefab` (LaunchPad varyantı). Visual, 1×1 birimlik beyaz quad sprite (`Shader/LiquidLightPadQuad.png`) + `Sprites/LiquidLightPad` shader'ı (`Mat_LiquidLightPad_Rect`). Tek SDF shader: `_Shape` 0 dikdörtgen / 1 üçgen / 2 daire. **Kenar: "Akan palet kenar"** (mockup'ta kullanıcının seçtiği; dalgalı sıvı kenar ve boşta parıltı YOK). Katmanlar mockup'taki sırayla: koyu mürekkep gövde → 3 px içeriden akan sıvı dolgu (desen dolgu dikdörtgenine göre 4.2×1.1 aralıkta eşlenir) → gövdeyi saran 5 px'lik (vuruşta 8 px) çerçeve, paleti pedin merkezi etrafında dönen konik gradyan (`_FrameSpin`) → en dışta 1.5 px'lik koyu halka. **Ölçek mockup'tan:** ped 170 px = 3.2 birim (1 px = 0.018824 birim), gövde 3.2 × 0.5647 (30 px), köşe 6 px. Gövdenin üstü collider üstüyle aynı hizada (collider 3.2 × 0.3, gövde onun altına doğru kalın). `LiquidLightPad` script'i her kare `_Flow`, `_Hit` (zarf: 0.05 sn yükselir, τ 0.22 sn söner) ve `_HueShift`'i (nota rengine palet kayması) `MaterialPropertyBlock` ile verir; `LaunchPad.Launched`/`NotePlayed` olaylarını dinler. LaunchPad squash'ı Visual'ı merkezinden ölçekler, `anchorBottom` ile alt kenar sabit tutulur (mockup'ta ped zemine oturur). Matematik `LiquidLightMath` (EditMode testli). Ortak SDF/palet/ton kodu `Shader/LiquidLightCommon.cginc`. Nota derece renkleri mockup'tan: A `#FCAE04`, C `#7CFF4F`, D `#22E6FF`, E `#A36BFF`, G `#FF2E8A`.
+- **Odalardaki yerleşim (2026-11-21):** `RoomNew-11/13/14/15/16/20/21/22 Variant` içindeki 17 dikdörtgen pad `LaunchPad-LiquidLight` varyantıyla değiştirildi; konum, açı, ölçek, sıra, ad, `launchSpeed` ve `detectionSize` korundu, sprite renk tonu (oda 11'deki hızlı pad'in yeşilimsi sarısı) yeni görsele taşındı. **Oda 12 (hareketli ve sınırdan sınıra akan pad'ler):** bunlar `Rigidbody2D` + `PlatformController` taşıyan, yöneticiye bağlı pad'ler olduğu için nesneler değiştirilmedi; `MovingLauncPad.prefab` ve `WrappingLaunchPadManager Variant.prefab` içindeki 5 pad'in yalnız `Visual` çocuğu yeni görsele çevrildi (sprite, `Mat_LiquidLightPad_Rect`, `LiquidLightPad`) ve bir `Burst` çocuğu eklendi; collider, hareket ve fırlatma aynı. **Üçgen/daire pad'ler hiçbir odada yok.** **Shader notu:** pad ve patlama shader'ları nesne uzayı konumuna dayandığı için `DisableBatching` taşır; yoksa yan yana pad'ler birleştirilince çizilmez.
+- **Kaleydoskop patlaması:** varyantın `Burst` çocuğu (`Sprites/LiquidLightBurst` shader'ı, `Mat_LiquidLightBurst_Rect`, `LiquidLightBurst` script'i). Her fırlatmada pedin SDF'ini takip ederek her yöne açılan sıvı ışık dalgası (hız 270 px/sn = 5.08 birim/sn, üst oktavda +60 px/sn; ömür 1.3 sn; hepsi mockup ölçeğinden); açı simetri sayısı kadar katlanır: enstrüman 0..3 → 3/4/5/6; palet nota rengine kayar. Pad'in Visual'ından ayrı, gövde + 13.6 birimlik quad (ömrü bitince renderer kapanır); doğduğu şekil o anki ezilmiş pedin şekli (`LiquidLightPad.SquashRatio`, mockup'taki `padRect(t)` gibi). **Flaş güvenliği (WCAG 2.3.1):** `FlashLimiter` pad'ler arası ortak; herhangi bir 1 sn'de en fazla 2 tam şiddetli patlama, fazlası 0.3× şiddetle oynar. Pedin gövde parlaması (`_Hit`) bu sınıra bağlı değil, yalnız pedin kendi alanında.
+- Editörde seçiliyken yörünge gizmo'su çizer
 - Editörde seçiliyken yörünge gizmo'su çizer (`playerStats` atanmışsa). Gizmo hava kontrolü girdisini hesaba katmaz.
 - "Hareketli ve döngüsel versiyonlar" (GDD) ayrı kod değil, prefab kompozisyonu: `JumpPad/MovingLauncPad.prefab` (hareketli platform + pad) ve `PlatformWrapper/WrappingLaunchPadManager Variant.prefab` (sınırdan sınıra akan pad'ler).
 
 ### Sınırdan sınıra akan platformlar (`WrappingPlatformManager`)
 
 Bir grup `PlatformController`'ı (stratejisiz) `leftBound`'dan `rightBound`'a taşır. Ucu geçen platform taşan mesafeyle birlikte başa ışınlanır. Hız `minSpeed`–`maxSpeed` arasında rastgele; iki değer eşitse deterministik. Üç kullanımı var: düz platformlar (oda 15), launch pad'ler (`WrappingLaunchPadManager Variant`) ve ölümcül nesneler (`WrappingDeathManager Variant`).
-
-## Ölünce sıfırlama
-
-`PlatformController`, `TriggeredPlatformController`, iki kırılan platform, `WrappingPlatformManager` ve `SwapBlockPair` `IResettable`. Kayıt `OnEnable`'da, bu yüzden yalnızca o an aktif odalar sıfırlanır. Ayrıntı: [`death-respawn.md`](death-respawn.md).
-
-## Görünüm: "Riso levha"
 
 ### Takas blokları (`SwapBlockPair`)
 
@@ -87,6 +87,12 @@ Bir grup `PlatformController`'ı (stratejisiz) `leftBound`'dan `rightBound`'a ta
 - **Bilinen sınırlar:** çapraz tünelin tabanında yürüyerek çıkılamaz (0.125'lik basamaklar, fizikte basamak çıkma yok; dash ve zıplama geçer). Dash'in son fizik adımında (çıkış adımı) ~0.45 birim fazla oyulur. `MovingDeath` hücrelerden geçer (kinematik tetik): barikat tehlikeyi durdurmaz, oyuncunun üstünde durduğu ya da arkasına saklandığı **köprü/kalkan** olarak çalışır. İki çerçeve birbirine yakınsa oyulan şerit B'de dash'in önünde duvar olur (dash o hücreleri aynı dash'te geri almaz).
 - **Test odası:** `RoomNew-SwapBlockTest` (id 101, NewScene'de x −800, spiral test odasının yanında): *Merdiven* (pembe blok zeminde, mavi çerçeve yüksek bir sekizintiye bitişik; bloğa bitişik durup çapraz dash atınca mavide basamaklı eğim) ve *Barikat* (8 genişliğinde çukurda `MovingDeath`, mavi çerçeve çukurun üstünde zemin hizasında; pembeden sağa dash atınca mavide köprü şeridi). Gamepad testi TP6.
 - **Testler:** `SwapBlockGridTests` (18), `SwapBlockSweepTests` (9), `SwapBlockRulesTests` PlayMode: SB1/SB1b/SB1c (yalnızca süpürülen kısım, kısmi ve çapraz dash durmaz), SB2 (geri alma), SB3 (bekleyen hücre), SB4 (basmak/tırmanmak/çarpmak taşımaz), SB5 (respawn) ve FB1 (ses dash başına bir kez).
+
+## Ölünce sıfırlama
+
+`PlatformController`, `TriggeredPlatformController`, iki kırılan platform, `WrappingPlatformManager` ve `SwapBlockPair` `IResettable`. Kayıt `OnEnable`'da, bu yüzden yalnızca o an aktif odalar sıfırlanır. Ayrıntı: [`death-respawn.md`](death-respawn.md).
+
+## Görünüm: "Riso levha"
 
 Hareketli platformlar (`MovingPlatform`, `-Transform`, `OneWay-`, `AccelPlatform`, `RotatingPlatform` prefab'ları) baskı görünümlü; arazi, kırılan platformlar ve launch pad'ler değişmedi. Tasarım: `docs/ui-research/halftone/` (uygulama planı `implementation-plan.md`).
 

@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bounce Pad Yönleri</title>
+<style>
+  :root { --ink:#140C1C; --paper:#F1E6C7; --sky:#71BAEA; --red:#FC1E00; --muted:#4E4A4E; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--ink); color:var(--paper); font:14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  header { padding:20px 16px 8px; max-width:1200px; margin:0 auto; }
+  h1 { margin:0 0 6px; font-size:22px; letter-spacing:.04em; text-transform:uppercase; }
+  p { margin:4px 0; color:#cfc6b0; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; padding:10px 16px; max-width:1200px; margin:0 auto; align-items:center; }
+  button, label.tog { background:var(--paper); color:var(--ink); border:0; padding:8px 12px; font-weight:700; cursor:pointer; font-size:13px; text-transform:uppercase; letter-spacing:.03em; }
+  button.big { background:var(--red); color:var(--paper); font-size:15px; padding:10px 18px; }
+  label.tog { display:flex; gap:6px; align-items:center; }
+  label.tog input { accent-color: var(--red); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(330px,1fr)); gap:14px; padding:10px 16px 16px; max-width:1200px; margin:0 auto; }
+  .panel { background:#000; border:3px solid var(--paper); position:relative; }
+  .panel h2 { margin:0; padding:8px 10px; background:var(--paper); color:var(--ink); font-size:15px; text-transform:uppercase; display:flex; justify-content:space-between; }
+  .panel h2 small { font-weight:600; opacity:.7; }
+  .stage { position:relative; }
+  canvas { display:block; width:100%; height:auto; }
+  .crt::after { content:""; position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px);
+    box-shadow: inset 0 0 60px rgba(0,0,0,.55); }
+  .desc { padding:8px 10px 10px; font-size:13px; color:#cfc6b0; border-top:3px solid var(--paper); }
+  .desc b { color:var(--paper); }
+  .now { display:flex; gap:14px; align-items:center; padding:6px 16px; max-width:1200px; margin:0 auto; font-weight:700; min-height:34px; }
+  .sw { width:22px; height:22px; display:inline-block; border:2px solid var(--paper); vertical-align:middle; }
+  .legend { display:flex; flex-wrap:wrap; gap:10px; padding:0 16px 24px; max-width:1200px; margin:0 auto; font-size:13px; }
+  .legend span { display:flex; align-items:center; gap:6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bounce pad: 3 yön</h1>
+  <p>Karakter pede düşer, ped fırlatır. Her fırlatmada A minör pentatonikten bir nota, 4 enstrümandan biri (aynısı arka arkaya gelmez). Üç panel aynı notayı aynı anda gösterir; alt katman (çerçeve flaşı, titreyen kenar, halka) üçünde ortak, değişen kısım imza.</p>
+  <p>Ses için önce bir tuşa bas ya da tıkla (tarayıcı kuralı). Gamepad A da zıplatır.</p>
+</header>
+
+<div class="bar">
+  <button class="big" id="bounce">Zıplat (Space / A)</button>
+  <label class="tog"><input type="checkbox" id="auto" checked> Otomatik</label>
+  <label class="tog"><input type="checkbox" id="chain"> Zincirde tırman</label>
+  <label class="tog"><input type="checkbox" id="sound" checked> Ses</label>
+  <label class="tog"><input type="checkbox" id="crt" checked> CRT çizgileri</label>
+  <label class="tog"><input type="checkbox" id="sky" checked> Gökyüzü zemini</label>
+  <label class="tog"><input type="checkbox" id="pause"> Dondur (P)</label>
+  <label class="tog">N3 kenar
+    <select id="n3edge">
+      <option value="blob" selected>Sıvı kenar (çerçevesiz)</option>
+      <option value="ink">Mürekkep blok (brutalist)</option>
+      <option value="chroma">RGB kayması</option>
+      <option value="rainbow">Akan palet kenar</option>
+      <option value="halftone">Halftone hale</option>
+      <option value="neon">Neon (eski)</option>
+    </select></label>
+  <label class="tog"><input type="checkbox" id="liqhue"> N3: nota rengine döndür</label>
+  <label class="tog">Hız<input type="range" id="speed" min="0.4" max="1.6" step="0.1" value="1"></label>
+</div>
+
+<div class="now" id="now">—</div>
+
+<div class="grid">
+  <div class="panel"><h2>N1 Neon spektrum <small>referansa yakın</small></h2>
+    <div class="stage crt"><canvas data-dir="n1"></canvas></div>
+    <div class="desc"><b>İmza:</b> pedden yelpaze hâlinde fışkıran çubuklar. Tepe noktası notanın perdesinden, çubuk sayısı enstrümandan (8/10/13/16). <b>Artı:</b> en okunur, en ucuz. <b>Eksi:</b> klişe.</div>
+  </div>
+  <div class="panel"><h2>N2 Chladni plakası <small>önerilen</small></h2>
+    <div class="stage crt"><canvas data-dir="n2"></canvas></div>
+    <div class="desc"><b>İmza:</b> kum çizgisi gibi düğüm hatları, önce bulanık sonra keskinleşir. Nota → (n,m), enstrüman → cos/sin varyantı. <b>Artı:</b> Bauhaus geometrisi, şekil bilgi taşır. <b>Eksi:</b> yüksek modlar küçük pedde bulanıklaşır.</div>
+  </div>
+  <div class="panel"><h2>N3 Psikedelik <small>en çarpıcı</small></h2>
+    <div class="stage crt"><canvas data-dir="n3"></canvas></div>
+    <div class="desc"><b>Ped içi:</b> sürekli akan sıvı ışık (referans görseldeki mor-magenta-kırmızı-turuncu palet); vuruşta akış hızlanır ve parlar. <b>İmza:</b> aynı sıvı, pedin şeklini takip ederek <b>her yöne</b> dalga gibi açılır; kaleydoskop simetrisi enstrümandan (3/4/5/6). "Nota rengine döndür" açıksa palet notanın rengine kayar. <b>Eksi:</b> hızda renkli leke, en yüksek flaş riski.</div>
+  </div>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<script>
+(() => {
+  // ---------- müzik ----------
+  const NOTE_NAMES = ["A","C","D","E","G"];
+  const SEMIS = [0,3,5,7,10];                 // A minör pentatonik
+  const COLORS = ["#FCAE04","#7CFF4F","#22E6FF","#A36BFF","#FF2E8A"]; // derece → renk
+  const INSTR = ["Marimba","Kalimba","Çan (celesta)","Pluck"];
+  const SCALE = [];                            // 2 oktav: A4..G5, A5..G6
+  for (let o = 0; o < 2; o++) for (let d = 0; d < 5; d++)
+    SCALE.push({ d, o, name: NOTE_NAMES[d] + (o ? (d === 0 ? 5 : 5) + 1 : (d === 0 ? 4 : 5)), f: 440 * Math.pow(2, (SEMIS[d] + 12 * o) / 12) });
+  // isimleri düzgünle (A4 C5 D5 E5 G5 A5 C6 D6 E6 G6)
+  SCALE.forEach((n, i) => { const oct = n.o === 0 ? (n.d === 0 ? 4 : 5) : (n.d === 0 ? 5 : 6); n.name = NOTE_NAMES[n.d] + oct; });
+
+  const legend = document.getElementById("legend");
+  legend.innerHTML = "<b>Renk = gam derecesi:</b>" + NOTE_NAMES.map((n, i) => `<span><i class="sw" style="background:${COLORS[i]}"></i>${n}</span>`).join("") +
+    "<span>· üst oktav daha parlak/büyük · şekil ailesi = enstrüman</span>";
+
+  let ctxA = null;
+  function audio() { if (!ctxA) ctxA = new (window.AudioContext || window.webkitAudioContext)(); if (ctxA.state === "suspended") ctxA.resume(); return ctxA; }
+
+  function partials(f, list, decay, gain) {
+    const a = audio(), t = a.currentTime, out = a.createGain();
+    out.gain.value = gain; out.connect(a.destination);
+    list.forEach(([ratio, amp, dk]) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = "sine"; o.frequency.value = f * ratio;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(amp, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + decay * (dk || 1));
+      o.connect(g).connect(out); o.start(t); o.stop(t + decay * (dk || 1) + 0.05);
+    });
+  }
+  function pluck(f) {
+    const a = audio(), sr = a.sampleRate, len = Math.floor(sr * 1.2);
+    const buf = a.createBuffer(1, len, sr), data = buf.getChannelData(0);
+    const N = Math.max(2, Math.round(sr / f)); const ring = new Float32Array(N);
+    for (let i = 0; i < N; i++) ring[i] = Math.random() * 2 - 1;
+    let idx = 0;
+    for (let i = 0; i < len; i++) {
+      const nx = (idx + 1) % N; const v = 0.996 * 0.5 * (ring[idx] + ring[nx]);
+      data[i] = ring[idx]; ring[idx] = v; idx = nx;
+    }
+    const s = a.createBufferSource(), g = a.createGain(); g.gain.value = 0.35;
+    s.buffer = buf; s.connect(g).connect(a.destination); s.start();
+  }
+  function play(note, instr) {
+    if (!document.getElementById("sound").checked) return;
+    const f = note.f;
+    if (instr === 0) partials(f, [[1, 1, 1], [4, 0.25, 0.35], [10, 0.08, 0.15]], 0.55, 0.32);       // marimba
+    else if (instr === 1) partials(f, [[1, 1, 1], [5.4, 0.18, 0.4], [2, 0.12, 0.6]], 0.9, 0.3);     // kalimba
+    else if (instr === 2) partials(f, [[1, 1, 1], [2.76, 0.4, 0.7], [5.4, 0.2, 0.45], [8.93, 0.08, 0.3]], 1.3, 0.22); // çan
+    else pluck(f);
+  }
+
+  let lastIdx = 4, lastInstr = -1, lastBounce = -10;
+  function pickNote(now) {
+    let idx;
+    if (document.getElementById("chain").checked && now - lastBounce < 2.5) idx = (lastIdx + 1) % SCALE.length;
+    else {
+      do { idx = Math.max(0, Math.min(SCALE.length - 1, lastIdx + [-3, -2, -1, 1, 2, 3][Math.floor(Math.random() * 6)])); } while (idx === lastIdx);
+    }
+    let instr; do { instr = Math.floor(Math.random() * 4); } while (instr === lastInstr);
+    lastIdx = idx; lastInstr = instr; lastBounce = now;
+    return { note: SCALE[idx], idx, instr };
+  }
+
+  // ---------- simülasyon ----------
+  const W = 360, H = 320;
+  const PAD = { cx: 180, top: 258, w: 170, h: 30 };
+  const CH = 22;
+  const sim = { y: PAD.top - CH - 140, vy: 0, resting: false, bounceT: -10, ev: null, contactX: 180 };
+  const G = 1500, V0 = -720;
+
+  function launch(now) {
+    const ev = pickNote(now);
+    sim.ev = ev; sim.bounceT = now; sim.vy = V0; sim.resting = false;
+    sim.contactX = PAD.cx + (Math.random() * 40 - 20);
+    play(ev.note, ev.instr);
+    const c = COLORS[ev.note.d];
+    document.getElementById("now").innerHTML =
+      `<i class="sw" style="background:${c}"></i> ${ev.note.name} · ${INSTR[ev.instr]} · ${Math.round(ev.note.f)} Hz`;
+  }
+  let manualQueued = false;
+  function requestBounce() { audio(); manualQueued = true; }
+  document.getElementById("bounce").addEventListener("click", requestBounce);
+  window.addEventListener("keydown", e => {
+    if (e.code === "Space") { e.preventDefault(); requestBounce(); }
+    if (e.code === "KeyP") { const p = document.getElementById("pause"); p.checked = !p.checked; }
+  });
+  document.querySelectorAll("canvas").forEach(c => c.addEventListener("click", requestBounce));
+  document.getElementById("crt").addEventListener("change", e => document.querySelectorAll(".stage").forEach(s => s.classList.toggle("crt", e.target.checked)));
+  document.body.addEventListener("pointerdown", () => audio(), { once: true });
+
+  let padPrev = false;
+  function pollPad() {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let pressed = false;
+    for (const p of pads) if (p && p.buttons[0] && p.buttons[0].pressed) pressed = true;
+    if (pressed && !padPrev) requestBounce();
+    padPrev = pressed;
+  }
+
+  // ---------- çizim yardımcıları ----------
+  const canvases = [...document.querySelectorAll("canvas")].map(c => {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr;
+    const ctx = c.getContext("2d"); ctx.scale(dpr, dpr);
+    return { c, ctx, dir: c.dataset.dir };
+  });
+  function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function mix(a, b, t) { return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
+  function rgba(c, a) { return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
+  function env(t) { if (t < 0) return 0; if (t < 0.05) return t / 0.05; return Math.exp(-(t - 0.05) / 0.22); }
+  function hsl2rgb(h, s, l) {
+    h = ((h % 360) + 360) % 360 / 360;
+    const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    const f = t => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < .5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
+    return [f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255];
+  }
+  function rgbToHue(c) {
+    const [r, g, b] = c.map(v => v / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    if (!d) return 0; let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return h * 60;
+  }
+
+  const off = document.createElement("canvas"); const offCtx = off.getContext("2d");
+
+  function drawBackground(ctx) {
+    const sky = document.getElementById("sky").checked;
+    ctx.fillStyle = sky ? "#71BAEA" : "#0b0710"; ctx.fillRect(0, 0, W, H);
+    // zemin
+    ctx.fillStyle = sky ? "#E68D41" : "#1c1424"; ctx.fillRect(0, PAD.top + PAD.h, W, H);
+    ctx.fillStyle = sky ? "#FAD0E0" : "#2a1f33"; ctx.fillRect(0, PAD.top + PAD.h, W, 6);
+  }
+
+  function padSquash(t) {
+    // mevcut LaunchPad tween'ine benzer: ezil → esne → dön
+    if (t < 0 || t > 0.28) return [1, 1];
+    if (t < 0.05) { const k = t / 0.05; return [1 + 0.3 * k, 1 - 0.4 * k]; }
+    if (t < 0.13) { const k = (t - 0.05) / 0.08; return [1.3 - 0.6 * k, 0.6 + 0.8 * k]; }
+    const k = (t - 0.13) / 0.15; return [0.7 + 0.3 * k, 1.4 - 0.4 * k];
+  }
+
+  function drawPadBase(ctx, now, t, ev) {
+    const idle = hexRgb("#FC1E00");
+    const col = ev ? hexRgb(COLORS[ev.note.d]) : idle;
+    const e = ev ? env(t) : 0;
+    const frameCol = mix(idle, col, Math.min(1, e * 1.6 + (ev && t < 1.2 ? 0.35 * Math.exp(-t * 2) : 0)));
+    const [sx, sy] = padSquash(t);
+    const w = PAD.w * sx, h = PAD.h * sy, x = PAD.cx - w / 2, y = PAD.top + PAD.h - h;
+
+    // ripple halkaları (dünya uzayı)
+    if (ev && t < 0.9) {
+      for (let i = 0; i < 2; i++) {
+        const tt = t - i * 0.09; if (tt < 0) continue;
+        const r = 10 + tt * 260, a = Math.max(0, 1 - tt / 0.7);
+        ctx.save(); ctx.strokeStyle = rgba(col, a * 0.9); ctx.lineWidth = 3;
+        ctx.shadowColor = rgba(col, a); ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.ellipse(sim.contactX, y, r, r * 0.32, 0, Math.PI, 2 * Math.PI); ctx.stroke(); ctx.restore();
+      }
+    }
+
+    // gövde
+    ctx.fillStyle = "#140C1C";
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, 6); ctx.fill();
+
+    // titreyen üst kenar (tel)
+    const k = ev ? (ev.instr + 1 + ev.note.o) : 1;
+    const amp = ev ? 9 * Math.exp(-t / 0.3) * (t >= 0 ? 1 : 0) : 0;
+    const breath = 0.55 + 0.15 * Math.sin(now * 2.4);
+    const glowA = Math.min(1, breath + e);
+    function edgePath() {
+      ctx.beginPath();
+      ctx.moveTo(x, y + h);
+      ctx.lineTo(x, y + 4);
+      for (let i = 0; i <= 40; i++) {
+        const u = i / 40, px = x + u * w;
+        const py = y + Math.sin(k * Math.PI * u) * Math.cos(t * 60) * amp;
+        ctx.lineTo(px, py);
+      }
+      ctx.lineTo(x + w, y + h);
+      ctx.closePath();
+    }
+    ctx.save();
+    ctx.lineJoin = "round";
+    ctx.shadowColor = rgba(frameCol, glowA); ctx.shadowBlur = 10 + 22 * e;
+    ctx.strokeStyle = rgba(frameCol, 1); ctx.lineWidth = 4;
+    edgePath(); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = rgba(mix(frameCol, [255, 255, 255], 0.55 + 0.35 * e), 0.9); ctx.lineWidth = 1.4;
+    edgePath(); ctx.stroke();
+    ctx.restore();
+    return { col, e, y, x, w, h };
+  }
+  function padRect(t) {
+    const [sx, sy] = padSquash(t), w = PAD.w * sx, h = PAD.h * sy;
+    return { x: PAD.cx - w / 2, y: PAD.top + PAD.h - h, w, h };
+  }
+
+  // ---------- imzalar ----------
+  function drawN1(ctx, t, ev, padY) {
+    if (!ev || t > 1) return;
+    const col = hexRgb(COLORS[ev.note.d]);
+    const N = [8, 10, 13, 16][ev.instr];
+    const rise = Math.min(1, t / 0.07), fade = Math.exp(-Math.max(0, t - 0.07) / 0.25);
+    const peak = (ev.idx / (SCALE.length - 1)) * (N - 1);
+    const maxL = ev.note.o ? 120 : 95;
+    ctx.save(); ctx.lineCap = "round";
+    for (let i = 0; i < N; i++) {
+      const ang = Math.PI + (i + 0.5) / N * Math.PI;
+      const g = Math.exp(-Math.pow((i - peak) / (N * 0.22), 2));
+      const harm = 0.35 + 0.65 * Math.abs(Math.sin((i + 1) * 1.7 + ev.idx));
+      const jitter = 0.85 + 0.15 * Math.sin(t * 40 + i * 2.1);
+      const L = (14 + maxL * (0.25 + 0.75 * g) * harm) * rise * fade * jitter;
+      const x0 = PAD.cx + Math.cos(ang) * 26, y0 = padY - 4 + Math.sin(ang) * 26 * 0.6;
+      const x1 = PAD.cx + Math.cos(ang) * (26 + L), y1 = padY - 4 + Math.sin(ang) * (26 + L) * 0.75;
+      const c = mix(col, [255, 255, 255], 0.15 * g);
+      ctx.strokeStyle = rgba(c, fade); ctx.lineWidth = 5;
+      ctx.shadowColor = rgba(col, fade); ctx.shadowBlur = 16;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.shadowBlur = 0; ctx.strokeStyle = rgba([255, 255, 255], 0.6 * fade); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  const CHLADNI = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5], [1, 5], [3, 5], [4, 5], [2, 7]];
+  function drawN2(ctx, t, ev, padY) {
+    if (!ev || t > 1.1) return;
+    const col = hexRgb(COLORS[ev.note.d]);
+    const [n, m] = CHLADNI[ev.idx];
+    const useSin = ev.instr % 2 === 1, sign = ev.instr >= 2 ? 1 : -1;
+    const pw = 170, ph = 104, rx = PAD.cx - pw / 2, ry = padY - ph - 8;
+    const lw = 85, lh = 52; off.width = lw; off.height = lh;
+    const img = offCtx.createImageData(lw, lh), d = img.data;
+    const a = env(t) * 1.0;
+    const eps = 0.1 + 0.3 * Math.exp(-t / 0.12);           // önce bulanık, sonra keskin (kum yerleşiyor)
+    const bright = mix(col, [255, 255, 255], 0.35);
+    for (let j = 0; j < lh; j++) for (let i = 0; i < lw; i++) {
+      const x = i / (lw - 1), y = j / (lh - 1);
+      const v = useSin
+        ? Math.sin(n * Math.PI * x) * Math.sin(m * Math.PI * y) + sign * Math.sin(m * Math.PI * x) * Math.sin(n * Math.PI * y)
+        : Math.cos(n * Math.PI * x) * Math.cos(m * Math.PI * y) + sign * Math.cos(m * Math.PI * x) * Math.cos(n * Math.PI * y);
+      let line = Math.max(0, 1 - Math.abs(v) / eps);
+      const edge = Math.min(x, 1 - x, y, 1 - y) * 6; line *= Math.min(1, edge + 0.15);
+      const p = (j * lw + i) * 4;
+      d[p] = bright[0]; d[p + 1] = bright[1]; d[p + 2] = bright[2]; d[p + 3] = 255 * line * a;
+    }
+    offCtx.putImageData(img, 0, 0);
+    ctx.save();
+    // plaka çerçevesi
+    ctx.strokeStyle = rgba(col, 0.35 * a); ctx.lineWidth = 2; ctx.strokeRect(rx, ry, pw, ph);
+    ctx.fillStyle = rgba([20, 12, 28], 0.85 * Math.min(1, a * 1.5)); ctx.fillRect(rx, ry, pw, ph);
+    ctx.imageSmoothingEnabled = true;
+    ctx.shadowColor = rgba(col, a); ctx.shadowBlur = 12;
+    ctx.globalCompositeOperation = "lighter";
+    ctx.drawImage(off, rx, ry, pw, ph);
+    ctx.restore();
+    ctx.save(); ctx.fillStyle = rgba(col, a); ctx.font = "bold 11px monospace";
+    ctx.fillText(`n=${n} m=${m}`, rx + 4, ry - 4); ctx.restore();
+  }
+
+  // ---- N3: sıvı ışık (liquid light) ----
+  // Kullanıcının referans görseli: domain-warp edilmiş yumuşak alan, mor → magenta → kırmızı → turuncu → pembe-beyaz paletiyle.
+  const LIQ = [[0, [80, 0, 255]], [0.22, [150, 0, 255]], [0.38, [255, 0, 255]], [0.55, [255, 0, 40]], [0.68, [255, 80, 0]], [0.8, [255, 90, 140]], [1, [255, 210, 245]]];
+  function liqPal(v) {
+    v = Math.max(0, Math.min(1, v));
+    for (let i = 1; i < LIQ.length; i++) if (v <= LIQ[i][0]) {
+      const [a0, c0] = LIQ[i - 1], [a1, c1] = LIQ[i], k = (v - a0) / (a1 - a0);
+      return [c0[0] + (c1[0] - c0[0]) * k, c0[1] + (c1[1] - c0[1]) * k, c0[2] + (c1[2] - c0[2]) * k];
+    }
+    return LIQ[LIQ.length - 1][1];
+  }
+  function liquid(x, y, t) {
+    const qx = x + 0.9 * Math.sin(y * 1.3 + t * 0.6) + 0.5 * Math.sin(y * 2.7 - t * 0.9);
+    const qy = y + 0.9 * Math.sin(x * 1.1 - t * 0.5) + 0.5 * Math.sin(x * 2.3 + t * 0.8);
+    const v = Math.sin(qx * 1.2 + t * 0.3) * Math.cos(qy * 1.4 - t * 0.4) + 0.5 * Math.sin((qx + qy) * 0.9 + t * 0.2);
+    return 0.5 + v / 3;
+  }
+  // akış zamanı: boşta yavaş, vuruşta hızlanır
+  let flowT = 0, hueNow = 0, hueTarget = 0;
+  function stepFlow(dt, t, ev) {
+    flowT += dt * (0.6 + 5 * (ev ? env(t) : 0));
+    const on = document.getElementById("liqhue").checked;
+    hueTarget = on && ev ? rgbToHue(hexRgb(COLORS[ev.note.d])) - 330 : 0;
+    let dh = ((hueTarget - hueNow + 540) % 360) - 180;
+    hueNow += dh * Math.min(1, dt * 10);
+  }
+
+  // ---- N3 kenar seçenekleri ----
+  function blobPath(ctx, r, t, ev, grow) {
+    // pedin çevresi boyunca dışa doğru dalgalanan sıvı kenar
+    const boost = ev ? env(t) : 0, amp = 1.5 + 7 * boost;
+    const P = 2 * (r.w + r.h), N = 120;
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const s = i / N * P; let px, py, nx, ny;
+      if (s < r.w) { px = r.x + s; py = r.y; nx = 0; ny = -1; }
+      else if (s < r.w + r.h) { px = r.x + r.w; py = r.y + (s - r.w); nx = 1; ny = 0; }
+      else if (s < 2 * r.w + r.h) { px = r.x + r.w - (s - r.w - r.h); py = r.y + r.h; nx = 0; ny = 1; }
+      else { px = r.x; py = r.y + r.h - (s - 2 * r.w - r.h); nx = -1; ny = 0; }
+      const o = grow + amp * (0.6 * Math.sin(s * 0.09 + flowT * 3) + 0.4 * Math.sin(s * 0.23 - flowT * 5));
+      i ? ctx.lineTo(px + nx * o, py + ny * o) : ctx.moveTo(px + nx * o, py + ny * o);
+    }
+    ctx.closePath();
+  }
+  function n3Style() { return document.getElementById("n3edge").value; }
+
+  function drawN3Body(ctx, t, ev, r) {
+    const st = n3Style();
+    if (st === "ink") {   // brutalist: kalın mürekkep + kaydırılmış gölge blok
+      ctx.fillStyle = "#140C1C"; ctx.fillRect(r.x + 7, r.y + 7, r.w, r.h);
+      ctx.fillRect(r.x - 4, r.y - 4, r.w + 8, r.h + 8);
+    } else if (st === "blob") {
+      ctx.save(); ctx.fillStyle = "#140C1C"; blobPath(ctx, r, t, ev, 4); ctx.fill(); ctx.restore();
+    } else {
+      ctx.fillStyle = "#140C1C"; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 6); ctx.fill();
+    }
+  }
+
+  function drawN3Frame(ctx, t, ev, r, now) {
+    const st = n3Style(), boost = ev ? env(t) : 0;
+    ctx.save();
+    if (st === "neon") {
+      const col = ev ? mix(hexRgb("#FC1E00"), hexRgb(COLORS[ev.note.d]), Math.min(1, boost * 1.6)) : hexRgb("#FC1E00");
+      ctx.shadowColor = rgba(col, 0.7 + 0.3 * boost); ctx.shadowBlur = 10 + 22 * boost;
+      ctx.strokeStyle = rgba(col, 1); ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 6); ctx.stroke();
+      ctx.shadowBlur = 0; ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 1.4; ctx.stroke();
+    } else if (st === "chroma") {   // RGB kayması: üç renkli kontur, vuruşta ayrışır
+      const sp = 1.5 + 6 * boost;
+      ctx.lineWidth = 3; ctx.globalAlpha = 0.95;
+      [["#FF0050", -sp, -sp * 0.4], ["#00E5FF", sp, sp * 0.4], ["#FFE600", 0, sp]].forEach(([c, dx, dy]) => {
+        ctx.strokeStyle = c; ctx.beginPath(); ctx.roundRect(r.x + dx, r.y + dy, r.w, r.h, 6); ctx.stroke();
+      });
+      ctx.globalAlpha = 1; ctx.strokeStyle = "#140C1C"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 6); ctx.stroke();
+    } else if (st === "rainbow") {  // akan palet kenar: kenar da sıvının renkleriyle döner
+      const g = ctx.createConicGradient(flowT * 0.8, r.x + r.w / 2, r.y + r.h / 2);
+      LIQ.forEach(([s, c]) => g.addColorStop(s * 0.5, rgba(c, 1)));
+      LIQ.slice().reverse().forEach(([s, c]) => g.addColorStop(0.5 + (1 - s) * 0.5, rgba(c, 1)));
+      ctx.filter = `hue-rotate(${hueNow.toFixed(1)}deg)`;
+      ctx.strokeStyle = g; ctx.lineWidth = 5 + 3 * boost;
+      ctx.beginPath(); ctx.roundRect(r.x - 1, r.y - 1, r.w + 2, r.h + 2, 7); ctx.stroke();
+      ctx.filter = "none"; ctx.strokeStyle = "#140C1C"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(r.x - 4.5, r.y - 4.5, r.w + 9, r.h + 9, 9); ctx.stroke();
+    } else if (st === "halftone") { // çevresinde yumuşak halftone nokta halesi (pixel değil, baskı)
+      const R = 18 + 14 * boost, step = 6;
+      ctx.filter = `hue-rotate(${hueNow.toFixed(1)}deg)`;
+      for (let yy = r.y - R; yy <= r.y + r.h + R; yy += step) for (let xx = r.x - R; xx <= r.x + r.w + R; xx += step) {
+        const qx = Math.max(r.x - xx, 0, xx - (r.x + r.w)), qy = Math.max(r.y - yy, 0, yy - (r.y + r.h));
+        const dd = Math.hypot(qx, qy); if (dd <= 0.5 || dd > R) continue;
+        const rad = (1 - dd / R) * 2.9;
+        const c = liqPal(liquid(xx * 0.03, yy * 0.03, flowT));
+        ctx.fillStyle = rgba(c, 1); ctx.beginPath(); ctx.arc(xx, yy, rad, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.filter = "none"; ctx.strokeStyle = "#140C1C"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 6); ctx.stroke();
+    } else if (st === "ink") {
+      ctx.strokeStyle = "#F1E6C7"; ctx.lineWidth = 1.5;
+      ctx.strokeRect(r.x - 0.5, r.y - 0.5, r.w + 1, r.h + 1);
+    } else if (st === "blob") {
+      ctx.strokeStyle = "rgba(255,210,245,.85)"; ctx.lineWidth = 1.5; blobPath(ctx, r, t, ev, 0); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawN3Fill(ctx, t, ev, r) {
+    const blob = n3Style() === "blob";
+    const ins = blob ? -10 : 3, x = r.x + ins, y = r.y + ins, w = r.w - 2 * ins, h = r.h - 2 * ins;
+    const lw = 64, lh = 14; off.width = lw; off.height = lh;
+    const img = offCtx.createImageData(lw, lh), d = img.data;
+    const boost = ev ? env(t) : 0;
+    for (let j = 0; j < lh; j++) for (let i = 0; i < lw; i++) {
+      const v = liquid(i / lw * 4.2, j / lh * 1.1, flowT) + boost * 0.15;
+      const c = liqPal(v), p = (j * lw + i) * 4;
+      const dim = 0.72 + 0.28 * boost;
+      d[p] = c[0] * dim; d[p + 1] = c[1] * dim; d[p + 2] = c[2] * dim; d[p + 3] = 255;
+    }
+    offCtx.putImageData(img, 0, 0);
+    ctx.save();
+    if (blob) blobPath(ctx, r, t, ev, 0); else { ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); }
+    ctx.clip();
+    ctx.imageSmoothingEnabled = true;
+    ctx.filter = `hue-rotate(${hueNow.toFixed(1)}deg)`;
+    ctx.drawImage(off, x, y, w, h);
+    ctx.restore();
+  }
+
+  function drawN3Burst(ctx, t, ev, r) {
+    if (!ev || t > 1.3) return;
+    const S = [3, 4, 5, 6][ev.instr];
+    const SC = 4, lw = W / SC, lh = H / SC; off.width = lw; off.height = lh;
+    const img = offCtx.createImageData(lw, lh), d = img.data;
+    const cx = r.x + r.w / 2, cy = r.y + r.h / 2, hx = r.w / 2, hy = r.h / 2;
+    const front = 18 + t * (ev.note.o ? 330 : 270);
+    const a = env(t * 0.75);
+    for (let j = 0; j < lh; j++) for (let i = 0; i < lw; i++) {
+      const wx = i * SC + SC / 2, wy = j * SC + SC / 2;
+      const dx = wx - cx, dy = wy - cy;
+      // yuvarlatılmış kutunun SDF'i: desen pedin şeklini takip eder, her yöne açılır
+      const qx = Math.abs(dx) - hx + 6, qy = Math.abs(dy) - hy + 6;
+      const sd = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - 6;
+      if (sd <= 0 || sd > front) continue;
+      // açıyı pedin en-boyuna göre normalize edip S simetriyle katla
+      let th = Math.atan2(dy / (hy + 20), dx / (hx + 20)); const seg = Math.PI * 2 / S;
+      th = th - seg * Math.floor(th / seg); th = Math.abs(th - seg / 2);
+      const u = sd * 0.035, v = th * 2.2;
+      let val = liquid(u * Math.cos(v) * 3, u * Math.sin(v) * 3 + v, flowT * 1.5);
+      val += 0.12 * Math.sin(sd * 0.16 - t * 22);           // ses dalgası halkaları
+      const c = liqPal(val);
+      const behind = front - sd;
+      const band = Math.min(1, behind / 30) * Math.max(0, 1 - behind / 120);  // dışa giden dalga cephesi
+      const halo = 0.7 * Math.exp(-sd / 45);                                   // pedin etrafında kalan parıltı
+      const fall = Math.exp(-sd / 220);
+      const p = (j * lw + i) * 4;
+      d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = 255 * Math.min(1, a * (band * fall + halo) * 1.3);
+    }
+    offCtx.putImageData(img, 0, 0);
+    ctx.save(); ctx.imageSmoothingEnabled = true;
+    ctx.filter = `hue-rotate(${hueNow.toFixed(1)}deg)`;
+    ctx.drawImage(off, 0, 0, W, H);
+    ctx.restore();
+  }
+
+  function drawChar(ctx) {
+    const x = PAD.cx - CH / 2, y = sim.y;
+    const stretch = Math.min(0.35, Math.abs(sim.vy) / 2200);
+    const w = CH * (1 - stretch * 0.5), h = CH * (1 + stretch);
+    ctx.save();
+    ctx.fillStyle = "#FF51DE"; ctx.strokeStyle = "#140C1C"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.roundRect(PAD.cx - w / 2, y + CH - h, w, h, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#140C1C";
+    ctx.fillRect(PAD.cx - 5, y + CH - h * 0.62, 3, 4); ctx.fillRect(PAD.cx + 3, y + CH - h * 0.62, 3, 4);
+    ctx.restore();
+  }
+
+  // ---------- döngü ----------
+  let simTime = 0, last = performance.now();
+  function frame(nowMs) {
+    const dt = document.getElementById("pause").checked ? 0 : Math.min(0.033, (nowMs - last) / 1000) * parseFloat(document.getElementById("speed").value);
+    last = nowMs; simTime += dt; pollPad();
+
+    // fizik
+    if (sim.resting) {
+      if (manualQueued || document.getElementById("auto").checked) { manualQueued = false; launch(simTime); }
+    } else {
+      sim.vy += G * dt; sim.y += sim.vy * dt;
+      const floor = PAD.top - CH;
+      if (sim.y >= floor && sim.vy > 0) {
+        sim.y = floor;
+        if (document.getElementById("auto").checked || manualQueued) { manualQueued = false; launch(simTime); }
+        else { sim.vy = 0; sim.resting = true; }
+      }
+    }
+    if (sim.resting && manualQueued) { manualQueued = false; launch(simTime); }
+
+    const t = simTime - sim.bounceT;
+    stepFlow(dt, t, sim.ev);
+    for (const { ctx, dir } of canvases) {
+      drawBackground(ctx);
+      if (dir === "n3") {
+        const r = padRect(t);
+        drawN3Burst(ctx, t, sim.ev, r);
+        drawN3Body(ctx, t, sim.ev, r);
+        drawN3Fill(ctx, t, sim.ev, r);
+        drawN3Frame(ctx, t, sim.ev, r, simTime);
+        drawChar(ctx);
+        continue;
+      }
+      const base = drawPadBase(ctx, simTime, t, sim.ev);
+      if (dir === "n1") drawN1(ctx, t, sim.ev, base.y);
+      if (dir === "n2") drawN2(ctx, t, sim.ev, base.y);
+      drawChar(ctx);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

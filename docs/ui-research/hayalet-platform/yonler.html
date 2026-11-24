@@ -1,0 +1,136 @@
+<style>
+  .scene { display:block; width:100%; height:auto; border-radius:6px; background:#71BAEA; }
+  .scene + .scene { margin-top:8px; }
+  .cap { font-size:12px; opacity:.75; margin:2px 0 0; }
+  .note { background:rgba(0,0,0,.04); border-left:3px solid #8CD9FF; padding:10px 14px; margin:12px 0 20px; font-size:14px; }
+  .legend { display:flex; gap:18px; flex-wrap:wrap; font-size:13px; margin:8px 0 4px; }
+  .legend span::before { content:""; display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  .lg-real::before { background:#6BE04A; border:1px solid #140C1C; }
+  .lg-ghost::before { background:rgba(140,217,255,.8); }
+  .cards { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .card-image { display:block !important; aspect-ratio:auto !important; padding:8px; }
+</style>
+
+<h2>Hayalet platform ve hayalet tehlike: dört yön</h2>
+<p class="subtitle">Arka plan oyunun gerçek ekranı (oda 16 ve oda 13, editör çekimi). Üstte: rakip senin dünyanda olmayan bir platformun üstünde. Altta: rakibi, senin dünyanda orada olmayan bir hareketli tehlike öldürdü.</p>
+
+<div class="legend">
+  <span class="lg-real">Gerçek nesneler: ekran görüntüsünden, dokunulmadı</span>
+  <span class="lg-ghost">Rakibin hayaleti: bugünkü renk (açık mavi, %55)</span>
+</div>
+
+<div class="note">
+  <b>Senin kuralın:</b> hayaletler hiçbir zaman senin platformlarının ya da tehlikelerinin önüne geçmez. Dört örnekte de hayalet platformun alt kısmı turuncu zeminin <b>arkasında</b> kalıyor.<br>
+  <b>Bulduğum bir şey:</b> hayaletin bugünkü açık mavisi gökyüzünün mavisine çok yakın (gökyüzü #71BAEA, hayalet #8CD9FF). Hayalet platformu aynı renkte yaparsak gökyüzünde kaybolur. Bu yüzden B ve C'de aynı mavi ailesinden daha koyu ya da daha açık bir ton kullandım.
+</div>
+
+<div class="cards">
+
+  <!-- A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg class="scene" viewBox="180 360 640 360" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="a-ledge"><rect x="0" y="508" width="1215" height="64"/></clipPath></defs>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900"/>
+        <rect x="470" y="470" width="225" height="68" rx="14" fill="none" stroke="#8CD9FF" stroke-width="5" stroke-dasharray="14 9"/>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900" clip-path="url(#a-ledge)"/>
+        <g opacity=".55"><rect x="560" y="418" width="42" height="52" rx="12" fill="#8CD9FF"/></g>
+        <circle cx="574" cy="436" r="5" fill="#fff" opacity=".8"/><circle cx="590" cy="436" r="5" fill="#fff" opacity=".8"/>
+      </svg>
+      <svg class="scene" viewBox="560 250 480 270" xmlns="http://www.w3.org/2000/svg">
+        <image href="./room13.png" x="0" y="0" width="1600" height="900"/>
+        <polygon points="784,346 816,346 838,368 838,400 816,422 784,422 762,400 762,368" fill="none" stroke="#8CD9FF" stroke-width="5" stroke-dasharray="10 7"/>
+        <g fill="#8CD9FF" opacity=".55"><circle cx="740" cy="352" r="7"/><circle cx="730" cy="380" r="5"/><circle cx="752" cy="330" r="4"/></g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>A · Kesik kontur</h3>
+      <p>Yalnızca hayaletin renginde kesik bir çizgi, içi boş. "Burada bir şey var ama katı değil" diye okunur. En sade seçenek, ama gökyüzünde zor seçiliyor.</p>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg class="scene" viewBox="180 360 640 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="b-ledge"><rect x="0" y="508" width="1215" height="64"/></clipPath>
+          <pattern id="b-dots" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(15)"><circle cx="5.5" cy="5.5" r="3" fill="#2F4FB8"/></pattern>
+          <pattern id="b-dots2" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(15)"><circle cx="5.5" cy="5.5" r="3.4" fill="#2F4FB8"/></pattern>
+        </defs>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900"/>
+        <rect x="470" y="470" width="225" height="68" rx="14" fill="url(#b-dots)" opacity=".7"/>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900" clip-path="url(#b-ledge)"/>
+        <g opacity=".55"><rect x="560" y="418" width="42" height="52" rx="12" fill="#8CD9FF"/></g>
+        <circle cx="574" cy="436" r="5" fill="#fff" opacity=".8"/><circle cx="590" cy="436" r="5" fill="#fff" opacity=".8"/>
+      </svg>
+      <svg class="scene" viewBox="560 250 480 270" xmlns="http://www.w3.org/2000/svg">
+        <image href="./room13.png" x="0" y="0" width="1600" height="900"/>
+        <polygon points="784,346 816,346 838,368 838,400 816,422 784,422 762,400 762,368" fill="url(#b-dots2)" opacity=".75"/>
+        <g fill="#8CD9FF" opacity=".55"><circle cx="740" cy="352" r="7"/><circle cx="730" cy="380" r="5"/><circle cx="752" cy="330" r="4"/></g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B · Tek mürekkep baskı</h3>
+      <p>Şekil, tek renk yarım ton noktalarla basılmış, çizgisi yok. Gerçek hareketli platformlardaki koyu çizgi "katı kenar" demek; burada çizgi olmadığı için katı değil diye okunur. Riso baskı diline en yakın seçenek.</p>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg class="scene" viewBox="180 360 640 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="c-ledge"><rect x="0" y="508" width="1215" height="64"/></clipPath>
+          <pattern id="c-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4.5" height="12" fill="#F2FBFF"/></pattern>
+        </defs>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900"/>
+        <rect x="470" y="470" width="225" height="68" rx="14" fill="url(#c-hatch)" opacity=".75"/>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900" clip-path="url(#c-ledge)"/>
+        <g opacity=".55"><rect x="560" y="418" width="42" height="52" rx="12" fill="#8CD9FF"/></g>
+        <circle cx="574" cy="436" r="5" fill="#fff" opacity=".8"/><circle cx="590" cy="436" r="5" fill="#fff" opacity=".8"/>
+      </svg>
+      <svg class="scene" viewBox="560 250 480 270" xmlns="http://www.w3.org/2000/svg">
+        <image href="./room13.png" x="0" y="0" width="1600" height="900"/>
+        <polygon points="784,346 816,346 838,368 838,400 816,422 784,422 762,400 762,368" fill="url(#c-hatch)" opacity=".85"/>
+        <g fill="#8CD9FF" opacity=".55"><circle cx="740" cy="352" r="7"/><circle cx="730" cy="380" r="5"/><circle cx="752" cy="330" r="4"/></g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>C · Çapraz tarama</h3>
+      <p>Açık renk eğik çizgiler, kenar yok. Teknik çizimdeki "burası boş, yalnızca işaret" taramasına benzer. Gökyüzünde B'den daha az koyu leke yapar ama renkli halkaların üstünde kaybolabilir.</p>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="card" data-choice="d" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg class="scene" viewBox="180 360 640 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="d-ledge"><rect x="0" y="508" width="1215" height="64"/></clipPath>
+          <linearGradient id="d-fade" x1="0" x2="1"><stop offset="0" stop-color="#F2FBFF" stop-opacity="0"/><stop offset=".5" stop-color="#F2FBFF" stop-opacity="1"/><stop offset="1" stop-color="#F2FBFF" stop-opacity="0"/></linearGradient>
+          <filter id="d-blur" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="6"/></filter>
+        </defs>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900"/>
+        <rect x="510" y="466" width="142" height="12" rx="6" fill="#8CD9FF" opacity=".6" filter="url(#d-blur)"/>
+        <rect x="510" y="468" width="142" height="5" rx="2.5" fill="url(#d-fade)"/>
+        <image href="./room16.png" x="0" y="0" width="1600" height="900" clip-path="url(#d-ledge)"/>
+        <g opacity=".55"><rect x="560" y="418" width="42" height="52" rx="12" fill="#8CD9FF"/></g>
+        <circle cx="574" cy="436" r="5" fill="#fff" opacity=".8"/><circle cx="590" cy="436" r="5" fill="#fff" opacity=".8"/>
+      </svg>
+      <svg class="scene" viewBox="560 250 480 270" xmlns="http://www.w3.org/2000/svg">
+        <image href="./room13.png" x="0" y="0" width="1600" height="900"/>
+        <polygon points="784,346 816,346 838,368 838,400 816,422 784,422 762,400 762,368" fill="none" stroke="#F2FBFF" stroke-width="4" opacity=".9"/>
+        <polygon points="784,346 816,346 838,368 838,400 816,422 784,422 762,400 762,368" fill="none" stroke="#8CD9FF" stroke-width="12" opacity=".35" filter="url(#d-blur)"/>
+        <g fill="#8CD9FF" opacity=".55"><circle cx="740" cy="352" r="7"/><circle cx="730" cy="380" r="5"/><circle cx="752" cy="330" r="4"/></g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>D · Yalnızca temas izi</h3>
+      <p>Platformun kendisi çizilmez, yalnızca hayaletin ayağının altında kenarları solan parlak bir çizgi var. Tehlikede tek bir parlama konturu. En az dikkat dağıtan seçenek, "platform" değil "rakip bir şeye basıyor" bilgisi verir.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="cap">Hareketsiz örnekler. Oyunda hepsi kısa bir girişle belirir: platform yaklaşık 0.1 sn'de gelir, rakip ayrılınca 0.4 sn kalıp solar; tehlike 0.6 sn kalıp solar. Hareketli node'a tutunmada da seçilen yön aynı şekilde uygulanır.</p>
